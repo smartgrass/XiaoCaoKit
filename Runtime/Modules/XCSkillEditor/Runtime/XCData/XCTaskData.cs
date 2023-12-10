@@ -25,6 +25,12 @@ namespace XiaoCao
 
         //NoSerializa
         public bool HasTrigger { get; set; }
+
+        public void AddSubData(XCTaskData subData)
+        {
+            if (subDatas == null) subDatas = new List<XCTaskData>();
+            subDatas.Add(subData);
+        }
     }
 
     [Serializable]

@@ -1,4 +1,5 @@
 
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Reflection;
@@ -88,7 +89,8 @@ namespace XiaoCao
             }
             else if (typetype == EnumTypeType.ToJson)
             {
-                return type.Name + "_" + (JsonUtility.ToJson(targetObj));
+                // JsonUtility.ToJson(targetObj) 
+                return type.Name + "_" + (JsonConvert.SerializeObject(targetObj));
             }
             else if (typetype == EnumTypeType.IList)
             {

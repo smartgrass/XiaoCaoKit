@@ -370,8 +370,7 @@ namespace FluxEditor
 
             if (FGUI.Button(_savaDataRect, _savaDataLabel))
             {
-                Debug.Log($"yns Sava");
-                //SavaSequenceData.GetData();
+                XCTaskSava.SavaCurSeq();
             }
 
             DrawAllShow();

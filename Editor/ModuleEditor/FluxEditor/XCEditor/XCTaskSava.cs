@@ -1,25 +1,43 @@
-﻿using Flux;
+﻿using DG.Tweening;
+using Flux;
 using FluxEditor;
 using OdinSerializer;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
+using UnityEditor.SearchService;
+using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using XiaoCao;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
 public class XCTaskSava
 {
+    public const string SavaAllSeqName = "XiaoCao/Flux/SavaAllSeq";
+    public const string ReadSkillDataName = "Assets/XiaoCao/ReadSkillData";
+
     public static XCSeqSetting fSeqSetting;
-    public static void GetData()
+
+    public static void SavaCurSeq()
     {
         var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
         FSequence Sequence = editor.Sequence;
+        if (Sequence == null )
+        {
+            throw new Exception("no Seq!");
+        }
+        if (Sequence.SeqSetting == null)
+        {
+            throw new Exception("no SeqSetting!");
+        }
+
         SavaOneSeq(Sequence);
         AssetDatabase.SaveAssets();     //保存改动的资源
         AssetDatabase.Refresh();
     }
-
 
     private static void SavaOneSeq(FSequence Sequence)
     {
@@ -29,54 +47,68 @@ public class XCTaskSava
 
         List<SkillEventData> skillEvents = new List<SkillEventData>();
         int timelineIndex = 0;
+        XCTaskData mainData = null;
         foreach (var _timeline in Sequence.Containers[0].Timelines)
         {
             bool isMain = timelineIndex == 0;
-
+            //一个Object分配一个XCTaskData
+            XCTaskData data = new XCTaskData();
             foreach (var _track in _timeline.Tracks)
             {
                 //对于disactive的轨道不保存
                 //if (_track.enabled)
-                ReadTrack(_track, isMain);
+                ReadTrack(_track, data, isMain);
+            }
+            if (isMain)
+            {
+                mainData = data;
+            }
+            else
+            {
+                mainData.AddSubData(data);
             }
         }
 
+        string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, fSeqSetting.index, Sequence._skillId);
+        Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
+        byte[] bytes = SerializationUtility.SerializeValue(mainData, DataFormat.Binary);
+        FileTool.WriteToFile(bytes, savaPath, true);
+        File.WriteAllBytes(savaPath, bytes);
     }
 
 
-
-    [MenuItem("XiaoCao/Flux/Sava")]
+    [MenuItem(SavaAllSeqName)]
     private static void Sava()
     {
-        //XCObjectEvent objectEvent = new XCObjectEvent();
-        //objectEvent.eName = "Sequence";
-        //string filePath = "Assets/_Res/Player/1.data";
+        var Scene = SceneManager.GetSceneByName("SkillEditor");
+        GameObject root = Scene.GetRootGameObjects().First( (o)=> o.name == "Editor");
 
-        //byte[] bytes = SerializationUtility.SerializeValue(objectEvent, DataFormat.Binary);
-        //FileTool.WriteToFile(bytes, filePath, true);
-        //File.WriteAllBytes(filePath, bytes);
+        var seqs = root.GetComponentsInChildren<FSequence>(true);
+        seqs.LogListStr();
+
     }
-    [MenuItem("XiaoCao/Flux/Read")]
+
+    [MenuItem(ReadSkillDataName)]
     private static void Read()
     {
-        string filePath = "Assets/_Res/SkillData/1.data";
+        if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(".data"))
+        {
+            Debug.Log($"yns no .data file {AssetDatabase.GetAssetPath(Selection.activeObject)}");
+            return;
+        }
+        string filePath = AssetDatabase.GetAssetPath(Selection.activeObject);
+
         byte[] bytes = File.ReadAllBytes(filePath);
-        XCEvent data = OdinSerializer.SerializationUtility.DeserializeValue<XCEvent>(bytes, DataFormat.Binary);
+        XCTaskData data = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
 
-
-
-        data.GetType().Name.LogStr();
-
-        LogObjectTool.LogObjectAll(data, typeof(XCEvent));
+        LogObjectTool.LogObjectAll(data, typeof(XCTaskData));
 
         //OdinSerializer.SerializationUtility.DeserializeValueWeak(data);
     }
 
 
-    private static void ReadTrack(FTrack _track, bool isMain)
+    private static XCTaskData ReadTrack(FTrack _track, XCTaskData taskData, bool isMain)
     {
-        XCTaskData taskData = new XCTaskData();
-
         if (!isMain)
         {
             string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_track.Owner);
@@ -105,7 +137,7 @@ public class XCTaskSava
         }
 
 
-
+        return taskData;
     }
 
 }
