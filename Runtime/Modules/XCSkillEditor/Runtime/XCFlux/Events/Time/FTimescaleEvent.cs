@@ -3,7 +3,7 @@
 
 namespace Flux
 {
-	[FEvent("Time/Timescale")]
+	[FEvent(UnUsing+"Time/Timescale")]
 	public class FTimescaleEvent : FEvent {
 
 		[SerializeField]

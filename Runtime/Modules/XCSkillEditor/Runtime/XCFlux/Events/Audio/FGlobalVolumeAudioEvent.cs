@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Flux
 {
-	[FEvent("Audio/Global Volume")]
+	[FEvent(UnUsing+"Audio/Global Volume")]
 	public class FGlobalVolumeAudioEvent : FTweenEvent<FTweenFloat>
 	{
 		protected override void ApplyProperty( float t )

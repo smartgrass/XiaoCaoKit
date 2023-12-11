@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Flux
 {
-	[FEvent("Transform/Look At", typeof(FTransformTrack))]
+	[FEvent(UnUsing+"Transform/Look At", typeof(FTransformTrack))]
 	public class FLookAtEvent : FEvent
 	{
 		[SerializeField]

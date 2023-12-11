@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Flux
 {
-	[FEvent("Script/Tween Color")]
+	[FEvent(UnUsing+"Script/Tween Color")]
 	public class FTweenColorEvent : FTweenVariableEvent<FTweenColor>  {
 
 		protected override void SetDefaultValues ()

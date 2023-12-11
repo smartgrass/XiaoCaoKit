@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Flux
 {
-	[FEvent("Camera/Camera Manager")]
+	[FEvent(UnUsing+"Camera/Camera Manager")]
 	public class FCameraManagerEvent : FEvent {
 
 		[Tooltip("Camera that should become active")]

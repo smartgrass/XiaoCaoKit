@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Flux
 {
-	[FEvent("Script/Call Function")]
+	[FEvent(UnUsing+"Script/Call Function")]
 	public class FCallFunctionEvent : FEvent {
 
 		public const BindingFlags METHOD_FLAGS = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;

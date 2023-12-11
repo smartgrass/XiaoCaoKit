@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Flux
 {
-	[FEvent("Audio/Volume")]
+	[FEvent(UnUsing+"Audio/Volume")]
 	public class FVolumeAudioEvent : FTweenEvent<FTweenFloat>
 	{
 		private AudioSource _source;

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Flux
 {
-	[FEvent("Script/Tween Vector3")]
+	[FEvent(UnUsing+"Script/Tween Vector3")]
 	public class FTweenVector3Event : FTweenVariableEvent<FTweenVector3>  {
 
 		protected override void SetDefaultValues ()

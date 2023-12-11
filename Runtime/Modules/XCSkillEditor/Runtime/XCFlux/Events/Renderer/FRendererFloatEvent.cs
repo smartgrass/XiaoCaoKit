@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Flux
 {
-	[FEvent("Renderer/Tween Float", typeof(FRendererTrack))]
+	[FEvent(UnUsing+"Renderer/Tween Float", typeof(FRendererTrack))]
 	public class FRendererFloatEvent : FRendererEvent {
 
 		[SerializeField]

@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEvent("Light/Range")]
+	[FEvent(UnUsing+"/Light/Range")]
 	public class FLightRangeEvent : FTweenEvent<FTweenFloat>
 	{
 		private Light _light = null;

@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEvent("Sequence/Play Sequence", typeof(FSequenceTrack))]
+	[FEvent(UnUsing+"Sequence/Play Sequence", typeof(FSequenceTrack))]
 	public class FPlaySequenceEvent : FEvent 
 	{
 		private FSequence _sequence = null;

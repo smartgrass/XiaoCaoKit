@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Flux
 {
-	[FEvent("Renderer/Tween Color", typeof(FRendererTrack))]
+	[FEvent(UnUsing+"Renderer/Tween Color", typeof(FRendererTrack))]
 	public class FRendererColorEvent : FRendererEvent
 	{
 		[SerializeField]

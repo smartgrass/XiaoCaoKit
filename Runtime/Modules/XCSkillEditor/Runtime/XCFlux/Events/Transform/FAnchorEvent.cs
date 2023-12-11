@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEvent("Transform/Anchor", typeof(FTransformTrack))]
+	[FEvent(UnUsing+"Transform/Anchor", typeof(FTransformTrack))]
 	public class FAnchorEvent : FEvent
 	{
 		[SerializeField]

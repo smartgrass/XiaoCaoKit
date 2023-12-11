@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Flux
 {
-	[FEvent("Renderer/Set Texture", typeof(FRendererTrack))]
+	[FEvent(UnUsing+"Renderer/Set Texture", typeof(FRendererTrack))]
 	public class FRendererTextureEvent : FRendererEvent {
 
 		[SerializeField]

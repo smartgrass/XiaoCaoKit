@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEventAttribute("Misc/Comment", typeof(FCommentTrack))]
+	[FEventAttribute(UnUsing+"Misc/Comment", typeof(FCommentTrack))]
 	public class FCommentEvent : FEvent {
 
 		[SerializeField]

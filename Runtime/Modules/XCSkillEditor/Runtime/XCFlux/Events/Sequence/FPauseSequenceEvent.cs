@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEvent("Sequence/Pause Sequence")]
+	[FEvent(UnUsing+"Sequence/Pause Sequence")]
 	public class FPauseSequenceEvent : FEvent 
 	{
 		private FSequence _sequence = null;
