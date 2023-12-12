@@ -20,7 +20,9 @@ public class ResMgr : Singleton<ResMgr> {
         var handle = ResMgr.Loader.LoadAssetSync<GameObject>(eName);
         prefab = handle.AssetObject as GameObject;
     */
-    public string PackageName = "DefaultPackage";
+    public const string PACKAGENAME = "DefaultPackage";
+
+    public const string RESDIR = "Assets/_Res";
 
     private ResourcePackage package;
     public static ResourcePackage Loader => ResMgr.Inst.package;
@@ -30,7 +32,7 @@ public class ResMgr : Singleton<ResMgr> {
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包
-        package = YooAssets.CreatePackage(PackageName);
+        package = YooAssets.CreatePackage(PACKAGENAME);
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
         YooAssets.SetDefaultPackage(package);
 
@@ -39,7 +41,7 @@ public class ResMgr : Singleton<ResMgr> {
     public InitializationOperation InitPackage()
     {
         // 创建默认的资源包
-        string packageName = PackageName;
+        string packageName = PACKAGENAME;
         var package = YooAssets.TryGetPackage(packageName);
         if (package == null)
         {

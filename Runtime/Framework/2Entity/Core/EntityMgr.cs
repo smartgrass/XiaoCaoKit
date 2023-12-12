@@ -8,7 +8,7 @@ namespace XiaoCao
         private Dictionary<int, Entity> entityDic = new();
         private Dictionary<int, BehaviorEntity> behaviorEntityDic = new();
 
-        public void CreatEntity<T>() where T : Entity
+        public T CreatEntity<T>() where T : Entity
         {
             int id = IdMgr.GenId();
             var type = typeof(T);
@@ -17,6 +17,7 @@ namespace XiaoCao
             var entity = Activator.CreateInstance(type) as T;
             entity.id = id;
             AddEntity(entity);
+            return entity;
         }
 
         void AddEntity(Entity entity)
@@ -55,7 +56,7 @@ namespace XiaoCao
                 var entity = item.Value;
                 if (entity != null)
                 {
-                    if (entity.EnableAndAwake)
+                    if (entity.IsRuning)
                     {
                         entity.UpdateEvent?.Invoke();
                     }
@@ -75,7 +76,7 @@ namespace XiaoCao
                 var entity = item.Value;
                 if (entity != null)
                 {
-                    if (entity.EnableAndAwake)
+                    if (entity.IsRuning)
                     {
                         entity.FixedUpdateEvent?.Invoke();
                     }
@@ -90,7 +91,7 @@ namespace XiaoCao
                 var entity = item.Value;
                 if (entity != null)
                 {
-                    if (entity.EnableAndAwake)
+                    if (entity.IsRuning)
                     {
                         entity.LaterUpdateEvent?.Invoke();
                     }

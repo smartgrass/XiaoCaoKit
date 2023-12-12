@@ -11,16 +11,6 @@ namespace XiaoCao
         //借助 
         private Dictionary<string, AssetPool> dicPools = new();
 
-        public void Release(string path, GameObject obj)
-        {
-            ReleaseOne(GetOrCreatPool(path), obj);
-        }
-
-        private void ReleaseOne(AssetPool pool, GameObject obj)
-        {
-            pool.pool.Release(obj);
-        }
-
         public GameObject Get(string path, float releaseTime = 0)
         {
             GameObject obj = GetOrCreatPool(path).pool.Get();
@@ -30,12 +20,18 @@ namespace XiaoCao
             }
             return obj;
         }
+
+        public void Release(string path, GameObject obj)
+        {
+            GetOrCreatPool(path).pool.Release(obj);
+        }
+
         /// <summary>
         /// 可在初始化的时候提前加载
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public AssetPool GetOrCreatPool(string path)
+        private AssetPool GetOrCreatPool(string path)
         {
             if (dicPools.ContainsKey(path))
             {
@@ -59,18 +55,25 @@ namespace XiaoCao
 
 
         /// <summary>
-        /// 定制对象池  示例
+        /// GameObject对象池  示例
         /// </summary>
         /// <param name="prefab"></param>
         /// <returns></returns>
-        public void CreatPefabPool(GameObject prefab)
+        public void CreatPefabPoolExample(GameObject prefab)
         {
+            //创建
             AssetPool pool = new AssetPool(prefab);
+            //获取
             GameObject newObj = pool.pool.Get();
+            //释放
             pool.pool.Release(newObj);
         }
 
+        //TODO循环池 
+        public void CreatLoopPoolExample(List<Object> obj)
+        {
 
+        }
 
     }
 }

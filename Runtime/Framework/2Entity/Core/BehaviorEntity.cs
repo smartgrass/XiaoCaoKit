@@ -17,7 +17,7 @@ namespace XiaoCao
         public bool hasAwake;
 
         private bool enable;
-        public bool EnableAndAwake => hasAwake && enable;
+        public bool IsRuning => hasAwake && enable && gameObject;
 
         public bool Enable
         {
