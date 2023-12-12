@@ -24,7 +24,7 @@ namespace XiaoCao
 
 
             Player0 player = EntityMgr.Instance.CreatEntity<Player0>();
-            player.CreateGameObject();
+           
             //...
 
         }

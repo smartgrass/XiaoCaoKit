@@ -7,8 +7,11 @@ namespace XiaoCao
         public PlayerData0 playerData;
         public override IComponentData data => playerData;
 
-
-
+        public void Init(PlayerData0 playerData)
+        {
+            prefabID = playerData.prefabID;
+            this.CreateGameObject();
+        }
 
 
 
@@ -18,7 +21,7 @@ namespace XiaoCao
 
     public class PlayerData0 : IComponentData
     {
-       
+        public int prefabID = 0;
     }
 
 }
