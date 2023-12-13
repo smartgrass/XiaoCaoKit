@@ -9,8 +9,8 @@ namespace XiaoCao
     {
         ///<see cref="RoleTypeCode"/>
         public abstract RoleTypeCode RoleType { get; }
-        public virtual IComponentData data { get; }
-        public virtual ISharedComponentData componentData { get; }
+        public virtual IData data { get; }
+        public virtual IShareData componentData { get; }
 
         public int prefabID = 0;
         public virtual void CreateGameObject()

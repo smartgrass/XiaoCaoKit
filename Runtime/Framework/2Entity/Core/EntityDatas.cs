@@ -2,10 +2,10 @@
 
 public interface IEntityData { }
 
-public interface IComponentData : IEntityData
+public interface IData : IEntityData
 {
 }
-public interface ISharedComponentData : IEntityData
+public interface IShareData : IEntityData
 {
 }
 
