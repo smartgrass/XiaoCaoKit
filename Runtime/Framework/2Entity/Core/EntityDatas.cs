@@ -7,6 +7,7 @@ public interface IData : IEntityData
 }
 public interface IShareData : IEntityData
 {
+
 }
 
 //[System.Serializable]

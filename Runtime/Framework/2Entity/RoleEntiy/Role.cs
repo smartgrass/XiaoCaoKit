@@ -40,7 +40,6 @@ namespace XiaoCao
 
     public class Player : Role
     {
-
         public override RoleTypeCode RoleType => RoleTypeCode.Player;
 
     }
