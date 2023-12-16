@@ -5,92 +5,85 @@ public class BezierPathFollower : MonoBehaviour
 {
     public Transform targetObeject;
 
-    [Range(0,1)]
-    [OnValueChanged(nameof(OnTChange))]
-    public float t;
-    
-    public Transform[] controlPoints; // 存储贝塞尔曲线上的控制点
+
+
+    //n
+    public Vector3[] controlPoints; // 存储贝塞尔曲线上的控制点
+    //n-1
     public Vector3[] handlePonts;
+    //n-1
     public float[] arrivalTimes; // 存储每个点到达的时间
-    public float totalDuration = 10.0f; // 整个路径的移动时间
+
 
 
     [Button()]
     void GetPoints()
     {
-        controlPoints = transform.GetComponentsInChildren<Transform>();
-        arrivalTimes = new float[controlPoints.Length + 1]; // 增加1
-        // 平均分配到达时间
-        for (int i = 0; i < controlPoints.Length; i++)
-        {
-            arrivalTimes[i] = i * (1f / (controlPoints.Length - 1));
-        }
+        //controlPoints = transform.GetComponentsInChildren<Transform>();
 
-        handlePonts = new Vector3[controlPoints.Length - 1];
-        for (int i = 0; i < controlPoints.Length -1; i++)
-        {
-            handlePonts[i] = (controlPoints[i].position + controlPoints[i + 1].position)/2;
-        }
-        
-        
-        arrivalTimes[controlPoints.Length] = 1f; // 
+        //int n = controlPoints.Length;
+        //int n1 = n - 1;
+
+        //arrivalTimes = new float[n1]; // 增加1
+        //// 平均分配到达时间
+        //for (int i = 0; i < n1; i++)
+        //{
+        //    arrivalTimes[i] = (i + 1) * (1f / (n1));
+        //}
+
+        //handlePonts = new Vector3[n1];
+        //for (int i = 0; i < n1; i++)
+        //{
+        //    handlePonts[i] = (controlPoints[i].position + controlPoints[i + 1].position) / 2;
+        //}
+
     }
 
-    void OnTChange()
+    //void OnTimeChange()
+    //{
+    //    Vector3 currentPosition = GetBezierPathPositionAndIndex(t, out int nextIndex);
+    //    targetObeject.transform.position = currentPosition;
+    //}
+
+    public Vector3 GetBezierPathPositionAndIndex(float normalizedTime, out int timeIndex)
     {
-        GetBezierPathPositionAndIndex(t, out Vector3 currentPosition, out int nextIndex);
-        targetObeject.transform.position = currentPosition;
-    }
-    
-    // void Update()
-    // {
-    //     float t = Mathf.Clamp01(Time.time / totalDuration); // 将时间映射到[0, 1]范围内
-    //
-    //     GetBezierPathPositionAndIndex(t, out Vector3 currentPosition, out int nextIndex);
-    //
-    //     targetObeject.transform.position = currentPosition;
-    //     // 在这里可以使用 currentPosition，nextIndex 进行需要的操作
-    // }
-
-    void GetBezierPathPositionAndIndex(float normalizedTime, out Vector3 position, out int nextIndex)
-    {
-        float totalTime = normalizedTime ;
-
-        float accumulatedTime = 0.0f;
-        nextIndex = 0;
-
+        int timeCount = arrivalTimes.Length;
+        timeIndex = 0;
         // 寻找当前时间所在的区间
-        for (int i = 0; i < controlPoints.Length - 1; i++)
+        for (int i = 0; i < timeCount; i++)
         {
-            accumulatedTime += arrivalTimes[i];
-
-            if (accumulatedTime >= totalTime)
+            if (arrivalTimes[i] >= normalizedTime)
             {
-                nextIndex = i + 1;
+                timeIndex = i;
                 break;
             }
         }
-        
+
+
         // 计算插值百分比
         float tBetweenPoints = 0.0f;
+        float curTimeLen = 0.0f;
+        float curTime = 0;
 
-        if (nextIndex > 0)
+        if (timeIndex == 0)
         {
-            float timeBeforeCurrent = accumulatedTime - (totalTime - arrivalTimes[nextIndex - 1]);
-            tBetweenPoints = timeBeforeCurrent / arrivalTimes[nextIndex - 1];
+            curTimeLen = arrivalTimes[0];
+            curTime = normalizedTime;
         }
+        else
+        {
+            float lastTime = arrivalTimes[timeIndex - 1];
+            curTimeLen = arrivalTimes[timeIndex] - lastTime;
+            if (curTimeLen == 0)
+            {
+                return controlPoints[timeIndex + 1];
+            }
 
-        
-        
-        
-        int startIndex = Mathf.Max(0, nextIndex - 2);
-        int endIndex = Mathf.Min(controlPoints.Length - 1, nextIndex);
+            curTime = normalizedTime - lastTime;
+        }
+        tBetweenPoints = curTime / curTimeLen;
 
-        
-        position = MathTool.GetBezierPoint2(controlPoints[startIndex].position, controlPoints[startIndex + 1].position, handlePonts[startIndex], tBetweenPoints);
-        Debug.Log($"startIndex: {startIndex}, endIndex: {endIndex}, tBetweenPoints: {tBetweenPoints}");
-        Debug.Log(
-            $"p0: {controlPoints[startIndex].position}, p1: {controlPoints[startIndex + 1].position}, p2: {controlPoints[endIndex].position}");
+        return MathTool.GetBezierPoint2(controlPoints[timeIndex], controlPoints[timeIndex + 1], handlePonts[timeIndex], tBetweenPoints);
     }
-    
+
 }

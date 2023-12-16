@@ -104,11 +104,11 @@ public static class MathTool
         return value >= closedLeft && value < openRight;
     }
     //判断浮点数是否相等
-    public static bool IsFEqual(this float value,float value2)
+    public static bool IsFEqual(this float value, float value2)
     {
         return Math.Abs(value - value2) < 0.00001f;
     }
-    
+
     #endregion
     #region Vector & Rotate
     /// <summary>
@@ -182,7 +182,7 @@ public static class MathTool
     /// <summary>
     /// 局部和世界空间转换 示例
     /// </summary>
-    public static void SpaceExample(Transform tf,Vector3 worldPos,Vector3 localPos)
+    public static void SpaceExample(Transform tf, Vector3 worldPos, Vector3 localPos)
     {
         //世界转局部 坐标
         localPos = tf.TransformPoint(worldPos);
@@ -246,6 +246,43 @@ public static class MathTool
         float z = pow_s * begin.z + (2 - 4 * t) * handle.z + 2 * t * end.z;
         return new Vector3(x, y, z);
     }
+    //获得尽量平滑的Handle点
+    public static Vector3 GetAutoHandle(Vector3 A, Vector3 B, Vector3 C,float rate = 0.8f)
+    {
+        Vector3 AB = B - A;
+        Vector3 BC = C - B;
+
+        float angle = Vector3.Angle(AB, BC);
+
+
+        //获得垂直向量
+        Vector3 normalVector = Vector3.Cross(AB, BC);
+
+        Vector3 panleVector = Vector3.Cross(AB, normalVector).normalized;
+
+
+        Debug.Log($"yns dot {Vector3.Dot(panleVector, BC)} {angle} {Mathf.Sin(angle)}");
+
+        if (Vector3.Dot(panleVector, BC) > 0)
+        {
+            panleVector =-panleVector;
+        }
+
+
+        //根据AB 与 BC的夹角, 越大handle点离AB中点M 越远
+        float distance = Mathf.Sin(angle * Mathf.Deg2Rad) * AB.magnitude * rate;
+
+        return panleVector * distance + (B + A) / 2;
+    }
+
+    //计算平面内向量 左右关系, 和视角有关系, unity中默认用y
+    private static bool CheckCrossProduct(Vector3 a, Vector3 b)
+    {
+        // 计算叉积
+        Vector3 crossProduct = Vector3.Cross(a, b);
+        return crossProduct.y > 0;
+    }
+
 
     //三阶段贝塞尔
     public static Vector3 GetBezierPoint3(float time, Vector3 startPosition, Vector3 endPosition, Vector3 startTangent, Vector3 endTangent)

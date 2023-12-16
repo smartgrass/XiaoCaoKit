@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -6,7 +7,51 @@ using Object = UnityEngine.Object;
 
 namespace XiaoCaoEditor
 {
-    public static class EditorAseetTool
+    public static class XCEditorTools
+    {
+
+
+    }
+
+    /// <summary>
+    /// GUI /Draw
+    /// </summary>
+    public static class XCDraw
+    {
+        public static void DrawBezier(Vector3 begin, Vector3 end, Vector3 handle)
+        {
+            List<Vector3> points = new List<Vector3>();
+            for (int i = 0; i < 20; i++)
+            {
+                float t = 1f / 20 * (i + 1);
+                var point = MathTool.GetBezierPoint2(begin, end, handle, t);
+                points.Add(point);
+            }
+            Handles.DrawLines(points.ToArray());
+        }
+        /// <summary>
+        /// 将点连成线
+        /// </summary>
+        /// <param name="points"></param>
+        public static void DrawLines(List<Vector3> points)
+        {
+            int len = points.Count;
+            if (len < 2)
+            {
+                return;
+            }
+            for (int i = 1; i < len; i++)
+            {
+                Handles.DrawLine(points[i-1], points[i]);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// 资源处理相关
+    /// </summary>
+    public static class XCAseetTool
     {
         /// <summary>
         /// 查找1个

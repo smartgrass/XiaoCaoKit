@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 
 using Flux;
+using NaughtyAttributes.Editor;
 
 namespace FluxEditor
 {
