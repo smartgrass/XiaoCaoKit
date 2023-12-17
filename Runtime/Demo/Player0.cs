@@ -113,7 +113,7 @@ namespace XiaoCao
         public CharacterController cc => owner.playerShareData.cc;
 
         //TODO 可优化
-        public Vector3 camForward => Camera.main.transform.forward;
+        public Vector3 camForward => CameraController.Forword;
 
         public void Update()
         {
@@ -122,7 +122,7 @@ namespace XiaoCao
 
                 return;
             }
-
+            CheckBreak();
             if (playerData.isCanSkill && inputData.skillInput != 0)
             {
                 TryPlaySkill(inputData.skillInput);
@@ -137,8 +137,20 @@ namespace XiaoCao
             {
                 return;
             }
-
             MoveUpdate();
+        }
+
+        void CheckBreak()
+        {
+            if (playerData.breakTime > 0)
+            {
+                playerData.breakTime -= XCTime.deltaTime;
+                playerData.actState = EActState.Break;
+            }
+            else if (playerData.breakTime <= 0 && playerData.actState == EActState.Break)
+            {
+                playerData.actState = EActState.Idle;
+            }
         }
 
         void MoveUpdate()
@@ -164,8 +176,6 @@ namespace XiaoCao
             //owner.playerShareData.rigidbody.useGravity
         }
 
-
-
         public void TryPlaySkill(int skillId)
         {
             //条件判断, 耗蓝等等
@@ -180,8 +190,6 @@ namespace XiaoCao
             Debug.Log($"yns PlaySkill {skillId}");
 
         }
-
-
     }
 
     public class EntityComponent<T> where T : Role
@@ -205,6 +213,7 @@ namespace XiaoCao
         public bool isNorAck;
         public bool isMoveLock;
         public float moveLockTime;
+        public float breakTime;
 
         public MoveSetting moveSetting;
         public float MoveSpeed => moveSetting.moveSpeed;
