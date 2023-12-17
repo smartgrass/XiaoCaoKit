@@ -12,16 +12,10 @@ async UniTask<Sprite> LoadAsSprite(string path)
 
 await UniTask.WhenAll(task1, task2);
 await UniTask.WhenAny(task1, task2);  //任意一个完成
-
-//简单延时操作
- async UniTask ExampleDelay()
-{
-    await UniTask.Delay(TimeSpan.FromSeconds(1));
-    Debug.Log("Delayed log message.");
-}
  */
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -52,4 +46,48 @@ public class XCTime
             action(t);
         }
     }
+
+
+
+    public static async UniTask LoopRun(float time, CancellationTokenSource cancellation ,Action action)
+    {
+        var cancelToken = cancellation.Token;
+        while (true)
+        {
+            cancelToken.ThrowIfCancellationRequested();
+            await UniTask.Delay(TimeSpan.FromSeconds(time),cancellationToken: cancelToken);
+            action();
+        }
+    }
+
+    public static async UniTask Example()
+    {
+        //Loop 每秒执行一次
+        int t = 0;
+        var cancellationToken = new CancellationTokenSource();
+        var task = LoopRun(1f, cancellationToken, () => { 
+            t++;
+            Debug.Log($"loop {t}");
+            if (t == 3)
+            {
+                cancellationToken.Cancel();
+            }
+        });
+        await UniTask.Delay(TimeSpan.FromSeconds(3));
+        Debug.Log($"Cancel loop {t}");
+
+
+
+
+        //等1s
+        await UniTask.Delay(TimeSpan.FromSeconds(1), ignoreTimeScale: false);
+        //产生任何播放器循环时间（PreUpdate、Update、LateUpdate 等...
+        await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
+
+
+
+        //方法内取消
+        throw new OperationCanceledException();
+    }
+
 }
