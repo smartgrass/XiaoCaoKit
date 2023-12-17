@@ -31,6 +31,26 @@ namespace XiaoCao
             if (subDatas == null) subDatas = new List<XCTaskData>();
             subDatas.Add(subData);
         }
+
+        public void SortEvents()
+        {
+            _events.Sort(new EventSort());
+        }
+    }
+
+    class EventSort : IComparer<XCEvent>
+    {
+        public int Compare(XCEvent e1, XCEvent e2)
+        {
+            if (e1.Start < e2.Start)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 
     [Serializable]

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using XiaoCao;
 
 namespace Flux
 {
@@ -28,5 +29,17 @@ namespace Flux
 		{
 			Owner.localRotation = _startRotation;
 		}
-	}
+
+        public override XCEvent ToXCEvent()
+        {
+			var xce = new XCRotateEvent();
+			var fe = this;
+            xce.range = new XCRange(fe.Start, fe.End);
+            xce.startVec = fe.Tween.From;
+            xce.endVec = fe.Tween.To;
+            xce.easeType = fe.Tween.EasingType.FEaseToEase();
+			return xce;
+        }
+
+    }
 }

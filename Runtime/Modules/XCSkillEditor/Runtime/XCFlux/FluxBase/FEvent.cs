@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using XiaoCao;
 
 namespace Flux
 {
@@ -213,6 +214,12 @@ namespace Flux
 		public bool HasFinished { get { return _hasFinished; } }
 
 		public virtual string Text { get { return null; } set { } }
+
+		public virtual XCEvent ToXCEvent()
+		{
+			throw new Exception("ToXCEvent null");
+		}
+
 
 		/**
 		 * @brief Create an event. Should be used to create events since it also 

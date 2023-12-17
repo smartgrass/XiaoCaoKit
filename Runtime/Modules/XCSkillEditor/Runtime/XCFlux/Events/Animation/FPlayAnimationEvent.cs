@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using XiaoCao;
 
 namespace Flux
 {
@@ -28,6 +29,8 @@ namespace Flux
 		private Animator _animator = null;
 
 		private FAnimationTrack _animTrack = null;
+
+        private bool isBackToIdle;
 
         protected override void OnTrigger( float timeSinceTrigger )
 		{
@@ -126,16 +129,23 @@ namespace Flux
 			return id > 0 && _track != null && _track.Events[id-1].End == Start && ((FAnimationTrack)_track).AnimatorController != null && ((FPlayAnimationEvent)_track.Events[id-1])._animationClip != null && _animationClip != null ;
 		}
 
-//		public bool IsAnimationEditable()
-//		{
-//			return _animationClip == null || (((_animationClip.hideFlags & HideFlags.NotEditable) == 0) && !_animationClip.isLooping);
-//		}
-
 		public int GetMaxStartOffset()
 		{
 			if( _animationClip == null )
 				return 0;
 			return _animationClip.isLooping ? Length : Mathf.RoundToInt(_animationClip.length * _animationClip.frameRate) - Length;
 		}
-	}
+
+        public override XCEvent ToXCEvent()
+        {
+			var fe = this;
+            var xce = new XCAnimEvent();
+            xce.range = new XCRange(fe.Start, fe.End);
+            xce.startOffset = fe._startOffset * XCSetting.FramePerSec;
+            xce.blenderLength = fe._blendLength * XCSetting.FramePerSec;
+			xce.isBackToIdle = fe.isBackToIdle;
+			xce.eName = fe._animationClip.name;
+			return xce;
+        }
+    }
 }

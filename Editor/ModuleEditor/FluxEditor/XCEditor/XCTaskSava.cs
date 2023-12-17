@@ -6,12 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Lifetime;
 using UnityEditor;
 using UnityEditor.SearchService;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XiaoCao;
+using static UnityEditor.Progress;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
 public class XCTaskSava
@@ -21,11 +23,22 @@ public class XCTaskSava
 
     public static XCSeqSetting fSeqSetting;
 
+
+    [MenuItem(SavaAllSeqName)]
+    private static void Sava()
+    {
+        var Scene = SceneManager.GetSceneByName("SkillEditor");
+        GameObject root = Scene.GetRootGameObjects().First((o) => o.name == "Editor");
+
+        var seqs = root.GetComponentsInChildren<FSequence>(true);
+        seqs.LogListStr();
+
+    }
     public static void SavaCurSeq()
     {
         var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
         FSequence Sequence = editor.Sequence;
-        if (Sequence == null )
+        if (Sequence == null)
         {
             throw new Exception("no Seq!");
         }
@@ -44,29 +57,26 @@ public class XCTaskSava
         fSeqSetting = Sequence.SeqSetting;
 
         Transform playerTF = Sequence.Containers[0].Timelines[0].transform;
-
         List<SkillEventData> skillEvents = new List<SkillEventData>();
-        int timelineIndex = 0;
         XCTaskData mainData = null;
+        bool isMain = true;
         foreach (var _timeline in Sequence.Containers[0].Timelines)
         {
-            bool isMain = timelineIndex == 0;
             //一个Object分配一个XCTaskData
-            XCTaskData data = new XCTaskData();
+            XCTaskData data = GetTaskData(mainData, isMain);
+
+            bool hasObjectData = false;
             foreach (var _track in _timeline.Tracks)
             {
-                //对于disactive的轨道不保存
-                //if (_track.enabled)
-                ReadTrack(_track, data, isMain);
+                if (!isMain && !hasObjectData)
+                {
+                    hasObjectData = true;
+                    data.objectData = MakeObjectData(_track);
+                }
+                ReadTrack(_track, data);
             }
-            if (isMain)
-            {
-                mainData = data;
-            }
-            else
-            {
-                mainData.AddSubData(data);
-            }
+
+            isMain = false;
         }
 
         string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, fSeqSetting.index, Sequence._skillId);
@@ -76,16 +86,20 @@ public class XCTaskSava
         File.WriteAllBytes(savaPath, bytes);
     }
 
-
-    [MenuItem(SavaAllSeqName)]
-    private static void Sava()
+    private static XCTaskData GetTaskData(XCTaskData mainData, bool isMain)
     {
-        var Scene = SceneManager.GetSceneByName("SkillEditor");
-        GameObject root = Scene.GetRootGameObjects().First( (o)=> o.name == "Editor");
+        XCTaskData data = new XCTaskData();
 
-        var seqs = root.GetComponentsInChildren<FSequence>(true);
-        seqs.LogListStr();
+        if (isMain)
+        {
+            mainData = data;
+        }
+        else
+        {
+            mainData.AddSubData(data);
+        }
 
+        return data;
     }
 
     [MenuItem(ReadSkillDataName)]
@@ -107,37 +121,58 @@ public class XCTaskSava
     }
 
 
-    private static XCTaskData ReadTrack(FTrack _track, XCTaskData taskData, bool isMain)
+    private static XCTaskData ReadTrack(FTrack _track, XCTaskData taskData)
     {
-        if (!isMain)
+        var eventType = _track.GetEventType();
+        if (eventType == typeof(FMoveEvent))
         {
-            string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_track.Owner);
-
-            if (!path.StartsWith(XCSetting.PerfabDir))
-            {
-                FileInfo info = new FileInfo(path);
-
-                string newPath = Path.Combine(XCSetting.PerfabDir, fSeqSetting.type.ToString() + fSeqSetting.index, info.Name);
-
-                Debug.LogWarning($"FLog {info.Name} MoveTo {newPath}");
-
-                AssetDatabase.MoveAsset(path, newPath);
-
-                path = newPath;
-            }
-
-
-            ObjectData objectData = new ObjectData();
-            taskData.objectData = objectData;
-            objectData.ObjectPath = path;
-            objectData.scale = _track.Owner.localScale;
-            objectData.eulerAngle = _track.Owner.localEulerAngles;
-            objectData.position = _track.Owner.localPosition;
-            objectData.transfromType = _track.transfromType;
+            _track.Events.ForEach((e) => {
+                FMoveEvent moveEvent = (FMoveEvent)e;
+                taskData._events.AddRange(moveEvent.ToXCEventList());
+            });
+        }
+        else if (DefaultXCEvents.Contains(eventType))
+        {
+            _track.Events.ForEach((e) => taskData._events.Add(e.ToXCEvent()));
         }
 
+        //else if (eventType == typeof(FObjectEvent)){}
+        //else if (eventType == typeof(FTriggerRangeEvent)){}
+
+        //排序 _events
+        taskData.SortEvents();
 
         return taskData;
+    }
+    static Type[] DefaultXCEvents = {
+        typeof(FPlayAnimationEvent) , typeof(FTweenRotationEvent)  ,
+        typeof(FTweenScaleEvent) , typeof(FPlayParticleEvent) };
+
+
+    private static ObjectData MakeObjectData(FTrack _track)
+    {
+        string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_track.Owner);
+
+        if (!path.StartsWith(XCSetting.PerfabDir))
+        {
+            FileInfo info = new FileInfo(path);
+
+            string newPath = Path.Combine(XCSetting.PerfabDir, fSeqSetting.type.ToString() + fSeqSetting.index, info.Name);
+
+            Debug.LogWarning($"FLog {info.Name} MoveTo {newPath}");
+
+            AssetDatabase.MoveAsset(path, newPath);
+
+            path = newPath;
+        }
+
+        ObjectData objectData = new ObjectData();
+        objectData.ObjectPath = path;
+        objectData.scale = _track.Owner.localScale;
+        objectData.eulerAngle = _track.Owner.localEulerAngles;
+        objectData.position = _track.Owner.localPosition;
+        objectData.transfromType = _track.transfromType;
+        return objectData;
     }
 
 }

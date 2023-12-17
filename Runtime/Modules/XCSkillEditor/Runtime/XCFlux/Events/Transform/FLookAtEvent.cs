@@ -16,7 +16,7 @@ namespace Flux
 
 		[SerializeField]
 		[HideInInspector]
-		private FEasingType _easingType = FEasingType.Linear;
+		private FEase _easingType = FEase.Linear;
 
 		private Quaternion _startRotation;
 

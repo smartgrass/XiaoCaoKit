@@ -1,7 +1,10 @@
-﻿using NaughtyAttributes;
+﻿using DG.Tweening;
+using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
+using XiaoCao;
 
 namespace Flux
 {
@@ -12,11 +15,13 @@ namespace Flux
         //n
         public List<Vector3> controlPoints = new List<Vector3>(); // 存储贝塞尔曲线上的控制点
         //n-1
-        [ShowIf(nameof(_isBezier))]
         public List<Vector3> handlePionts = new List<Vector3>();
         //n-2 头尾0,1省略
-        [ShowIf(nameof(_isBezier))]
         public List<float> arrivalTimes = new List<float>(); // 存储每个点到达的时间
+
+        public List<FEase> easeType = new List<FEase>();
+
+        //List<Ease>
         [SerializeField]
         private bool _isBezier;
         public bool isEditorhandles;
@@ -117,12 +122,10 @@ namespace Flux
                 Vector3 C = controlPoints.Count > startIndex + 2 ? controlPoints[startIndex + 2] :
                     controlPoints[startIndex + 1] + deltaVec;
 
-                Vector3 nextPonit = (controlPoints[startIndex]+ controlPoints[startIndex + 1])/ 2;
+                Vector3 nextPonit = (controlPoints[startIndex] + controlPoints[startIndex + 1]) / 2;
                 handlePionts.Add(nextPonit);
             }
         }
-
-
 
         private void AddControlPoints(int deltaLen)
         {
@@ -203,7 +206,6 @@ namespace Flux
                 timeIndex++;
             }
 
-
             // 计算插值百分比
             float tBetweenPoints = 0.0f;
             float curTimeLen = 0.0f;
@@ -229,6 +231,9 @@ namespace Flux
 
             //Debug.Log($"yns {normalizedTime} {timeIndex} {tBetweenPoints}  {curTime} / {curTimeLen}");
 
+            //曲线缩放
+            tBetweenPoints = DOVirtual.EasedValue(0, 1, tBetweenPoints, GetEase(timeIndex));
+
             if (IsBezier)
             {
                 return MathTool.GetBezierPoint2(controlPoints[timeIndex], controlPoints[timeIndex + 1], handlePionts[timeIndex], tBetweenPoints);
@@ -237,19 +242,7 @@ namespace Flux
             {
                 return MathTool.LinearVec3(controlPoints[timeIndex], controlPoints[timeIndex + 1], tBetweenPoints);
             }
-
-            float GetTime(int index)
-            {
-                if (timeCount == index || index < 0)
-                {
-                    return 1;
-                }
-                return arrivalTimes[index];
-            }
         }
-
-
-
 
         public void OnBezierChange()
         {
@@ -262,5 +255,82 @@ namespace Flux
         {
             CheckLen();
         }
+
+        public Ease GetEase(int i)
+        {
+            if (easeType.Count > i)
+            {
+                return easeType[i].FEaseToEase();
+            }
+            return Ease.Linear;
+        }
+        //对于controlpoint,
+        public float GetTime(int index)
+        {
+            if (arrivalTimes.Count == index)
+            {
+                return 1;
+            }
+            else if (index < 0)
+            {
+                return 0;
+            }
+            return arrivalTimes[index];
+        }
+
+        public List<XCMoveEvent> ToXCEventList()
+        {
+            FMoveEvent fe = this;
+            List<XCMoveEvent> list = new List<XCMoveEvent>();
+            int len = fe.controlPoints.Count;
+            for (int i = 0; i < len - 1; i++)
+            {
+                XCMoveEvent xcMove = new XCMoveEvent();
+                var start = fe.controlPoints[i];
+                var end = fe.controlPoints[i + 1];
+
+                xcMove.isBezier = fe.IsBezier;
+                if (fe.IsBezier)
+                {
+                    xcMove.handlePoint = fe.handlePionts[i];
+                }
+
+                xcMove.startVec = start;
+                xcMove.endVec = end;
+                xcMove.easeType = fe.GetEase(i);
+
+                float startTime = fe.GetTime(i - 1);
+                float endTime = fe.GetTime(i);
+
+                int startFrame = (int)Mathf.Lerp(fe.Start, fe.End, startTime);
+                int endFrame = (int)Mathf.Lerp(fe.Start, fe.End, endTime);
+                xcMove.range = new XCRange(startFrame, endFrame);
+                list.Add(xcMove);
+            }
+            return list;
+        }
+
+    }
+
+    public static class FEaseExtend
+    {
+        public static Ease FEaseToEase(this FEase fEase)
+        {
+            Ease ease = (Ease)Enum.Parse(typeof(Ease), fEase.ToString());
+            return ease;
+        }
+    }
+
+
+    public enum FEase
+    {
+        [EnumLabel("Linear")]
+        Linear,
+        [EnumLabel("加速")]
+        EaseInQuad,
+        [EnumLabel("减速")]
+        EaseOutQuad,
+        [EnumLabel("淡入淡出")]
+        EaseInOutQuad
     }
 }

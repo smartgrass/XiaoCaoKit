@@ -7,8 +7,8 @@ namespace Flux
 	public abstract class FTweenBase
 	{
 		[SerializeField]
-		protected FEasingType _easingType = FEasingType.EaseInOutQuad;
-		public FEasingType EasingType { get { return _easingType; } set { _easingType = value; } }
+		protected FEase _easingType = FEase.EaseInOutQuad;
+		public FEase EasingType { get { return _easingType; } set { _easingType = value; } }
 	}
 
 	[Serializable]

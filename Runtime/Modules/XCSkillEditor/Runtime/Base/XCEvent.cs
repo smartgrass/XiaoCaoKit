@@ -23,7 +23,7 @@ namespace XiaoCao
 
         public bool isLocalOnly = false;
 
-
+        //TODO Rename
         public XCTask track;
         public XCState State { get; set; }
         public TaskInfo Info => track.Info;
