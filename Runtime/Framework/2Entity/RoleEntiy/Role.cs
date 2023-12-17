@@ -13,40 +13,57 @@ namespace XiaoCao
         public virtual IShareData componentData { get; }
 
         public int prefabID = 0;
+
+        public GameObject body;
+
+        internal Animator anim;
+
+        public IdRole idRole;
+
         public virtual void CreateGameObject(bool isGen = false)
         {
-            if (isGen)
+            GenRoleBody(prefabID);
+        }
+        //皮肤拆分 - body , 不需要动画机
+        //玩家需要拆分, 敌人不需要
+        protected void GenRoleBody(int prefabId)
+        {
+            string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
+            var task = ResMgr.Loader.LoadAssetSync<GameObject>(path);
+            GameObject go = GameObject.Instantiate(task.AssetObject) as GameObject;
+
+            idRole = go.transform.GetComponent<IdRole>();
+            if (idRole == null )
             {
-                CreateRoleGameObject(prefabID);
+                //如果无, 则需要加载模板
+                string baseRole = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}.prefab";
+                var baseTask = ResMgr.Loader.LoadAssetSync<GameObject>(path);
+                GameObject baseGo = GameObject.Instantiate(task.AssetObject) as GameObject;
+                idRole = baseGo.transform.GetComponent<IdRole>();
+                go.transform.SetParent(baseGo.transform,false);
+                body = go;
+                BindGameObject(baseGo);
             }
             else
             {
-                GenRoloe(prefabID);
+                body = go.transform.Find("body").gameObject;
+                BindGameObject(go);
             }
-
-        }
-        //皮肤拆分 - body , 不需要动画机
-        //
-        protected void CreateRoleGameObject(int prefabId)
-        {
-            string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
-            var task = ResMgr.Loader.LoadAssetSync<GameObject>(path);
-            GameObject playeGo = GameObject.Instantiate(task.AssetObject) as GameObject;
-            BindGameObject(playeGo);
         }
 
-        protected void GenRoloe(int prefabId)
+        private void RoleProcess()
+        {
+            //加载动画机
+            //刚体, 碰撞体
+            //加载body, 赋予动画机
+
+
+        }
+
+
+        public virtual void OnDamage(int atker, AtkInfo atkInfo)
         {
 
-            string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
-            var task = ResMgr.Loader.LoadAssetSync<GameObject>(path);
-            GameObject playeGo = GameObject.Instantiate(task.AssetObject) as GameObject;
-
-            //RoleUsing
-            RoleUsing ru = playeGo.GetComponent<RoleUsing>();
-
-
-            BindGameObject(playeGo);
         }
 
     }
@@ -61,19 +78,14 @@ namespace XiaoCao
         Player = 1,
     }
 
-    public class RoleUsing : MonoBehaviour
-    {
-        public Animator animator;
-    }
-
-    public class Player : Role
+    public class PlayerBase : Role
     {
         public override RoleTypeCode RoleType => RoleTypeCode.Player;
 
     }
 
 
-    public class Enemy : Role
+    public class EnemyBase : Role
     {
         public override RoleTypeCode RoleType => RoleTypeCode.Enemy;
     }

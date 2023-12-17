@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace XiaoCao
 {
-    public class Player0 : Player
+    public class Player0 : PlayerBase
     {
         //True:本地玩家控制;  False:网络同步控制, AI控制
         public bool IsControl;
@@ -22,11 +22,8 @@ namespace XiaoCao
             prefabID = playerData.prefabID;
 
             this.CreateGameObject();
-
-            playerShareData.rigidbody = gameObject.GetComponent<Rigidbody>();
-            playerShareData.anim = gameObject.GetComponentInChildren<Animator>();
+            idRole.animator = body.GetComponent<Animator>();
             playerShareData.input = new PlayerInput(this);
-            playerShareData.cc = gameObject.GetComponent<CharacterController>();
         }
 
         protected override void OnUpdate()
@@ -40,6 +37,9 @@ namespace XiaoCao
             playerShareData.control.FixedUpdate();
             playerShareData.input.FixedUpdate();
         }
+
+
+
     }
 
 
@@ -110,7 +110,7 @@ namespace XiaoCao
         public PlayerInputData inputData => owner.playerData.inputData;
 
         public PlayerData0 playerData => owner.playerData;
-        public CharacterController cc => owner.playerShareData.cc;
+        public CharacterController cc => owner.idRole.cc;
 
         //TODO 可优化
         public Vector3 camForward => CameraController.Forword;
@@ -127,7 +127,6 @@ namespace XiaoCao
             {
                 TryPlaySkill(inputData.skillInput);
             }
-
         }
         public void FixedUpdate()
         {
@@ -257,11 +256,8 @@ namespace XiaoCao
 
     public class PlayerShareData0 : IShareData
     {
-        public Rigidbody rigidbody;
         public PlayerInput input;
         public PlayerControl control;
-        internal Animator anim;
-        internal CharacterController cc;
     }
 
 
