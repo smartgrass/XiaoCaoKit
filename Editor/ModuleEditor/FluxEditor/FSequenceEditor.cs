@@ -1601,10 +1601,12 @@ namespace FluxEditor
             if (e is FEventEditor)
             {
                 Select(((FEventEditor)e).TrackEditor);
+                Selection.activeObject = ((FEventEditor)e).Evt.transform;
                 undoStr += "Event";
             }
             else if (e is FTrackEditor)
             {
+                Selection.activeObject = ((FTrackEditor)e).Track.transform;
                 undoStr += "Track";
             }
             else if (e is FTimelineEditor)

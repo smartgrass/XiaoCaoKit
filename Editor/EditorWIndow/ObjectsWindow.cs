@@ -36,7 +36,7 @@ public class ObjectsWindow : XiaoCaoWindow
     {
         base.OnEnable();
         string path = "Assets/Ignore/Editor/XCObjectUsing.asset";
-        objects = EditorAseetTool.GetOrNewSO<EditorObjects>(path);
+        objects = XCAseetTool.GetOrNewSO<EditorObjects>(path);
     }
 }
 

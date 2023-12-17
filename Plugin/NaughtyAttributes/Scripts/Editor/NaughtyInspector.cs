@@ -135,7 +135,7 @@ namespace NaughtyAttributes.Editor
         //}
 
 
-        protected void DrawSerializedProperties()
+        protected  void DrawSerializedProperties()
         {
             serializedObject.Update();
             int i = 1;

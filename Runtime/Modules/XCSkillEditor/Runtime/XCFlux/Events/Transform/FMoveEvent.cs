@@ -1,53 +1,266 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Flux
 {
-    [FEvent("Transform/Tween Move", typeof(FTransformTrack))]
+    //FMoveEventEditor
+    [FEvent("Transform/Tween Move", typeof(FMoveTrack))]
     public class FMoveEvent : FEvent
     {
-        public Transform[] pathPoints; // 存储路径上的各个点
-        public float[] arrivalTimes; // 存储每个点到达的时间
-        public float totalDuration = 10.0f; // 整个路径的移动时间
+        //n
+        public List<Vector3> controlPoints = new List<Vector3>(); // 存储贝塞尔曲线上的控制点
+        //n-1
+        [ShowIf(nameof(_isBezier))]
+        public List<Vector3> handlePionts = new List<Vector3>();
+        //n-2 头尾0,1省略
+        [ShowIf(nameof(_isBezier))]
+        public List<float> arrivalTimes = new List<float>(); // 存储每个点到达的时间
+        [SerializeField]
+        private bool _isBezier;
+        public bool isEditorhandles;
 
-        void Update()
+        public bool IsBezier
         {
-            float t = Mathf.Clamp01(Time.time / totalDuration); // 将时间映射到[0, 1]范围内
-
-            GetPathPositionAndIndex(t, out Vector3 currentPosition, out int nextIndex);
-
-            // 在这里可以使用 currentPosition，nextIndex 进行需要的操作
+            get => _isBezier; set
+            {
+                _isBezier = value;
+                OnBezierChange();
+            }
         }
 
-        void GetPathPositionAndIndex(float normalizedTime, out Vector3 position, out int nextIndex)
+        protected override void OnInit()
         {
-            float totalTime = normalizedTime * totalDuration;
+            base.OnInit();
+            CheckLen();
+        }
 
-            float accumulatedTime = 0.0f;
-            nextIndex = 0;
-
-            // 寻找当前时间所在的区间
-            for (int i = 0; i < pathPoints.Length - 1; i++)
+        public void CheckLen()
+        {
+            if (controlPoints.Count < 2)
             {
-                accumulatedTime += arrivalTimes[i];
+                controlPoints.Add(Vector3.zero);
+                controlPoints.Add(Vector3.one);
+            }
+            int len = controlPoints.Count;
 
-                if (accumulatedTime >= totalTime)
+            if (IsBezier)
+            {
+                int n1 = len - 1;
+                if (n1 > handlePionts.Count)
                 {
-                    nextIndex = i + 1;
-                    break;
+                    int deltaLen = n1 - handlePionts.Count;
+                    AddhandlePonts(deltaLen);
                 }
             }
 
-            // 计算插值百分比
-            float tBetweenPoints = 1.0f;
-
-            if (nextIndex > 0)
+            int n2 = len - 2;
+            if (n2 != arrivalTimes.Count)
             {
-                float timeBeforeCurrent = accumulatedTime - (totalTime - arrivalTimes[nextIndex - 1]);
-                tBetweenPoints = timeBeforeCurrent / arrivalTimes[nextIndex - 1];
+                int deltalen = n2 - arrivalTimes.Count;
+                AddarrivalTimes(deltalen);
             }
 
-            // 使用 Vector3.Lerp 计算当前位置
-            position = Vector3.Lerp(pathPoints[nextIndex - 1].position, pathPoints[nextIndex].position, tBetweenPoints);
+        }
+
+        private void AddarrivalTimes(int deltalen)
+        {
+            if (deltalen < 0)
+            {
+                for (int i = 0; i < -deltalen; i++)
+                {
+                    arrivalTimes.RemoveAt(arrivalTimes.Count - 1);
+                }
+                return;
+            }
+
+            int len = arrivalTimes.Count;
+            //获取最后一段长度
+            float lastDelta = 1f;
+            if (len == 0)
+            {
+                lastDelta = 1;
+            }
+            else
+            {
+                lastDelta = 1f - arrivalTimes[len - 1];
+            }
+            //新节点追加进总长
+            float total = 1 + deltalen * lastDelta;
+
+            for (int i = 0; i < len + deltalen; i++)
+            {
+                if (i < len)
+                {
+                    arrivalTimes[i] = arrivalTimes[i] / total;
+                }
+                else
+                {
+                    int addIndex = i - len;
+                    arrivalTimes.Add((1 + addIndex * lastDelta) / total);
+                }
+            }
+            SortTimes();
+        }
+
+        //本来+ controlPoints 用的
+        private void AddhandlePonts(int deltaLen)
+        {
+            int startCount = handlePionts.Count;
+            int len = controlPoints.Count;
+
+            for (int i = 0; i < deltaLen; i++)
+            {
+                int startIndex = startCount + i;
+                var deltaVec = controlPoints[startIndex + 1] - controlPoints[startIndex];
+                Vector3 C = controlPoints.Count > startIndex + 2 ? controlPoints[startIndex + 2] :
+                    controlPoints[startIndex + 1] + deltaVec;
+
+                Vector3 nextPonit = (controlPoints[startIndex]+ controlPoints[startIndex + 1])/ 2;
+                handlePionts.Add(nextPonit);
+            }
+        }
+
+
+
+        private void AddControlPoints(int deltaLen)
+        {
+            int len = controlPoints.Count;
+            var deltaVec = controlPoints[len - 1] - controlPoints[len - 2];
+            for (int i = 0; i < deltaLen; i++)
+            {
+
+                controlPoints.Add(controlPoints[len - 1] + deltaVec * (i + 1));
+
+            }
+        }
+
+        public void SortTimes()
+        {
+            arrivalTimes.Sort(new FloatSort());
+        }
+        class FloatSort : IComparer<float>
+        {
+            public int Compare(float f1, float f2)
+            {
+                if (f1 > f2)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        protected override void OnTrigger(float timeSinceTrigger)
+        {
+            OnUpdateEvent(timeSinceTrigger);
+        }
+
+        protected override void OnUpdateEvent(float timeSinceTrigger)
+        {
+            float t = timeSinceTrigger / LengthTime;
+
+            ApplyProperty(t);
+        }
+
+        protected override void OnFinish()
+        {
+            ApplyProperty(1f);
+        }
+
+        protected override void OnStop()
+        {
+            ApplyProperty(0f);
+        }
+
+        void ApplyProperty(float t)
+        {
+            if (controlPoints.Count < 2)
+            {
+
+                return;
+            }
+
+            Vector3 currentPosition = GetBezierPathPositionAndIndex(t, out int nextIndex);
+            Owner.transform.position = currentPosition;
+        }
+
+        public Vector3 GetBezierPathPositionAndIndex(float normalizedTime, out int timeIndex)
+        {
+            int timeCount = arrivalTimes.Count;
+            timeIndex = 0;
+            // 寻找当前时间所在的区间
+            for (int i = 0; i < timeCount; i++)
+            {
+                if (arrivalTimes[i] >= normalizedTime)
+                {
+                    break;
+                }
+                timeIndex++;
+            }
+
+
+            // 计算插值百分比
+            float tBetweenPoints = 0.0f;
+            float curTimeLen = 0.0f;
+            float curTime = 0;
+
+            if (timeIndex == 0)
+            {
+                curTimeLen = GetTime(0);
+                curTime = normalizedTime;
+            }
+            else
+            {
+                float lastTime = GetTime(timeIndex - 1);
+                curTimeLen = GetTime(timeIndex) - lastTime;
+                if (curTimeLen == 0)
+                {
+                    return controlPoints[timeIndex + 1];
+                }
+
+                curTime = normalizedTime - lastTime;
+            }
+            tBetweenPoints = curTime / curTimeLen;
+
+            //Debug.Log($"yns {normalizedTime} {timeIndex} {tBetweenPoints}  {curTime} / {curTimeLen}");
+
+            if (IsBezier)
+            {
+                return MathTool.GetBezierPoint2(controlPoints[timeIndex], controlPoints[timeIndex + 1], handlePionts[timeIndex], tBetweenPoints);
+            }
+            else
+            {
+                return MathTool.LinearVec3(controlPoints[timeIndex], controlPoints[timeIndex + 1], tBetweenPoints);
+            }
+
+            float GetTime(int index)
+            {
+                if (timeCount == index || index < 0)
+                {
+                    return 1;
+                }
+                return arrivalTimes[index];
+            }
+        }
+
+
+
+
+        public void OnBezierChange()
+        {
+            if (IsBezier)
+            {
+                CheckLen();
+            }
+        }
+        public void OnNumChange()
+        {
+            CheckLen();
         }
     }
 }
