@@ -1,25 +1,37 @@
-﻿using XiaoCao;
+﻿using UnityEngine;
+using XiaoCao;
 using YooAsset;
 
-/// <summary>
-///<see cref="ResMgr.Loader"/>
-/// </summary>
+
 public class ResMgr : Singleton<ResMgr> {
-    /*
-        https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
-        LoadSceneAsync() 异步加载场景
-        LoadAssetSync() 同步加载资源对象
-        LoadAssetAsync() 异步加载资源对象
-        LoadSubAssetsSync() 同步加载子资源对象
-        LoadSubAssetsAsync() 异步加载子资源对象
-        LoadAllAssetsSync() 同步加载资源包内所有资源对象
-        LoadAllAssetsAsync() 异步加载资源包内所有资源对象
-        LoadRawFileSync() 同步获取原生文件
-        LoadRawFileAsync() 异步获取原生文件
-        加载示例
-        var handle = ResMgr.Loader.LoadAssetSync<GameObject>(eName);
-        prefab = handle.AssetObject as GameObject;
-    */
+    public static void LoadExample(string path)
+    {
+        //加载 1
+        GameObject go = GameObject.Instantiate(LoadPrefab(path));
+        //加载 2
+        go = PoolMgr.Inst.Get(path);
+    }
+    //只加载, 没有实例化
+    public static GameObject LoadPrefab(string path)
+    {
+        var task = Loader.LoadAssetSync<GameObject>(path);
+        return task.AssetObject as GameObject;
+    }
+    //只加载, 没有实例化
+    public static Object LoadAseet(string path)
+    {
+        var task = Loader.LoadAssetSync(path);
+        return task.AssetObject ;
+    }
+    //对于只需要加载一遍的
+    public static Object LoadCache(string path)
+    {
+        var task = Loader.LoadAssetSync(path);
+        return task.AssetObject ;
+    }
+
+
+    #region Init
     public const string PACKAGENAME = "DefaultPackage";
 
     public const string RESDIR = "Assets/_Res";
@@ -84,4 +96,21 @@ public class ResMgr : Singleton<ResMgr> {
         }
         return initializationOperation;
     }
+
+    #endregion
+    /*
+    https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
+    LoadSceneAsync() 异步加载场景
+    LoadAssetSync() 同步加载资源对象
+    LoadAssetAsync() 异步加载资源对象
+    LoadSubAssetsSync() 同步加载子资源对象
+    LoadSubAssetsAsync() 异步加载子资源对象
+    LoadAllAssetsSync() 同步加载资源包内所有资源对象
+    LoadAllAssetsAsync() 异步加载资源包内所有资源对象
+    LoadRawFileSync() 同步获取原生文件
+    LoadRawFileAsync() 异步获取原生文件
+    加载示例
+    var handle = ResMgr.Loader.LoadAssetSync<GameObject>(eName);
+    prefab = handle.AssetObject as GameObject;
+*/
 }

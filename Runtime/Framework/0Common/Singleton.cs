@@ -34,4 +34,16 @@ public abstract class Singleton<T> where T : class, new()
 
     }
 
+    public static void ClearCache()
+    {
+        if (_instance != null)
+        {
+            _instance = null;
+        }
+    }
+
 }
+
+
+//标记为需要主动清除, 定时清除
+public interface IClearCache { }

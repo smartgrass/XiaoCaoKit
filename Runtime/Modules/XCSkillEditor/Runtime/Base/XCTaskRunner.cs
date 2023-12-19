@@ -18,6 +18,12 @@ namespace XiaoCao
 
         public static AssetPool runnerPool;
 
+
+        public void Example()
+        {
+            //XCTaskData data = ResMgr.Inst.
+        }
+
         /// <summary>
         /// 执行一个Task
         /// </summary>
@@ -75,6 +81,13 @@ namespace XiaoCao
         public Vector3 castPos;
 
         public float speed = 1;
+    }
+
+    public class SkillDataMgr: Singleton<SkillDataMgr>, IClearCache
+    {
+        //cache
+        public Dictionary<string, XCTaskData> dataCache;
+
     }
 
 }

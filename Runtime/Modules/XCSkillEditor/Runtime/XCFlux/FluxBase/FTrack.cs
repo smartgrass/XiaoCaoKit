@@ -60,6 +60,16 @@ namespace Flux
         // keep track of the current event we're updating
         private int _currentEvent = 0;
 
+        public int GetEndFrame()
+        {
+            int frame = 0;
+            foreach (FEvent e in _events)
+            {
+                frame = Math.Max(frame, e.End);
+            }
+            return frame;
+        }
+
         /**
 		 * @brief Creates a FTrack.
 		 * @param T type of event this track will hold

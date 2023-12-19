@@ -9,10 +9,12 @@ namespace XiaoCao
 
     public class XCTask
     {
-        public GameObject GameObject { get; set; }
         public XCTaskRunner Runner { get; set; }
 
         public XCTaskData data;
+
+        public ObjectData ObjectData => data.objectData;
+
         public List<XCEvent> _events => data._events;
 
         //加入
@@ -102,8 +104,6 @@ namespace XiaoCao
             }
         }
 
-
-
         public void OnEventUpdate()
         {
 
@@ -115,6 +115,8 @@ namespace XiaoCao
             //当前的1帧,指的的是动画帧,即1/30s,而不是update的一帧
             _curFrame = Mathf.FloorToInt(_curTime * XCSetting.FrameRate);
             //Debug.Log("yns  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
+
+            ObjectData.OnFrameUpdate(_curFrame);
 
             UpdateEvent();
 
@@ -172,6 +174,11 @@ namespace XiaoCao
                 Runner.onFinishEvent?.Invoke();
                 State = XCState.Stopped;
             }
+        }
+
+        internal void Show(bool show)
+        {
+
         }
     }
 

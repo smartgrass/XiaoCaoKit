@@ -172,6 +172,7 @@ public class XCTaskSava
         objectData.eulerAngle = _track.Owner.localEulerAngles;
         objectData.position = _track.Owner.localPosition;
         objectData.transfromType = _track.transfromType;
+        objectData.endFrame = _track.GetEndFrame();
         return objectData;
     }
 

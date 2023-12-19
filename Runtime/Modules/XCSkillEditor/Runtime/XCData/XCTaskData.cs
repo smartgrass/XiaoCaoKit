@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Flux;
 using Object = UnityEngine.Object;
+using JetBrains.Annotations;
 
 namespace XiaoCao
 {
@@ -36,6 +37,7 @@ namespace XiaoCao
         {
             _events.Sort(new EventSort());
         }
+
     }
 
     class EventSort : IComparer<XCEvent>
@@ -58,11 +60,14 @@ namespace XiaoCao
     {
         public string ObjectPath = "";
         public bool isPs;
+
+        public int endFrame;
         public TransfromType transfromType;
         public Vector3 position;
         public Vector3 eulerAngle;
         public Vector3 scale;
 
+        public XCState State { get; set; }
         public TaskInfo Info { get; set; }
         public Transform Tran { get; set; }
         public Transform PlayerTF { get; set; }
@@ -81,8 +86,8 @@ namespace XiaoCao
                 InitPs(ps);
             }
             SetPos();
+            State = XCState.Running;
         }
-
 
         private void InitPs(ParticleSystem ps)
         {
@@ -95,6 +100,14 @@ namespace XiaoCao
             Ps.Play();
         }
 
+        public void OnFrameUpdate(int frame)
+        {
+            if (frame>= endFrame && State == XCState.Running)
+            {
+                State = XCState.Stopped;
+                Hide();
+            }
+        }
 
         //设置起始位置
         private void SetPos()
@@ -119,7 +132,7 @@ namespace XiaoCao
         }
 
 
-        public void OnEnd()
+        public void Hide()
         {
             if (Ps)
             {
