@@ -1,9 +1,11 @@
 ﻿
 using OdinSerializer;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR;
 
 namespace XiaoCao
 {
@@ -18,12 +20,11 @@ namespace XiaoCao
 
         public static AssetPool runnerPool;
 
-
-        public void Example()
+        public static XCTaskRunner StartSkill(int skillId, RoleType roleType, TaskInfo info)
         {
-            //XCTaskData data = ResMgr.Inst.
+            XCTaskData data = SkillDataMgr.Get(skillId, RoleType.Player);
+            return CreatNewRunner(data, info);
         }
-
         /// <summary>
         /// 执行一个Task
         /// </summary>
@@ -38,7 +39,7 @@ namespace XiaoCao
             //使用对象池
             GameObject gameObject = runnerPool.pool.Get();
             XCTaskRunner runner = gameObject.GetComponent<XCTaskRunner>();
-            runner.Init(data,info);
+            runner.Init(data, info);
             return runner;
         }
         public void Init(XCTaskData data, TaskInfo info)
@@ -83,11 +84,24 @@ namespace XiaoCao
         public float speed = 1;
     }
 
-    public class SkillDataMgr: Singleton<SkillDataMgr>, IClearCache
+    public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache
     {
-        //cache
-        public Dictionary<string, XCTaskData> dataCache;
+        public Dictionary<int, XCTaskData> dataCache = new Dictionary<int, XCTaskData>();
 
+        public static XCTaskData Get(int skillId, RoleType roleType)
+        {
+            int idKey = skillId + (int)roleType * 1000;
+            if (Inst.dataCache.TryGetValue(idKey, out XCTaskData data))
+            {
+                return data;
+            }
+
+            //需要表做什么事?  技能类型, 技能图标 ,cd
+            byte[] bytes = ResMgr.LoadByte(XCSetting.GetSkillDataPath(roleType, skillId));
+            XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
+            Inst.dataCache.Add(idKey, task);
+            return task;
+        }
     }
 
 }

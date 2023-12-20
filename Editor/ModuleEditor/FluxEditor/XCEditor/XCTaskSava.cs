@@ -79,7 +79,7 @@ public class XCTaskSava
             isMain = false;
         }
 
-        string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, fSeqSetting.index, Sequence._skillId);
+        string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, Sequence._skillId);
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
         byte[] bytes = SerializationUtility.SerializeValue(mainData, DataFormat.Binary);
         FileTool.WriteToFile(bytes, savaPath, true);
@@ -157,7 +157,7 @@ public class XCTaskSava
         {
             FileInfo info = new FileInfo(path);
 
-            string newPath = Path.Combine(XCSetting.PerfabDir, fSeqSetting.type.ToString() + fSeqSetting.index, info.Name);
+            string newPath = Path.Combine(XCSetting.PerfabDir, fSeqSetting.type.ToString(), info.Name);
 
             Debug.LogWarning($"FLog {info.Name} MoveTo {newPath}");
 

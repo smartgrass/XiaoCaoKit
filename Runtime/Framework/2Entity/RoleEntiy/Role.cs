@@ -29,16 +29,16 @@ namespace XiaoCao
         protected void GenRoleBody(int prefabId)
         {
             string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
-            var task = ResMgr.Loader.LoadAssetSync<GameObject>(path);
-            GameObject go = GameObject.Instantiate(task.AssetObject) as GameObject;
+            GameObject go = ResMgr.LoadInstan(path);
+
+            Debug.Log($"--- path {path}");
 
             idRole = go.transform.GetComponent<IdRole>();
-            if (idRole == null )
+            if (idRole == null)
             {
                 //如果无, 则需要加载模板
                 string baseRole = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}.prefab";
-                var baseTask = ResMgr.Loader.LoadAssetSync<GameObject>(path);
-                GameObject baseGo = GameObject.Instantiate(task.AssetObject) as GameObject;
+                GameObject baseGo = ResMgr.LoadInstan(baseRole);
                 idRole = baseGo.transform.GetComponent<IdRole>();
                 go.transform.SetParent(baseGo.transform,false);
                 body = go;

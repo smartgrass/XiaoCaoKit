@@ -9,12 +9,18 @@ namespace XiaoCao
         //True:本地玩家控制;  False:网络同步控制, AI控制
         public bool IsControl;
 
-        public PlayerData0 playerData;
+        public PlayerData0 playerData = new PlayerData0();
 
-        public PlayerShareData0 playerShareData;
+        public PlayerShareData0 playerShareData = new PlayerShareData0();
 
         public override IData data => playerData;
         public override IShareData componentData => playerShareData;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Debug.Log($"--- Awake ");
+        }
 
         public void Init(PlayerData0 playerData)
         {
@@ -23,6 +29,7 @@ namespace XiaoCao
 
             this.CreateGameObject();
             idRole.animator = body.GetComponent<Animator>();
+            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
             playerShareData.input = new PlayerInput(this);
         }
 

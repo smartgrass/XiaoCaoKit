@@ -9,6 +9,7 @@ namespace XiaoCao
     {
         public async void Run()
         {
+            Debug.Log($"yns Run");
             //初始化
             await InitYooAsset();
 
@@ -22,9 +23,10 @@ namespace XiaoCao
         {
             Debug.Log($"yns LoadPlayerData");
 
-
             Player0 player = EntityMgr.Instance.CreatEntity<Player0>();
-           
+
+            //SavaMgr
+            player.Init(new PlayerData0());
             //...
 
         }
@@ -33,9 +35,8 @@ namespace XiaoCao
 
         public async Task InitYooAsset()
         {
-            ResMgr.Inst.InitYooAsset();
-            var loading = ResMgr.Inst.InitPackage();
-            await loading.Task;
+            ResMgr.InitYooAsset();
+            await ResMgr.InitPackage().Task;
         }
 
 
@@ -43,9 +44,16 @@ namespace XiaoCao
 
     }
 
+    public enum RunState
+    {
+        InitLoadRes,
+        PlayerConfig,
+        LoadScene,
+        LoadPlayer
+    }
+
     public interface RunStep
-    { 
-    
+    {
     }
 
 }
