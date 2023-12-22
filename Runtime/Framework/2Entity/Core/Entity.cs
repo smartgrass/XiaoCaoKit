@@ -47,6 +47,11 @@ namespace XiaoCao
         {
             
         }
+
+        public virtual void ReceiveMsg(EntityMsgType type, int fromId, object msg)
+        {
+            Debug.Log($"--- Receive {type} fromId: {fromId}");
+        }
         #endregion
     }
 

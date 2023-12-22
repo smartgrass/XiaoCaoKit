@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using XiaoCao;
 
-[RequireComponent(typeof(Rigidbody))]
+//[RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CharacterController))]
 public class IdRole : IdComponent
 {
