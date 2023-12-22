@@ -38,6 +38,7 @@ namespace XiaoCao
 
         public void OnCreat()
         {
+            Debug.Log($"---  OnCreat {id}");
             UpdateEvent += OnUpdate;
             FixedUpdateEvent += OnFixedUpdate;
             LaterUpdateEvent += OnLaterUpdate;

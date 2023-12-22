@@ -218,9 +218,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 399621045}
+  - component: {fileID: 399621046}
   m_Layer: 0
   m_Name: Editor
-  m_TagString: Untagged
+  m_TagString: EditorOnly
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -243,6 +244,21 @@ Transform:
   - {fileID: 567240699}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &399621046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 399621044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7fa3659263703b42b7c86f30b9911d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartDo:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &567240698
 GameObject:
   m_ObjectHideFlags: 0
@@ -541,6 +557,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 4332527608394140405, guid: 95b68cdc1cff36b4aa4611fca80344b8, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
     - target: {fileID: 7795822996566380063, guid: 95b68cdc1cff36b4aa4611fca80344b8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -621,7 +641,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: -1
-  _skillId: 0
+  _skillId: 100
   _des: 
   _seqSetting: {fileID: 11400000, guid: 693a2f4bd5170fb4d9e63244f7a83126, type: 2}
   _content: {fileID: 107518441}

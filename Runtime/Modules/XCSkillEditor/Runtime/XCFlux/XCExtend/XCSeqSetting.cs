@@ -1,14 +1,14 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using UnityEngine;
 
 namespace XiaoCao
 {
     [CreateAssetMenu(fileName = "XCSeqSetting", menuName = "XCSeqSetting")]
     public class XCSeqSetting : ScriptableObject
     {
+        [Label("描述")]
+        public string des;
         public RoleType type;
-
-        public int index = 0;
-
         public RuntimeAnimatorController targetAnimtorController;
     }
 
@@ -19,13 +19,9 @@ namespace XiaoCao
         public static readonly int FrameRate = 30;
         public static readonly float FramePerSec = 1f / FrameRate;
 
-        public static string GetSkillDataPath(RoleType roleType, int roleInedex, int skillId)
+        public static string GetSkillDataPath(RoleType roleType, int skillId)
         {
-            return $"{DataDir}/{roleType.ToString()}/{GetName(roleInedex, skillId)}.data";
-        }
-        public static string GetName(int roleInedex, int skillId)
-        {
-            return $"{roleInedex}_{skillId}";
+            return $"{DataDir}/{roleType.ToString()}/{skillId}.data";
         }
     }
 

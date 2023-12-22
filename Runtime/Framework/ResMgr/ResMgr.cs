@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 using XiaoCao;
 using YooAsset;
 
 
-public class ResMgr : Singleton<ResMgr> {
+public class ResMgr
+{
     public static void LoadExample(string path)
     {
         //加载 1
@@ -11,6 +13,12 @@ public class ResMgr : Singleton<ResMgr> {
         //加载 2
         go = PoolMgr.Inst.Get(path);
     }
+
+    public static GameObject LoadInstan(string path)
+    {
+        return GameObject.Instantiate(LoadPrefab(path));
+    }
+
     //只加载, 没有实例化
     public static GameObject LoadPrefab(string path)
     {
@@ -21,13 +29,14 @@ public class ResMgr : Singleton<ResMgr> {
     public static Object LoadAseet(string path)
     {
         var task = Loader.LoadAssetSync(path);
-        return task.AssetObject ;
+        return task.AssetObject;
     }
-    //对于只需要加载一遍的
-    public static Object LoadCache(string path)
+
+    public static byte[] LoadByte(string path)
     {
-        var task = Loader.LoadAssetSync(path);
-        return task.AssetObject ;
+        var handle = Loader.LoadRawFileSync(path);
+        byte[] fileData = handle.GetRawFileData();
+        return fileData;
     }
 
 
@@ -36,32 +45,31 @@ public class ResMgr : Singleton<ResMgr> {
 
     public const string RESDIR = "Assets/_Res";
 
-    private ResourcePackage package;
-    public static ResourcePackage Loader => ResMgr.Inst.package;
+    public static ResourcePackage Loader;
 
-    public void InitYooAsset()
+    public static void InitYooAsset()
     {
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包
-        package = YooAssets.CreatePackage(PACKAGENAME);
+        Loader = YooAssets.CreatePackage(PACKAGENAME);
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-        YooAssets.SetDefaultPackage(package);
+        YooAssets.SetDefaultPackage(Loader);
 
     }
     //需要等待
-    public InitializationOperation InitPackage()
+    public static InitializationOperation InitPackage()
     {
         // 创建默认的资源包
         string packageName = PACKAGENAME;
-        var package = YooAssets.TryGetPackage(packageName);
-        if (package == null)
+        var tempPack = YooAssets.TryGetPackage(packageName);
+        if (tempPack == null)
         {
-            package = YooAssets.CreatePackage(packageName);
-            YooAssets.SetDefaultPackage(package);
+            tempPack = YooAssets.CreatePackage(packageName);
+            YooAssets.SetDefaultPackage(tempPack);
         }
+        Loader = tempPack;
 
-        this.package = package;
         InitializationOperation initializationOperation = null;
 
 #if UNITY_EDITOR
@@ -74,7 +82,7 @@ public class ResMgr : Singleton<ResMgr> {
         {
             var createParameters = new EditorSimulateModeParameters();
             createParameters.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, packageName);
-            initializationOperation = package.InitializeAsync(createParameters);
+            initializationOperation = tempPack.InitializeAsync(createParameters);
         }
 #else
         //运行时使用。
@@ -86,7 +94,7 @@ public class ResMgr : Singleton<ResMgr> {
         if (playMode == EPlayMode.OfflinePlayMode)
         {
             var createParameters = new OfflinePlayModeParameters();
-            initializationOperation = package.InitializeAsync(createParameters);
+            initializationOperation = tempPack.InitializeAsync(createParameters);
         }
 
         // 联机运行模式
