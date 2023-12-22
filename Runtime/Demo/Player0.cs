@@ -117,6 +117,9 @@ namespace XiaoCao
         public PlayerInputData inputData => owner.playerData.inputData;
 
         public PlayerData0 playerData => owner.playerData;
+
+        public RoleState roleState => playerData.roleState;
+
         public CharacterController cc => owner.idRole.cc;
 
         //TODO 可优化
@@ -193,11 +196,12 @@ namespace XiaoCao
 
         public void PlaySkill(int skillId)
         {
+            //TODO
             Debug.Log($"yns PlaySkill {skillId}");
 
         }
     }
-
+    //相当于System, 无数据
     public class EntityComponent<T> where T : Role
     {
         public T owner;
@@ -208,28 +212,37 @@ namespace XiaoCao
         }
     }
 
-
+    //建议只在这层 封装数据类
     public class PlayerData0 : IData
     {
         public int prefabID = 0;
 
         public EActState actState;
         public int curSkillId;
-        public bool isCanSkill;
+
+
+        public bool isCanSkill => actState is not EActState.Break or EActState.Dead;
+
+        public MoveSetting moveSetting;
+
+        public float moveSpeedFactor = 1;
+
+        public RoleState roleState = new();
+
+        public PlayerAttr playerAttr = new();
+
+        public PlayerInputData inputData = new(); //方向,ack 1,2 ,skill,空格
+    }
+
+    public class RoleState
+    {
         public bool isNorAck;
         public bool isMoveLock;
         public float moveLockTime;
         public float breakTime;
-
-        public MoveSetting moveSetting;
-        public float MoveSpeed => moveSetting.moveSpeed;
-        public float moveSpeedFactor = 1;
-
-        public PlayerAttr playerAttr = new PlayerAttr();
-
-        public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格
     }
 
+    //基础数值
     public class MoveSetting : ScriptableObject
     {
         public float moveSpeed = 4;
