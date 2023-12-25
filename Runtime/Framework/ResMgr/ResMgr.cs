@@ -34,6 +34,7 @@ public class ResMgr
 
     public static byte[] LoadByte(string path)
     {
+        Debug.Log($"---  {path}");
         var handle = Loader.LoadRawFileSync(path);
         byte[] fileData = handle.GetRawFileData();
         return fileData;

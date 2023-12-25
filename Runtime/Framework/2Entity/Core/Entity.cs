@@ -15,7 +15,7 @@ namespace XiaoCao
         public int id;
         public GameObject gameObject { get; private set; }
 
-        public EntityBaseType BindType { get => EntityBaseType.Entity; }
+        public virtual EntityBaseType BindType { get => EntityBaseType.Entity; }
 
         protected void BindGameObject(GameObject go)
         {

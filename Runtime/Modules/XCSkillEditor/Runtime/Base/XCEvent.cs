@@ -27,8 +27,8 @@ namespace XiaoCao
         public XCTask track;
         public XCState State { get; set; }
         public TaskInfo Info => track.Info;
-        public Transform Tran { get => Info.transform; set => Info.transform = value; }
-        public GameObject Go { get => Info.gameObject; set => Info.gameObject = value; }
+        public Transform Tran { get => Info.curTF; set => Info.curTF = value; }
+        public GameObject Go { get => Info.curGO; set => Info.curGO = value; }
 
 
 

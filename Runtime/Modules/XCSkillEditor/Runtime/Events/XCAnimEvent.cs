@@ -107,6 +107,8 @@ namespace XiaoCao
         public const string Dead = "Dead";
         public const string RollTree = "RollTree";
 
+        public const string MoveSpeed = "MoveSpeed";
+
         public static int AnimHash(this string name)
         {
             return Animator.StringToHash(name);

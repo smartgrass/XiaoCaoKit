@@ -10,7 +10,7 @@ public class TestRole : IdComponent
     [Button]
     void StartSkill()
     {
-        this.EntityMsg(EntityMsgType.Skill, skillId);
+        this.EntityMsg(EntityMsgType.StartSkill, skillId);
     }
 
     private void Update()

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace Flux
 {
@@ -45,7 +46,23 @@ namespace Flux
 			if( _snapshot != null )
 				_snapshot.Restore();
 		}
-	}
+
+        public void ClearSnapshot()
+        {
+            foreach (var dic in _snapshots.Values)
+            {
+                foreach (var item in dic.Keys)
+                {
+                    if (item != null)
+                        Debug.Log("FLog  ClearSnapshot" + item.name);
+                    else
+                        Debug.Log($"FLog clear null");
+                }
+                dic.Clear();
+            }
+            _snapshots.Clear();
+        }
+    }
 
 	public class TransformSnapshot
 	{

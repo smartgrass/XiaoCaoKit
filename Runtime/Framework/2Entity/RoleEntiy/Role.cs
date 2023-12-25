@@ -4,10 +4,9 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-
+    [TypeLabel(typeof(RoleTagCommon))]
     public abstract class Role : HealthBehavior
     {
-        ///<see cref="RoleTypeCode"/>
         public abstract RoleTypeCode RoleType { get; }
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
@@ -16,7 +15,7 @@ namespace XiaoCao
 
         public GameObject body;
 
-        internal Animator anim;
+        internal Animator Anim => idRole.animator;
 
         public IdRole idRole;
 
@@ -77,6 +76,13 @@ namespace XiaoCao
         Enemy = 0,
         Player = 1,
     }
+
+    public static class RoleTagCommon
+    {
+        public const int ShowHp = 0;
+        public const int MainPlayer = 1;
+    }
+
 
     public class PlayerBase : Role
     {

@@ -4,6 +4,10 @@ using System.IO;
 using System.Net;
 using System.Text;
 using UnityEngine;
+using OdinSerializer;
+using SerializationUtility = OdinSerializer.SerializationUtility;
+using UnityEngine.XR;
+using XiaoCao;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -67,6 +71,24 @@ public static class FileTool
         {
             Directory.CreateDirectory(dirPath);
         }
+    }
+
+    public static void SerializeWrite<T>(string path, T data)
+    {
+        byte[] bytes = SerializationUtility.SerializeValue<T>(data, DataFormat.Binary);
+        FileTool.WriteAllBytes(path, bytes);
+    }
+
+    public static T DeserializeRead<T>(string path)
+    {
+        byte[] bytes = File.ReadAllBytes(path);
+        T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.Binary);
+        return data;
+    }
+
+    public static void WriteAllBytes(string filePath, byte[] by)
+    {
+        File.WriteAllBytes(filePath, by);
     }
 
     public static byte[] ReadByte(string filePath)

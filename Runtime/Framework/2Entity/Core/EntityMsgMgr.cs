@@ -19,10 +19,11 @@
 
     }
 
-
+    //使用TypeLaber标记消息类型
     public enum EntityMsgType
     {
-        Skill
+        [TypeLabel(typeof(int))]
+        StartSkill
     }
 
     interface IMsgReceiver

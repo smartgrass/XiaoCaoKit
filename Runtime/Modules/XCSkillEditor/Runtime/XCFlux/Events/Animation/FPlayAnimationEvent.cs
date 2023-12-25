@@ -34,10 +34,11 @@ namespace Flux
 
         protected override void OnTrigger( float timeSinceTrigger )
 		{
-			_animator = Owner.GetComponent<Animator>();
-			_animTrack = (FAnimationTrack)_track;
 
-			if( _animator.runtimeAnimatorController != _animTrack.AnimatorController )
+			_animTrack = (FAnimationTrack)_track;
+            _animator = _animTrack.GetAnimator();
+
+            if ( _animator.runtimeAnimatorController != _animTrack.AnimatorController )
 			{
 				_animator.runtimeAnimatorController = _animTrack.AnimatorController;
 			}
@@ -52,7 +53,7 @@ namespace Flux
 			if( _animator.enabled )
 #endif
 			{
-//				Debug.Log( "Turning on " + _animTrack.LayerName );
+				Debug.Log("Turning on " + _animTrack.LayerName);
 				_animator.SetLayerWeight(_animTrack.LayerId, 1);
 				if( id == 0 || _track.Events[id-1].End < Start )
 				{

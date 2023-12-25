@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -23,10 +24,12 @@ namespace XiaoCao
         void AddEntity(Entity entity)
         {
             int id = entity.id;
+            Debug.Log($"--- AddEntity {id}");
             if (entity.BindType == EntityBaseType.BehaviorEntity)
             {
                 behaviorEntityDic[id] = entity as BehaviorEntity;
                 behaviorEntityDic[id].OnCreat();
+                Debug.Log($"--- BehaviorEntity  OnCreat");
             }
             entityDic[id] = entity;
         }

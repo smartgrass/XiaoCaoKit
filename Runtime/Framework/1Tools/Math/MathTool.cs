@@ -103,6 +103,17 @@ public static class MathTool
     {
         return value >= closedLeft && value < openRight;
     }
+    /// <summary>
+    /// 值映射, 比如原本0~1的0.4, 映射到0~100,就是40
+    /// </summary>
+    /// <returns></returns>
+    public static float ValueMapping(float value,float from,float to,float newFrom,float newTo) 
+    {
+        float p = (value-from) / (to - from);
+        float newValue = p * (newTo - newFrom) + newFrom;
+        return newValue;
+    }
+
     //判断浮点数是否相等
     public static bool IsFEqual(this float value, float value2)
     {

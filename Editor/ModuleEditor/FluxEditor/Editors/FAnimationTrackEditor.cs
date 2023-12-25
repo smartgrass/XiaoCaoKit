@@ -169,12 +169,9 @@ namespace FluxEditor
 
 			FAnimationTrack animTrack = (FAnimationTrack)Obj;
 
-			if( animTrack.Owner.GetComponent<Animator>() == null )
-			{
-				Animator animator = animTrack.Owner.gameObject.AddComponent<Animator>();
-				Undo.RegisterCreatedObjectUndo( animator, string.Empty );
-			}
-		}
+			animTrack.GetAnimator();
+
+        }
 
 		public override void OnTrackChanged()
 		{

@@ -93,11 +93,15 @@ namespace FluxEditor
 						layerIndex = i;
 				}
 
+
+
 				// doesn't have layer
 				if( layerIndex == -1 )
 				{
-					EditorGUILayout.HelpBox("No Layer Selected!", MessageType.Error);
-				}
+                    _layerName.stringValue = controller.layers[0].name;
+					layerIndex = 0;
+                    //EditorGUILayout.HelpBox("No Layer Selected!", MessageType.Error);
+                }
 				else if( layerIndex != _layerId.intValue ) // has it, but it got moved
 				{
 					UpdateLayer( controller.layers[layerIndex] );
@@ -156,7 +160,7 @@ namespace FluxEditor
 			if( isPreviewing )
 				track.ClearCache();
 
-			Animator animator = track.Owner.GetComponent<Animator>();
+			Animator animator = track.GetAnimator();
 			animator.runtimeAnimatorController = null;
 
 			AnimatorController controller = (AnimatorController)track.AnimatorController;

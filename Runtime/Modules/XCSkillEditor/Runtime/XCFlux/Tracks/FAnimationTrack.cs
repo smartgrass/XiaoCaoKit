@@ -80,7 +80,13 @@ namespace Flux
 		[SerializeField]
 		[HideInInspector]
 		private RuntimeAnimatorController _animatorController = null;
-		public RuntimeAnimatorController AnimatorController { get { return _animatorController; } }
+		public RuntimeAnimatorController AnimatorController { get { 
+				if( _animatorController == null)
+				{
+					_animatorController = GetAnimator().runtimeAnimatorController;
+				}
+				return _animatorController; 
+			} }
 
 		[SerializeField]
 		[HideInInspector]
@@ -89,7 +95,7 @@ namespace Flux
 
 		[SerializeField]
 		[HideInInspector]
-		private int _layerId = -1;
+		private int _layerId = 0;
 		public int LayerId { get { return _layerId; } }
 
 //		private TransformSnapshot _snapshot = null;
@@ -107,12 +113,22 @@ namespace Flux
 			}
 		}
 
-		public override void Init()
+        public Animator GetAnimator()
 		{
-			if( Owner.GetComponent<Animator>() == null )
-				Owner.gameObject.AddComponent<Animator>();
+            Animator animator  = Owner.GetComponentInChildren<Animator>();
+            if (animator == null)
+			{
+                Owner.gameObject.AddComponent<Animator>();
+            }
+			return animator;
+        }
 
-			base.Init();
+        public override void Init()
+		{
+			GetAnimator();
+
+
+            base.Init();
 
 			_snapshot.TakeChildSnapshots();
 		}
@@ -122,7 +138,7 @@ namespace Flux
 			if( HasCache && Cache.Track == this )
 			{
 				((FAnimationTrackCache)Cache).StopPlayback();
-				Owner.GetComponent<Animator>().enabled = false;
+                GetAnimator().enabled = false;
 			}
 
 			base.Stop();
@@ -139,7 +155,7 @@ namespace Flux
 		public override void UpdateEvents( int frame, float time )
 		{
 			if( Sequence.Speed != 1 && !HasCache )
-				Owner.GetComponent<Animator>().speed = Sequence.Speed;
+                GetAnimator().speed = Sequence.Speed;
 			if( HasCache )
 			{
 				if( Cache.Track == this ) // only one of them needs to set the playback

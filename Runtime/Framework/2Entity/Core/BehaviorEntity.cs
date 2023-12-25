@@ -11,6 +11,7 @@ namespace XiaoCao
         public Action LaterUpdateEvent;
         public Action DestroyEvent;
 
+        public override EntityBaseType BindType => EntityBaseType.BehaviorEntity;
         public float DeltaTime => Time.deltaTime;
         public float FixedDeltaTime => Time.fixedDeltaTime;
 
@@ -38,7 +39,7 @@ namespace XiaoCao
 
         public void OnCreat()
         {
-            Debug.Log($"---  OnCreat {id}");
+            Debug.Log($"--- OnCreat {id}");
             UpdateEvent += OnUpdate;
             FixedUpdateEvent += OnFixedUpdate;
             LaterUpdateEvent += OnLaterUpdate;
@@ -49,6 +50,7 @@ namespace XiaoCao
         protected virtual void Awake()
         {
             hasAwake = true;
+            Debug.Log($"--- Awake");
         }
         protected virtual void OnEnable(bool isEnable)
         {

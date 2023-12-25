@@ -10,10 +10,20 @@ using UnityEditor;
 namespace XiaoCao
 {
 
-    /// <summary>
-    /// 枚举注释
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Class)]
+    public class TypeLabelAttribute : PropertyAttribute
+    {
+        public Type type;
+        public TypeLabelAttribute(Type type)
+        {
+            this.type = type;
+        }
+    }
+
+/// <summary>
+/// 枚举注释
+/// </summary>
+[AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
     public class EnumLabelAttribute : PropertyAttribute
     {
         public string label;

@@ -18,8 +18,17 @@ namespace XiaoCao
         private Vector2 m_ScrollPosition;
 
         private Editor editor = null;
-        public Editor Editor => editor;
-
+        public Editor Editor
+        {
+            get
+            {
+                if (editor == null)
+                {
+                    editor = Editor.CreateEditor(DrawTarget);
+                }
+                return editor;
+            }
+        }
         public virtual Object DrawTarget { get => this; }
 
         public static T OpenWindow<T>(string title = "") where T : XiaoCaoWindow
@@ -33,12 +42,6 @@ namespace XiaoCao
             return win;
         }
 
-        public virtual void OnEnable()
-        {
-            editor = Editor.CreateEditor(DrawTarget); 
-
-
-        }
 
         ///<see cref="NaughtyInspector.OnInspectorGUI"/>
         private void OnGUI()
@@ -49,7 +52,7 @@ namespace XiaoCao
 
             DrawHead();
 
-            editor.OnInspectorGUI();
+            Editor.OnInspectorGUI();
 
             EditorGUILayout.EndScrollView();
 

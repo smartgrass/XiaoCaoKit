@@ -196,7 +196,10 @@ namespace XiaoCao
                     continue;
                 }
 
-                var curValue = pro.GetValue(targetObj);
+                object curValue;
+
+                curValue = pro.GetValue(targetObj);
+
 
                 if (curValue == null)
                 {

@@ -27,6 +27,8 @@ namespace XiaoCao
         //NoSerializa
         public bool HasTrigger { get; set; }
 
+        public float speed = 1;
+
         public void AddSubData(XCTaskData subData)
         {
             if (subDatas == null) subDatas = new List<XCTaskData>();
@@ -79,8 +81,8 @@ namespace XiaoCao
             var instance = PoolMgr.Inst.Get(ObjectPath);
             Tran = instance.transform;
             PlayerTF = info.playerTF;
-            info.transform = Tran;
-            info.gameObject = instance;
+            info.curTF = Tran;
+            info.curGO = instance;
             if (isPs && instance.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
             {
                 InitPs(ps);

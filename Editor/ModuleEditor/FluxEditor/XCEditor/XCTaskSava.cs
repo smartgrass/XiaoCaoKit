@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Lifetime;
+using System.Text;
 using UnityEditor;
 using UnityEditor.SearchService;
 using UnityEditor.VersionControl;
@@ -63,8 +64,7 @@ public class XCTaskSava
         foreach (var _timeline in Sequence.Containers[0].Timelines)
         {
             //一个Object分配一个XCTaskData
-            XCTaskData data = GetTaskData(mainData, isMain);
-
+            XCTaskData data = GetTaskData(ref mainData, isMain);
             bool hasObjectData = false;
             foreach (var _track in _timeline.Tracks)
             {
@@ -80,13 +80,13 @@ public class XCTaskSava
         }
 
         string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, Sequence._skillId);
+        
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
-        byte[] bytes = SerializationUtility.SerializeValue(mainData, DataFormat.Binary);
-        FileTool.WriteToFile(bytes, savaPath, true);
-        File.WriteAllBytes(savaPath, bytes);
+
+        FileTool.SerializeWrite(savaPath, mainData);
     }
 
-    private static XCTaskData GetTaskData(XCTaskData mainData, bool isMain)
+    private static XCTaskData GetTaskData(ref XCTaskData mainData, bool isMain)
     {
         XCTaskData data = new XCTaskData();
 
@@ -112,12 +112,18 @@ public class XCTaskSava
         }
         string filePath = AssetDatabase.GetAssetPath(Selection.activeObject);
 
-        byte[] bytes = File.ReadAllBytes(filePath);
-        XCTaskData data = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
+        XCTaskData data = FileTool.DeserializeRead<XCTaskData>(filePath);
 
-        LogObjectTool.LogObjectAll(data, typeof(XCTaskData));
-
-        //OdinSerializer.SerializationUtility.DeserializeValueWeak(data);
+        if (data != null)
+        {
+            var buffer = SerializationUtility.SerializeValue<XCTaskData>(data, DataFormat.JSON);
+            string res = Encoding.UTF8.GetString(buffer);
+            Debug.Log($"---  {res}");
+        }
+        else
+        {
+            Debug.Log($"---  null {filePath}");
+        }
     }
 
 

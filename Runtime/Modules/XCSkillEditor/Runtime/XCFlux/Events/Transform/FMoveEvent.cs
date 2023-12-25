@@ -24,7 +24,7 @@ namespace Flux
         //List<Ease>
         [SerializeField]
         private bool _isBezier;
-        public bool isEditorhandles;
+        public bool isEditorHandles;
 
         public bool IsBezier
         {
@@ -327,11 +327,11 @@ namespace Flux
         [EnumLabel("Linear")]
         Linear,
         [EnumLabel("加速")]
-        EaseInQuad,
+        InQuad,
         [EnumLabel("减速")]
-        EaseOutQuad,
+        OutQuad,
         [EnumLabel("淡入淡出")]
-        EaseInOutQuad
+        InOutQuad
     }
 
 }

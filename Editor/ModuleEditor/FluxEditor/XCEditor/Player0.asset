@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad827f73059fa245b87340cbbfd5c52, type: 3}
   m_Name: Player0
   m_EditorClassIdentifier: 
+  des: 
   type: 0
-  index: 0
-  targetAnimtorController: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
+  targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}

@@ -82,7 +82,7 @@ namespace FluxEditor
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("ResetHandles"))
+            if (Event.IsBezier && GUILayout.Button("ResetHandles"))
             {
                 ResethandlePonts();
             }
@@ -117,7 +117,7 @@ namespace FluxEditor
             if (Event.IsBezier)
             {
                 DrawBezier();
-                if (Event.isEditorhandles)
+                if (Event.isEditorHandles)
                 {
                     XCDraw.DrawLines(Event.controlPoints);
                 }
@@ -170,7 +170,7 @@ namespace FluxEditor
             {
                 Vector3 newPointPosition = Event.handlePionts[i];
 
-                if (Event.isEditorhandles)
+                if (Event.isEditorHandles)
                 {
                     newPointPosition = Handles.DoPositionHandle(Event.handlePionts[i], rotation);
                     if (Event.handlePionts[i] != newPointPosition)

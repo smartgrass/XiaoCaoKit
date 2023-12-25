@@ -1,6 +1,7 @@
 //#define FLUX_DEBUG
 using UnityEngine;
 using System.Collections.Generic;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace Flux
 {
@@ -12,10 +13,20 @@ namespace Flux
 		{
 			get {
 				if( _animator == null )
-					_animator = Track.Owner.GetComponent<Animator>();
-				return _animator;
+					_animator = GetAnimator();
+                return _animator;
 			}
 		}
+
+        Animator GetAnimator()
+        {
+            Animator animator = Track.Owner.GetComponentInChildren<Animator>();
+            if (animator == null)
+            {
+                Track.Owner.gameObject.AddComponent<Animator>();
+            }
+            return animator;
+        }
 
         // @note, can't just check Animator.playbackTime >= 0 because unity prints a warning if it's not in playback :(
         private bool _inPlayback = false;

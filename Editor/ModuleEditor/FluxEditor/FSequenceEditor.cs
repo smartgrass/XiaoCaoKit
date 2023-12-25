@@ -1851,6 +1851,7 @@ namespace FluxEditor
 
         public void Stop()
         {
+            Debug.Log($"FLog Stop");
             if (!object.Equals(Sequence, null))
             {
                 if (!Sequence.IsStopped)
@@ -1860,11 +1861,39 @@ namespace FluxEditor
                     for (int i = 0; i != Editors.Count; ++i)
                         Editors[i].OnStop();
                 }
+                else
+                {
+                    ClearAnimPos();
+                }
 
             }
             _isPlaying = false;
 
             FUtility.RepaintGameView();
+        }
+
+        private void ClearAnimPos()
+        {
+            Debug.Log($"FLog ClearAnim pos");
+            foreach (var con in Sequence.Containers)
+            {
+                foreach (var timeline in con.Timelines)
+                {
+                    foreach (var track in timeline.Tracks)
+                    {
+                        if (track is FTransformTrack)
+                        {
+                            FTransformTrack fTransform = (FTransformTrack)track;
+                            (track as FTransformTrack).ClearSnapshot();
+                        }
+                        if (track is FAnimationTrack)
+                        {
+                            (track as FAnimationTrack).ClearSnapshot();
+                        }
+                    }
+
+                }
+            }
         }
 
         public void Pause()

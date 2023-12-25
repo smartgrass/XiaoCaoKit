@@ -14,7 +14,16 @@ namespace FluxEditor
 
 		void OnEnable()
 		{
-			_container = (FContainer)target;
+			try
+			{
+                _container = (FContainer)target;
+            }
+			catch (Exception)
+			{
+				Debug.Log($"FLog {this}");
+				return;
+			}
+
 		}
 
 		public override void OnInspectorGUI ()

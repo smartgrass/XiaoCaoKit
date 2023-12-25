@@ -20,15 +20,16 @@ namespace XiaoCao
 
         public static AssetPool runnerPool;
 
-        public static XCTaskRunner StartSkill(int skillId, RoleType roleType, TaskInfo info)
+        public static XCTaskRunner CreatNew(int skillId, RoleType roleType, TaskInfo info)
         {
             XCTaskData data = SkillDataMgr.Get(skillId, RoleType.Player);
-            return CreatNewRunner(data, info);
+            info.speed = data.speed;
+            return CreatNewByData(data, info);
         }
         /// <summary>
         /// 执行一个Task
         /// </summary>
-        public static XCTaskRunner CreatNewRunner(XCTaskData data, TaskInfo info)
+        public static XCTaskRunner CreatNewByData(XCTaskData data, TaskInfo info)
         {
             if (runnerPool == null)
             {
@@ -71,10 +72,11 @@ namespace XiaoCao
     {
         public Transform playerTF;
 
-        public Transform transform;
-        public GameObject gameObject;
+        //针对当前对象, 可以是玩家或技能物体
+        public GameObject curGO;
+        public Transform curTF;
 
-        public int skillID;  //如100
+        public int skillId;  //如100
 
         //释放技能时记录角度 和 位置
         public Vector3 castEuler;
