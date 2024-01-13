@@ -1,11 +1,20 @@
 ﻿using UnityEngine;
+using XiaoCaoEditor;
 
 public class XCEditorMenu
 {
-    ///[MenuItem("XiaoCao/Eexample_1")]
+    ///<see cref="XCEditorTools"/>
+
     ///<see cref="XiaoCaoEexample_1"/>
     ///
     //[MenuItem("XiaoCao/对象收藏夹")]
     ///<see cref="ObjectsWindow"/>
+    ///
+    /// 
+    ///<see cref="XCEditorExample"/>
+    ///
+
 
 }
+
+

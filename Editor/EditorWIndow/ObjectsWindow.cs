@@ -10,9 +10,9 @@ using XiaoCaoEditor;
 public class ObjectsWindow : XiaoCaoWindow
 {
     [Expandable()]
-    public EditorObjects objects;
+    public EditorObjects _objects;
 
-    public override Object DrawTarget => objects;
+    public override Object DrawTarget => _objects;
 
     private static ObjectsWindow instance;
     public static ObjectsWindow Instance
@@ -24,19 +24,21 @@ public class ObjectsWindow : XiaoCaoWindow
             return instance;
         }
     }
+    public override void OnEnable()
+    {
+        string path = "Assets/Ignore/Editor/XCObjectUsing.asset";
+        _objects = XCAseetTool.GetOrNewSO<EditorObjects>(path);
+        base.OnEnable();
+    }
 
-    [MenuItem("XiaoCao/对象收藏夹")]
+    [MenuItem(XCEditorTools.ObjectsWindow)]
     static void Open()
     {
         instance = OpenWindow<ObjectsWindow>("对象收藏夹");
     }
 
 
-    public void OnEnable()
-    {
-        string path = "Assets/Ignore/Editor/XCObjectUsing.asset";
-        objects = XCAseetTool.GetOrNewSO<EditorObjects>(path);
-    }
+
 }
 
 
@@ -47,23 +49,15 @@ public static class XiaoCaoObjectUsingExtend
     {
         var objs = Selection.objects;
         var win = ObjectsWindow.Instance;
-        if (win.objects.ObjectList == null)
+        if (win._objects.ObjectList == null)
         {
-            win.objects.ObjectList = new List<Object>();
+            win._objects.ObjectList = new List<Object>();
         }
 
         foreach (var item in objs)
         {
-            win.objects.ObjectList.Add(item);
-            Debug.Log($"yns add {item.name}");
+            win._objects.ObjectList.Add(item);
+            Debug.Log($" add {item.name}");
         }
     }
 }
-
-
-public class EditorObjects : ScriptableObject
-{
-    [NaughtyAttributes.Label("收藏夾")]
-    public List<Object> ObjectList;
-}
-

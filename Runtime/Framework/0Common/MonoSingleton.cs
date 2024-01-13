@@ -7,7 +7,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
 
     protected static T _instance = null;
 
-    public static T Instance
+    public static T Inst
     {
         get
         {

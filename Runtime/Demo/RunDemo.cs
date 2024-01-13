@@ -9,24 +9,43 @@ namespace XiaoCao
     {
         public async void Run()
         {
-            Debug.Log($"yns Run");
+
+            //这里做点编辑器开关
+            //Debuger.LogLevel = LogLevel.Info;
+            Debuger.LogLevel = LogLevel.Error;
+
             //初始化
             await InitYooAsset();
 
+            Debuger.Log("==== InitYooAsset Finish ====");
+
             //版本判断 无
+
 
             //玩家数据
             LoadPlayerData();
+
+            GameMgr.Inst.SetGameState(GameState.Running);
         }
 
         private void LoadPlayerData()
         {
-            Debug.Log($"yns LoadPlayerData");
+            Debuger.Log($" LoadPlayerData");
 
-            Player0 player = EntityMgr.Instance.CreatEntity<Player0>();
+            Player0 player = EntityMgr.Inst.CreatEntity<Player0>();
 
             //SavaMgr
-            player.Init(new PlayerData0());
+
+            var data0 =  SavaMgr.LoadData<PlayerData0>(out bool isSuc);
+            player.Init(data0, true);
+            if (!isSuc)
+            {
+                Debuger.Log($"--- creat newData");
+                SavaMgr.SavaData(data0);
+            }
+
+
+
             //...
 
         }
@@ -35,6 +54,7 @@ namespace XiaoCao
         {
             ResMgr.InitYooAsset();
             await ResMgr.InitPackage().Task;
+            await ResMgr.InitRawPackage().Task;
         }
 
 

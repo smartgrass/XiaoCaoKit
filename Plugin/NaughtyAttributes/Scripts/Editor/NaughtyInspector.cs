@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using ET;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -83,6 +84,8 @@ namespace NaughtyAttributes.Editor
             DrawNonSerializedFields();
             DrawNativeProperties();
             DrawButtons();
+
+            ComponentViewHelper.Draw(target);
         }
         protected void DrawButtons(bool drawHeader = true)
         {
@@ -148,10 +151,11 @@ namespace NaughtyAttributes.Editor
                     {
                         if (property.objectReferenceValue == null)
                         {
-                            //if(serializedObject.targetObject is ScriptableObject so)
+                            //if (serializedObject.targetObject is ScriptableObject so)
                             //{
                             //    MonoScript ms = MonoScript.FromScriptableObject(so);
-                            //}
+                            //    EditorGUILayout.ObjectField("", ms, typeof(Object), true);
+                            //}              
                             var namePro = serializedObject.FindProperty("m_Name");
                             EditorGUILayout.ObjectField(namePro.stringValue, targets[0], typeof(Object), true);
                         }

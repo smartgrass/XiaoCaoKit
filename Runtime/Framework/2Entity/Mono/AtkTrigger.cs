@@ -9,7 +9,7 @@ public class AtkTrigger : IdComponent
     {
         if (other.TryGetComponent<IdRole>(out IdRole role))
         {
-            if (EntityMgr.Instance.FindEntity<Role>(role.id, out Role entity))
+            if (EntityMgr.Inst.FindEntity<Role>(role.id, out Role entity))
             {
                 entity.OnDamage(id,info);
             }

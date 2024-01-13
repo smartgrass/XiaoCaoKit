@@ -13,6 +13,8 @@ namespace XiaoCao
 
         public XCTaskData data;
 
+        public bool IsMainTask => data.IsMainTask;
+
         public ObjectData ObjectData => data.objectData;
 
         public List<XCEvent> _events => data._events;
@@ -21,6 +23,8 @@ namespace XiaoCao
         public List<XCTask> subTasks = new List<XCTask>();
 
         public XCState State { get; set; }
+
+        public bool IsBusy => State ==  XCState.Running;
 
         public TaskInfo Info;
 
@@ -36,20 +40,22 @@ namespace XiaoCao
 
         private int _finshiCout = 0;
 
-        public static XCTask CreatTask(XCTaskData data)
+        public static XCTask CreatTask(XCTaskData data, TaskInfo info)
         {
             XCTask task = new XCTask();
+            task.data = data;
+            task.Info = info;
             return task;
         }
 
         /// <summary>
         /// 任务创建时执行, 子任务在触发帧才执行
         /// </summary>
-        public void TaskStart()
+        public void StartRun()
         {
-            Debug.Log($"yns TaskStart");
+            Debug.Log($" StartRun {Info.skillId}");
             data.HasTrigger = true;
-            data.objectData.OnTrigger(Info);
+            data.objectData?.OnTrigger(Info);
             State = XCState.Running;
             _startSubTrackIndex = 0;
             _startEventIndex = 0;
@@ -60,12 +66,13 @@ namespace XiaoCao
             for (int i = 0; i < _events.Count; i++)
             {
                 _endFrame = Math.Max(_events[i].End, _endFrame);
+                _events[i].task = this;
             }
         }
 
         void UpdateSubTask()
         {
-            int subLen = data.subDatas.Count;
+            int subLen = data.subDatas == null ? 0 : data.subDatas.Count;
             for (int i = _startSubTrackIndex; i < subLen; i++)
             {
                 var subData = data.subDatas[i];
@@ -73,9 +80,10 @@ namespace XiaoCao
                 {
                     if (subData.start >= _curFrame)
                     {
-                        var subTask = CreatTask(subData);
+                        var subTask = CreatTask(subData, Info);
+                        subTask.Runner = Runner;
                         subTasks.Add(subTask);
-                        subTask.TaskStart();
+                        subTask.StartRun();
                         _startSubTrackIndex = i + 1;
                     }
                     else
@@ -98,8 +106,9 @@ namespace XiaoCao
                 }
             }
 
-            if (subFinish)
+            if (subFinish && State != XCState.Running && IsMainTask)
             {
+                State = XCState.Stopped;
                 Runner.AllFinsh();
             }
         }
@@ -114,9 +123,9 @@ namespace XiaoCao
             //delta不是稳定的
             //当前的1帧,指的的是动画帧,即1/30s,而不是update的一帧
             _curFrame = Mathf.FloorToInt(_curTime * XCSetting.FrameRate);
-            //Debug.Log("yns  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
+            //Debug.Log("  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
 
-            ObjectData.OnFrameUpdate(_curFrame);
+            ObjectData?.OnFrameUpdate(_curFrame);
 
             UpdateEvent();
 
@@ -125,6 +134,7 @@ namespace XiaoCao
 
         private void UpdateEvent()
         {
+
             if (State != XCState.Running)
                 return;
 
@@ -137,7 +147,6 @@ namespace XiaoCao
                 {
                     if (_curFrame >= e.Start)
                     {
-                        e.OnStart();
                         e.OnTrigger(_curTime - _events[i].StartTime);
                     }
                     else
@@ -156,7 +165,7 @@ namespace XiaoCao
                     else
                     {
                         //结束帧/超出帧
-                        e.UpdateEvent(_curFrame, _events[i].EndTime);
+                        e.UpdateEvent(_curFrame, _events[i].LengthTime);
                         e.OnFinish();
                         _finshiCout++;
 
@@ -171,7 +180,6 @@ namespace XiaoCao
 
             if (_curFrame >= _endFrame)
             {
-                Runner.onFinishEvent?.Invoke();
                 State = XCState.Stopped;
             }
         }

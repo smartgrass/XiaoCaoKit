@@ -229,7 +229,7 @@ namespace Flux
             }
             tBetweenPoints = curTime / curTimeLen;
 
-            //Debug.Log($"yns {normalizedTime} {timeIndex} {tBetweenPoints}  {curTime} / {curTimeLen}");
+            //Debug.Log($" {normalizedTime} {timeIndex} {tBetweenPoints}  {curTime} / {curTimeLen}");
 
             //曲线缩放
             tBetweenPoints = DOVirtual.EasedValue(0, 1, tBetweenPoints, GetEase(timeIndex));

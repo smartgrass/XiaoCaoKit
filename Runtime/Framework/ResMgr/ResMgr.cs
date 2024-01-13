@@ -32,10 +32,10 @@ public class ResMgr
         return task.AssetObject;
     }
 
-    public static byte[] LoadByte(string path)
+    public static byte[] LoadRawByte(string path)
     {
         Debug.Log($"---  {path}");
-        var handle = Loader.LoadRawFileSync(path);
+        var handle = RawLoader.LoadRawFileSync(path);
         byte[] fileData = handle.GetRawFileData();
         return fileData;
     }
@@ -43,10 +43,12 @@ public class ResMgr
 
     #region Init
     public const string PACKAGENAME = "DefaultPackage";
+    public const string PACKAGENAME_RAW = "RawPackage";
 
     public const string RESDIR = "Assets/_Res";
 
     public static ResourcePackage Loader;
+    public static ResourcePackage RawLoader;
 
     public static void InitYooAsset()
     {
@@ -58,44 +60,66 @@ public class ResMgr
         YooAssets.SetDefaultPackage(Loader);
 
     }
-    //需要等待
-    public static InitializationOperation InitPackage()
-    {
-        // 创建默认的资源包
-        string packageName = PACKAGENAME;
-        var tempPack = YooAssets.TryGetPackage(packageName);
-        if (tempPack == null)
-        {
-            tempPack = YooAssets.CreatePackage(packageName);
-            YooAssets.SetDefaultPackage(tempPack);
-        }
-        Loader = tempPack;
 
+    public static InitializationOperation InitRawPackage()
+    {
+        EPlayMode playMode = GetEPlayMode();
+
+        RawLoader = YooAssets.CreatePackage(PACKAGENAME_RAW);   
         InitializationOperation initializationOperation = null;
 
 #if UNITY_EDITOR
-        //编辑器模式使用。
-        EPlayMode playMode = (EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
-        Debuger.Warn($"编辑器模式使用:{playMode}");
-
-        // 编辑器下的模拟模式
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            var createParameters = new EditorSimulateModeParameters();
-            createParameters.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, packageName);
-            initializationOperation = tempPack.InitializeAsync(createParameters);
+            var rawPar = new EditorSimulateModeParameters();
+            rawPar.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.RawFileBuildPipeline, PACKAGENAME_RAW);
+            initializationOperation = RawLoader.InitializeAsync(rawPar);
         }
-#else
-        //运行时使用。
-        EPlayMode playMode = EPlayMode.OfflinePlayMode;
-        Debuger.Warn($"playMode:{playMode}");
 #endif
 
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var createParameters = new OfflinePlayModeParameters();
-            initializationOperation = tempPack.InitializeAsync(createParameters);
+            var par = new OfflinePlayModeParameters();
+            initializationOperation = RawLoader.InitializeAsync(par);
+        }
+
+        return initializationOperation;
+    }
+
+    //需要等待
+    public static InitializationOperation InitPackage()
+    {
+        // 创建默认的资源包
+        var tempPack = YooAssets.TryGetPackage(PACKAGENAME);
+        if (tempPack == null)
+        {
+            tempPack = YooAssets.CreatePackage(PACKAGENAME);
+            YooAssets.SetDefaultPackage(tempPack);
+        }
+        Loader = tempPack;
+
+
+
+        InitializationOperation initializationOperation = null;
+
+        EPlayMode playMode = GetEPlayMode();
+#if UNITY_EDITOR
+        //编辑器模式使用。
+        Debuger.Warn($"编辑器模式使用:{playMode}");
+        // 编辑器下的模拟模式
+        if (playMode == EPlayMode.EditorSimulateMode)
+        {
+            var par = new EditorSimulateModeParameters();
+            par.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME);
+            initializationOperation = tempPack.InitializeAsync(par);
+        }
+#endif
+        // 单机运行模式
+        if (playMode == EPlayMode.OfflinePlayMode)
+        {
+            var par = new OfflinePlayModeParameters();
+            initializationOperation = tempPack.InitializeAsync(par);
         }
 
         // 联机运行模式
@@ -106,7 +130,19 @@ public class ResMgr
         return initializationOperation;
     }
 
-    #endregion
+    private static EPlayMode GetEPlayMode()
+    {
+        EPlayMode playMode = EPlayMode.OfflinePlayMode;
+#if UNITY_EDITOR
+        playMode = (EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
+#else
+        playMode = EPlayMode.OfflinePlayMode;
+#endif
+
+        return playMode;
+    }
+
+#endregion
     /*
     https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
     LoadSceneAsync() 异步加载场景

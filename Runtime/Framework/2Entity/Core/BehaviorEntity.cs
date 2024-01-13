@@ -15,17 +15,18 @@ namespace XiaoCao
         public float DeltaTime => Time.deltaTime;
         public float FixedDeltaTime => Time.fixedDeltaTime;
 
-        public bool hasAwake;
+        public bool isCreated;
 
         private bool enable;
-        public bool IsRuning => hasAwake && enable && gameObject;
+        //是否有效
+        public bool IsRuning => isCreated && enable && gameObject;
 
         public bool Enable
         {
             get { return enable; }
             set
             {
-                if (hasAwake && enable != value)
+                if (isCreated && enable != value)
                 {
                     enable = value;
                     OnEnable(value);
@@ -39,18 +40,21 @@ namespace XiaoCao
 
         public void OnCreat()
         {
-            Debug.Log($"--- OnCreat {id}");
+            Debuger.Log($"--- OnCreat {id}");
             UpdateEvent += OnUpdate;
             FixedUpdateEvent += OnFixedUpdate;
             LaterUpdateEvent += OnLaterUpdate;
             DestroyEvent += OnDestroy;
+            isCreated = true;
             Awake();
         }
 
+        /// <summary>
+        /// 创建后就执行, 即使没有GameObject
+        /// </summary>
         protected virtual void Awake()
         {
-            hasAwake = true;
-            Debug.Log($"--- Awake");
+            Debuger.Log($"--- Awake");
         }
         protected virtual void OnEnable(bool isEnable)
         {

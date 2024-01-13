@@ -122,6 +122,16 @@ public static class MathTool
 
     #endregion
     #region Vector & Rotate
+    public static bool IsNaN(this Vector2 v)
+    {
+        return v == Vector2.zero;
+    }    
+    public static bool IsNaN(this Vector3 v)
+    {
+        return v == Vector3.zero;
+    }
+
+
     /// <summary>
     /// 旋转向量,忽略y轴 
     /// </summary>
@@ -272,7 +282,7 @@ public static class MathTool
         Vector3 panleVector = Vector3.Cross(AB, normalVector).normalized;
 
 
-        Debug.Log($"yns dot {Vector3.Dot(panleVector, BC)} {angle} {Mathf.Sin(angle)}");
+        Debug.Log($" dot {Vector3.Dot(panleVector, BC)} {angle} {Mathf.Sin(angle)}");
 
         if (Vector3.Dot(panleVector, BC) > 0)
         {

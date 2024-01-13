@@ -23,10 +23,9 @@ namespace XiaoCao
 
         public bool isLocalOnly = false;
 
-        //TODO Rename
-        public XCTask track;
+        public XCTask task;
         public XCState State { get; set; }
-        public TaskInfo Info => track.Info;
+        public TaskInfo Info => task.Info;
         public Transform Tran { get => Info.curTF; set => Info.curTF = value; }
         public GameObject Go { get => Info.curGO; set => Info.curGO = value; }
 
@@ -74,17 +73,14 @@ namespace XiaoCao
             get { return range.Length * XCSetting.FramePerSec; }
         }
 
-        
-        public virtual void OnStart()
-        {
-            State = XCState.Start;
-        }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="startOffsetTime">超出触发时间的偏移量,一般用不上</param>
         public virtual void OnTrigger(float startOffsetTime)
         {
+            State = XCState.Start;
+       
             State = XCState.Running;
         }
         public virtual void OnFinish() 
@@ -92,6 +88,12 @@ namespace XiaoCao
             State = XCState.Stopped;        
         }
         public virtual void OnUpdateEvent(int frame, float timeSinceTrigger) { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frame"></param>
+        /// <param name="timeSinceTrigger">事件触发后的相对时间,从事件的strat帧作为0开始计时</param>
         public void UpdateEvent(int frame, float timeSinceTrigger)
         {
             OnUpdateEvent(frame, timeSinceTrigger);

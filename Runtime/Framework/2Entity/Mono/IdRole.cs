@@ -10,8 +10,19 @@ public class IdRole : IdComponent
     public CharacterController cc;
 
 
+    public Transform Follow;
+    public Transform LookAt;
+
+    [HideInInspector]
+    public Transform tf;
+
     [HideInInspector]
     public Animator animator;
+
+    private void Awake()
+    {
+        tf = transform;
+    }
 
     private void OnValidate()
     {
@@ -19,5 +30,7 @@ public class IdRole : IdComponent
             rb = GetComponent<Rigidbody>();
         if(cc==null)
             cc = GetComponent<CharacterController>();
+        if (Follow == null)
+            Follow = transform.Find("Follow");
     }
 }

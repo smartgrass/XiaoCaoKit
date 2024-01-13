@@ -5,6 +5,8 @@ using UnityEngine;
 using Flux;
 using Object = UnityEngine.Object;
 using JetBrains.Annotations;
+using OdinSerializer;
+using System.Text;
 
 namespace XiaoCao
 {
@@ -27,6 +29,8 @@ namespace XiaoCao
         //NoSerializa
         public bool HasTrigger { get; set; }
 
+        public bool IsMainTask { get; set; }
+
         public float speed = 1;
 
         public void AddSubData(XCTaskData subData)
@@ -40,13 +44,20 @@ namespace XiaoCao
             _events.Sort(new EventSort());
         }
 
+        public override string ToString()
+        {
+            var buffer = SerializationUtility.SerializeValue<XCTaskData>(this, DataFormat.JSON);
+            string res = Encoding.UTF8.GetString(buffer);
+            return res;
+        }
+
     }
 
     class EventSort : IComparer<XCEvent>
     {
         public int Compare(XCEvent e1, XCEvent e2)
         {
-            if (e1.Start < e2.Start)
+            if (e1.Start > e2.Start)
             {
                 return 1;
             }

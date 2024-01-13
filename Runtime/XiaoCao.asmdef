@@ -2,10 +2,11 @@
     "name": "XiaoCao",
     "rootNamespace": "",
     "references": [
-        "GUID:e34a5702dd353724aa315fb8011f08c3",
         "GUID:776d03a35f1b52c4a9aed9f56d7b4229",
+        "GUID:e34a5702dd353724aa315fb8011f08c3",
         "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:dc47925d1a5fa2946bdd37746b2b5d48"
+        "GUID:dc47925d1a5fa2946bdd37746b2b5d48",
+        "GUID:4307f53044263cf4b835bd812fc161a4"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

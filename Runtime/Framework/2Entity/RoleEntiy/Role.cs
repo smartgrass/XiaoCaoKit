@@ -17,6 +17,8 @@ namespace XiaoCao
 
         internal Animator Anim => idRole.animator;
 
+        public bool isBodyCreated => body != null;
+
         public IdRole idRole;
 
         public virtual void CreateGameObject(bool isGen = false)
@@ -30,7 +32,7 @@ namespace XiaoCao
             string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
             GameObject go = ResMgr.LoadInstan(path);
 
-            Debug.Log($"--- path {path}");
+            Debuger.Log($"--- path {path}");
 
             idRole = go.transform.GetComponent<IdRole>();
             if (idRole == null)
@@ -39,12 +41,14 @@ namespace XiaoCao
                 string baseRole = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}.prefab";
                 GameObject baseGo = ResMgr.LoadInstan(baseRole);
                 idRole = baseGo.transform.GetComponent<IdRole>();
+                idRole.id = id;
                 go.transform.SetParent(baseGo.transform,false);
                 body = go;
                 BindGameObject(baseGo);
             }
             else
             {
+                idRole.id = id;
                 body = go.transform.Find("body").gameObject;
                 BindGameObject(go);
             }

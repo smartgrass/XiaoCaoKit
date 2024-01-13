@@ -8,11 +8,12 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using XiaoCao;
+using XiaoCaoEditor;
 using Object = UnityEngine.Object;
 
 public class XiaoCaoEexample_1 : XiaoCaoWindow
 {
-    [MenuItem("XiaoCao/Eexample_1")]
+    [MenuItem(XCEditorTools.ExampleWindow_1)]
     static void Open()
     {
         OpenWindow<XiaoCaoEexample_1>("窗口名字");
@@ -34,7 +35,7 @@ public class XiaoCaoEexample_1 : XiaoCaoWindow
 
     private void OnColorChange()
     {
-        Debug.Log($"yns value = {value}");
+        Debug.Log($" value = {value}");
         color = Color.blue * value;
     }
 
@@ -68,19 +69,19 @@ public class XiaoCaoEexample_1 : XiaoCaoWindow
     [Button("OnShowBtn", -6)]
     private void OnShowBtn()
     {
-        Debug.Log($"yns Button6 ");
+        Debug.Log($" Button6 ");
     }
 
     // 如果数字相同,则按钮挤在同一行
     [Button("ButtonA-1", -1)]
     private void Fun4()
     {
-        Debug.Log($"yns ButtonA-1");
+        Debug.Log($" ButtonA-1");
     }
     [Button("ButtonB-1", -1)]
     private void fun3()
     {
-        Debug.Log($"yns ButtonB-1");
+        Debug.Log($" ButtonB-1");
     }
 
     //6.========== 利用UnityEvent 动态注册按钮事件 ==========
@@ -89,7 +90,7 @@ public class XiaoCaoEexample_1 : XiaoCaoWindow
     [Button("执行事件")]
     private void DoUnityEvent()
     {
-        Debug.Log($"yns do Event");
+        Debug.Log($" do Event");
         unityEvent?.Invoke();
     }
 

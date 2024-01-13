@@ -30,16 +30,18 @@ namespace XiaoCao
         private float lastTime = 0;
 
         #endregion
-        public override void OnStart()
+        public override void OnTrigger(float startOffsetTime)
         {
-            base.OnStart();
             m4 = Tran.localToWorldMatrix;
             cc = Tran.GetComponent<CharacterController>();
+            base.OnTrigger(startOffsetTime);
         }
 
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
             float t = timeSinceTrigger / LengthTime;
+
+            Debug.Log($"--- {t}");
 
             var detalMove = GetVec3Value(t) - GetVec3Value(lastTime);
             lastTime = t;

@@ -145,7 +145,7 @@ namespace Flux
             xce.startOffset = fe._startOffset * XCSetting.FramePerSec;
             xce.blenderLength = fe._blendLength * XCSetting.FramePerSec;
 			xce.isBackToIdle = fe.isBackToIdle;
-			xce.eName = fe._animationClip.name;
+			xce.clipLen = fe._animationClip.length;
 			return xce;
         }
     }

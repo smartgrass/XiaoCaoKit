@@ -49,26 +49,27 @@ namespace XiaoCao
         {
             return $"{Application.persistentDataPath}/Data/{t.Name}.data";
         }
-        public static T LoadData<T>()
+        public static T LoadData<T>(out bool isSuc) where T : new()
         {
             Type type = typeof(T);
             string path = GetSavaPath(type);
             if (FileTool.IsFileExist(path))
             {
+                isSuc = true;
                 return FileTool.DeserializeRead<T>(path);
             }
             else
             {
-                T newData = default(T);
-                Debug.Log($"--- Creat Default Data {type.Name} {newData}");
-                return newData;
+                isSuc = false;
+                return new T();
             }
         }
 
-        public void SavaData<T>(T data)
+        public static void SavaData<T>(T data)
         {
             Type type = typeof(T);
             string path = GetSavaPath(type);
+            FileTool.CheckFilePathDir(path);
             FileTool.SerializeWrite(path, data);
         }
 

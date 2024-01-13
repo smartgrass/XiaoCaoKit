@@ -8,7 +8,7 @@
         public override void OnTrigger(float startOffsetTime)
         {
             base.OnTrigger(startOffsetTime);
-            track.Show(true);
+            task.Show(true);
         }
 
         public override void OnFinish()
@@ -16,7 +16,7 @@
             base.OnFinish();
             if (hideOnEnd)
             {
-                track.Show(false);
+                task.Show(false);
             }
         }
 

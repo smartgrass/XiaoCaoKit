@@ -9,10 +9,10 @@ namespace XiaoCao
         #region private
         private Animator _animator = null;
 
-        private AnimationClip Clip;
-
         #endregion
         public int clipHash => Animator.StringToHash(eName);
+
+        public float clipLen = 1;
 
         public float blenderLength = 0;
 
@@ -23,45 +23,29 @@ namespace XiaoCao
         //!hasExitTime 不等当前clip自动播完
         public bool isBackToIdle;
 
-        void FindClip()
-        {
-            foreach (var item in _animator.runtimeAnimatorController.animationClips)
-            {
-                if (item.name == eName)
-                {
-                    Clip = item;
-                    return;
-                }
-            }
-        }
 
         public override void OnTrigger(float timeSinceTrigger)
         {
             if (_animator == null)
             {
-                //this.track.data
-                //if (skillOwner.isCustomObject)
-                //{
-                //    _animator = skillOwner.eventOwnerTF.GetComponentInChildren<Animator>(true);
-                //}
-                //else
-                //{
-                //    //默认获取玩家动画机
-                //    _animator = skillOwner.attacker.animator;
-                //}
+                if (task.IsMainTask)
+                {
+                    _animator = Info.playerAnimator;
+                }
+
+                if (_animator == null)
+                {
+                    _animator = Info.curTF.GetComponentInChildren<Animator>();
+                }
             }
+
             if (_animator == null)
             {
-                throw new Exception($"no _animator {eName}");
-            }
-            FindClip();
-
-            if (Clip == null)
-            {
-                throw new Exception($"no clip {eName}");
+                Debug.LogError($"no _animator {eName}");
+                return;
             }
 
-            _animator.speed = track.Info.speed;
+            _animator.speed = task.Info.speed;
 
             base.OnTrigger(timeSinceTrigger);
 
@@ -71,7 +55,7 @@ namespace XiaoCao
             //    return;
             //}
 
-            _animator.CrossFade(clipHash, blenderLength / Clip.length, 0, startOffset / Clip.length);
+            _animator.CrossFade(clipHash, blenderLength / clipLen, 0, startOffset / clipLen);
 
             //修正偏差值
             if (timeSinceTrigger > 0)
@@ -84,7 +68,7 @@ namespace XiaoCao
         {
             if (isBackToIdle)
             {
-                _animator.CrossFade(AnimHash.Idle, 0.05f);
+                _animator?.CrossFade(AnimHash.Idle, 0.05f);
             }
             base.OnFinish();
         }

@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
+using static UnityEditor.Progress;
 using Object = UnityEngine.Object;
 
 namespace XiaoCaoEditor
 {
     public static class XCEditorTools
     {
-
+        public const string OpenPath_Sava = "XiaoCao/打开路径/存档位置";
+        public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
+        public const string ObjectsWindow = "XiaoCao/对象收藏夹";
+        public const string ObjectViewWindow = "XiaoCao/对象检查器";
 
     }
 
@@ -93,7 +98,7 @@ namespace XiaoCaoEditor
                 AssetDatabase.CreateAsset(newObject, path);
                 AssetDatabase.Refresh();
                 objectUsing = AssetDatabase.LoadAssetAtPath<T>(path);
-                Debug.Log($"yns Creat");
+                Debug.Log($" Creat");
             }
             return objectUsing;
         }
@@ -104,4 +109,74 @@ namespace XiaoCaoEditor
         }
 
     }
+
+
+    public static class XCAnimatorTool
+    {
+        public static void CheckAnim(RuntimeAnimatorController runtimeAnim, Dictionary<string, AnimationClip> animDic,int skillId)
+        {
+
+            AnimatorController ac = runtimeAnim as AnimatorController;
+            if (ac.layers.Length < 1)
+            {
+                ac.layers = new AnimatorControllerLayer[1];
+            }
+
+            AnimatorStateMachine sm = ac.layers[0].stateMachine;
+
+            Dictionary<string, AnimatorState> stateDic = new();
+            foreach (var item in sm.states)
+            {
+                stateDic.Add(item.state.name, item.state);
+            }
+
+            int posXIndex = skillId % 10;
+
+            bool isChange = false;
+            int i = 0;
+            foreach (var kv in animDic)
+            {
+                string key = kv.Key;
+                var value = kv.Value;
+                if (!stateDic.ContainsKey(key))
+                {
+                    //添加
+                    isChange = true;
+                    Vector3 pos = new Vector3(800 + posXIndex * 100, i * 20, 0);
+                    AnimatorState state = sm.AddState(key, pos);
+                    state.motion = value;
+                    state.AddExitTransition(true);
+                    Debug.Log($"--- add {value}");
+                }
+                else
+                {
+                    if (stateDic[key].motion != value)
+                    {
+                        Debug.Log($"--- change {stateDic[key].motion} {value}");
+                        stateDic[key].motion = value;
+                        isChange = true;
+                    }
+                }
+                i++;
+            }
+
+            if (isChange)
+            {
+                Debug.Log($"anim controller Change ");
+                //AssetDatabase.ForceReserializeAssets(new[] { path });
+                EditorUtility.SetDirty(ac);
+            }
+        }
+    }
+
+
+    public static class XCToolBarMenu
+    {
+        [MenuItem(XCEditorTools.OpenPath_Sava)]
+        static void OpenPath_Sava()
+        {
+            EditorUtility.RevealInFinder($"{Application.persistentDataPath}/");
+        }
+    }
+
 }

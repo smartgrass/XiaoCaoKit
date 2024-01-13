@@ -23,7 +23,7 @@ namespace XiaoCaoEditor
         public static void OpenByDefault()
         {
             string path = System.IO.Path.GetFullPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            Debug.Log($"yns {path}");
+            Debug.Log($" {path}");
             EditorUtility.OpenWithDefaultApp(path);
         }
 

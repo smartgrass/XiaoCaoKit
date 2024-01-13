@@ -10,7 +10,7 @@
 
         public static void EntityMsg(this IdComponent idComponent, EntityMsgType type, object msg = null)
         {
-            if(EntityMgr.Instance.FindEntity(idComponent.id, out Entity entity))
+            if(EntityMgr.Inst.FindEntity(idComponent.id, out Entity entity))
             {
                 //from
                 entity.ReceiveMsg(type, idComponent.id, msg);

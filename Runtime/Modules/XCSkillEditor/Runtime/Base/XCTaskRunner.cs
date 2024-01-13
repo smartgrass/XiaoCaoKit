@@ -16,7 +16,11 @@ namespace XiaoCao
     {
         public XCTask Task { get; set; }
 
-        public UnityEvent onFinishEvent = new UnityEvent();
+        private bool IsSuccees { get; set; } //是正常执行
+
+        public UnityEvent<XCTaskRunner> onEndEvent = new UnityEvent<XCTaskRunner>(); //无论退出还是完成都会执行
+
+        public UnityEvent<XCTaskRunner> onFinishEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
 
         public static AssetPool runnerPool;
 
@@ -45,13 +49,14 @@ namespace XiaoCao
         }
         public void Init(XCTaskData data, TaskInfo info)
         {
-            Task = XCTask.CreatTask(data);
-            Task.Runner = this;
-            Task.Info = info;
+            Debug.Log($"--- skill {info.skillId} {data}");
             //深复制
             var newData = SerializationUtility.CreateCopy(data) as XCTaskData;
-            Task.data = newData;
-            Task.TaskStart();
+
+            Task = XCTask.CreatTask(newData,info);
+            newData.IsMainTask = true;
+            Task.Runner = this;
+            Task.StartRun();
         }
 
         private void Update()
@@ -63,15 +68,24 @@ namespace XiaoCao
 
         public void AllFinsh()
         {
+            if (IsSuccees)
+            {
+                onFinishEvent?.Invoke(this);
+                onFinishEvent.RemoveAllListeners();
+            }
+            onEndEvent.Invoke(this);
+            onEndEvent.RemoveAllListeners();
             Task = null;
             gameObject.SetActive(false);
+            Debug.Log($"--- Release {gameObject} ");
+            runnerPool.pool.Release(gameObject);
         }
     }
 
     public class TaskInfo
     {
         public Transform playerTF;
-
+        internal Animator playerAnimator;
         //针对当前对象, 可以是玩家或技能物体
         public GameObject curGO;
         public Transform curTF;
@@ -84,6 +98,7 @@ namespace XiaoCao
         public Vector3 castPos;
 
         public float speed = 1;
+
     }
 
     public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache
@@ -99,7 +114,7 @@ namespace XiaoCao
             }
 
             //需要表做什么事?  技能类型, 技能图标 ,cd
-            byte[] bytes = ResMgr.LoadByte(XCSetting.GetSkillDataPath(roleType, skillId));
+            byte[] bytes = ResMgr.LoadRawByte(XCSetting.GetSkillDataPath(roleType, skillId));
             XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
             Inst.dataCache.Add(idKey, task);
             return task;

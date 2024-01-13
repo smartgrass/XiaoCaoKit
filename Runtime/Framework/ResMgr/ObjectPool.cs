@@ -31,6 +31,7 @@ namespace XiaoCao
             }
 
             m_List = new List<T>(defaultCapacity);
+            map = new HashSet<int>();
             m_CreateFunc = createFunc;
             m_ActionOnGet = actionOnGet;
             m_ActionOnRelease = actionOnRelease;

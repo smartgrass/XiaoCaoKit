@@ -15,15 +15,15 @@ using UnityEditor;
 public static class FileTool
 {
 #if UNITY_EDITOR
-    public static void OpenDir(string path ,bool isAssetPath = false)
+    public static void OpenDir(string path, bool isAssetPath = false)
     {
         EditorUtility.RevealInFinder(PathTool.GetUpperDir(path));
     }
 #endif
-    
-    public static void WriteToFile(string str, string filePath, bool checkDir = false)
+
+    public static void WriteToFile(string str, string filePath, bool autoCreatDir = false)
     {
-        if (checkDir)
+        if (autoCreatDir)
         {
             CheckFilePathDir(filePath);
         }
@@ -53,7 +53,7 @@ public static class FileTool
         }
     }
 
-    public static void WriteToFile(byte[] by, string filePath ,bool autoCreatDir = false)
+    public static void WriteToFile(byte[] by, string filePath, bool autoCreatDir = false)
     {
         if (autoCreatDir)
         {
@@ -61,10 +61,19 @@ public static class FileTool
         }
 
         File.WriteAllBytes(filePath, by);
-        Debug.LogFormat("WriteToFile {0}",filePath);
+        Debug.LogFormat("WriteToFile {0}", filePath);
     }
 
-    private static void CheckFilePathDir(string filePath)
+    public static void WriteAllBytes(string filePath, byte[] by, bool autoCreatDir = false)
+    {
+        if (autoCreatDir)
+        {
+            CheckFilePathDir(filePath);
+        }
+        File.WriteAllBytes(filePath, by);
+    }
+
+    public static void CheckFilePathDir(string filePath)
     {
         string dirPath = PathTool.GetUpperDir(filePath);
         if (!Directory.Exists(dirPath))
@@ -76,7 +85,7 @@ public static class FileTool
     public static void SerializeWrite<T>(string path, T data)
     {
         byte[] bytes = SerializationUtility.SerializeValue<T>(data, DataFormat.Binary);
-        FileTool.WriteAllBytes(path, bytes);
+        FileTool.WriteAllBytes(path, bytes, true);
     }
 
     public static T DeserializeRead<T>(string path)
@@ -86,10 +95,6 @@ public static class FileTool
         return data;
     }
 
-    public static void WriteAllBytes(string filePath, byte[] by)
-    {
-        File.WriteAllBytes(filePath, by);
-    }
 
     public static byte[] ReadByte(string filePath)
     {
@@ -139,7 +144,7 @@ public static class FileTool
         return res;
     }
     //下载Url内容
-    public static string DownloadUrlText(string url,string localFilePath)
+    public static string DownloadUrlText(string url, string localFilePath)
     {
         string str = ReadFileWebUrl(url);
         WriteToFile(str, localFilePath);
@@ -158,15 +163,15 @@ public static class FileTool
         if (dir.Exists)
         {
             dir.Delete(true);
-            Debug.Log("yns Delete " + path);
+            Debug.Log(" Delete " + path);
         }
     }
     //读取贴图
-    public static Texture2D LoadTexture(string path,int w =180,int h=180)
+    public static Texture2D LoadTexture(string path, int w = 180, int h = 180)
     {
         if (!IsFileExist(path))
         {
-            Debug.LogFormat("yns no path {0}" , path);
+            Debug.LogFormat(" no path {0}", path);
             return null;
         }
         FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);

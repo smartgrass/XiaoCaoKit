@@ -16,6 +16,7 @@ namespace XiaoCao
         {
             this.prefab = prefab;
             prefab.SetActive(false);
+            pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
         }
 
         public AssetPool(string path)
@@ -31,6 +32,7 @@ namespace XiaoCao
 
             pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
         }
+
         private GameObject Creat()
         {
             Transform transform = DontDestroyTransfrom.Get(PoolName);

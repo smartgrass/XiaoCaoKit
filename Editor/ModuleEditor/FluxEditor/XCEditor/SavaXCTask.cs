@@ -14,16 +14,17 @@ using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XiaoCao;
+using XiaoCaoEditor;
 using static UnityEditor.Progress;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
-public class XCTaskSava
+public class SavaXCTask
 {
     public const string SavaAllSeqName = "XiaoCao/Flux/SavaAllSeq";
-    public const string ReadSkillDataName = "Assets/XiaoCao/ReadSkillData";
+    public const string ReadSkillDataName = "Assets/XiaoCao/Log XCTask Data";
 
     public static XCSeqSetting fSeqSetting;
-
+    public static FSequence curSequence;
 
     [MenuItem(SavaAllSeqName)]
     private static void Sava()
@@ -56,7 +57,7 @@ public class XCTaskSava
     private static void SavaOneSeq(FSequence Sequence)
     {
         fSeqSetting = Sequence.SeqSetting;
-
+        curSequence = Sequence;
         Transform playerTF = Sequence.Containers[0].Timelines[0].transform;
         List<SkillEventData> skillEvents = new List<SkillEventData>();
         XCTaskData mainData = null;
@@ -78,6 +79,7 @@ public class XCTaskSava
 
             isMain = false;
         }
+
 
         string savaPath = XCSetting.GetSkillDataPath(fSeqSetting.type, Sequence._skillId);
         
@@ -107,7 +109,7 @@ public class XCTaskSava
     {
         if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(".data"))
         {
-            Debug.Log($"yns no .data file {AssetDatabase.GetAssetPath(Selection.activeObject)}");
+            Debug.Log($" no .data file {AssetDatabase.GetAssetPath(Selection.activeObject)}");
             return;
         }
         string filePath = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -137,6 +139,10 @@ public class XCTaskSava
                 taskData._events.AddRange(moveEvent.ToXCEventList());
             });
         }
+        else if (eventType == typeof(FPlayAnimationEvent))
+        {
+            ReadAnimTrack(_track, taskData);
+        }
         else if (DefaultXCEvents.Contains(eventType))
         {
             _track.Events.ForEach((e) => taskData._events.Add(e.ToXCEvent()));
@@ -150,8 +156,28 @@ public class XCTaskSava
 
         return taskData;
     }
+
+    private static void ReadAnimTrack(FTrack _track, XCTaskData taskData)
+    {
+        int length = _track.Events.Count;
+        Dictionary<string,AnimationClip> animDic = new Dictionary<string,AnimationClip>();
+        for (int i = 0; i < length; i++)
+        {
+            FPlayAnimationEvent animEvent = (FPlayAnimationEvent)_track.Events[i];
+            XCEvent xcEvent = animEvent.ToXCEvent();
+            xcEvent.eName = $"{curSequence._skillId}_{i}";
+            animDic.Add(xcEvent.eName, animEvent._animationClip);
+            taskData._events.Add(xcEvent);
+        }
+        //检测动画机连线
+        XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic,curSequence._skillId);
+    }
+
+   
+
+
     static Type[] DefaultXCEvents = {
-        typeof(FPlayAnimationEvent) , typeof(FTweenRotationEvent)  ,
+        typeof(FTweenRotationEvent)  ,
         typeof(FTweenScaleEvent) , typeof(FPlayParticleEvent) };
 
 
