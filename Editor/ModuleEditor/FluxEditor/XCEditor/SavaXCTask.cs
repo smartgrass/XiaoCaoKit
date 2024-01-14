@@ -191,12 +191,11 @@ public class SavaXCTask
 
             string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir(fSeqSetting.type), info.Name);
 
-            Debug.LogWarning($"FLog {info.Name} MoveTo {newPath}");
+            Debug.LogWarning($"FLog {info.Name} CopyTo {newPath}");
 
-            //PrefabUtility.UnpackPrefabInstance(_track.Owner.gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            PrefabUtility.UnpackPrefabInstance(_track.Owner.gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
 
-            AssetDatabase.CreateAsset(_track.Owner, newPath);
-
+            PrefabUtility.SaveAsPrefabAssetAndConnect(_track.Owner.gameObject, newPath, InteractionMode.AutomatedAction);
 
             path = newPath;
         }

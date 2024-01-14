@@ -10,11 +10,22 @@ namespace Flux
 		public override CacheMode AllowedCacheMode { get { return 0; } }
 		public override CacheMode RequiredCacheMode { get { return 0; } }
 
-		public ParticleSystem ParticleSystem { get; private set; }
+		public ParticleSystem ParticleSystem
+		{
+			get
+			{
+				if (_particleSystem == null)
+				{
+                    _particleSystem = Owner.GetComponentInChildren<ParticleSystem>(true);
+				}
+				return _particleSystem;
+			}
+			set { _particleSystem = value; }
+		}
+		private ParticleSystem _particleSystem;
 
 		public override void Init()
 		{
-			ParticleSystem = Owner.GetComponentInChildren<ParticleSystem>();
 			base.Init();
 		}
 

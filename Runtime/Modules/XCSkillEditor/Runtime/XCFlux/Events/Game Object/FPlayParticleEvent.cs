@@ -16,7 +16,7 @@ namespace Flux
 		[Tooltip("Seed to randomize the particle system, 0 = always randomize")]
 		private uint _randomSeed = 1;
 
-		private ParticleSystem _particleSystem = null;
+		public ParticleSystem _particleSystem;
 
 		private float _previousTimeSinceTrigger = 0;
 
@@ -24,9 +24,8 @@ namespace Flux
 
 		protected override void OnInit ()
 		{
-			_particleSystem = ((FParticleTrack)Track).ParticleSystem;
-
-			if( _particleSystem != null )
+            _particleSystem = ((FParticleTrack)Track).ParticleSystem;
+            if ( _particleSystem != null )
 			{
 				_particleSystem.randomSeed = _randomSeed;
 				ParticleSystem.MainModule mainModule = _particleSystem.main;
@@ -34,9 +33,7 @@ namespace Flux
 			}
 			else
 			{
-#if UNITY_EDITOR
-				Debug.LogError("FParticleEvent is attached to an object that doesn't have a ParticleSystem");
-#endif
+				Debug.LogError($"FLog no _particleSystem ");
 			}
 			_previousTimeSinceTrigger = 0;
 			_previousSpeed = Sequence.Speed;
@@ -44,8 +41,8 @@ namespace Flux
 
 		protected override void OnTrigger( float timeSinceTrigger )
 		{
-//			if( _particleSystem != null && Sequence.IsPlaying && Sequence.IsPlayingForward )
-				_particleSystem.Play( true );
+            if (_particleSystem != null)
+                _particleSystem.Play( true );
 		}
 
 		protected override void OnFinish()

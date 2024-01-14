@@ -217,7 +217,7 @@ namespace Flux
 
 		public virtual XCEvent ToXCEvent()
 		{
-			throw new Exception("ToXCEvent null");
+			throw new Exception($"{GetType()} null");
 		}
 
 
