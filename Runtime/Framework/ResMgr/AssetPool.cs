@@ -27,7 +27,9 @@ namespace XiaoCao
 
             if (prefab != null)
             {
-                throw new System.Exception($"no Asset GameObject {path}");
+                //Cube代替
+                prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Debug.LogError($"no Asset!! {path}");
             }
 
             pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);

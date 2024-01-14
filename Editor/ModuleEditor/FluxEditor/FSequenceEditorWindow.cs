@@ -173,6 +173,11 @@ namespace FluxEditor
 #if FLUX_PROFILE
 			Profiler.BeginSample("flux Update");
 #endif
+			if (EditorApplication.isCompiling)
+			{
+				return;
+			}
+
 			if( _sequenceEditor == null )
 			{
 				_sequenceEditor = FSequenceEditor.CreateInstance<FSequenceEditor>();

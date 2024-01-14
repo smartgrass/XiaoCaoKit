@@ -16,6 +16,9 @@ namespace XiaoCaoEditor
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string ObjectViewWindow = "XiaoCao/对象检查器";
 
+        ///<see cref="EditorAssetsExtend"/>
+        public const string AssetCheck = "Assets/Check/";
+
     }
 
     /// <summary>
@@ -49,6 +52,37 @@ namespace XiaoCaoEditor
             {
                 Handles.DrawLine(points[i-1], points[i]);
             }
+        }
+
+
+
+        public static Texture2D lineTex;
+
+        public static void DrawLine(Vector2 pointA, Vector2 pointB)
+        {
+            DrawLine(pointA, pointB, GUI.contentColor, 1f);
+        }
+        public static void DrawLine(Vector2 pointA, Vector2 pointB, Color color, float width)
+        {
+            Matrix4x4 matrix = GUI.matrix;
+            bool flag = !lineTex;
+            if (flag)
+            {
+                lineTex = new Texture2D(1, 1);
+            }
+            Color color2 = GUI.color;
+            GUI.color = color;
+            float num = Vector3.Angle(pointB - pointA, Vector2.right);
+            bool flag2 = pointA.y > pointB.y;
+            if (flag2)
+            {
+                num = -num;
+            }
+            GUIUtility.ScaleAroundPivot(new Vector2((pointB - pointA).magnitude, width), new Vector2(pointA.x, pointA.y + 0.5f));
+            GUIUtility.RotateAroundPivot(num, pointA);
+            GUI.DrawTexture(new Rect(pointA.x, pointA.y, 1f, 1f), lineTex);
+            GUI.matrix = matrix;
+            GUI.color = color2;
         }
     }
 
@@ -95,6 +129,7 @@ namespace XiaoCaoEditor
             if (objectUsing == null)
             {
                 var newObject = ScriptableObject.CreateInstance<T>();
+                FileTool.CheckFilePathDir(path);
                 AssetDatabase.CreateAsset(newObject, path);
                 AssetDatabase.Refresh();
                 objectUsing = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -124,7 +159,7 @@ namespace XiaoCaoEditor
 
             AnimatorStateMachine sm = ac.layers[0].stateMachine;
 
-            Dictionary<string, AnimatorState> stateDic = new();
+            Dictionary<string, AnimatorState> stateDic = new Dictionary<string, AnimatorState>();
             foreach (var item in sm.states)
             {
                 stateDic.Add(item.state.name, item.state);

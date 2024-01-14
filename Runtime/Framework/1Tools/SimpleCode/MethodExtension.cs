@@ -11,4 +11,15 @@ public static class MethodExtension
         return ret;
     }
 
+    static public Transform FindOrNewChildren(this Transform tf, string childrenName)
+    {
+        Transform ret = tf.Find(childrenName);
+        if (ret == null)
+        {
+            var newObject = new GameObject(childrenName);
+            newObject.transform.SetParent(tf,false);
+        }
+        return ret;
+    }
+
 }

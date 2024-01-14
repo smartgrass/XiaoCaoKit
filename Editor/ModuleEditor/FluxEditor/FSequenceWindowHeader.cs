@@ -315,8 +315,8 @@ namespace FluxEditor
                 _sequenceUpdateMode = _sequenceSO.FindProperty("_updateMode");
                 _sequenceLength = _sequenceSO.FindProperty("_length");
 
-                _showPros = new();
-                _showAttrs = new();
+                _showPros = new List<SerializedProperty>();
+                _showAttrs = new List<SeqHeaderShowAttribute>();
                 PropertyUtility.GetAttrProAndAttrs<SeqHeaderShowAttribute>(_sequenceSO, ref _showPros, ref _showAttrs);
             }
 

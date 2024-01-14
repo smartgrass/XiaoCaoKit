@@ -6,9 +6,9 @@ namespace XiaoCao
     public class GameData
     {
         //不会清空
-        public static GameDataCommon commonData = new();
+        public static GameDataCommon commonData = new GameDataCommon();
         //定时请空
-        public static BattleData battleData = new();
+        public static BattleData battleData = new BattleData();
     }
 
     public class GameDataCommon

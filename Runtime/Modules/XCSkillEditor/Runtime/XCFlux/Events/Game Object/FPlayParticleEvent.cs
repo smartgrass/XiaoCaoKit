@@ -3,7 +3,7 @@ using System.Collections;
 
 namespace Flux
 {
-	[FEvent( "Particle System/Play Particle", typeof(FParticleTrack) )]
+	[FEvent( "Game Object/Play Particle", typeof(FParticleTrack) )]
 	public class FPlayParticleEvent : FEvent {
 
 		[SerializeField]

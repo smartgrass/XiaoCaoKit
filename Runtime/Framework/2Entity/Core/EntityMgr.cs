@@ -6,8 +6,8 @@ namespace XiaoCao
 {
     public class EntityMgr : MonoSingleton<EntityMgr>
     {
-        private Dictionary<int, Entity> entityDic = new();
-        private Dictionary<int, BehaviorEntity> behaviorEntityDic = new();
+        private Dictionary<int, Entity> entityDic = new Dictionary<int, Entity>();
+        private Dictionary<int, BehaviorEntity> behaviorEntityDic = new Dictionary<int, BehaviorEntity>();
 
         public T CreatEntity<T>() where T : Entity
         {

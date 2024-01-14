@@ -293,7 +293,7 @@ namespace FluxEditor
                     track = (FTrack)propertyModification.target;
                 }
 
-                if (track != null && track.Sequence == Sequence)
+                if (track != null && track.Timeline && track.Sequence == Sequence)
                 {
                     FTrackEditor trackEditor = GetEditor<FTrackEditor>(track);
                     SetDirty(trackEditor);

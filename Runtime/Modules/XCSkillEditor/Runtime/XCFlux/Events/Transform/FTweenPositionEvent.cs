@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-	[FEvent("Transform/Tween Position", typeof(FTransformTrack))]
+	[FEvent(UnUsing+"Transform/Tween Position", typeof(FTransformTrack))]
 	public class FTweenPositionEvent : FTransformEvent 
 	{
 		private Vector3 _startPosition;

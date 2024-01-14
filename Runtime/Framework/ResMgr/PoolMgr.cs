@@ -9,7 +9,7 @@ namespace XiaoCao
     public class PoolMgr : Singleton<PoolMgr>
     {
         //借助 
-        private Dictionary<string, AssetPool> dicPools = new();
+        private Dictionary<string, AssetPool> dicPools = new Dictionary<string, AssetPool>();
 
         public GameObject Get(string path, float releaseTime = 0)
         {

@@ -2,7 +2,7 @@
 
 namespace Flux
 {
-    [FEvent("Transform/Tween Rect Transform", typeof(FTransformTrack))]
+    [FEvent(UnUsing+"Transform/Tween Rect Transform", typeof(FTransformTrack))]
     public class FTweenRectTransformEvent : FEvent
     {
         [SerializeField] private FTweenVector3 _tweenPosition;

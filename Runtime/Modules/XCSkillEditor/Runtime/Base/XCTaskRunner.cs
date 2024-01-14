@@ -114,7 +114,7 @@ namespace XiaoCao
             }
 
             //需要表做什么事?  技能类型, 技能图标 ,cd
-            byte[] bytes = ResMgr.LoadRawByte(XCSetting.GetSkillDataPath(roleType, skillId));
+            byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(roleType, skillId));
             XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
             Inst.dataCache.Add(idKey, task);
             return task;

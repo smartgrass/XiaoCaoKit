@@ -18,4 +18,12 @@ namespace XiaoCao
         Enemy
     }
 
+    public enum MeshType
+    {
+        Box = 0,
+        Sphere = 1,
+        Sector = 2,  //扇形
+        Other = 3,
+    }
+
 }

@@ -86,6 +86,100 @@ public static class MathLayoutTool
     #endregion
 
     #region 圆形排列 TODO
+    /// <summary>
+    /// 扇形排布
+    /// </summary>
+    /// <returns></returns>
+    public static List<Vector3> GetSectorPoints(float angle, float radius, int angleStep = 15)
+    {
+        List<Vector3> vertices = new List<Vector3>();
+        int segments = Mathf.CeilToInt(angle / (float)angleStep);
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float normalizedAngle = Mathf.Lerp(0, angle, i / (float)segments);
+            float radian = Mathf.Deg2Rad * (normalizedAngle+90);
+
+            float x = Mathf.Cos(radian) * radius;
+            float y = Mathf.Sin(radian) * radius;
+
+            // 将顶点添加到列表
+            vertices.Add(new Vector3(x, y, 0));
+        }
+
+        return vertices;
+    }
+
+    /// <summary>
+    /// 扇形柱体
+    /// </summary>
+    /// <returns></returns>
+    public static List<Vector3> GetSectorCylinderPoints(float angle, float radius, float height, int angleStep = 15)
+    {
+        List<Vector3> vertices = new List<Vector3>();
+        int segments = Mathf.CeilToInt(angle / (float)angleStep);
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float normalizedAngle = Mathf.Lerp(-angle/2, angle/2, i / (float)segments);
+
+
+            float radian = Mathf.Deg2Rad * (normalizedAngle + 90);
+
+            float x = Mathf.Cos(radian) * radius;
+            float z = Mathf.Sin(radian) * radius;
+            float h = 0f + height / 2f; // 将扇形移到柱体顶部
+
+            // 上表面顶点
+            Vector3 topVertex = new Vector3(x, h, z);
+            vertices.Add(topVertex);
+
+            // 下表面顶点
+            Vector3 bottomVertex = new Vector3(x, -h, z);
+            vertices.Add(bottomVertex);
+        }
+
+        // 添加圆心顶点
+        vertices.Add(new Vector3(0f, height / 2f, 0));
+        // 添加圆心底部顶点
+        vertices.Add(new Vector3(0f, -height / 2f, 0));
+
+        return vertices;
+    }
+
+    public static Mesh GetSectorCylinderMesh(float angle, float radius, float height, int angleStep = 15)
+    {
+        var points = MathLayoutTool.GetSectorCylinderPoints(angle, radius, height, angleStep);
+
+        Mesh mesh = new Mesh();
+        // 添加三角形索引，以绘制Mesh
+        List<int> triangles = new List<int>();
+        for (int i = 0; i < points.Count; i += 2)
+        {
+            triangles.Add(i);
+            triangles.Add((i + 2) % points.Count);
+            triangles.Add(i + 1);
+
+            triangles.Add((i + 2) % points.Count);
+            triangles.Add((i + 3) % points.Count);
+            triangles.Add(i + 1);
+
+            if (i + 2 < points.Count)
+            {
+                triangles.Add(i);
+                triangles.Add(points.Count - 2);
+                triangles.Add(i + 2);
+
+                triangles.Add(i + 1);
+                triangles.Add(points.Count - 1);
+                triangles.Add(i + 3);
+            }
+        }
+        mesh.vertices = points.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        return mesh;
+    }
 
     #endregion
 }
@@ -107,9 +201,9 @@ public static class MathTool
     /// 值映射, 比如原本0~1的0.4, 映射到0~100,就是40
     /// </summary>
     /// <returns></returns>
-    public static float ValueMapping(float value,float from,float to,float newFrom,float newTo) 
+    public static float ValueMapping(float value, float from, float to, float newFrom, float newTo)
     {
-        float p = (value-from) / (to - from);
+        float p = (value - from) / (to - from);
         float newValue = p * (newTo - newFrom) + newFrom;
         return newValue;
     }
@@ -119,13 +213,25 @@ public static class MathTool
     {
         return Math.Abs(value - value2) < 0.00001f;
     }
+    //返回float最近的Int->四舍五入
+    public static void GetIntExample(float value)
+    {
+        //向上取整 如-3.2 -> -3 ; 4.1->5
+        Mathf.CeilToInt(value);
+        //向下取整
+        Mathf.FloorToInt(value);
+        //进行标准的四舍五入
+        Mathf.RoundToInt(value);
+        //小数点移除
+        int newInt = (int)value;
+    }
 
     #endregion
     #region Vector & Rotate
     public static bool IsNaN(this Vector2 v)
     {
         return v == Vector2.zero;
-    }    
+    }
     public static bool IsNaN(this Vector3 v)
     {
         return v == Vector3.zero;
@@ -268,7 +374,7 @@ public static class MathTool
         return new Vector3(x, y, z);
     }
     //获得尽量平滑的Handle点
-    public static Vector3 GetAutoHandle(Vector3 A, Vector3 B, Vector3 C,float rate = 0.8f)
+    public static Vector3 GetAutoHandle(Vector3 A, Vector3 B, Vector3 C, float rate = 0.8f)
     {
         Vector3 AB = B - A;
         Vector3 BC = C - B;
@@ -286,7 +392,7 @@ public static class MathTool
 
         if (Vector3.Dot(panleVector, BC) > 0)
         {
-            panleVector =-panleVector;
+            panleVector = -panleVector;
         }
 
 

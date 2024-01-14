@@ -13,7 +13,7 @@ namespace XiaoCaoEditor
     /// </summary>
     public static class EditorAssetsExtend
     {
-        [MenuItem("Assets/Check/输出Type")]
+        [MenuItem(XCEditorTools.AssetCheck + "输出Type")]
         private static void LogType()
         {
             Selection.activeObject.GetType().Name.LogStr(Selection.activeObject.name);
@@ -37,14 +37,14 @@ namespace XiaoCaoEditor
 
             string codeText = "";
 
-            File.WriteAllText(selectedPath + "/ReadMe."+ dirName+".md", codeText, System.Text.Encoding.UTF8);
+            File.WriteAllText(selectedPath + "/ReadMe." + dirName + ".md", codeText, System.Text.Encoding.UTF8);
 
             // 刷新Unity资源窗口
             AssetDatabase.Refresh();
         }
 
         //创建UTF-8代码
-        [MenuItem("Assets/Create/C# Script UTF-8",false,20,secondaryPriority =10)]
+        [MenuItem("Assets/Create/C# Script UTF-8", false, 20, secondaryPriority = 10)]
         static void CreateCodeText()
         {
             // 获取选中的文件夹或文件的路径
@@ -58,7 +58,7 @@ namespace XiaoCaoEditor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Assets/Check/编码Ansi-> UTF-8")]
+        [MenuItem(XCEditorTools.AssetCheck + "编码Ansi-> UTF-8")]
         private static void ReadAnsiText()
         {
             // 获取当前在Unity编辑器中选中的对象
@@ -83,6 +83,17 @@ namespace XiaoCaoEditor
                 Debug.LogWarning("请选择一个TextAsset对象进行读取。");
             }
         }
+
+
+
+
+        ///play相关
+        [MenuItem(XCEditorTools.AssetCheck + "复制到")]
+        private static void CopyToSkillPrefab()
+        {
+
+        }
+
     }
 
 

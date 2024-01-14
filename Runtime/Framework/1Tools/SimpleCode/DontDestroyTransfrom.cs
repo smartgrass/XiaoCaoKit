@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class DontDestroyTransfrom
 {
-    private static readonly Dictionary<string, Transform> dic = new();
+    private static readonly Dictionary<string, Transform> dic = new Dictionary<string, Transform>();
     static public Transform Get(string name)
     {
         if (dic.ContainsKey(name))

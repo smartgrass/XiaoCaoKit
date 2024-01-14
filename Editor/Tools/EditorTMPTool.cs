@@ -14,7 +14,8 @@ namespace XiaoCaoEditor
         [MenuItem("GameObject/XiaoCao/替换子物体TMP字体", priority = 50)]
         private static void CheckEnTMPFont_0() => CheckEnTMPFont();
 
-        [MenuItem("Assets/Check/Text转Tmp", priority = 50)]
+        //["XiaoCao/"]
+        [MenuItem(XCEditorTools.AssetCheck + "Text转Tmp", priority = 50)]
         private static void OnTextToTmp_0() => OnTextToTmp();
 
         private static void OnTextToTmp()
@@ -121,7 +122,7 @@ namespace XiaoCaoEditor
         private static void CheckEnTMPFont()
         {
             string fontPath = "Assets/RawResources/Font/Aldrich-Regular SDF.asset";
-            
+
             Transform tf = Selection.activeTransform;
             var tmps = tf.GetComponentsInChildren<TMP_Text>(true);
 
@@ -134,7 +135,7 @@ namespace XiaoCaoEditor
 
             foreach (var item in tmps)
             {
-                if (item.font!= font)
+                if (item.font != font)
                 {
                     item.font = font;
                     EditorUtility.SetDirty(item);

@@ -1,4 +1,7 @@
-﻿namespace XiaoCao
+﻿using static XiaoCao.AtkTimers;
+using UnityEngine;
+
+namespace XiaoCao
 {
     //控制物体显示隐藏
     public class XCShowEvent : XCEvent
@@ -21,5 +24,4 @@
         }
 
     }
-
 }

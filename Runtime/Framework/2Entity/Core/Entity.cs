@@ -26,7 +26,7 @@ namespace XiaoCao
 
         #region Tag
 
-        public HashSet<int> Tags = new();
+        public HashSet<int> Tags = new HashSet<int>();
 
         public void AddTag(int tag)
         {

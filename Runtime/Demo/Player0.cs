@@ -501,11 +501,11 @@ namespace XiaoCao
 
         public float moveSpeedFactor = 1;
 
-        public RoleState roleState = new();
+        public RoleState roleState = new RoleState();
 
-        public PlayerAttr playerAttr = new();
+        public PlayerAttr playerAttr = new PlayerAttr();
 
-        public PlayerInputData inputData = new(); //方向,ack 1,2 ,skill,空格
+        public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格
 
         public MoveSetting moveSetting;
 
@@ -580,7 +580,7 @@ namespace XiaoCao
 
     public class PlayerShareData0 : IShareData
     {
-        public List<IUpdate> components = new();
+        public List<IUpdate> components = new List<IUpdate>();
 
         public PlayerInput input;
         public PlayerControl control;

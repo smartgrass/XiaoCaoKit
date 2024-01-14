@@ -12,17 +12,28 @@ namespace XiaoCao
         public RuntimeAnimatorController targetAnimtorController;
     }
 
-    public static class XCSetting
+    public static class XCPathConfig
     {
         public static readonly string DataDir = "Assets/_RawFile/SkillData";
         public static readonly string PerfabDir = "Assets/_Res/SkillPrefab";
-        public static readonly int FrameRate = 30;
-        public static readonly float FramePerSec = 1f / FrameRate;
 
+        public static string GetSkillPrefabDir(RoleType roleType)
+        {
+            return $"{PerfabDir}/{roleType.ToString()}";
+        }
         public static string GetSkillDataPath(RoleType roleType, int skillId)
         {
             return $"{DataDir}/{roleType.ToString()}/{skillId}.data";
         }
+
+
+    }
+
+    ///<see cref="XCPathConfig"/>
+    public static class XCSetting
+    {
+        public static readonly int FrameRate = 30;
+        public static readonly float FramePerSec = 1f / FrameRate;
     }
 
 }

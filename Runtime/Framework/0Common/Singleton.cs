@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+///<see cref="IClearCache"/>
 public abstract class Singleton<T> where T : class, new()
 {
 
