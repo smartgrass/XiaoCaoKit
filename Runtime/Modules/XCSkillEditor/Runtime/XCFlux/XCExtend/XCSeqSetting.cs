@@ -26,6 +26,15 @@ namespace XiaoCao
             return $"{DataDir}/{roleType.ToString()}/{skillId}.data";
         }
 
+        public static string GetRolePrefabPath(RoleType roleType, int prefabId)
+        {
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}{prefabId}.prefab";
+        }
+
+        public static string GetRoleBasePath(RoleType roleType)
+        {
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}.prefab";
+        }
 
     }
 

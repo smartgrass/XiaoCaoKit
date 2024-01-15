@@ -7,7 +7,7 @@ namespace XiaoCao
     [TypeLabel(typeof(RoleTagCommon))]
     public abstract class Role : HealthBehavior
     {
-        public abstract RoleTypeCode RoleType { get; }
+        public abstract RoleType RoleType { get; }
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
 
@@ -29,7 +29,8 @@ namespace XiaoCao
         //玩家需要拆分, 敌人不需要
         protected void GenRoleBody(int prefabId)
         {
-            string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
+            string path = XCPathConfig.GetRolePrefabPath(RoleType, prefabId);
+
             GameObject go = ResMgr.LoadInstan(path);
 
             Debuger.Log($"--- path {path}");
@@ -37,12 +38,12 @@ namespace XiaoCao
             idRole = go.transform.GetComponent<IdRole>();
             if (idRole == null)
             {
-                //如果无, 则需要加载模板
-                string baseRole = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}.prefab";
+                //如果无IdRole, 则需要加载模板
+                string baseRole = XCPathConfig.GetRoleBasePath(RoleType);
                 GameObject baseGo = ResMgr.LoadInstan(baseRole);
                 idRole = baseGo.transform.GetComponent<IdRole>();
                 idRole.id = id;
-                go.transform.SetParent(baseGo.transform,false);
+                go.transform.SetParent(baseGo.transform, false);
                 body = go;
                 BindGameObject(baseGo);
             }
@@ -68,18 +69,8 @@ namespace XiaoCao
         {
 
         }
-
     }
-
-    /// <summary>
-    /// 比较枚举,使用int的好处,序列化方便
-    /// 而使用odin序列化则没啥问题
-    /// </summary>
-    public enum RoleTypeCode
-    {
-        Enemy = 0,
-        Player = 1,
-    }
+  
 
     public static class RoleTagCommon
     {
@@ -90,14 +81,14 @@ namespace XiaoCao
 
     public class PlayerBase : Role
     {
-        public override RoleTypeCode RoleType => RoleTypeCode.Player;
+        public override RoleType RoleType => RoleType.Player;
 
     }
 
 
     public class EnemyBase : Role
     {
-        public override RoleTypeCode RoleType => RoleTypeCode.Enemy;
+        public override RoleType RoleType => RoleType.Enemy;
     }
 
 

@@ -12,10 +12,15 @@ namespace XiaoCao
         StartPos = 2, //技能启动时的玩家的参考系
     }
 
+
+    /// <summary>
+    /// 比较枚举,使用int的好处,序列化方便
+    /// 而使用odin序列化则没啥问题
+    /// </summary>
     public enum RoleType
     {
-        Player,
-        Enemy
+        Enemy = 0,
+        Player = 1,
     }
 
     public enum MeshType

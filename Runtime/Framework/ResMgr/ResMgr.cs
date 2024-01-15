@@ -46,6 +46,7 @@ public class ResMgr
     public const string PACKAGENAME_RAW = "RawPackage";
 
     public const string RESDIR = "Assets/_Res";
+    public string EXTRARESDIR => Application.dataPath;
 
     public static ResourcePackage Loader;
     public static ResourcePackage RawLoader;

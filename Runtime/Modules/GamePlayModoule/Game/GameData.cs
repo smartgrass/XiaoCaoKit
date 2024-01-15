@@ -20,6 +20,8 @@ namespace XiaoCao
         public GameState gameState;
 
         internal Player0 Player0;
+
+        public bool loadMod = false;
     }
 
     public class BattleData
