@@ -26,11 +26,19 @@ public class IdRole : IdComponent
 
     private void OnValidate()
     {
-        if(rb==null)
+        CheckData();
+    }
+
+    public void CheckData()
+    {
+        if (rb == null)
             rb = GetComponent<Rigidbody>();
-        if(cc==null)
+        if (cc == null)
             cc = GetComponent<CharacterController>();
         if (Follow == null)
-            Follow = transform.Find("Follow");
+        {
+            Follow = transform.Find("Follow"); 
+            LookAt = Follow;
+        }
     }
 }
