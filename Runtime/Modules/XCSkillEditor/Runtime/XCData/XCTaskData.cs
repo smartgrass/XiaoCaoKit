@@ -72,6 +72,7 @@ namespace XiaoCao
     public class ObjectData
     {
         public string ObjectPath = "";
+        public int index;
         public bool isPs;
 
         public int endFrame;

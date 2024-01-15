@@ -61,11 +61,12 @@ public class SavaXCTask
         Transform playerTF = Sequence.Containers[0].Timelines[0].transform;
         List<SkillEventData> skillEvents = new List<SkillEventData>();
         XCTaskData mainData = null;
-        bool isMain = true;
+        int timelineId = 0;
         foreach (var _timeline in Sequence.Containers[0].Timelines)
         {
-            //一个Object分配一个XCTaskData
-            XCTaskData data = GetTaskData(ref mainData, isMain);
+            //一个_timeline->一个Object->一个XCTaskData
+            bool isMain = timelineId == 0;
+            XCTaskData data = GetTaskData(ref mainData, timelineId);
             bool hasObjectData = false;
             foreach (var _track in _timeline.Tracks)
             {
@@ -73,11 +74,12 @@ public class SavaXCTask
                 {
                     hasObjectData = true;
                     data.objectData = MakeObjectData(_track);
+                    data.objectData.index = timelineId;
                 }
-                ReadTrack(_track, data);
+                ReadTrack(_track, data,timelineId);
             }
 
-            isMain = false;
+            timelineId++;
         }
 
 
@@ -88,11 +90,11 @@ public class SavaXCTask
         FileTool.SerializeWrite(savaPath, mainData);
     }
 
-    private static XCTaskData GetTaskData(ref XCTaskData mainData, bool isMain)
+    private static XCTaskData GetTaskData(ref XCTaskData mainData, int timelineId)
     {
         XCTaskData data = new XCTaskData();
 
-        if (isMain)
+        if (timelineId == 0)
         {
             mainData = data;
         }
@@ -129,7 +131,7 @@ public class SavaXCTask
     }
 
 
-    private static XCTaskData ReadTrack(FTrack _track, XCTaskData taskData)
+    private static void ReadTrack(FTrack _track, XCTaskData taskData,int timelineIndex = 0)
     {
         var eventType = _track.GetEventType();
         if (eventType == typeof(FMoveEvent))
@@ -143,6 +145,14 @@ public class SavaXCTask
         {
             ReadAnimTrack(_track, taskData);
         }
+        else if (eventType == typeof(FPlayParticleEvent))
+        {
+            if (timelineIndex > 0)
+            {
+                Debug.LogError($"-- 多个特效在 不做处理");
+            }
+            return;
+        }
         else if (DefaultXCEvents.Contains(eventType))
         {
             _track.Events.ForEach((e) => taskData._events.Add(e.ToXCEvent()));
@@ -154,7 +164,6 @@ public class SavaXCTask
         //排序 _events
         taskData.SortEvents();
 
-        return taskData;
     }
 
     private static void ReadAnimTrack(FTrack _track, XCTaskData taskData)
@@ -178,7 +187,7 @@ public class SavaXCTask
 
     static Type[] DefaultXCEvents = {
         typeof(FTweenRotationEvent)  ,
-        typeof(FTweenScaleEvent) , typeof(FPlayParticleEvent) };
+        typeof(FTweenScaleEvent)};
 
 
     private static ObjectData MakeObjectData(FTrack _track)
