@@ -26,10 +26,19 @@ public class ResMgr
         return task.AssetObject as GameObject;
     }
     //只加载, 没有实例化
-    public static Object LoadAseet(string path)
+    public static Object LoadAseet(string path, PackageType type = PackageType.DefaultPackage)
     {
-        var task = Loader.LoadAssetSync(path);
-        return task.AssetObject;
+        if (type == PackageType.DefaultPackage)
+        {
+            var task = Loader.LoadAssetSync(path);
+            return task.AssetObject;
+        }
+        else
+        {
+            //Extra
+            return ExtraLoader.LoadAssetSync(path).AssetObject;
+        }
+
     }
 
     public static byte[] LoadRawByte(string path)
@@ -44,11 +53,13 @@ public class ResMgr
     #region Init
     public const string PACKAGENAME = "DefaultPackage";
     public const string PACKAGENAME_RAW = "RawPackage";
+    public const string PACKAGENAME_EXTRA = "ExtraPackage";
 
     public const string RESDIR = "Assets/_Res";
     public string EXTRARESDIR => Application.dataPath;
 
     public static ResourcePackage Loader;
+    public static ResourcePackage ExtraLoader;
     public static ResourcePackage RawLoader;
 
     public static void InitYooAsset()
@@ -60,6 +71,22 @@ public class ResMgr
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
         YooAssets.SetDefaultPackage(Loader);
 
+    }
+
+    public static InitializationOperation InitExtraPackage()
+    {
+        RawLoader = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
+        InitializationOperation initializationOperation = null;
+
+        // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
+        string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+        string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+        var initParameters = new HostPlayModeParameters();
+        initParameters.BuildinQueryServices = new GameQueryServices();
+        //initParameters.DecryptionServices = new FileOffsetDecryption();
+        initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+        initializationOperation = RawLoader.InitializeAsync(initParameters);
+        return initializationOperation;
     }
 
     public static InitializationOperation InitRawPackage()
@@ -84,6 +111,8 @@ public class ResMgr
             var par = new OfflinePlayModeParameters();
             initializationOperation = RawLoader.InitializeAsync(par);
         }
+
+
 
         return initializationOperation;
     }
@@ -126,6 +155,13 @@ public class ResMgr
         // 联机运行模式
         if (playMode == EPlayMode.HostPlayMode)
         {
+            string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+            string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+            var initParameters = new HostPlayModeParameters();
+            //initParameters.BuildinQueryServices = new GameQueryServices();
+            //initParameters.DecryptionServices = new FileOffsetDecryption();
+            //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer
+            //initializationOperation =package.InitializeAsync(initParameters);
             Debuger.Warn($"HostPlayMode 无");
         }
         return initializationOperation;
@@ -143,6 +179,7 @@ public class ResMgr
         return playMode;
     }
 
+
 #endregion
     /*
     https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
@@ -159,4 +196,35 @@ public class ResMgr
     var handle = ResMgr.Loader.LoadAssetSync<GameObject>(eName);
     prefab = handle.AssetObject as GameObject;
 */
+}
+
+
+/// <summary>
+/// 远端资源地址查询服务类
+/// </summary>
+public class RemoteServices : IRemoteServices
+{
+    private readonly string _defaultHostServer;
+    private readonly string _fallbackHostServer;
+
+    public RemoteServices(string defaultHostServer, string fallbackHostServer)
+    {
+        _defaultHostServer = defaultHostServer;
+        _fallbackHostServer = fallbackHostServer;
+    }
+    string IRemoteServices.GetRemoteMainURL(string fileName)
+    {
+        return $"{_defaultHostServer}/{fileName}";
+    }
+    string IRemoteServices.GetRemoteFallbackURL(string fileName)
+    {
+        return $"{_fallbackHostServer}/{fileName}";
+    }
+}
+
+public enum PackageType
+{
+    DefaultPackage,
+    RawPackage,
+    ExtraPackage
 }

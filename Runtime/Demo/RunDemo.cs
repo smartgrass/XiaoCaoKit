@@ -55,6 +55,7 @@ namespace XiaoCao
             ResMgr.InitYooAsset();
             await ResMgr.InitPackage().Task;
             await ResMgr.InitRawPackage().Task;
+            await ResMgr.InitExtraPackage().Task;
         }
 
 

@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using TEngine;
-using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 using Input = UnityEngine.Input;
 
