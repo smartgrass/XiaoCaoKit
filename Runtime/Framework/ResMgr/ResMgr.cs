@@ -14,31 +14,32 @@ public class ResMgr
         go = PoolMgr.Inst.Get(path);
     }
 
-    public static GameObject LoadInstan(string path)
+    public static GameObject LoadInstan(string path,PackageType type = PackageType.DefaultPackage)
     {
-        return GameObject.Instantiate(LoadPrefab(path));
+        return GameObject.Instantiate(LoadPrefab(path,type));
     }
 
     //只加载, 没有实例化
-    public static GameObject LoadPrefab(string path)
-    {
-        var task = Loader.LoadAssetSync<GameObject>(path);
-        return task.AssetObject as GameObject;
-    }
-    //只加载, 没有实例化
-    public static Object LoadAseet(string path, PackageType type = PackageType.DefaultPackage)
+    public static GameObject LoadPrefab(string path, PackageType type = PackageType.DefaultPackage)
     {
         if (type == PackageType.DefaultPackage)
         {
-            var task = Loader.LoadAssetSync(path);
-            return task.AssetObject;
+            var task = Loader.LoadAssetSync<GameObject>(path);
+            return task.AssetObject as GameObject;
         }
         else
         {
+            Debug.Log($"--- ExtraLoader {path}");
             //Extra
-            return ExtraLoader.LoadAssetSync(path).AssetObject;
+            return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject  as GameObject;
         }
+    }
 
+    //只加载, 没有实例化
+    public static Object LoadAseet(string path)
+    {
+        var task = Loader.LoadAssetSync(path);
+        return task.AssetObject;
     }
 
     public static byte[] LoadRawByte(string path)
@@ -51,12 +52,13 @@ public class ResMgr
 
 
     #region Init
+
     public const string PACKAGENAME = "DefaultPackage";
     public const string PACKAGENAME_RAW = "RawPackage";
     public const string PACKAGENAME_EXTRA = "ExtraPackage";
 
     public const string RESDIR = "Assets/_Res";
-    public string EXTRARESDIR => Application.dataPath;
+    public const string EXTRARESDIR = "Assets/_ExtraRes";
 
     public static ResourcePackage Loader;
     public static ResourcePackage ExtraLoader;
@@ -70,22 +72,21 @@ public class ResMgr
         Loader = YooAssets.CreatePackage(PACKAGENAME);
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
         YooAssets.SetDefaultPackage(Loader);
-
     }
 
     public static InitializationOperation InitExtraPackage()
     {
-        RawLoader = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
+        ExtraLoader = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
         InitializationOperation initializationOperation = null;
 
         // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
-        string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
-        string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+        string defaultHostServer = "file://"+Application.dataPath+"/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        string fallbackHostServer = "file://"+Application.dataPath+"/Bundles/StandaloneWindows64/ExtraPackage/v1";
         var initParameters = new HostPlayModeParameters();
         initParameters.BuildinQueryServices = new GameQueryServices();
         //initParameters.DecryptionServices = new FileOffsetDecryption();
         initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-        initializationOperation = RawLoader.InitializeAsync(initParameters);
+        initializationOperation = ExtraLoader.InitializeAsync(initParameters);
         return initializationOperation;
     }
 
@@ -93,14 +94,15 @@ public class ResMgr
     {
         EPlayMode playMode = GetEPlayMode();
 
-        RawLoader = YooAssets.CreatePackage(PACKAGENAME_RAW);   
+        RawLoader = YooAssets.CreatePackage(PACKAGENAME_RAW);
         InitializationOperation initializationOperation = null;
 
 #if UNITY_EDITOR
         if (playMode == EPlayMode.EditorSimulateMode)
         {
             var rawPar = new EditorSimulateModeParameters();
-            rawPar.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.RawFileBuildPipeline, PACKAGENAME_RAW);
+            rawPar.SimulateManifestFilePath =
+                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.RawFileBuildPipeline, PACKAGENAME_RAW);
             initializationOperation = RawLoader.InitializeAsync(rawPar);
         }
 #endif
@@ -111,7 +113,6 @@ public class ResMgr
             var par = new OfflinePlayModeParameters();
             initializationOperation = RawLoader.InitializeAsync(par);
         }
-
 
 
         return initializationOperation;
@@ -127,8 +128,8 @@ public class ResMgr
             tempPack = YooAssets.CreatePackage(PACKAGENAME);
             YooAssets.SetDefaultPackage(tempPack);
         }
-        Loader = tempPack;
 
+        Loader = tempPack;
 
 
         InitializationOperation initializationOperation = null;
@@ -141,7 +142,8 @@ public class ResMgr
         if (playMode == EPlayMode.EditorSimulateMode)
         {
             var par = new EditorSimulateModeParameters();
-            par.SimulateManifestFilePath = EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME);
+            par.SimulateManifestFilePath =
+                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME);
             initializationOperation = tempPack.InitializeAsync(par);
         }
 #endif
@@ -164,6 +166,7 @@ public class ResMgr
             //initializationOperation =package.InitializeAsync(initParameters);
             Debuger.Warn($"HostPlayMode 无");
         }
+
         return initializationOperation;
     }
 
@@ -179,8 +182,8 @@ public class ResMgr
         return playMode;
     }
 
+    #endregion
 
-#endregion
     /*
     https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
     LoadSceneAsync() 异步加载场景
@@ -212,10 +215,12 @@ public class RemoteServices : IRemoteServices
         _defaultHostServer = defaultHostServer;
         _fallbackHostServer = fallbackHostServer;
     }
+
     string IRemoteServices.GetRemoteMainURL(string fileName)
     {
         return $"{_defaultHostServer}/{fileName}";
     }
+
     string IRemoteServices.GetRemoteFallbackURL(string fileName)
     {
         return $"{_fallbackHostServer}/{fileName}";

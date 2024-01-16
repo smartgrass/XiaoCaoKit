@@ -1,17 +1,21 @@
 ﻿using NaughtyAttributes;
 using UnityEngine;
+using XiaoCao;
 
 public class Test_YooSteam : MonoBehaviour
 {
     [Button("Load")]
     void fun1()
     {
-
+        
+        // ResMgr.ExtraLoader.CreateResourceImporter();
     }    
     [Button("Path")]
     void Path()
     {
-        // RoleType RoleType  = 
-        // string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{prefabId}.prefab";
+        RoleType RoleType = RoleType.Player;
+        string path = $"{ResMgr.EXTRARESDIR}/Role/{RoleType}/{RoleType}{0}.prefab";
+        GameObject go = ResMgr.LoadInstan(path, PackageType.ExtraPackage);
+        Debug.Log($"---  {go}");
     }
 }
