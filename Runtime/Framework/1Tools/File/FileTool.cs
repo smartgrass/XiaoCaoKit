@@ -12,6 +12,7 @@ using XiaoCao;
 using UnityEditor;
 #endif
 
+///<see cref="PathTool"/>
 public static class FileTool
 {
 #if UNITY_EDITOR

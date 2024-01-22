@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using static UnityEditor.Progress;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace XiaoCaoEditor
@@ -12,12 +15,19 @@ namespace XiaoCaoEditor
     public static class XCEditorTools
     {
         public const string OpenPath_Sava = "XiaoCao/打开路径/存档位置";
+        public const string OpenPath_LuabnExcel = "XiaoCao/打开路径/技能配置表格";
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string ObjectViewWindow = "XiaoCao/对象检查器";
 
         ///<see cref="EditorAssetsExtend"/>
         public const string AssetCheck = "Assets/Check/";
+
+        public const string XiaoCaoFlux = "XiaoCao/Flux/";
+
+        public const string XiaoCaoLuban = "XiaoCao/Luban/";
+
+
 
     }
 
@@ -211,7 +221,55 @@ namespace XiaoCaoEditor
         static void OpenPath_Sava()
         {
             EditorUtility.RevealInFinder($"{Application.persistentDataPath}/");
+        }        
+        [MenuItem(XCEditorTools.OpenPath_LuabnExcel)]
+        static void OpenPath_Excel()
+        {
+            string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/Config/Datas/SkillSetting.xlsx";
+            Debug.Log($"--- OpenPath_Excel {path}");
+            EditorUtility.RevealInFinder(path);
         }
     }
 
+
+    public static class CommandHelper
+    {
+        public static void ExecuteBatCommand(string batPath)
+        {
+            string batDirectory = System.IO.Path.GetDirectoryName(batPath);
+
+            // 创建ProcessStartInfo
+            ProcessStartInfo processInfo = new ProcessStartInfo();
+            processInfo.FileName = "cmd.exe"; // 使用cmd.exe来执行bat文件
+            processInfo.Arguments = "/c cd /d " + batDirectory + " && " + batPath;
+
+            // 重定向标准输出和标准错误流
+            processInfo.RedirectStandardOutput = true;
+            processInfo.RedirectStandardError = true;
+
+            // 设置字符集为GBK /UTF-8
+            processInfo.StandardOutputEncoding = Encoding.GetEncoding("UTF-8");
+            processInfo.StandardErrorEncoding = Encoding.GetEncoding("UTF-8");
+
+            // 保证在Unity编辑器中显示cmd输出窗口
+            processInfo.UseShellExecute = false;
+            processInfo.CreateNoWindow = true;
+
+            // 启动进程
+            Process process = new Process();
+            process.StartInfo = processInfo;
+            process.Start();
+
+
+            // 读取标准输出和标准错误流
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
+
+            // 等待进程执行完毕
+            process.WaitForExit();
+
+            // 输出日志到Unity控制台
+            UnityEngine.Debug.Log("Bat Command Output:\n" + output);
+        }
+    }
 }

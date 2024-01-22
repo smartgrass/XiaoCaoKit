@@ -1,12 +1,11 @@
-﻿using DG.Tweening;
-using Flux;
+﻿using Flux;
 using FluxEditor;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using UnityEditor;
 using UnityEditor.SearchService;
@@ -15,13 +14,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using XiaoCao;
 using XiaoCaoEditor;
-using static UnityEditor.Progress;
+using Debug = UnityEngine.Debug;
 using SerializationUtility = OdinSerializer.SerializationUtility;
+using Task = System.Threading.Tasks.Task;
 
 public class SavaXCTask
 {
-    public const string SavaAllSeqName = "XiaoCao/Flux/SavaAllSeq";
-    public const string ReadSkillDataName = "Assets/XiaoCao/Log XCTask Data";
+    public const string SavaAllSeqName = XCEditorTools.XiaoCaoFlux + "SavaAllSeq";
+    public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
+
+    public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "导入表格数据";
+    public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "导入表格数据&代码";
 
     public static XCSeqSetting fSeqSetting;
     public static FSequence curSequence;
@@ -76,7 +79,7 @@ public class SavaXCTask
                     data.objectData = MakeObjectData(_track);
                     data.objectData.index = timelineId;
                 }
-                ReadTrack(_track, data,timelineId);
+                ReadTrack(_track, data, timelineId);
             }
 
             timelineId++;
@@ -84,7 +87,7 @@ public class SavaXCTask
 
 
         string savaPath = XCPathConfig.GetSkillDataPath(fSeqSetting.type, Sequence._skillId);
-        
+
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
 
         FileTool.SerializeWrite(savaPath, mainData);
@@ -131,12 +134,13 @@ public class SavaXCTask
     }
 
 
-    private static void ReadTrack(FTrack _track, XCTaskData taskData,int timelineIndex = 0)
+    private static void ReadTrack(FTrack _track, XCTaskData taskData, int timelineIndex = 0)
     {
         var eventType = _track.GetEventType();
         if (eventType == typeof(FMoveEvent))
         {
-            _track.Events.ForEach((e) => {
+            _track.Events.ForEach((e) =>
+            {
                 FMoveEvent moveEvent = (FMoveEvent)e;
                 taskData._events.AddRange(moveEvent.ToXCEventList());
             });
@@ -169,7 +173,7 @@ public class SavaXCTask
     private static void ReadAnimTrack(FTrack _track, XCTaskData taskData)
     {
         int length = _track.Events.Count;
-        Dictionary<string,AnimationClip> animDic = new Dictionary<string,AnimationClip>();
+        Dictionary<string, AnimationClip> animDic = new Dictionary<string, AnimationClip>();
         for (int i = 0; i < length; i++)
         {
             FPlayAnimationEvent animEvent = (FPlayAnimationEvent)_track.Events[i];
@@ -179,10 +183,10 @@ public class SavaXCTask
             taskData._events.Add(xcEvent);
         }
         //检测动画机连线
-        XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic,curSequence._skillId);
+        XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic, curSequence._skillId);
     }
 
-   
+
 
 
     static Type[] DefaultXCEvents = {
@@ -218,5 +222,14 @@ public class SavaXCTask
         objectData.endFrame = _track.GetEndFrame();
         return objectData;
     }
+
+
+    [MenuItem(LoadLubanExcelName)]
+    public static void LoadLubanExcel()
+    {
+        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
+        CommandHelper.ExecuteBatCommand(path);
+    }
+
 
 }

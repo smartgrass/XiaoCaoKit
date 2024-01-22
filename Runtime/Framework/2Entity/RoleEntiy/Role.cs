@@ -11,6 +11,8 @@ namespace XiaoCao
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
 
+        public int raceId = 0; //职业,种族
+
         public int prefabID = 0;
 
         public GameObject body;

@@ -20,11 +20,25 @@ using UnityEditor;
 
 public static class PathTool
 {
+    /// <summary>
+    /// 获取文件夹名
+    /// </summary>
+    /// <param name="selectedPath"></param>
+    /// <returns></returns>
     public static string GetDirName(string selectedPath)
     {
         DirectoryInfo info = new DirectoryInfo(selectedPath);
         return info.Name;
     }
+
+    /// <summary>
+    /// 获取文件夹路径
+    /// </summary>
+    public static string GetDirFullPath(string selectedPath)
+    {
+        return System.IO.Path.GetDirectoryName(selectedPath);
+    }
+
     /// <summary>
     /// 获取上级级目录
     /// </summary>

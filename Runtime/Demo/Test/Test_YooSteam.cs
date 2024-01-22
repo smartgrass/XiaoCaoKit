@@ -1,4 +1,5 @@
-﻿using NaughtyAttributes;
+﻿using cfg;
+using NaughtyAttributes;
 using UnityEngine;
 using XiaoCao;
 
@@ -7,7 +8,7 @@ public class Test_YooSteam : MonoBehaviour
     [Button("Load")]
     void fun1()
     {
-        
+        //SkillSetting
         // ResMgr.ExtraLoader.CreateResourceImporter();
     }    
     [Button("Path")]

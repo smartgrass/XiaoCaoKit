@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: PlayerSettingSo
   m_EditorClassIdentifier: 
   playerSetting:
-    rollSkillId: -100
-    NorAtkIds: fffffffffefffffffdffffff
+  - des: "\u9ED8\u8BA4"
+    roleId: 0
+    rollSkillId: -1
+    norAtkIds: 9bffffff9affffff99ffffff
+    skillList: 650000006600000067000000
     resetNorAckTime: 1.5

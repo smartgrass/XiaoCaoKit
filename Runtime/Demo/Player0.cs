@@ -1,4 +1,5 @@
 ﻿using Cinemachine.Utility;
+using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
 using TEngine;
@@ -30,7 +31,7 @@ namespace XiaoCao
             prefabID = playerData.prefabID;
 
             playerData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().moveSetting;
-            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().playerSetting;
+            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetPlayerSetting(raceId);
 
 
             this.CreateGameObject();
@@ -333,7 +334,7 @@ namespace XiaoCao
             GameEvent.Send(EventType.AckingNorAck.Int());
   
             int nextNorAckIndex = atkTimers.GetNextNorAckIndex();
-            int norAckSkillId = Data.playerSetting.NorAtkIds[nextNorAckIndex];
+            int norAckSkillId = Data.playerSetting.norAtkIds[nextNorAckIndex];
             Data.curNorAckIndex = nextNorAckIndex;
             RcpPlaySkill(norAckSkillId);
         }
@@ -400,7 +401,7 @@ namespace XiaoCao
         {
             if (Time.time < resetNorAckTimer)
             {
-                int len = playerSetting.NorAtkIds.Count;
+                int len = playerSetting.norAtkIds.Count;
                 return (data.curNorAckIndex + 1) % len;
             }
             return 0;
@@ -535,8 +536,12 @@ namespace XiaoCao
     [Serializable]
     public class PlayerSetting
     {
-        public int rollSkillId = -100;
-        public List<int> NorAtkIds = new List<int>() { -1, -2, -3 };
+        [Label("描述")]
+        public string des = "";
+        public int roleId = 0;
+        public int rollSkillId = -1;
+        public List<int> norAtkIds = new List<int>() { -101, -102, -103 };
+        public List<int> skillList = new List<int>() { 101, 102, 103 };
         public float resetNorAckTime = 1.5f;
     }
 

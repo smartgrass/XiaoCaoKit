@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Player0
   m_EditorClassIdentifier: 
   des: 
-  type: 0
+  type: 1
   targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}
