@@ -1,4 +1,6 @@
-﻿namespace XiaoCao
+﻿using UnityEngine;
+
+namespace XiaoCao
 {
     public static class EntityMsgMgr
     {
@@ -23,11 +25,20 @@
     public enum EntityMsgType
     {
         [TypeLabel(typeof(int))]
-        StartSkill
+        StartSkill,
+        [TypeLabel(typeof(MoveMsg))]
+        MoveToPos,
     }
 
     interface IMsgReceiver
     {
         void ReceiveMsg(EntityMsgType type, int fromId, object msg);
     }
+
+    public class MoveMsg
+    {
+        public Vector3 pos;
+        public float speedFactor = 1;
+    }
+
 }

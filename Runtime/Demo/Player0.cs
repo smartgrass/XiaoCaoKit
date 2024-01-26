@@ -155,7 +155,7 @@ namespace XiaoCao
     {
         public PlayerMovement(Player0 owner) : base(owner) { }
 
-        private float velocity;
+        private float tempVelocity;
 
         public PlayerData0 Data => owner.playerData;
         public PlayerInputData InputData => owner.playerData.inputData;
@@ -178,6 +178,8 @@ namespace XiaoCao
 
         void MoveUpdate()
         {
+            //模拟修改思路, 根据moveDelta控制动画机->表现层
+
             Vector3 moveDir = moveDir = Vector3.zero;
             bool isInput = false;
             if (!RoleState.isMoveLock && RoleState.moveLockTime <= 0)
@@ -236,7 +238,7 @@ namespace XiaoCao
         {
             float inputTotal = isInput ? 1 : 0;
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref velocity, setting.moveSmooth);
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref tempVelocity, setting.moveSmooth);
 
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
         }
