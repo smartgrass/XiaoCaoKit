@@ -123,8 +123,8 @@ namespace XiaoCao
         public PlayerInputData data => owner.playerData.inputData;
         public override void Update()
         {
-            data.x = Input.GetAxisRaw("Horizontal");
-            data.y = Input.GetAxisRaw("Vertical");
+            data.x = Input.GetAxis("Horizontal");
+            data.y = Input.GetAxis("Vertical");
             if (Input.GetKeyDown(KeyCode.Mouse0))
                 data.inputs[InputKey.NorAck] = true;
             if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -193,6 +193,14 @@ namespace XiaoCao
             RotateByMoveDir(moveDir);
             //移动时用delta值的实时计算的, 如果做同步最好用绝对坐标
             Vector3 moveDelta = moveDir * Data.moveSetting.baseMoveSpeed * Data.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
+
+            //TODO 重力
+            //v = v + gt
+            float v = 0;
+            v = v + Data.moveSetting.g * XCTime.fixedDeltaTime;
+            moveDelta.y += v * XCTime.fixedDeltaTime;
+
+
             cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
 
@@ -555,6 +563,7 @@ namespace XiaoCao
 
         public float startRotateSpeed = 200;
         public float endRotateSpeed = 100;
+        public float g = 9;
     }
 
     public class PlayerAttr
