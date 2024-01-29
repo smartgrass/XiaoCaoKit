@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace XiaoCao
@@ -12,24 +13,22 @@ namespace XiaoCao
 
         private Dictionary<int, PlayerSetting> psDic;
 
-        private bool isInit { get; set; }
-
         public PlayerSetting GetPlayerSetting(int roleId)
         {
-            if (!isInit)
+            if (null == psDic)
             {
                 psDic = new Dictionary<int, PlayerSetting>();
                 foreach (PlayerSetting ps in playerSetting)
                 {
                     psDic[ps.roleId] = ps;
                 }
-                isInit = true;
             }
 
-            var setting = psDic[roleId];
+            psDic.TryGetValue(roleId, out PlayerSetting setting);
 
             if (setting == null) 
             {
+                Debug.Log($"--- roleId {roleId} null->default");
                 return playerSetting[0];
             }
             return setting;

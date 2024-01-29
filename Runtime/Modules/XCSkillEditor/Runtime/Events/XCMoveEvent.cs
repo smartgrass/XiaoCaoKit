@@ -41,7 +41,6 @@ namespace XiaoCao
         {
             float t = timeSinceTrigger / LengthTime;
 
-            Debug.Log($"--- {t}");
 
             var detalMove = GetVec3Value(t) - GetVec3Value(lastTime);
             lastTime = t;

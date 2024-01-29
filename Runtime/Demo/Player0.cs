@@ -28,7 +28,6 @@ namespace XiaoCao
         public void Init(PlayerData0 playerData, bool isMainPlayer = false)
         {
             this.playerData = playerData;
-            prefabID = playerData.prefabID;
 
             playerData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().moveSetting;
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetPlayerSetting(raceId);
@@ -116,11 +115,11 @@ namespace XiaoCao
         public const int Space = 2;
     }
 
-    public class PlayerInput : EntityComponent<Player0>
+    public class PlayerInput : PlayerComponent
     {
         public PlayerInput(Player0 owner) : base(owner) { }
 
-        public PlayerInputData data => owner.playerData.inputData;
+        public PlayerInputData data => Data_P.inputData;
         public override void Update()
         {
             data.x = Input.GetAxis("Horizontal");
@@ -151,25 +150,26 @@ namespace XiaoCao
         }
     }
 
-    public class PlayerMovement : EntityComponent<Player0>
+    public class PlayerMovement : PlayerComponent
     {
         public PlayerMovement(Player0 owner) : base(owner) { }
 
         private float tempVelocity;
 
-        public PlayerData0 Data => owner.playerData;
         public PlayerInputData InputData => owner.playerData.inputData;
-        public RoleState RoleState => Data.roleState;
+
+        public RoleState RoleState => Data_R.roleState;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
-        public MoveSetting setting => Data.moveSetting;
+        public MoveSetting setting => Data_P.moveSetting;
 
         public Vector3 camForward => CameraMgr.Forword;
 
         public override void FixedUpdate()
         {
-            if (Data.bodyState == EBodyState.Dead)
+            if (owner.roleData.bodyState == EBodyState.Dead)
             {
                 return;
             }
@@ -194,12 +194,12 @@ namespace XiaoCao
             FixUpdateMoveAnimMult(isInput);
             RotateByMoveDir(moveDir);
             //移动时用delta值的实时计算的, 如果做同步最好用绝对坐标
-            Vector3 moveDelta = moveDir * Data.moveSetting.baseMoveSpeed * Data.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
+            Vector3 moveDelta = moveDir * Data_P.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
 
             //TODO 重力
             //v = v + gt
             float v = 0;
-            v = v + Data.moveSetting.g * XCTime.fixedDeltaTime;
+            v = v + Data_P.moveSetting.g * XCTime.fixedDeltaTime;
             moveDelta.y += v * XCTime.fixedDeltaTime;
 
 
@@ -245,15 +245,16 @@ namespace XiaoCao
 
     }
 
-    public class PlayerControl : EntityComponent<Player0>
+    public class PlayerControl : PlayerComponent
     {
         public PlayerControl(Player0 owner) : base(owner) { }
 
         public PlayerInputData InputData => owner.playerData.inputData;
 
         public PlayerData0 Data => owner.playerData;
+        public RoleData RoleData => owner.roleData;
 
-        public RoleState RoleState => Data.roleState;
+        public RoleState RoleState => RoleData.roleState;
 
         public CharacterController cc => owner.idRole.cc;
 
@@ -263,12 +264,12 @@ namespace XiaoCao
 
         public override void Update()
         {
-            if (Data.bodyState == EBodyState.Dead)
+            if (RoleData.bodyState == EBodyState.Dead)
             {
 
                 return;
             }
-            CheckBreak();
+            CheckBreakTime();
             if (InputData.skillInput != 0)
             {
                 TryPlaySkill(InputData.skillInput);
@@ -285,22 +286,22 @@ namespace XiaoCao
         {
             UpdateGravity();
 
-            if (Data.bodyState == EBodyState.Dead)
+            if (RoleData.bodyState == EBodyState.Dead)
             {
                 return;
             }
         }
 
-        void CheckBreak()
+        void CheckBreakTime()
         {
             if (RoleState.breakTime > 0)
             {
                 RoleState.breakTime -= XCTime.deltaTime;
-                Data.bodyState = EBodyState.Break;
+                RoleData.bodyState = EBodyState.Break;
             }
-            else if (RoleState.breakTime <= 0 && Data.bodyState == EBodyState.Break)
+            else if (RoleState.breakTime <= 0 && RoleData.bodyState == EBodyState.Break)
             {
-                Data.bodyState = EBodyState.Ready;
+                RoleData.bodyState = EBodyState.Ready;
             }
         }
 
@@ -316,7 +317,7 @@ namespace XiaoCao
             foreach (var item in curTaskData)
             {
                 //&& item.Task.Info.skillId > 0 TODO
-                if (item.Task.IsBusy )
+                if (item.Task.IsBusy)
                 {
                     return true;
                 }
@@ -327,7 +328,7 @@ namespace XiaoCao
         public void TryPlaySkill(int skillId)
         {
             //条件判断, 耗蓝等等
-            if (!Data.IsFree)
+            if (!RoleData.IsFree)
                 return;
             //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
             if (IsBusy() && !IsHighLevelSkill(skillId))
@@ -338,11 +339,11 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
-            if (!Data.IsFree || IsBusy())
+            if (!RoleData.IsFree || IsBusy())
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());
-  
+
             int nextNorAckIndex = atkTimers.GetNextNorAckIndex();
             int norAckSkillId = Data.playerSetting.norAtkIds[nextNorAckIndex];
             Data.curNorAckIndex = nextNorAckIndex;
@@ -364,7 +365,7 @@ namespace XiaoCao
 
             bool isOtherSkill = IsOtherSkill(skillId);
 
-            Data.curSkillId = skillId;
+            Data_R.curSkillId = skillId;
 
             Transform playerTF = owner.gameObject.transform;
 
@@ -397,11 +398,10 @@ namespace XiaoCao
     }
     //相当于System, 无数据
 
-    public class AtkTimers : EntityComponent<Player0>
+    public class AtkTimers : PlayerComponent
     {
         public AtkTimers(Player0 owner) : base(owner) { }
-        public PlayerData0 data => owner.playerData;
-        public PlayerSetting playerSetting => data.playerSetting;
+        public PlayerSetting playerSetting => Data_P.playerSetting;
 
         public Dictionary<int, SkillCdData> dic = new Dictionary<int, SkillCdData>();
 
@@ -412,7 +412,7 @@ namespace XiaoCao
             if (Time.time < resetNorAckTimer)
             {
                 int len = playerSetting.norAtkIds.Count;
-                return (data.curNorAckIndex + 1) % len;
+                return (Data_P.curNorAckIndex + 1) % len;
             }
             return 0;
         }
@@ -465,9 +465,18 @@ namespace XiaoCao
         }
     }
 
+    public  class PlayerComponent : EntityComponent<Player0>
+    {
+        public PlayerComponent(Player0 owner) : base(owner){}
+
+        public PlayerData0 Data_P => owner.playerData;
+    }
+
     public class EntityComponent<T> : IUpdate where T : Role
     {
         public T owner;
+
+        public RoleData Data_R => owner.roleData;
 
         public EntityComponent(T owner)
         {
@@ -488,31 +497,12 @@ namespace XiaoCao
     }
 
     //建议只在这层 封装数据类
+    //关于敌人数据,有很多字段与PlayerData0相似
+    //如 EBodyState,breakState,roleState; playerAttr
+    //建议少数提取,多数嗦哈
     public class PlayerData0 : IData
     {
-        public int prefabID = 0;
-
-        public EBodyState bodyState;
-
-        public int curSkillId;
         public int curNorAckIndex;
-
-        //优先级规则
-        //0. 非死亡&非控制中 属于自由状态
-        //1. 自由状态可以执行任何主动行为
-        //2. 如果在自由期间 , 被击中,可能转至被不自由状态
-        //3. 处于不自由时,可以使用特殊技能
-        //4. 施法优先级高于普通, 普攻无法打断施法, 但施法可打断普攻 
-        //5. 处于task过程中 无法普攻
-        //6. 翻滚优先级高, 可以打断普攻 和 技能
-        public bool IsFree => bodyState is not EBodyState.Break or EBodyState.Dead;
-
-
-        public float moveSpeedFactor = 1;
-
-        public RoleState roleState = new RoleState();
-
-        public PlayerAttr playerAttr = new PlayerAttr();
 
         public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格
 
@@ -534,6 +524,8 @@ namespace XiaoCao
         public float rotateLockTime; //普通锁定旋转, 如技能状态
         public float breakTime;
 
+
+
         public float moveSpeedMult = 1;
 
         public float moveAnimMult = 1;
@@ -543,6 +535,72 @@ namespace XiaoCao
         public float MoveMultFinal => moveSpeedMult * moveAnimMult;
 
     }
+
+    public class BreakState
+    {
+        public float armor;  //虽说有小数, 实际用整数
+        public float maxArmor;
+        public float recoverWait_t;  //进入破防后,多久启动恢复
+        public float recoverFinish_t = 0.5f; //恢复满需要时间
+        public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用
+        public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
+        public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
+
+        public BreakSubState state { get; set; }
+        public bool isHover { get; set; }//是否滞空
+        public bool isBreak => state != BreakSubState.None;  //是否破防
+
+        public float enterBreakTime;
+        public float breakTimer;
+
+        public void OnHit(int hitArmor)
+        {
+            armor -= hitArmor;
+            if (state == BreakSubState.None)
+            {
+                if (armor <= 0)
+                {
+                    state = BreakSubState.BreakStart;
+                }
+            }
+        }
+
+        public void OnUpdate(float deltaTime)
+        {
+            if (recoverSpeedInner > 0)
+            {
+                armor += deltaTime * recoverSpeedInner;
+            }
+
+            if (state == BreakSubState.BreakRecover)
+            {
+                armor += deltaTime * recoverSpeed;
+            }
+            else if (state == BreakSubState.BreakStart)
+            {
+                breakTimer += deltaTime;
+                if (breakTimer > recoverWait_t)
+                {
+                    state = BreakSubState.BreakRecover;
+                }
+            }
+
+            if (armor >= maxArmor)
+            {
+                armor = maxArmor;
+                state = BreakSubState.None;
+                Debug.Log($"--- recover finish");
+            }
+        }
+
+        public enum BreakSubState
+        {
+            None,
+            BreakStart,
+            BreakRecover
+        }
+    }
+
     [Serializable]
     public class PlayerSetting
     {

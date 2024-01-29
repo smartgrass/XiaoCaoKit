@@ -6,18 +6,23 @@ namespace XiaoCao
     {
         public bool isRuning;
 
-
-
-
+        internal EnemyData0 enemyData;
 
         public void EnableAI(bool isOn)
         {
 
         }
 
+        /// <summary>
+        /// TODO 
+        /// 行为: 移动,攻击,受击
+        /// AI功能: 扫描目标
+        /// AI配置哪里填? 拖拽&编辑器自动查找
+        /// </summary>
+
         protected override void OnUpdate()
         {
-            base.OnUpdate();
+
 
         }
 
@@ -29,7 +34,7 @@ namespace XiaoCao
 
             //TODO moveSetting
 
-            //Vector3 moveDelta = moveDir * Data.moveSetting.baseMoveSpeed * Data.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
+            //Vector3 moveDelta = moveDir * Data.moveSetting.baseMoveSpeed * RoleData.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
 
 
             //TODO 重力
@@ -66,13 +71,14 @@ namespace XiaoCao
 
     public class EnemyData0 : IData
     {
-        public int prefabID = 0;
-        public EBodyState bodyState;
-        public int curSkillId;
-        public bool IsFree => bodyState is not EBodyState.Break or EBodyState.Dead;
 
-        public MoveSetting moveSetting;
+    }
 
+
+    public class EnemyComponent : EntityComponent<Enmey0>
+    {
+        public EnemyComponent(Enmey0 owner) : base(owner){}
+        public EnemyData0 Data_E  => owner.enemyData;
     }
 
 }
