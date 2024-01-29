@@ -15,11 +15,11 @@ namespace XiaoCao
     {
         public static GameDataCommon Current => GameData.commonData;
 
-        public PlayMode PlayMode;
+        public PlayMode playMode;
 
         public GameState gameState;
 
-        internal Player0 Player0;
+        public PlayerBase player0;
 
         public bool loadMod = false;
     }
@@ -29,8 +29,9 @@ namespace XiaoCao
         public static BattleData Current => GameData.battleData;
 
         public HashSet<string> map = new HashSet<string>();
-        public Dictionary<string,int> tempIntDic = new Dictionary<string,int>();
-    
+
+        public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();
+
 
     }
 
@@ -58,17 +59,23 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
+        RoleChange = 2,
+        CameraChange = 3,
 
-        PlayerEvent  = 100, //分界线
+        PlayerEvent = 100, //分界线
         AckingNorAck = 101,
 
     }
 
-
+    public enum RoleChangeType
+    {
+        Add,
+        Remove,
+    }
 
     public static class EventTypeExtend
     {
-        public static int Int(this EventType t) 
+        public static int Int(this EventType t)
         {
             return (int)t;
         }

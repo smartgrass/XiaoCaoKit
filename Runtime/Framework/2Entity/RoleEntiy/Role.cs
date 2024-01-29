@@ -1,6 +1,9 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Xml;
+using TEngine;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TextCore;
@@ -10,6 +13,8 @@ namespace XiaoCao
     [TypeLabel(typeof(RoleTagCommon))]
     public abstract class Role : HealthBehavior
     {
+
+
         public abstract RoleType RoleType { get; }
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
@@ -87,11 +92,19 @@ namespace XiaoCao
                 roleData.breakState.OnHit(1);
                 if (roleData.breakState.isBreak)
                 {
-                    roleData.bodyState = EBodyState.Break;
+                    
                 }
             }
         }
 
+        public void CheckBreakUpdate()
+        {
+            roleData.breakState.OnUpdate(XCTime.deltaTime);
+            if (!roleData.breakState.isBreak)
+            {
+                roleData.bodyState = EBodyState.Ready;
+            }
+        }
 
         // 排除异常情况:如死亡
         // 如果需要计算其他值,用ref
@@ -121,9 +134,25 @@ namespace XiaoCao
         }
 
 
+
+        public void RoleIn()
+        {
+            RoleMgr.Inst.roleDic.Add(id, this);
+            GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Add);
+        }
+
+        public void RoleOut()
+        {
+            GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Remove);
+            RoleMgr.Inst.roleDic.Remove(id);
+        }
+
     }
 
-
+    public class RoleMgr : Singleton<RoleMgr>, IClearCache
+    {
+        public Dictionary<int, Role> roleDic = new Dictionary<int, Role>();
+    }
     public class RoleData
     {
 
@@ -150,8 +179,9 @@ namespace XiaoCao
 
     public static class RoleTagCommon
     {
-        public const int ShowHp = 0;
+        public const int NoHpBar = 0;
         public const int MainPlayer = 1;
+        public const int Boss = 2;
     }
 
     public class PlayerBase : Role

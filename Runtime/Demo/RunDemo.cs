@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading.Tasks;
+using TEngine;
 using UnityEngine;
 
 namespace XiaoCao
@@ -38,6 +39,7 @@ namespace XiaoCao
 
             var data0 =  SavaMgr.LoadData<PlayerData0>(out bool isSuc);
             player.Init(data0, true);
+
             if (!isSuc)
             {
                 Debuger.Log($"--- creat newData");

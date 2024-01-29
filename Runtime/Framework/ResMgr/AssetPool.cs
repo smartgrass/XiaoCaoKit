@@ -35,6 +35,15 @@ namespace XiaoCao
             pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
         }
 
+        public GameObject Get()
+        {
+            return pool.Get();
+        }
+        public void Release(GameObject gameObject)
+        {
+            pool.Release(gameObject);
+        }
+
         private GameObject Creat()
         {
             Transform transform = DontDestroyTransfrom.Get(PoolName);
@@ -56,5 +65,7 @@ namespace XiaoCao
         {
             obj.SetActive(true);
         }
+
+
     }
 }

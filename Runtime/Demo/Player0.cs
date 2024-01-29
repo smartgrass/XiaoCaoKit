@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
+using UnityEngine.Tilemaps;
+using static UnityEngine.UI.GridLayoutGroup;
 using Input = UnityEngine.Input;
 
 namespace XiaoCao
@@ -15,10 +17,10 @@ namespace XiaoCao
 
         public PlayerData0 playerData = new PlayerData0();
 
-        public PlayerShareData0 playerComponent = new PlayerShareData0();
+        public PlayerShareData0 component = new PlayerShareData0();
 
         public override IData data => playerData;
-        public override IShareData componentData => playerComponent;
+        public override IShareData componentData => component;
 
         protected override void Awake()
         {
@@ -37,33 +39,40 @@ namespace XiaoCao
 
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
-            playerComponent.input = new PlayerInput(this);
-            playerComponent.control = new PlayerControl(this);
-            playerComponent.movement = new PlayerMovement(this);
-            playerComponent.atkTimers = new AtkTimers(this);
+            component.input = new PlayerInput(this);
+            component.control = new PlayerControl(this);
+            component.movement = new PlayerMovement(this);
+            component.atkTimers = new AtkTimers(this);
             Enable = true;
 
             if (isMainPlayer)
             {
                 AddTag(RoleTagCommon.MainPlayer);
-                GameDataCommon.Current.Player0 = this;
+                GameDataCommon.Current.player0 = this;
             }
+
+            RoleIn();
         }
 
         protected override void OnUpdate()
         {
-            playerComponent.input.Update();
-            playerComponent.control.Update();
-            playerComponent.movement.Update();
+            component.input.Update();
+            component.control.Update();
+            component.movement.Update();
             //考虑增加add模式
         }
 
         protected override void OnFixedUpdate()
         {
-            playerComponent.control.FixedUpdate();
-            playerComponent.movement.FixedUpdate();
-            playerComponent.input.FixedUpdate();
-            playerComponent.input.Used();
+            component.control.FixedUpdate();
+            component.movement.FixedUpdate();
+            component.input.FixedUpdate();
+            component.input.Used();
+        }
+
+        protected override void OnDestroy()
+        {
+            RoleOut();
         }
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
@@ -72,7 +81,7 @@ namespace XiaoCao
             if (type == EntityMsgType.StartSkill)
             {
                 int msgInt = (int)msg;
-                playerComponent.control.TryPlaySkill(msgInt);
+                component.control.TryPlaySkill(msgInt);
             }
 
         }
@@ -153,12 +162,10 @@ namespace XiaoCao
     public class PlayerMovement : PlayerComponent
     {
         public PlayerMovement(Player0 owner) : base(owner) { }
-
-        private float tempVelocity;
-
-        public PlayerInputData InputData => owner.playerData.inputData;
-
         public RoleState RoleState => Data_R.roleState;
+
+        private float _tempAnimMoveSpeed;
+
 
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
@@ -166,6 +173,8 @@ namespace XiaoCao
         public MoveSetting setting => Data_P.moveSetting;
 
         public Vector3 camForward => CameraMgr.Forword;
+
+        public PlayerInputData InputData => owner.playerData.inputData;
 
         public override void FixedUpdate()
         {
@@ -238,80 +247,27 @@ namespace XiaoCao
         {
             float inputTotal = isInput ? 1 : 0;
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref tempVelocity, setting.moveSmooth);
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, setting.moveSmooth);
 
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
         }
 
     }
 
-    public class PlayerControl : PlayerComponent
+    public class RoleControl<T> : RoleComponent where T : Role
     {
-        public PlayerControl(Player0 owner) : base(owner) { }
+        public T owner;
+        public RoleControl(T _owner)
+        {
+            this.owner = _owner;
+        }
 
-        public PlayerInputData InputData => owner.playerData.inputData;
-
-        public PlayerData0 Data => owner.playerData;
-        public RoleData RoleData => owner.roleData;
-
-        public RoleState RoleState => RoleData.roleState;
-
-        public CharacterController cc => owner.idRole.cc;
-
-        public AtkTimers atkTimers => owner.playerComponent.atkTimers;
+        public override RoleData Data_R => owner.roleData;
+        public RoleState RoleState => Data_R.roleState;
 
         public List<XCTaskRunner> curTaskData = new List<XCTaskRunner>();
+        public CharacterController cc => owner.idRole.cc;
 
-        public override void Update()
-        {
-            if (RoleData.bodyState == EBodyState.Dead)
-            {
-
-                return;
-            }
-            CheckBreakTime();
-            if (InputData.skillInput != 0)
-            {
-                TryPlaySkill(InputData.skillInput);
-            }
-
-            if (InputData.inputs[InputKey.NorAck])
-            {
-                TryNorAck();
-            }
-
-
-        }
-        public override void FixedUpdate()
-        {
-            UpdateGravity();
-
-            if (RoleData.bodyState == EBodyState.Dead)
-            {
-                return;
-            }
-        }
-
-        void CheckBreakTime()
-        {
-            if (RoleState.breakTime > 0)
-            {
-                RoleState.breakTime -= XCTime.deltaTime;
-                RoleData.bodyState = EBodyState.Break;
-            }
-            else if (RoleState.breakTime <= 0 && RoleData.bodyState == EBodyState.Break)
-            {
-                RoleData.bodyState = EBodyState.Ready;
-            }
-        }
-
-        //Move可以考虑拆分出 MoveComponent
-
-        void UpdateGravity()
-        {
-            //暂时利用刚体吧
-            //owner.playerShareData.rigidbody.useGravity
-        }
         public bool IsBusy(int level = 0)
         {
             foreach (var item in curTaskData)
@@ -325,10 +281,41 @@ namespace XiaoCao
             return false;
         }
 
+        public void OnTaskEnd(XCTaskRunner runner)
+        {
+            curTaskData.Remove(runner);
+        }
+    }
+
+    public class PlayerControl : RoleControl<Player0>
+    {
+        public PlayerControl(Player0 _owner) : base(_owner) { }
+        public PlayerData0 Data_P => owner.playerData;
+        public PlayerInputData InputData => owner.playerData.inputData;
+        public AtkTimers AtkTimers => owner.component.atkTimers;
+
+        public override void Update()
+        {
+            if (Data_R.bodyState == EBodyState.Dead)
+            {
+                return;
+            }
+            owner.CheckBreakUpdate();
+            if (InputData.skillInput != 0)
+            {
+                TryPlaySkill(InputData.skillInput);
+            }
+
+            if (InputData.inputs[InputKey.NorAck])
+            {
+                TryNorAck();
+            }
+        }
+
         public void TryPlaySkill(int skillId)
         {
             //条件判断, 耗蓝等等
-            if (!RoleData.IsFree)
+            if (!Data_R.IsFree)
                 return;
             //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
             if (IsBusy() && !IsHighLevelSkill(skillId))
@@ -339,14 +326,14 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
-            if (!RoleData.IsFree || IsBusy())
+            if (!Data_R.IsFree || IsBusy())
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());
 
-            int nextNorAckIndex = atkTimers.GetNextNorAckIndex();
-            int norAckSkillId = Data.playerSetting.norAtkIds[nextNorAckIndex];
-            Data.curNorAckIndex = nextNorAckIndex;
+            int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
+            int norAckSkillId = Data_P.playerSetting.norAtkIds[nextNorAckIndex];
+            Data_P.curNorAckIndex = nextNorAckIndex;
             RcpPlaySkill(norAckSkillId);
         }
 
@@ -362,10 +349,9 @@ namespace XiaoCao
             //TODO
             Debug.Log($" PlaySkill {skillId}");
 
-
             bool isOtherSkill = IsOtherSkill(skillId);
 
-            Data_R.curSkillId = skillId;
+            base.Data_R.curSkillId = skillId;
 
             Transform playerTF = owner.gameObject.transform;
 
@@ -382,11 +368,6 @@ namespace XiaoCao
             var task = XCTaskRunner.CreatNew(skillId, RoleType.Player, taskInfo);
             curTaskData.Add(task);
             task.onEndEvent.AddListener(OnTaskEnd);
-        }
-
-        void OnTaskEnd(XCTaskRunner runner)
-        {
-            curTaskData.Remove(runner);
         }
 
         //平a 翻滚等跳跃等设定
@@ -465,26 +446,35 @@ namespace XiaoCao
         }
     }
 
-    public  class PlayerComponent : EntityComponent<Player0>
+
+
+    public class PlayerComponent : RoleComponent
     {
-        public PlayerComponent(Player0 owner) : base(owner){}
-
-        public PlayerData0 Data_P => owner.playerData;
-    }
-
-    public class EntityComponent<T> : IUpdate where T : Role
-    {
-        public T owner;
-
-        public RoleData Data_R => owner.roleData;
-
-        public EntityComponent(T owner)
+        public PlayerComponent(Player0 owner)
         {
             this.owner = owner;
         }
 
-        public virtual void Update() { }
+        public Player0 owner;
+        public override RoleData Data_R => owner.roleData;
+        public PlayerData0 Data_P => owner.playerData;
+    }
 
+
+    public class RoleComponent : EntityComponent
+    {
+        public virtual RoleData Data_R { get; }
+    }
+
+    public class EntityComponent
+    {
+        /// <summary>
+        /// no base
+        /// </summary>
+        public virtual void Update() { }
+        /// <summary>
+        /// no base
+        /// </summary>
         public virtual void FixedUpdate() { }
 
     }
@@ -518,13 +508,11 @@ namespace XiaoCao
 
     public class RoleState
     {
-        public bool isNorAck;
-        public bool isMoveLock; //强制锁定移动, 如角色死亡
+
         public float moveLockTime; //普通锁定移动, 如技能状态
         public float rotateLockTime; //普通锁定旋转, 如技能状态
         public float breakTime;
-
-
+        public bool isMoveLock; //强制锁定移动, 如角色死亡
 
         public float moveSpeedMult = 1;
 
@@ -623,7 +611,7 @@ namespace XiaoCao
 
         public float startRotateSpeed = 200;
         public float endRotateSpeed = 100;
-        public float g = 9;
+        public float g = -40;
     }
 
     public class PlayerAttr

@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using XiaoCao;
+using EventType = XiaoCao.EventType;
 
 namespace TEngine
 {
@@ -13,13 +14,13 @@ namespace TEngine
         {
             //添加监听
             GameEvent.AddEventListener<GameState, GameState>(0, ExampleRecive);
-            GameEvent.AddEventListener<GameState, GameState>("EventTag", ExampleRecive);
+            GameEvent.AddEventListener<GameState, GameState>(EventType.GameStateChange.Int(), ExampleRecive);
             //移除监听
-            GameEvent.RemoveEventListener<GameState, GameState>("EventTag", ExampleRecive);
+            GameEvent.RemoveEventListener<GameState, GameState>(EventType.GameStateChange.Int(), ExampleRecive);
             //触发
             GameEvent.Send<GameState, GameState>("EventTag", GameState.Loading, GameState.Running);
 
-          
+            
         }
 
         private static void ExampleRecive(GameState state1, GameState state2)
@@ -609,5 +610,12 @@ namespace TEngine
         }
 
         #endregion
+    }
+
+
+    ///<see cref="GameEvent.Example"/>
+    public class MsgMgr
+    {
+
     }
 }
