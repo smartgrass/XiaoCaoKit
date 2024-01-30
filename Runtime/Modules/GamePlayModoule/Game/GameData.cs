@@ -67,6 +67,15 @@ namespace XiaoCao
 
     }
 
+    public static class TeamTag
+    {
+        public const int Enemy = 0;
+
+        public const int Player = 10;
+
+        public const int Player2 = 11;
+    }
+
     public enum RoleChangeType
     {
         Add,

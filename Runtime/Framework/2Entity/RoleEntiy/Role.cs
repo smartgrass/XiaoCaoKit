@@ -7,14 +7,13 @@ using TEngine;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.TextCore;
+using UnityEngine.UIElements;
 
 namespace XiaoCao
 {
     [TypeLabel(typeof(RoleTagCommon))]
     public abstract class Role : HealthBehavior
     {
-
-
         public abstract RoleType RoleType { get; }
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
@@ -23,7 +22,11 @@ namespace XiaoCao
 
         public int prefabID = 0;
 
+        public int team = 0;
+
         public GameObject body;
+
+        public Transform transform => body.transform;
         internal Animator Anim => idRole.animator;
         public bool isBodyCreated => body != null;
 
@@ -92,7 +95,7 @@ namespace XiaoCao
                 roleData.breakState.OnHit(1);
                 if (roleData.breakState.isBreak)
                 {
-                    
+
                 }
             }
         }
@@ -152,6 +155,59 @@ namespace XiaoCao
     public class RoleMgr : Singleton<RoleMgr>, IClearCache
     {
         public Dictionary<int, Role> roleDic = new Dictionary<int, Role>();
+
+
+        //首先获取所有范围内敌人
+        //获取最高分数
+        //视觉范围为angle
+        //超过视觉范围 做插值剔除  maxDis = Mathf.Lerp(hearR, seeR, angleP);
+        //距离越小分数越高 ds = 1/d  (d >0.1)
+        //夹角越小分数越高 as = cos(x)
+        //旧目标加分计算 暂无
+        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS, int team = TeamTag.Enemy)
+        {
+            float hearR = seeR * 0.4f;
+            float angleP = 1;
+            Role role = null;
+            maxS = 0;
+            foreach (var item in roleDic.Values)
+            {
+                if (item.team != team && item.IsAlive)
+                {
+                    GetAngleAndDistance(self, item.gameObject.transform, out float curAngle, out float dis);
+                    if (curAngle > seeAngle)
+                    {
+                        MathTool.ValueMapping(curAngle, seeAngle, 180, 1, 0);
+                    }
+                    float maxDis = Mathf.Lerp(hearR, seeR, angleP);
+                    if (dis < maxDis)
+                    {
+                        float _ds = 1 / dis;
+                        float _as = Mathf.Cos(curAngle / 2f * Mathf.Deg2Rad);
+                        float end = _ds * _as;
+
+                        //查找分数最高
+                        if (end > maxS)
+                        {
+                            maxS = end;
+                            role = item;
+                        }
+                    }
+                }
+            }
+            return role;
+        }
+
+        public void GetAngleAndDistance(Transform self, Transform target, out float curAngle, out float dis)
+        {
+            Vector3 dir = target.position - self.position;
+
+            curAngle = Vector3.Angle(dir, target.forward);
+
+            dis = Mathf.Max(0.1f, dir.magnitude);
+        }
+
+
     }
     public class RoleData
     {

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -77,7 +78,7 @@ namespace XiaoCao
 
 
 
-        void AIMoveTo(Vector3 pos, float speedFactor = 1)
+        public void AIMoveTo(Vector3 pos, float speedFactor = 1,bool isLookForward = false)
         {
             //
             var dir = (pos - gameObject.transform.position).normalized;
@@ -101,22 +102,14 @@ namespace XiaoCao
 
     }
 
-
-    public class EnemyControl : RoleControl<Enemy0>
+    public enum HideAct
     {
-        public EnemyControl(Enemy0 _owner) : base(_owner) { }
-
-
-
-        public override void Update()
-        {
-            if (owner.isAiRuning)
-            {
-
-            }
-        }
-
+        MoveLeft, //左移
+        MoveRight, //右移
+        //Back, //后退
+        //Dash //后闪
     }
+
     public class EnemyShareData0 : IShareData
     {
         public EnemyControl control;

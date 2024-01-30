@@ -5,79 +5,122 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class AI
+
+    //行为池具体放So
+    //运行时作为info读入
+    public class AIInfo : ScriptableObject
     {
+        public List<AIAct> actPool;
 
+        private void Example()
+        {
+            ActGroup actGroup = new ActGroup(actPool);
+            AIAct getAct = actGroup.GetOne();
+        }
     }
-
 
     [System.Serializable]
     public class ActGroup
     {
-        public string des = "";
-        //public int maxTime = 20;
-        //public float tardis; //目前AI没有根据tardis选择技能组的能力
-        [SerializeField]
-        public List<AIAct> aIActions;
-        [NonSerialized]
-        private List<AIAct> enableActs = new List<AIAct>(); //可以选的Act,使用一个都会移除一个,并且计数
-        [HideInInspector]
-        public bool IsDisable = false;
+        public List<AIAct> actPool { get; set; }
 
-        public AIAct GetOneAct()
+        public int Count { get; set; }
+
+        public bool IsAllFinish { get; set; }
+        public List<AIRuntimeData> RuntimeDatas { get; set; }
+
+        public AIRuntimeData curRuntimeData { get; set; }
+
+
+        public bool IsEmpty => actPool.Count == 0;
+
+        public ActGroup(List<AIAct> actPool)
         {
-            if (enableActs.Count == 0)
-            {
-                ReStart();
-            }
+            this.actPool = actPool;
+            Count = this.actPool.Count;
+            RuntimeDatas =new List<AIRuntimeData>();
+            CreatRuntimeDatas();
+        }
+
+        public void ReInitAll()
+        {
+            IsAllFinish = false;
+            RuntimeDatas.Clear();
+            CreatRuntimeDatas();
+        }
+
+        public AIAct GetOne()
+        {
             int index = 0;
-            var res = enableActs.GetRandom(out index);
-            res.useTimer++;
-            if (res.useTimer >= res.maxUseTime)
+            if (RuntimeDatas.Count == 0)
             {
-                enableActs.RemoveAt(index);
+                ReInitAll();
             }
-            if (enableActs.Count == 0)
+
+            //随机取出一个
+            curRuntimeData = RuntimeDatas.GetRandom(out index);
+            var info = actPool[curRuntimeData.index];
+            curRuntimeData.useTimer++;
+
+            if (curRuntimeData.useTimer >= info.maxUseTime)
             {
-                //切换下一组
-                IsDisable = true;
+                RuntimeDatas.RemoveAt(index);
             }
-            return res;
+            //全用完,切换下一组
+            if (RuntimeDatas.Count == 0)
+            {
+                IsAllFinish = true;
+            }
+            return info;
         }
 
-        public void ReStart()
+
+        private void CreatRuntimeDatas()
         {
-            IsDisable = false;
-            enableActs = new List<AIAct>(aIActions);
-            foreach (var item in enableActs)
+            int i = 0;
+            foreach (AIAct act in this.actPool)
             {
-                item.Reset();
+                AIRuntimeData data = new AIRuntimeData()
+                {
+                    power = act.power,
+                    index = i++,
+                };
+                RuntimeDatas.Add(data);
             }
         }
-
-        public bool IsEmpty => aIActions.Count == 0;
     }
 
     [System.Serializable]
     public class AIAct : PowerModel
     {
-        public string actName; //id
+
         public ActMsgType actType;//事件      
         public string actMsg = "NorAck"; //信息  当
         public float targetDis = 3; //执行距离
 
-
         public float moveTime = 1.5f; //追踪时间
         public float endWaitTime = 0; //攻击结束的后摇
         public float hideTime = 0.5f; //结束后躲避时间,默认是后退
+
         public bool isHide_LookAt = false; // 躲避时是否盯着目标
 
-        public int maxUseTime = 2; //一个组内最多使用次数
-        public string nextActName;
-        public int useTimer = 0;
-        [ReadOnly]
-        public AIActState state;
 
+        public int maxUseTime = 2; //一个组内最多使用次数
+        public string actName; //id
+        public string nextActName;
+
+        public bool HasNextAct
+        {
+            get => !string.IsNullOrEmpty(nextActName);
+        }
+
+    }
+
+    public class AIRuntimeData: PowerModel
+    {
+        public int index;
+        public int useTimer;
+        public AIActState state;
         public void Reset()
         {
             useTimer = 0;
