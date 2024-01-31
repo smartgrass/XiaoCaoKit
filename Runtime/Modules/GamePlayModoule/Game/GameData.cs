@@ -59,8 +59,9 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
-        RoleChange = 2,
+        GameStartFinsh = 2,
         CameraChange = 3,
+        RoleChange = 4,
 
         PlayerEvent = 100, //分界线
         AckingNorAck = 101,

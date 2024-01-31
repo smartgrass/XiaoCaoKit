@@ -27,6 +27,8 @@ namespace XiaoCao
             LoadPlayerData();
 
             GameMgr.Inst.SetGameState(GameState.Running);
+
+            GameEvent.Send(EventType.GameStartFinsh.Int());
         }
 
         private void LoadPlayerData()

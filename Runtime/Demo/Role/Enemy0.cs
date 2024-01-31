@@ -13,6 +13,7 @@ namespace XiaoCao
 
         public void Init()
         {
+            this.CreateGameObject();
             component.aiControl = new AIControl(this);
             component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSo>().GetSetting(idRole.aiId);
 

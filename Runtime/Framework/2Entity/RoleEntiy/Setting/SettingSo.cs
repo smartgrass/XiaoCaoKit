@@ -12,6 +12,14 @@ namespace XiaoCao
             {
                 return moveSettings[index];
             }
+
+#if UNITY_EDITOR
+            if (index == 0)
+            {
+                Debug.LogError("--- creat one " + this.name);
+                moveSettings = new T[1];
+            }
+#endif
             return moveSettings[0];
         }
     }

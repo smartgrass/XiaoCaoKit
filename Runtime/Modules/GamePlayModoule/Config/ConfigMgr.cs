@@ -36,7 +36,7 @@ namespace XiaoCao
                 ret = ScriptableObject.CreateInstance<T>();
 #if UNITY_EDITOR
                 string path = isResources ? $"Assets/Resources/{type.Name}.asset" : GetConfigPath(type);
-                Debug.Log($"--- CreateAsset {path}");
+                Debug.LogError($"--- CreateAsset {path}");
                 AssetDatabase.CreateAsset(ret, path);
 #endif
             }
