@@ -20,10 +20,10 @@ namespace XiaoCao
             {
                 return;
             }
-            MoveUpdate();
+            MoveFixUpdate();
         }
 
-        protected virtual void MoveUpdate()
+        protected virtual void MoveFixUpdate()
         {
             Vector3 moveDir = GetInputMoveDir();
 
@@ -46,8 +46,9 @@ namespace XiaoCao
                 moveDir = Vector3.zero;
             }
 
-            bool isInput = (Mathf.Abs(moveDir.x) + Mathf.Abs(moveDir.y)) > 0;
-            FixUpdateMoveAnimMult(isInput);
+            bool isInput = (Mathf.Abs(moveDir.x) + Mathf.Abs(moveDir.z)) > 0;
+
+            ComputeMoveValue(isInput);
 
             if (isLookDir)
             {
@@ -92,7 +93,7 @@ namespace XiaoCao
         }
 
         //计算移动动画速度, 同时会影响移速倍率
-        void FixUpdateMoveAnimMult(bool isInput)
+        void ComputeMoveValue(bool isInput)
         {
             float inputTotal = isInput ? 1 : 0;
 

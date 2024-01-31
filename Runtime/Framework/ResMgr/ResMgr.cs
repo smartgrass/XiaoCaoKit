@@ -34,6 +34,11 @@ public class ResMgr
         }
         else
         {
+            foreach (var item in ExtraLoader.GetAssetInfos(""))
+            {
+                Debug.Log($"--- {item}");
+            }
+
             //Extra
             if (ExtraLoader.CheckLocationValid(path))
             {
@@ -41,11 +46,11 @@ public class ResMgr
                 return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
             }
             else
-            {
-                Debug.LogWarning($"--- no Extra FailBack to Default {path}");
-                return LoadPrefab(path, PackageType.DefaultPackage);
+                {
+                    Debug.LogWarning($"--- no Extra FailBack to Default {path}");
+                    return LoadPrefab(path, PackageType.DefaultPackage);
+                }
             }
-        }
     }
 
     //只加载, 没有实例化
@@ -93,16 +98,32 @@ public class ResMgr
         InitializationOperation initializationOperation = null;
 
         // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
-        string defaultHostServer = "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
-        string fallbackHostServer = "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+
+        string defaultHostServer = "file://" +  PathTool.GetUpperDir(Application.dataPath) + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        string fallbackHostServer = defaultHostServer;
+
+        Debug.Log($"--- {fallbackHostServer}");
+
         var initParameters = new HostPlayModeParameters();
-        //内置文件查询 好像也不需要
-        //initParameters.BuildinQueryServices = new GameQueryServices();
+        //内置文件查询
+        initParameters.BuildinQueryServices = new GameQueryServices();
         //解密不需要
         //initParameters.DecryptionServices = new FileOffsetDecryption();
         initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
         initializationOperation = ExtraLoader.InitializeAsync(initParameters);
         return initializationOperation;
+    }
+
+    private static string GetExtraPackageUrl()
+    {
+        if (Application.isEditor)
+        {
+            return "file://" +Application.streamingAssetsPath + "/ExtraPackage";
+        }
+        else
+        {
+            return "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        }
     }
 
     public static InitializationOperation InitRawPackage()

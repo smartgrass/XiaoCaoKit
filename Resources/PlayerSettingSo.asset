@@ -12,10 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 740baf4945e9fcb4aa5e89f06ae198df, type: 3}
   m_Name: PlayerSettingSo
   m_EditorClassIdentifier: 
-  playerSetting:
-  - des: "\u9ED8\u8BA4"
-    roleId: 0
-    rollSkillId: -1
-    norAtkIds: 9bffffff9affffff99ffffff
-    skillList: 650000006600000067000000
+  moveSettings:
+  - norAtkCount: 3
     resetNorAckTime: 1.5

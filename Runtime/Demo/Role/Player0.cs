@@ -29,13 +29,12 @@ namespace XiaoCao
         public void Init(PlayerData0 playerData, bool isMainPlayer = false)
         {
             this.playerData = playerData;
-            raceId = idRole.raceId;
-            //映射
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(raceId);
-            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(raceId);
-
 
             this.CreateGameObject();
+            raceId = idRole.raceId;
+            int settingId = RaceIdSetting.GetConfigId(raceId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
+            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
 
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;

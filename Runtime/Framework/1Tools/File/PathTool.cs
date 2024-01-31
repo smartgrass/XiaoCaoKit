@@ -36,8 +36,13 @@ public static class PathTool
     {
         var upperPath = Directory.GetParent(path)?.FullName;
         return upperPath;
-    } 
+    }
 
+
+    public static string GetRegularPath(string path)
+    {
+        return path.Replace('\\', '/').Replace("\\", "/"); //替换为Linux路径格式
+    }
 
     public static string FullPathToAssetsPath(string fullPath)
     {
@@ -47,6 +52,24 @@ public static class PathTool
         return Path.Combine("Assets", fullPath.RemoveHead(Application.dataPath));
 #endif
     }
+
+    /// <summary>
+    /// 转换Unity资源路径为文件的绝对路径
+    /// </summary>
+    public static string AssetPathToFullPath(string assetPath)
+    {
+        string projectPath = GetProjectPath();
+        return $"{projectPath}/{assetPath}";
+    }
+    /// <summary>
+    /// 获取项目工程路径
+    /// </summary>
+    public static string GetProjectPath()
+    {
+        string projectPath = Path.GetDirectoryName(Application.dataPath);
+        return GetRegularPath(projectPath);
+    }
+
 
 #if UNITY_EDITOR
     //获取Asset的ResourcePath

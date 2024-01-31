@@ -5,6 +5,8 @@ using XiaoCao;
 [RequireComponent(typeof(CharacterController))]
 public class IdRole : IdComponent
 {
+    public int raceId = 0;
+    public int aiId = 0;
     public RuntimeAnimatorController runtimeAnim;
     public Rigidbody rb;
     public CharacterController cc;
@@ -13,9 +15,7 @@ public class IdRole : IdComponent
     public Transform LookAt;
 
 
-    [Header("Setting")]
-    public int raceId = 0;
-    public int aiId = 0;
+
 
 
     [HideInInspector]

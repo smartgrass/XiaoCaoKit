@@ -13,40 +13,13 @@ public class GameQueryServices : IBuildinQueryServices
     /// </summary>
     public static bool CompareFileCRC = false;
 
-    public bool Query(string packageName, string fileName)
+    public bool Query(string packageName, string fileName, string fileCRC)
     {
         // 注意：fileName包含文件格式
         return StreamingAssetsHelper.FileExists(packageName, fileName, null);
     }
 }
 
-#if UNITY_EDITOR
-public sealed class StreamingAssetsHelper
-{
-    public static void Init() { }
-    public static bool FileExists(string packageName, string fileName, string fileCRC)
-    {
-        string filePath = Path.Combine(Application.streamingAssetsPath, StreamingAssetsDefine.RootFolderName, packageName, fileName);
-        if (File.Exists(filePath))
-        {
-            if (GameQueryServices.CompareFileCRC)
-            {
-                // string crc32 = YooAsset.Editor.EditorTools.GetFileCRC32(filePath);
-                // return crc32 == fileCRC;
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
-}
-#else
 public sealed class StreamingAssetsHelper
 {
     private class PackageQuery
@@ -62,6 +35,10 @@ public sealed class StreamingAssetsHelper
     /// </summary>
     public static void Init()
     {
+#if UNITY_EDITOR
+        return ;
+#endif
+
         if (_isInit == false)
         {
             _isInit = true;
@@ -87,6 +64,10 @@ public sealed class StreamingAssetsHelper
     /// </summary>
     public static bool FileExists(string packageName, string fileName, string fileCRC32)
     {
+
+#if UNITY_EDITOR
+        return true;
+#endif
         if (_isInit == false)
             Init();
 
@@ -106,7 +87,6 @@ public sealed class StreamingAssetsHelper
         }
     }
 }
-#endif
 
 
 #if UNITY_EDITOR

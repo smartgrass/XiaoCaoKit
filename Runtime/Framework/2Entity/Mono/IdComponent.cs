@@ -6,6 +6,7 @@ using XiaoCao;
 /// </summary>
 public class IdComponent : MonoBehaviour
 {
+    [NaughtyAttributes.ReadOnly]
     public int id;
 
     public BehaviorEntity GetEntity()

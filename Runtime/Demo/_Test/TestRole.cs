@@ -4,13 +4,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using XiaoCao;
 
-public class TestRole : IdComponent
+/// <summary>
+/// Editor test
+/// </summary>
+public class TestRole : MonoBehaviour
 {
-    public GameObject prefab;
+#if DEBUG
+    public int genId;
+
+    [Button("Éú³É")]
+    void TestGen()
+    {
+
+    }
+
+    private void Update()
+    {
+        
+
+    }
 
 
-    private int len = 10;
 
-    
-
+#endif
 }

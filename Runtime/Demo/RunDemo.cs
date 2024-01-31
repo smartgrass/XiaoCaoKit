@@ -35,8 +35,7 @@ namespace XiaoCao
 
             Player0 player = EntityMgr.Inst.CreatEntity<Player0>();
 
-            //SavaMgr
-
+            //读取存档数据
             var data0 =  SavaMgr.LoadData<PlayerData0>(out bool isSuc);
             player.Init(data0, true);
 
