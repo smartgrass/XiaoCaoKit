@@ -14,15 +14,15 @@ namespace XiaoCao
         //TODO 物理碰撞 OnTriggerEnter => 使用Mono类封装 . bindId
         public int id;
         public GameObject gameObject { get; private set; }
+        public Transform transform { get; private set; }
 
         public virtual EntityBaseType BindType { get => EntityBaseType.Entity; }
 
         protected void BindGameObject(GameObject go)
         {
             gameObject = go;
+            transform = gameObject.transform;
         }
-
-        public virtual void OnGameObjectBind(){}
 
         #region Tag
 
@@ -52,6 +52,7 @@ namespace XiaoCao
         {
             Debug.Log($"--- Receive {type} fromId: {fromId}");
         }
+
         #endregion
     }
 

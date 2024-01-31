@@ -10,6 +10,7 @@ using UnityEditor;
 namespace XiaoCao
 {
     ///<see cref="MoveSettingSo"/>
+    ///<see cref="PlayerSettingSo"/>
     public class ConfigMgr
     {
         public static string GetConfigPath(Type t)

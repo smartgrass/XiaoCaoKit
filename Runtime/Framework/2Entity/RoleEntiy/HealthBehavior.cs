@@ -5,7 +5,7 @@
         public int Hp { get; set; }
         public int MaxHp { get; set; }
 
-        public bool IsAlive => Hp > 0;
+        public virtual bool IsDie => Hp <= 0;
 
         public virtual void OnDie()
         {
@@ -16,7 +16,7 @@
     {
         int Hp { get; set; }
         int MaxHp { get; set; }
-        bool IsAlive { get; }
+        bool IsDie { get; }
         void OnDie();
     }
 }

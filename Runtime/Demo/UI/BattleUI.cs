@@ -39,7 +39,7 @@ namespace XiaoCao
                 Role role = item;
                 if (null != role)
                 {
-                    if (role.IsAlive && !role.HasTag(RoleTagCommon.NoHpBar) && role.IsRuning)
+                    if (role.IsDie && !role.HasTag(RoleTagCommon.NoHpBar) && role.IsRuning)
                     {
                         barDic.TryGetValue(role.id, out var bar);
                         if (bar != null)

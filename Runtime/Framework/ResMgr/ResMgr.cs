@@ -12,11 +12,16 @@ public class ResMgr
         GameObject go = GameObject.Instantiate(LoadPrefab(path));
         //加载 2
         go = PoolMgr.Inst.Get(path);
+
+        /*
+        https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
+        https://www.yooasset.com/docs/api/YooAsset/ResourcePackage
+        */
     }
 
-    public static GameObject LoadInstan(string path,PackageType type = PackageType.DefaultPackage)
+    public static GameObject LoadInstan(string path, PackageType type = PackageType.DefaultPackage)
     {
-        return GameObject.Instantiate(LoadPrefab(path,type));
+        return GameObject.Instantiate(LoadPrefab(path, type));
     }
 
     //只加载, 没有实例化
@@ -29,9 +34,17 @@ public class ResMgr
         }
         else
         {
-            Debug.Log($"--- ExtraLoader {path}");
             //Extra
-            return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject  as GameObject;
+            if (ExtraLoader.CheckLocationValid(path))
+            {
+                Debug.Log($"--- ExtraLoader {path}");
+                return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
+            }
+            else
+            {
+                Debug.LogWarning($"--- no Extra FailBack to Default {path}");
+                return LoadPrefab(path, PackageType.DefaultPackage);
+            }
         }
     }
 
@@ -80,10 +93,12 @@ public class ResMgr
         InitializationOperation initializationOperation = null;
 
         // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
-        string defaultHostServer = "file://"+Application.dataPath+"/Bundles/StandaloneWindows64/ExtraPackage/v1";
-        string fallbackHostServer = "file://"+Application.dataPath+"/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        string defaultHostServer = "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        string fallbackHostServer = "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
         var initParameters = new HostPlayModeParameters();
-        initParameters.BuildinQueryServices = new GameQueryServices();
+        //内置文件查询 好像也不需要
+        //initParameters.BuildinQueryServices = new GameQueryServices();
+        //解密不需要
         //initParameters.DecryptionServices = new FileOffsetDecryption();
         initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
         initializationOperation = ExtraLoader.InitializeAsync(initParameters);
@@ -183,22 +198,6 @@ public class ResMgr
     }
 
     #endregion
-
-    /*
-    https://www.yooasset.com/docs/guide-runtime/CodeTutorial3
-    LoadSceneAsync() 异步加载场景
-    LoadAssetSync() 同步加载资源对象
-    LoadAssetAsync() 异步加载资源对象
-    LoadSubAssetsSync() 同步加载子资源对象
-    LoadSubAssetsAsync() 异步加载子资源对象
-    LoadAllAssetsSync() 同步加载资源包内所有资源对象
-    LoadAllAssetsAsync() 异步加载资源包内所有资源对象
-    LoadRawFileSync() 同步获取原生文件
-    LoadRawFileAsync() 异步获取原生文件
-    加载示例
-    var handle = ResMgr.Loader.LoadAssetSync<GameObject>(eName);
-    prefab = handle.AssetObject as GameObject;
-*/
 }
 
 

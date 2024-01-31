@@ -5,40 +5,46 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+    [CreateAssetMenu(menuName = "SO/AiInfoSo")]
+    public class AiInfoSo : SettingSo<AiInfo>
+    {
+
+    }
 
     //行为池具体放So
     //运行时作为info读入
-    public class AIInfo : ScriptableObject
+    [Serializable]
+    public class AiInfo
     {
-        public List<AIAct> actPool;
+        public List<AiAct> actPool;
 
         private void Example()
         {
-            ActGroup actGroup = new ActGroup(actPool);
-            AIAct getAct = actGroup.GetOne();
+            AiActPool poolData = new AiActPool(actPool);
+            AiAct getAct = poolData.GetOne();
         }
     }
 
     [System.Serializable]
-    public class ActGroup
+    public class AiActPool
     {
-        public List<AIAct> actPool { get; set; }
+        public List<AiAct> actPool { get; set; }
 
         public int Count { get; set; }
 
         public bool IsAllFinish { get; set; }
-        public List<AIRuntimeData> RuntimeDatas { get; set; }
+        public List<AiPoolData> RuntimeDatas { get; set; }
 
-        public AIRuntimeData curRuntimeData { get; set; }
+        public AiPoolData curRuntimeData { get; set; }
 
 
         public bool IsEmpty => actPool.Count == 0;
 
-        public ActGroup(List<AIAct> actPool)
+        public AiActPool(List<AiAct> actPool)
         {
             this.actPool = actPool;
             Count = this.actPool.Count;
-            RuntimeDatas =new List<AIRuntimeData>();
+            RuntimeDatas = new List<AiPoolData>();
             CreatRuntimeDatas();
         }
 
@@ -49,7 +55,7 @@ namespace XiaoCao
             CreatRuntimeDatas();
         }
 
-        public AIAct GetOne()
+        public AiAct GetOne()
         {
             int index = 0;
             if (RuntimeDatas.Count == 0)
@@ -78,9 +84,9 @@ namespace XiaoCao
         private void CreatRuntimeDatas()
         {
             int i = 0;
-            foreach (AIAct act in this.actPool)
+            foreach (AiAct act in this.actPool)
             {
-                AIRuntimeData data = new AIRuntimeData()
+                AiPoolData data = new AiPoolData()
                 {
                     power = act.power,
                     index = i++,
@@ -91,18 +97,17 @@ namespace XiaoCao
     }
 
     [System.Serializable]
-    public class AIAct : PowerModel
+    public class AiAct : PowerModel
     {
-
         public ActMsgType actType;//事件      
         public string actMsg = "NorAck"; //信息  当
-        public float targetDis = 3; //执行距离
+        public float distance = 3; //执行距离
 
         public float moveTime = 1.5f; //追踪时间
         public float endWaitTime = 0; //攻击结束的后摇
         public float hideTime = 0.5f; //结束后躲避时间,默认是后退
 
-        public bool isHide_LookAt = false; // 躲避时是否盯着目标
+        public bool isLookAtTargetOnHide = false; // 躲避时是否盯着目标
 
 
         public int maxUseTime = 2; //一个组内最多使用次数
@@ -113,15 +118,14 @@ namespace XiaoCao
         {
             get => !string.IsNullOrEmpty(nextActName);
         }
-
     }
 
-    public class AIRuntimeData: PowerModel
+    public class AiPoolData : PowerModel, IUsed
     {
         public int index;
         public int useTimer;
         public AIActState state;
-        public void Reset()
+        public void Used()
         {
             useTimer = 0;
             state = AIActState.Start;
@@ -144,48 +148,4 @@ namespace XiaoCao
         End, //切换下一技能
     }
 
-    [System.Serializable]
-    public class PowerModel
-    {
-        public int power = 1; //权重
-    }
-
-    public static class RandomHelper
-    {
-        public static T GetRandom<T>(this List<T> powerModel, out int index) where T : PowerModel
-        {
-            index = 0;
-            int total = 0;
-            foreach (var item in powerModel)
-            {
-                total += item.power;
-            }
-            if (powerModel.Count == 0)
-            {
-                index = -1;
-                return null;
-            }
-            if (powerModel.Count == 1 || total == 0)
-            {
-                return powerModel[0];
-            }
-
-            int random = UnityEngine.Random.Range(0, total);
-            int rangeMax = 0;
-
-            int length = powerModel.Count;
-            for (int i = 0; i < length; i++)
-            {
-                rangeMax += powerModel[i].power;
-                //当随机数小于 rangeMax 说明在范围内
-                if (rangeMax > random && powerModel[i].power > 0)
-                {
-                    index = i;
-                    return powerModel[i];
-                }
-            }
-            Debug.LogError("??? power = 0");
-            return null;
-        }
-    }
 }

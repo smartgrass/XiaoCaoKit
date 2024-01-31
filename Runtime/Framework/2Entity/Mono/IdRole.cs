@@ -9,9 +9,14 @@ public class IdRole : IdComponent
     public Rigidbody rb;
     public CharacterController cc;
 
-
     public Transform Follow;
     public Transform LookAt;
+
+
+    [Header("Setting")]
+    public int raceId = 0;
+    public int aiId = 0;
+
 
     [HideInInspector]
     public Transform tf;

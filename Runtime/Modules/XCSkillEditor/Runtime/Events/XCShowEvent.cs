@@ -1,4 +1,4 @@
-﻿using static XiaoCao.AtkTimers;
+﻿using static XiaoCao.PlayerAtkTimer;
 using UnityEngine;
 
 namespace XiaoCao
