@@ -105,7 +105,8 @@ namespace XiaoCao
                 roleData.breakState.OnHit(1);
                 if (roleData.breakState.isBreak)
                 {
-
+                    //播放击飞动画 & 打断当前动作
+                    
                 }
             }
         }
