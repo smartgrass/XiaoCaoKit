@@ -29,6 +29,7 @@ public class TestRole : GameStartMono
         {
             Enemy0 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
             enemy.Init();
+            enemy.gameObject.transform.position = transform.position;
         }
 
     }

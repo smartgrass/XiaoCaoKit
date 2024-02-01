@@ -102,19 +102,31 @@ namespace XiaoCao
         {
             data.x = Input.GetAxis("Horizontal");
             data.y = Input.GetAxis("Vertical");
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
                 data.inputs[InputKey.NorAck] = true;
+
             if (Input.GetKeyDown(KeyCode.LeftShift))
                 data.inputs[InputKey.LeftShift] = true;
+
             if (Input.GetKeyDown(KeyCode.Space))
                 data.inputs[InputKey.Space] = true;
-            for (int i = 0; i < data.CheckKeyCode.Length; i++)
+
+            for (int i = 0; i < 6; i++)
             {
-                if (Input.GetKeyDown(data.CheckKeyCode[i]))
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                 {
-                    data.skillInput = i; //TODO还需配置对应id,使用SO做默认配置吧
+                    data.skillInput = i;
                 }
             }
+
+            for (int i = 0; i < data.CheckKeyCode2.Length; i++)
+            {
+                if (Input.GetKeyDown(data.CheckKeyCode2[i]))
+                {
+                    data.skillInput = i;
+                }
+            }
+
             owner.playerData.inputData.Copy(data);
         }
         public override void FixedUpdate()
@@ -305,7 +317,15 @@ namespace XiaoCao
         public bool[] inputs = new bool[8];
         public int skillInput;
 
-        public KeyCode[] CheckKeyCode = new KeyCode[] { KeyCode.Alpha0, KeyCode.Alpha1 };
+
+        public KeyCode[] CheckKeyCode = new KeyCode[] {
+            KeyCode.Alpha0, KeyCode.Alpha1
+        };
+
+
+        public KeyCode[] CheckKeyCode2 = new KeyCode[] {
+            KeyCode.K, KeyCode.L , KeyCode.U,KeyCode.I,KeyCode.O
+        };
 
         public void Reset()
         {
