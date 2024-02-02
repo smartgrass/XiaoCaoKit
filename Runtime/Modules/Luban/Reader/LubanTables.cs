@@ -10,14 +10,16 @@ namespace cfg
         #region Get
         private static SkillSettingReader SkillSettingReader => LubanTables.Inst.Tables.SkillSettingReader;
 
-        public static SkillSetting GetSkillData(RoleType roleType,int skillId, int atkId)
-        {
-            string key = $"{skillId}_{atkId}";
-            if (roleType == RoleType.Enemy)
-            {
-                key = $"E_{key}";
-            }
 
+        public static SkillSetting GetSkillSetting(int skillId,int subSkillId)
+        {
+            string infoKey = RaceIdSetting.GetSkillAckKey(skillId,subSkillId);
+            
+            return GetSkillSetting(infoKey);
+        }
+
+        public static SkillSetting GetSkillSetting(string key)
+        {
             var ret = SkillSettingReader.GetOrDefault(key);
             if (ret == null)
             {

@@ -1,5 +1,8 @@
 ﻿using static XiaoCao.PlayerAtkTimer;
 using UnityEngine;
+using static UnityEngine.UI.InputField;
+using System.Buffers;
+using System.Data;
 
 namespace XiaoCao
 {
@@ -24,4 +27,6 @@ namespace XiaoCao
         }
 
     }
+
+
 }

@@ -14,9 +14,14 @@ namespace XiaoCao
 
         public MeshInfo meshInfo;
 
+        public int subSkillId = 0;
+
         public MeshType MeshType => meshInfo.meshType;
 
         public Collider CurCol { get; set; }
+        public AtkTrigger CurTrigger { get; set; }
+
+
 
         public override void OnTrigger(float startOffsetTime)
         {
@@ -38,6 +43,7 @@ namespace XiaoCao
                 default:
                     break;
             }
+            SetCurAtkTrigger();
 
         }
 
@@ -86,6 +92,22 @@ namespace XiaoCao
             CurCol = col;
         }
 
+        private void SetCurAtkTrigger()
+        {
+            CurTrigger = Go.GetComponent<AtkTrigger>();
+
+            PlayerAttr attr = Info.role.roleData.playerAttr;
+            int atk = attr.GetAtk();
+            bool isCrit = MathTool.IsInRandom(attr.crit / 100f);
+
+            CurTrigger.info = new AtkInfo()
+            {
+                skillId = Info.skillId,
+                subSkillId = subSkillId,
+                atk = atk,
+                isCrit = isCrit,
+            };
+        }
 
 
         public override void OnFinish()
@@ -115,6 +137,7 @@ namespace XiaoCao
 
             var newObject = new GameObject(XCTriggerEvent.TriggerName);
 
+            newObject.AddComponent<AtkTrigger>();
             //拼接得到一个key
             switch (meshType)
             {

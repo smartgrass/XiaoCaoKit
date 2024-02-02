@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 //矩形排列, TODO: 圆形排列
 public static class MathLayoutTool
@@ -98,7 +99,7 @@ public static class MathLayoutTool
         for (int i = 0; i <= segments; i++)
         {
             float normalizedAngle = Mathf.Lerp(0, angle, i / (float)segments);
-            float radian = Mathf.Deg2Rad * (normalizedAngle+90);
+            float radian = Mathf.Deg2Rad * (normalizedAngle + 90);
 
             float x = Mathf.Cos(radian) * radius;
             float y = Mathf.Sin(radian) * radius;
@@ -121,7 +122,7 @@ public static class MathLayoutTool
 
         for (int i = 0; i <= segments; i++)
         {
-            float normalizedAngle = Mathf.Lerp(-angle/2, angle/2, i / (float)segments);
+            float normalizedAngle = Mathf.Lerp(-angle / 2, angle / 2, i / (float)segments);
 
 
             float radian = Mathf.Deg2Rad * (normalizedAngle + 90);
@@ -197,6 +198,26 @@ public static class MathTool
     {
         return value >= closedLeft && value < openRight;
     }
+    /// <summary>
+    /// probability 概率
+    /// </summary>
+    /// <returns></returns>
+    public static bool IsInRandom(float probability)
+    {
+        // 生成0到1之间的随机数
+        float randomValue = Random.Range(0f, 1f);
+
+        // 如果随机数小于等于概率值，则触发事件
+        if (randomValue <= probability)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     /// 值映射, 比如原本0~1的0.4, 映射到0~100,就是40
     /// </summary>

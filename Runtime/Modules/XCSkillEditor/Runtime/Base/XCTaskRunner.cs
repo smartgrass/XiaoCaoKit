@@ -16,7 +16,7 @@ namespace XiaoCao
     {
         public XCTask Task { get; set; }
 
-        private bool IsSuccees { get; set; } //是正常执行
+        private bool IsBreak { get; set; } //非正常执行
 
         public UnityEvent<XCTaskRunner> onEndEvent = new UnityEvent<XCTaskRunner>(); //无论退出还是完成都会执行
 
@@ -68,28 +68,42 @@ namespace XiaoCao
 
         public void AllFinsh()
         {
-            if (IsSuccees)
+            if (!IsBreak)
             {
                 onFinishEvent?.Invoke(this);
                 onFinishEvent.RemoveAllListeners();
             }
-            onEndEvent.Invoke(this);
-            onEndEvent.RemoveAllListeners();
+            OnEnd();
             Task = null;
             gameObject.SetActive(false);
             Debug.Log($"--- Release {gameObject} ");
             runnerPool.pool.Release(gameObject);
         }
+
+        public void SetBreak()
+        {
+            IsBreak = false;        
+            //主技能中断
+            Task.SetBreak();
+            OnEnd();
+        }
+        private void OnEnd()
+        {
+            onEndEvent?.Invoke(this);
+            onEndEvent.RemoveAllListeners();
+        }
     }
 
     public class TaskInfo
     {
+        public Role role;
         public Transform playerTF;
         internal Animator playerAnimator;
         //针对当前对象, 可以是玩家或技能物体
         public GameObject curGO;
         public Transform curTF;
 
+        public int entityId;
         public int skillId;  //如100
 
         //释放技能时记录角度 和 位置
@@ -98,7 +112,6 @@ namespace XiaoCao
         public Vector3 castPos;
 
         public float speed = 1;
-
     }
 
     public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache

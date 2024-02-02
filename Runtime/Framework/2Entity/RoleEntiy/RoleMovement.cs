@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -100,6 +101,20 @@ namespace XiaoCao
             RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, setting.moveSmooth);
 
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
+        }
+
+        internal void SetUnMoveTime(float t)
+        {
+            //小于0则取消
+            if (t < 0)
+            {
+                RoleState.moveLockTime = 0;
+            }
+            else
+            {
+                RoleState.moveLockTime = Mathf.Max(t, RoleState.moveLockTime);
+            }
+
         }
     }
 

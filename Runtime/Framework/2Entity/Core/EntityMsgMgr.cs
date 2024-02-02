@@ -25,9 +25,9 @@ namespace XiaoCao
     public enum EntityMsgType
     {
         [TypeLabel(typeof(int))]
-        StartSkill,
-        [TypeLabel(typeof(MoveMsg))]
-        MoveToPos,
+        SkillFinish_Num = 10,
+
+
     }
 
     interface IMsgReceiver
@@ -35,10 +35,16 @@ namespace XiaoCao
         void ReceiveMsg(EntityMsgType type, int fromId, object msg);
     }
 
-    public class MoveMsg
+
+    public struct BaseMsg
     {
-        public Vector3 pos;
-        public float speedFactor = 1;
+        public float numMsg;
+        public string strMsg;
     }
 
+    public struct XCEventMsg
+    {
+        public EntityMsgType entityMsg;
+        public BaseMsg baseMsg;
+    }
 }

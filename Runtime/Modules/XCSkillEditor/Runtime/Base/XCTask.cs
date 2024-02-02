@@ -24,7 +24,9 @@ namespace XiaoCao
 
         public XCState State { get; set; }
 
-        public bool IsBusy => State ==  XCState.Running;
+        public bool IsBreak { get; set; }
+
+        public bool IsBusy => State == XCState.Running;
 
         public TaskInfo Info;
 
@@ -182,6 +184,35 @@ namespace XiaoCao
             {
                 State = XCState.Stopped;
             }
+        }
+
+        public void SetBreak()
+        {
+            //主技能中断
+            State = XCState.Stopped;
+            foreach (var e in _events)
+            {
+                if (e.State == XCState.Running)
+                {
+                    e.OnFinish();
+                }
+            }
+            //子技能如果已经生成, 则继续Update
+            foreach (var t in subTasks)
+            {
+                //为开始的停止
+                if (t.State == XCState.Sleep)
+                {
+                    t.State = XCState.Stopped;
+                }
+                else if (t.State == XCState.Running)
+                {
+                    //已经执行的任务啥都不做
+                    //只有保存一个标志
+                    IsBreak = true;
+                }
+            }
+
         }
 
         internal void Show(bool show)

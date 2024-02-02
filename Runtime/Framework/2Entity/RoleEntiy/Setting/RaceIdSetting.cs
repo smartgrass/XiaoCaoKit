@@ -38,6 +38,16 @@
         {
             return raceId * 100 + 60;
         }
+
+
+        public static string GetSkillAckKey(int ackId,int subAckId)
+        {
+            if(subAckId == 0)
+            {
+                return ackId.ToString();
+            }
+            return $"{ackId}_{subAckId}";
+        }
     }
 
 }

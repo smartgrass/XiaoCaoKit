@@ -1,4 +1,5 @@
 ﻿
+using cfg;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -95,20 +96,38 @@ namespace XiaoCao
         }
 
 
-        public virtual void OnDamage(int atker, AtkInfo atkInfo)
+        public virtual void OnDamage(int atker, AtkInfo ackInfo)
         {
             //血量计算 toHp
             //死亡处理: 关闭行为,发送消息
             //受击处理: 受击动作, 僵直时间计算
-            if (BaseDamageCheck(atkInfo))
+            if (BaseDamageCheck(ackInfo))
             {
-                roleData.breakState.OnHit(1);
+                var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
+                roleData.breakState.OnHit((int)setting.BreakPower);
+
+
                 if (roleData.breakState.isBreak)
                 {
-                    //播放击飞动画 & 打断当前动作
-                    
+                    Anim.Play(AnimNames.Break);
+
+                    Vector3 horVec = MathTool.Rotate(ackInfo.hitDir, setting.HorForward);
+                    idRole.cc.DOHit(setting.AddY, horVec, setting.NoGravityT);
+                    transform.RotaToPos(ackInfo.hitPos, 0.5f);
+
+
+                    // 打断当前技能
+                    OnBreak();
+
                 }
+
+                //playerMover.SetNoGravityT(setting.NoGravityT);
             }
+        }
+
+        public virtual void OnBreak()
+        {
+
         }
 
         public void CheckBreakUpdate()
@@ -270,6 +289,7 @@ namespace XiaoCao
             foreach (var item in curTaskData)
             {
                 //&& item.Task.Info.skillId > 0 TODO
+                //break的话, 不算busy
                 if (item.Task.IsBusy)
                 {
                     return true;
@@ -305,7 +325,9 @@ namespace XiaoCao
             Transform selfTf = owner.transform;
             TaskInfo taskInfo = new TaskInfo()
             {
+                role = owner,
                 skillId = skillId,
+                entityId = owner.id,
                 curGO = owner.gameObject,
                 curTF = selfTf,
                 playerTF = selfTf,
@@ -318,6 +340,14 @@ namespace XiaoCao
             task.onEndEvent.AddListener(OnTaskEnd);
         }
 
+
+        public void OnBreak()
+        {
+            foreach (var task in curTaskData)
+            {
+                task.SetBreak();
+            }
+        }
 
         #region FullSkillId
         public int GetFullSkillId(int index)

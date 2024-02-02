@@ -83,11 +83,17 @@ namespace XiaoCao
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             Debug.Log($"--- Receive {type} fromId: {fromId}");
-            if (type == EntityMsgType.StartSkill)
+            if (type == EntityMsgType.SkillFinish_Num)
             {
-                int msgInt = (int)msg;
-                component.control.TryPlaySkill(msgInt);
+                float t = (float)msg;
+                component.control.OnBreak();
+                roleData.movement.SetUnMoveTime(t);
             }
+        }
+
+        public override void OnBreak()
+        {
+            component.control.OnBreak();
 
         }
 
@@ -201,7 +207,6 @@ namespace XiaoCao
 
             RcpPlaySkill(GetFullNorAckId(nextNorAckIndex));
         }
-
 
 
         //执行使用技能, 一般不直接使用
@@ -356,7 +361,7 @@ namespace XiaoCao
         public int maxExp;
         public int atk;
         public int def;
-
+        public float crit;
         public void SetByLevel(int lv)
         {
             maxHp = hp = 100 + 10 * lv;
@@ -365,6 +370,12 @@ namespace XiaoCao
             atk = lv * 5;
             def = lv * 1;
         }
+
+        public int GetAtk()
+        {
+            return atk;
+        }
+
     }
 
     public class PlayerShareData0 : IShareData

@@ -55,17 +55,6 @@ namespace XiaoCao
         {
             base.ReceiveMsg(type, fromId, msg);
 
-            if (type == EntityMsgType.StartSkill)
-            {
-                int msgInt = (int)msg;
-                //playerComponent.control.TryPlaySkill(msgInt);
-            }
-            else if (type == EntityMsgType.MoveToPos)
-            {
-                MoveMsg moveMsg = (MoveMsg)msg;
-                AIMoveTo(moveMsg.pos, moveMsg.speedFactor);
-
-            }
 
         }
 
