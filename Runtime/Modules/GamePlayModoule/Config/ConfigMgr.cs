@@ -43,37 +43,4 @@ namespace XiaoCao
             return ret;
         }
     }
-
-    public class SavaMgr
-    {
-        public static string GetSavaPath(Type t)
-        {
-            return $"{Application.persistentDataPath}/Data/{t.Name}.data";
-        }
-        public static T LoadData<T>(out bool isSuc) where T : new()
-        {
-            Type type = typeof(T);
-            string path = GetSavaPath(type);
-            if (FileTool.IsFileExist(path))
-            {
-                isSuc = true;
-                return FileTool.DeserializeRead<T>(path);
-            }
-            else
-            {
-                isSuc = false;
-                return new T();
-            }
-        }
-
-        public static void SavaData<T>(T data)
-        {
-            Type type = typeof(T);
-            string path = GetSavaPath(type);
-            FileTool.CheckFilePathDir(path);
-            FileTool.SerializeWrite(path, data);
-        }
-
-    }
-
 }

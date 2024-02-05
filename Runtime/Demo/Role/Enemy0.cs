@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace XiaoCao
 {
@@ -11,7 +12,7 @@ namespace XiaoCao
         public EnemyShareData0 component = new EnemyShareData0();
 
 
-        public void Init()
+        public void Init(int level = 1)
         {
             this.CreateGameObject();
             component.aiControl = new AIControl(this);
@@ -19,6 +20,8 @@ namespace XiaoCao
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
+            roleData.playerAttr.Init(level);
+            roleData.roleControl = component.aiControl;
             RoleIn();
         }
 

@@ -26,7 +26,9 @@ namespace XiaoCao
 
         public bool IsBreak { get; set; }
 
-        public bool IsBusy => State == XCState.Running;
+        public bool IsForceFinish { get; set; }
+
+        public bool IsBusy => State == XCState.Running && !IsForceFinish;
 
         public TaskInfo Info;
 
@@ -41,6 +43,9 @@ namespace XiaoCao
         private int _startSubTrackIndex = 0;
 
         private int _finshiCout = 0;
+
+        public int GetCurFrame => _curFrame;
+        public IXCCommand command { get; set; }
 
         public static XCTask CreatTask(XCTaskData data, TaskInfo info)
         {
@@ -69,6 +74,13 @@ namespace XiaoCao
             {
                 _endFrame = Math.Max(_events[i].End, _endFrame);
                 _events[i].task = this;
+            }
+
+            command = CommandFinder.Inst.GetCommand($"XCCommand_{Info.skillId}");
+            if (null != command)
+            {
+                command.task = this;
+                command.OnStart();
             }
         }
 
@@ -110,6 +122,10 @@ namespace XiaoCao
 
             if (subFinish && State != XCState.Running && IsMainTask)
             {
+                if (null != command)
+                {
+                    command.OnExit();
+                }
                 State = XCState.Stopped;
                 Runner.AllFinsh();
             }
@@ -128,6 +144,11 @@ namespace XiaoCao
             //Debug.Log("  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
 
             ObjectData?.OnFrameUpdate(_curFrame);
+
+            if (null == command)
+            {
+                command.OnUpdate();
+            }
 
             UpdateEvent();
 
@@ -184,6 +205,12 @@ namespace XiaoCao
             {
                 State = XCState.Stopped;
             }
+        }
+
+        public void SetFinish()
+        {
+            //不占用角色任务
+            IsForceFinish = true;
         }
 
         public void SetBreak()

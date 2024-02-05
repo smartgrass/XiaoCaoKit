@@ -4,7 +4,7 @@ using UnityEngine;
 namespace XiaoCao
 {
     /// <summary>
-    /// GameRuning
+    /// 放置公用的Path对象池
     /// </summary>
     public class PoolMgr : Singleton<PoolMgr>
     {
@@ -13,7 +13,7 @@ namespace XiaoCao
 
         public GameObject Get(string path, float releaseTime = 0)
         {
-            GameObject obj = GetOrCreatPool(path).pool.Get();
+            GameObject obj = GetOrCreatPool(path).Get();
             if (releaseTime > 0)
             {
                 var task = XCTime.DelayRun(releaseTime, () => { Release(path, obj); });
@@ -23,7 +23,7 @@ namespace XiaoCao
 
         public void Release(string path, GameObject obj)
         {
-            GetOrCreatPool(path).pool.Release(obj);
+            GetOrCreatPool(path).Release(obj);
         }
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace XiaoCao
             //创建
             AssetPool pool = new AssetPool(prefab);
             //获取
-            GameObject newObj = pool.pool.Get();
+            GameObject newObj = pool.Get();
             //释放
-            pool.pool.Release(newObj);
+            pool.Release(newObj);
         }
 
         //TODO循环池 

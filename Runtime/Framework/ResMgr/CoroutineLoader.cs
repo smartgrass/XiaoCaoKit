@@ -1,1 +1,0 @@
-public class CoroutineLoader : MonoSingleton<CoroutineLoader> { }

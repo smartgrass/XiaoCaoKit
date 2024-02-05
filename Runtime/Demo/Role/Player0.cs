@@ -26,20 +26,22 @@ namespace XiaoCao
             base.Awake();
         }
 
-        public void Init(PlayerData0 playerData, bool isMainPlayer = false)
+        public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
-            this.playerData = playerData;
+            playerData = new PlayerData0();
 
             this.CreateGameObject();
             raceId = idRole.raceId;
             int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
+            roleData.playerAttr.Init(savaData.lv);
 
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
+            roleData.roleControl = component.control;
             component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
             component.movement = new PlayerMovement(this);
@@ -82,13 +84,9 @@ namespace XiaoCao
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
-            Debug.Log($"--- Receive {type} fromId: {fromId}");
-            if (type == EntityMsgType.SkillFinish_Num)
-            {
-                float t = (float)msg;
-                component.control.OnBreak();
-                roleData.movement.SetUnMoveTime(t);
-            }
+            base.ReceiveMsg(type, fromId, msg);
+
+
         }
 
         public override void OnBreak()
@@ -305,6 +303,18 @@ namespace XiaoCao
 
 
     #region Datas & Flag
+
+    public class PlayerSaveData
+    {
+        public int lv;
+
+        public Inventory inventory;
+
+        //持有物
+        public List<Item> holdItems = new List<Item>();
+
+    }
+
     //玩家特有数据
     public class PlayerData0 : IData
     {
@@ -319,9 +329,9 @@ namespace XiaoCao
     {
         public float x;
         public float y;
+        //InputKey
         public bool[] inputs = new bool[8];
         public int skillInput;
-
 
         public KeyCode[] CheckKeyCode = new KeyCode[] {
             KeyCode.Alpha0, KeyCode.Alpha1
@@ -353,7 +363,6 @@ namespace XiaoCao
     public class PlayerAttr
     {
         public int lv;
-        public int exp;
         public int hp;
         public int maxHp;
         public int mp;
@@ -362,8 +371,10 @@ namespace XiaoCao
         public int atk;
         public int def;
         public float crit;
-        public void SetByLevel(int lv)
+
+        public void Init(int lv)
         {
+            this.lv = lv;
             maxHp = hp = 100 + 10 * lv;
             maxMp = mp = 100 + 10 * lv;
             maxExp = 100 + 100 * (lv % 10);

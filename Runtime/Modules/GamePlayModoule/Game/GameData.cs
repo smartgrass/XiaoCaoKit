@@ -22,6 +22,9 @@ namespace XiaoCao
         public PlayerBase player0;
 
         public bool loadMod = false;
+
+        public PlayerSaveData playerSaveData;
+
     }
 
     public class BattleData
@@ -34,6 +37,8 @@ namespace XiaoCao
 
 
     }
+
+
 
     public static class GameSetting
     {

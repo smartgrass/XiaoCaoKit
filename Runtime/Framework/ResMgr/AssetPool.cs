@@ -2,9 +2,6 @@
 
 namespace XiaoCao
 {
-    /// <summary>
-    /// GameObject 使用yooAsset加载对象
-    /// </summary>
     public class AssetPool
     {
         public const string PoolName = "Pool";

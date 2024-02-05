@@ -132,7 +132,7 @@ namespace XiaoCao
 
             if (assetPool != null)
             {
-                return assetPool.pool.Get();
+                return assetPool.Get();
             }
 
             var newObject = new GameObject(XCTriggerEvent.TriggerName);
@@ -159,12 +159,12 @@ namespace XiaoCao
 
             assetPool = new AssetPool(newObject);
             dicPool[meshType] = assetPool;
-            return assetPool.pool.Get();
+            return assetPool.Get();
         }
 
         public static void Release(MeshType meshType, GameObject gameObject)
         {
-            dicPool[meshType].pool.Release(gameObject);
+            dicPool[meshType].Release(gameObject);
         }
 
     }

@@ -15,8 +15,8 @@ public class Test_YooSteam : MonoBehaviour
     void Path()
     {
         RoleType RoleType = RoleType.Player;
-        string path = $"{ResMgr.EXTRARESDIR}/Role/{RoleType}/{RoleType}{0}.prefab";
+        string path = $"{ResMgr.RESDIR}/Role/{RoleType}/{RoleType}{0}.prefab";
         GameObject go = ResMgr.LoadInstan(path, PackageType.ExtraPackage);
-        Debug.Log($"---  {go}");
+
     }
 }

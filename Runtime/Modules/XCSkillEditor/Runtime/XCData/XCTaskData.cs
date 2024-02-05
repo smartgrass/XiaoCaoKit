@@ -87,6 +87,8 @@ namespace XiaoCao
         public Transform PlayerTF { get; set; }
         public ParticleSystem Ps { get; set; }
 
+        public IXCCommand command { get; set; }
+
         public void OnTrigger(TaskInfo info)
         {
             this.Info = info;

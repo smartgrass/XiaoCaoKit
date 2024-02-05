@@ -32,7 +32,7 @@ public abstract class Singleton<T> where T : class, new()
 
     protected virtual void Init()
     {
-
+        //Nothing
     }
 
     public static void ClearCache()

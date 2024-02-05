@@ -24,8 +24,11 @@ namespace XiaoCao
     //使用TypeLaber标记消息类型
     public enum EntityMsgType
     {
-        [TypeLabel(typeof(int))]
+        PlayNextSkill = 1,
+        
         SkillFinish_Num = 10,
+        SetUnMoveTime = 11,
+
 
 
     }

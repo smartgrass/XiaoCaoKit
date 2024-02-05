@@ -21,6 +21,32 @@ using Object = UnityEngine.Object;
 
 public class XCTime
 {
+    public static async UniTask Example()
+    {
+        //Loop 每秒执行一次
+        int t = 0;
+        var cancellationToken = new CancellationTokenSource();
+        var task = LoopRun(1f, cancellationToken, () => {
+            t++;
+            Debug.Log($"loop {t}");
+            if (t == 3)
+            {
+                //取消循环
+                cancellationToken.Cancel();
+            }
+        });
+        await UniTask.Delay(TimeSpan.FromSeconds(3));
+
+        //等待1s
+        await UniTask.Delay(TimeSpan.FromSeconds(1), ignoreTimeScale: false);
+
+        //等待Mono生命周期触发（PreUpdate、Update、LateUpdate 等...
+        await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
+
+        //方法内取消
+        throw new OperationCanceledException();
+    }
+
     /// <summary>
     /// 对时间都做一层封装,方便处理
     /// </summary>
@@ -59,35 +85,4 @@ public class XCTime
             action();
         }
     }
-
-    public static async UniTask Example()
-    {
-        //Loop 每秒执行一次
-        int t = 0;
-        var cancellationToken = new CancellationTokenSource();
-        var task = LoopRun(1f, cancellationToken, () => { 
-            t++;
-            Debug.Log($"loop {t}");
-            if (t == 3)
-            {
-                cancellationToken.Cancel();
-            }
-        });
-        await UniTask.Delay(TimeSpan.FromSeconds(3));
-        Debug.Log($"Cancel loop {t}");
-
-
-
-
-        //等1s
-        await UniTask.Delay(TimeSpan.FromSeconds(1), ignoreTimeScale: false);
-        //产生任何播放器循环时间（PreUpdate、Update、LateUpdate 等...
-        await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
-
-
-
-        //方法内取消
-        throw new OperationCanceledException();
-    }
-
 }

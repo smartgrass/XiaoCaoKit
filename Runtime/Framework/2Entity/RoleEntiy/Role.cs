@@ -179,6 +179,21 @@ namespace XiaoCao
             RoleMgr.Inst.roleDic.Remove(id);
         }
 
+        public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
+        {
+            Debug.Log($"--- Receive {type} fromId: {fromId}");
+            if (type is EntityMsgType.SkillFinish_Num or EntityMsgType.SetUnMoveTime)
+            {
+                float t = (float)msg;
+                roleData.movement.SetUnMoveTime(t);
+            }
+            else if (type is EntityMsgType.PlayNextSkill)
+            {
+                int skillId = (int)msg;
+                roleData.roleControl.TryPlaySkill(skillId);
+            }
+        }
+
         public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
         {
 
@@ -276,8 +291,14 @@ namespace XiaoCao
         public RoleData Data_R => owner.roleData;
         public RoleState RoleState => Data_R.roleState;
     }
+
+    public interface IRoleControl
+    {
+        public void TryPlaySkill(int skillId);
+    }
+
     //技能通用体
-    public abstract class RoleControl<T> : RoleComponent<T> where T : Role
+    public abstract class RoleControl<T> : RoleComponent<T>, IRoleControl where T : Role
     {
         public RoleControl(T _owner) : base(_owner) { }
 
@@ -396,6 +417,8 @@ namespace XiaoCao
         public PlayerAttr playerAttr = new PlayerAttr();
 
         public RoleState roleState = new RoleState();
+
+        public IRoleControl roleControl;
 
         //特殊,需要手动赋值
         public MoveSetting moveSetting;

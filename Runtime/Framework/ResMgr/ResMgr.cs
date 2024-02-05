@@ -19,6 +19,16 @@ public class ResMgr
         */
     }
 
+    public const string PACKAGENAME = "DefaultPackage";
+    public const string PACKAGENAME_RAW = "RawPackage";
+    public const string PACKAGENAME_EXTRA = "ExtraPackage"; //用于Mod
+
+    public const string RESDIR = "Assets/_Res";
+
+    public static ResourcePackage Loader;
+    public static ResourcePackage ExtraLoader;
+    public static ResourcePackage RawLoader;
+
     public static GameObject LoadInstan(string path, PackageType type = PackageType.DefaultPackage)
     {
         return GameObject.Instantiate(LoadPrefab(path, type));
@@ -46,11 +56,11 @@ public class ResMgr
                 return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
             }
             else
-                {
-                    Debug.LogWarning($"--- no Extra FailBack to Default {path}");
-                    return LoadPrefab(path, PackageType.DefaultPackage);
-                }
+            {
+                Debug.LogWarning($"--- no Extra FailBack to Default {path}");
+                return LoadPrefab(path, PackageType.DefaultPackage);
             }
+        }
     }
 
     //只加载, 没有实例化
@@ -70,18 +80,6 @@ public class ResMgr
 
 
     #region Init
-
-    public const string PACKAGENAME = "DefaultPackage";
-    public const string PACKAGENAME_RAW = "RawPackage";
-    public const string PACKAGENAME_EXTRA = "ExtraPackage";
-
-    public const string RESDIR = "Assets/_Res";
-    public const string EXTRARESDIR = "Assets/_ExtraRes";
-
-    public static ResourcePackage Loader;
-    public static ResourcePackage ExtraLoader;
-    public static ResourcePackage RawLoader;
-
     public static void InitYooAsset()
     {
         // 初始化资源系统
@@ -99,7 +97,7 @@ public class ResMgr
 
         // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
 
-        string defaultHostServer = "file://" +  PathTool.GetUpperDir(Application.dataPath) + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+        string defaultHostServer = GetExtraPackageUrl();
         string fallbackHostServer = defaultHostServer;
 
         Debug.Log($"--- {fallbackHostServer}");
@@ -118,10 +116,11 @@ public class ResMgr
     {
         if (Application.isEditor)
         {
-            return "file://" +Application.streamingAssetsPath + "/ExtraPackage";
+            return "file://" + Application.streamingAssetsPath + "/ExtraPackage";
         }
         else
         {
+            //设置扩展资源路径
             return "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
         }
     }

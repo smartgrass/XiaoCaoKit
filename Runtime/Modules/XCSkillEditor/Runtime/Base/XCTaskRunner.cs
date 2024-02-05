@@ -42,7 +42,7 @@ namespace XiaoCao
                 runnerPool = new AssetPool(go);
             }
             //使用对象池
-            GameObject gameObject = runnerPool.pool.Get();
+            GameObject gameObject = runnerPool.Get();
             XCTaskRunner runner = gameObject.GetComponent<XCTaskRunner>();
             runner.Init(data, info);
             return runner;
@@ -77,7 +77,12 @@ namespace XiaoCao
             Task = null;
             gameObject.SetActive(false);
             Debug.Log($"--- Release {gameObject} ");
-            runnerPool.pool.Release(gameObject);
+            runnerPool.Release(gameObject);
+        }
+
+        public void SetFinish()
+        {
+            Task.SetFinish();
         }
 
         public void SetBreak()
