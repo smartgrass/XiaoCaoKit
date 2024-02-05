@@ -17,13 +17,16 @@
 
 * 1.XiaoCao框架专属
 	* 1.1 XiaoCaoWindow 编辑器扩展 √ XiaoCaoWindow.cs
-	* 1.2 XiaoCao的Entity框架  √ (借鉴Ecs的id-容器思路,管理核心对象)
-	* BehaviorEntity代替MonoBehavior
+	* 1.2 XiaoCao的Entity (借鉴Ecs的id-容器思路,管理核心动态对象) √
+		* Entity.cs
+		* BehaviorEntity.cs
 	* 1.3 XCSkillEditor 技能编辑器
 		* 位移&动画 √
 		* 伤害触发器 √
 		* 消息 √
-		* 事件Process & 预设Tag ------- TODO
+		* 事件Process & 预设Tag (如自动索敌) ------- TODO
+			* 运行前预处理XCEvnet数据
+			* UpdateEvent -> Command 使用反射
 
 * 2.基本框架/工具
 	* YooAsset资源加载模块 √ ResMgr.cs
