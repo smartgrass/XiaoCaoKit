@@ -92,6 +92,8 @@ public class XiaoCaoEexample_1 : XiaoCaoWindow
     {
         Debug.Log($" do Event");
         unityEvent?.Invoke();
+
+        AssetDatabase.GUIDToAssetPath(str1).LogStr();
     }
 
     //7.========== ScriptableObject 查看 ==========

@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using YooAsset;
@@ -92,15 +93,36 @@ public class ResMgr
 
     public static InitializationOperation InitExtraPackage()
     {
-        ExtraLoader = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
+        var tempPack = YooAssets.TryGetPackage(PACKAGENAME_EXTRA);
+        if (tempPack == null)
+        {
+            tempPack = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
+        }
+        ExtraLoader = tempPack;
+        Debug.Log($"--- {tempPack == null} {tempPack.PackageName} ");
+
         InitializationOperation initializationOperation = null;
 
-        // 注意：GameQueryServices.cs 太空战机的脚本类，详细见StreamingAssetsHelper.cs
+        EPlayMode playMode = GetEPlayMode();
+
+#if UNITY_EDITOR
+        //编辑器模式使用。
+        //Debuger.Warn($"编辑器模式使用:{playMode}");
+        //// 编辑器下的模拟模式
+        //if (playMode == EPlayMode.EditorSimulateMode)
+        //{
+        //    var par = new EditorSimulateModeParameters();
+        //    par.SimulateManifestFilePath =
+        //        EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME_EXTRA);
+        //    initializationOperation = tempPack.InitializeAsync(par);
+        //}
+        //return initializationOperation;
+#endif
 
         string defaultHostServer = GetExtraPackageUrl();
         string fallbackHostServer = defaultHostServer;
 
-        Debug.Log($"--- {fallbackHostServer}");
+        Debug.LogError($"--- {HasManifest(defaultHostServer, PACKAGENAME_EXTRA)}");
 
         var initParameters = new HostPlayModeParameters();
         //内置文件查询
@@ -108,15 +130,31 @@ public class ResMgr
         //解密不需要
         //initParameters.DecryptionServices = new FileOffsetDecryption();
         initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-        initializationOperation = ExtraLoader.InitializeAsync(initParameters);
+
+
+       initializationOperation = tempPack.InitializeAsync(initParameters);
+
+        //需求是 检查Manifest是否存在,不存在则不执行
+        string mainifeatPath = "PackageManifest_ExtraPackage";
+        //initializationOperation.PackageVersion
+
         return initializationOperation;
+    }
+
+    private static bool HasManifest(string dir,string packName)
+    {
+        string fileName = $"PackageManifest_{packName}.version";
+        string filePath = Path.Combine(dir, fileName);
+        filePath = filePath.RemoveHead("file://");
+        Debug.Log($"--- filePath {filePath} {FileTool.IsFileExist(filePath)}");
+        return FileTool.IsFileExist(filePath);
     }
 
     private static string GetExtraPackageUrl()
     {
         if (Application.isEditor)
         {
-            return "file://" + Application.streamingAssetsPath + "/ExtraPackage";
+            return "file://" + Application.streamingAssetsPath + "/yoo/ExtraPackage/";
         }
         else
         {

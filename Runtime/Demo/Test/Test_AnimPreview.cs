@@ -10,6 +10,7 @@ using UnityEngine;
 
 public class Test_AnimPreview : MonoBehaviour
 {
+
 #if UNITY_EDITOR
 
     public GameObject characterPrefab; // 你的角色预制体

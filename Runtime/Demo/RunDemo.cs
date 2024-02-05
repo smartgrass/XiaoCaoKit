@@ -38,7 +38,7 @@ namespace XiaoCao
             Player0 player = EntityMgr.Inst.CreatEntity<Player0>();
 
             //读取存档数据
-            var data0 =  SavaMgr.ReadData<PlayerSaveData>(out bool isSuc);
+            var data0 = SavaMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
             GameDataCommon.Current.playerSaveData = data0;
 
@@ -61,7 +61,22 @@ namespace XiaoCao
             ResMgr.InitYooAsset();
             await ResMgr.InitPackage().Task;
             await ResMgr.InitRawPackage().Task;
-            await ResMgr.InitExtraPackage().Task;
+
+            var extraOperation = ResMgr.InitExtraPackage();
+
+            await extraOperation.Task;
+
+            Debug.Log($"--- extraOperation {ResMgr.ExtraLoader.InitializeStatus}");
+            try
+            {
+                Debug.Log(ResMgr.ExtraLoader.GetPackageVersion());
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+
+            await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
         }
 
 

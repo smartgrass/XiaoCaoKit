@@ -32,6 +32,7 @@ namespace XiaoCao
 
             this.CreateGameObject();
             raceId = idRole.raceId;
+            Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
             int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
@@ -107,7 +108,10 @@ namespace XiaoCao
             data.x = Input.GetAxis("Horizontal");
             data.y = Input.GetAxis("Vertical");
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
+            {
                 data.inputs[InputKey.NorAck] = true;
+                Debug.Log($"--- InputKey.NorAck");
+            }
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
                 data.inputs[InputKey.LeftShift] = true;
@@ -176,11 +180,12 @@ namespace XiaoCao
 
         public override void Update()
         {
-            if (!owner.IsDie)
+            if (owner.IsDie)
             {
                 return;
             }
             owner.CheckBreakUpdate();
+
             if (InputData.skillInput != 0)
             {
                 TryPlaySkill(InputData.skillInput);
@@ -194,6 +199,7 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
+            Debug.Log($"--- TryNorAck {Data_R.IsFree}");
             if (!Data_R.IsFree || IsBusy())
                 return;
 
@@ -307,6 +313,8 @@ namespace XiaoCao
     public class PlayerSaveData
     {
         public int lv;
+
+        public int raceId = 1;
 
         public Inventory inventory;
 

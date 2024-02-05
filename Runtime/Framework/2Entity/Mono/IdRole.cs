@@ -5,7 +5,7 @@ using XiaoCao;
 [RequireComponent(typeof(CharacterController))]
 public class IdRole : IdComponent
 {
-    public int raceId = 0;
+    public int raceId = 1;
     public int aiId = 0;
     public RuntimeAnimatorController runtimeAnim;
     public Rigidbody rb;
