@@ -13,7 +13,7 @@ namespace XiaoCao
         private AssetPool pool;
 
 
-        void Awake()
+        public void Init()
         {
             pool = new AssetPool(prefab);
             GameEvent.AddEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
@@ -78,7 +78,6 @@ namespace XiaoCao
 
         }
     }
-
 }
 
 

@@ -2,17 +2,27 @@
 
 namespace XiaoCao
 {
-    public class UIMgr : MonoBehaviour
+    public class UIMgr : MonoSingletonPrefab<UIMgr>
     {
-        public static UIMgr Inst;
-
         public BattleUI battleUI;
+
+        public LevelSelectionView levelSelectionView;
+
+        public SkillBar skillBar;
         //懒加载 或 主动加载
 
 
-        private void Awake()
+        public override void Init()
         {
-            Inst = this;
+            base.Init();
+            battleUI.Init();
+            levelSelectionView.Init();
+            skillBar.Init();
+        }
+
+        public void ShowLevelSelectionView()
+        {
+            levelSelectionView.gameObject.SetActive(true);
         }
 
 

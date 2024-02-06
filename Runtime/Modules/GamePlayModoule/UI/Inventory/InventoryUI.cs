@@ -5,7 +5,7 @@ namespace XiaoCao
 {
     public class InventoryUI : MonoBehaviour
     {
-        public Inventory inventory => GameDataCommon.Current.playerSaveData.inventory;
+        public Inventory inventory => PlayerSaveData.Current.inventory;
         public GameObject slotPrefab; // 格子预制体
         public Transform slotsParent; // 格子的父对象
         private List<InventorySlotUI> slots = new List<InventorySlotUI>();

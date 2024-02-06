@@ -29,6 +29,12 @@ namespace XiaoCao
             GameMgr.Inst.SetGameState(GameState.Running);
 
             GameEvent.Send(EventType.GameStartFinsh.Int());
+
+            //ui在游戏启动后才执行
+            var uiMgr = UIMgr.Inst;
+
+
+
         }
 
         private void LoadPlayerData()
@@ -40,7 +46,7 @@ namespace XiaoCao
             //读取存档数据
             var data0 = SavaMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
-            GameDataCommon.Current.playerSaveData = data0;
+            GameData.playerSaveData = data0;
 
             player.Init(data0, true);
 

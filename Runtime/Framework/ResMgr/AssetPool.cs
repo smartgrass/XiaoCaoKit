@@ -2,6 +2,9 @@
 
 namespace XiaoCao
 {
+    /// <summary>
+    /// 对象池, 需要手动回收
+    /// </summary>
     public class AssetPool
     {
         public const string PoolName = "Pool";

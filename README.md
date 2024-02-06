@@ -24,9 +24,9 @@
 		* 位移&动画 √
 		* 伤害触发器 √
 		* 消息 √
-		* 事件Process & 预设Tag (如自动索敌) ------- TODO
-			* 运行前预处理XCEvnet数据
-			* UpdateEvent -> Command 使用反射
+		* 特殊处理  ------- TODO
+			* TXCask挂载自定义脚本 taskCommand √ 
+			* 预设Tag (如自动索敌)
 
 * 2.基本框架/工具
 	* YooAsset资源加载模块 √ ResMgr.cs
@@ -35,6 +35,7 @@
 	* UniTask&计时器 √ XCTime.cs
 	* 消息系统 √  GameEvent.cs
 	* Log封装 √ Debuger.cs
+	* 调试信息GUI √ DebugGUI.cs 
 
 	* 配置加载 √ LoadSoConfig.cs (自动new)
 	* 存档加载 √ SavaMgr.cs
@@ -45,7 +46,6 @@
 		* 第三人称 √
 		* 索敌视角 ------- TODO
 	* luban表格配置 √ LubanTables.cs
-
 	* 游戏启动流程 RunDemo.cs
 		* 等待配置,资源加载完毕-> √
 		* 加载玩家-> √
@@ -55,6 +55,7 @@
 	* 游戏周期 √
 		* 加载, 开始, 运行, 完成, 退出  GameState
 		* 配合消息系统状态切换时,发送消息  GameMgr.cs
+	
 
  * 玩家 Player0.cs
 	* 移动 √
@@ -63,11 +64,19 @@
 	* 1个技能 ------- TODO
  * 敌人 ------- TODO
 
- * 3.4 常用UI(不重要延后)
+ * 关卡 GamePlayModule
+	* 场景切换
+	* 门 : 进入后切换关卡
+
+
+ * 常用UI GamePlayModule (低优先)
 	* 血条ui ------- TODO
 	* 物体/NPC交互组件 ------- TODO
 	* 物品格子容器/详情 ------- TODO 
 		* InventoryUI.cs
+
+
+
 
 ### 暂时做的部分
 

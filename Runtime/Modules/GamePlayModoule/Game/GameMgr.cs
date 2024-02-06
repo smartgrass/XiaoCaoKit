@@ -42,6 +42,12 @@ namespace XiaoCao
             Debug.Log($"--- curScene {curScene}");
         }
 
+        public void FinishLevel(int nextScene)
+        {
+            //结算->显示结算页
+
+        }
+
         public void LoadScene(int sceneBuildIndex)
         {
             StartCoroutine(LoadSceneInBackground(sceneBuildIndex));
@@ -79,4 +85,8 @@ namespace XiaoCao
         public const int MainScene = 1;
         public const int LoadingScene = 2;
     }
+
+
+    ///使用<see cref="GameMgr"/>
+    public class SceneMgr { }
 }

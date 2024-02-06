@@ -9,6 +9,8 @@ namespace XiaoCao
         public static GameDataCommon commonData = new GameDataCommon();
         //定时请空
         public static BattleData battleData = new BattleData();
+
+        public static PlayerSaveData playerSaveData = new PlayerSaveData();
     }
 
     public class GameDataCommon
@@ -19,11 +21,9 @@ namespace XiaoCao
 
         public GameState gameState;
 
-        public PlayerBase player0;
+        public Player0 player0;
 
         public bool loadMod = false;
-
-        public PlayerSaveData playerSaveData;
 
     }
 
@@ -42,7 +42,7 @@ namespace XiaoCao
 
     public static class GameSetting
     {
-
+        public const int SkillCountOnBar = 6;
     }
 
 

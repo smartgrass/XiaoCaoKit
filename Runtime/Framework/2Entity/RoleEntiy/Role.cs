@@ -69,6 +69,7 @@ namespace XiaoCao
             GameObject baseGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
             idRole = baseGo.transform.GetComponent<IdRole>();
             idRole.id = id;
+            raceId = idRole.raceId;
             go.transform.SetParent(baseGo.transform, false);
             body = go;
             BindGameObject(baseGo);

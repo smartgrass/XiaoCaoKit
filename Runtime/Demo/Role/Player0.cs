@@ -31,7 +31,6 @@ namespace XiaoCao
             playerData = new PlayerData0();
 
             this.CreateGameObject();
-            raceId = idRole.raceId;
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
             int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
@@ -258,21 +257,33 @@ namespace XiaoCao
         }
 
 
-        public bool IsSkillReady(int skillId)
+        private void CheckDic(int skillIndex)
         {
-            if (dic.ContainsKey(skillId))
+            if (!dic.ContainsKey(skillIndex))
             {
-                return !dic[skillId].IsCd;
+                SkillCdData skillCdData = new SkillCdData();
+                skillCdData.cd = playerSetting.GetSkillCd(skillIndex).cd;
+                dic[skillIndex] = skillCdData;
             }
-            return true;
         }
 
-        public void SetSkillEnterCD(int skillId)
+
+        public bool IsSkillReady(int skillIndex)
         {
-            if (dic.ContainsKey(skillId))
-            {
-                dic[skillId].EnterCD();
-            }
+            CheckDic(skillIndex);
+            return !dic[skillIndex].IsCd;
+        }
+
+        public void SetSkillEnterCD(int skillIndex)
+        {
+            CheckDic(skillIndex);
+            dic[skillIndex].EnterCD();
+        }
+
+        public float GetProcess(int skillIndex)
+        {
+            CheckDic(skillIndex);
+            return dic[skillIndex].GetCurProccess();
         }
 
 
@@ -280,9 +291,10 @@ namespace XiaoCao
         {
             public int skillId;
 
-            public float cdFinishTime;
-
             public float cd;
+
+            public float cdFinishTime { get; set; }
+
             public bool IsCd => Time.time < cdFinishTime;
             public void EnterCD()
             {
@@ -312,9 +324,14 @@ namespace XiaoCao
 
     public class PlayerSaveData
     {
+        public static PlayerSaveData Current => GameData.playerSaveData;
+
         public int lv;
 
         public int raceId = 1;
+
+
+        public skillBarData skillBarData = new skillBarData();
 
         public Inventory inventory;
 

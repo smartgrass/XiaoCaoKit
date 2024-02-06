@@ -614,8 +614,5 @@ namespace TEngine
 
 
     ///<see cref="GameEvent.Example"/>
-    public class MsgMgr
-    {
-
-    }
+    public class MsgMgr{ }
 }
