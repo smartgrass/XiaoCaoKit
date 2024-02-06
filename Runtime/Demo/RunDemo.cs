@@ -59,29 +59,10 @@ namespace XiaoCao
         public async Task InitYooAsset()
         {
             ResMgr.InitYooAsset();
-            await ResMgr.InitPackage().Task;
-            await ResMgr.InitRawPackage().Task;
-
-            var extraOperation = ResMgr.InitExtraPackage();
-
-            await extraOperation.Task;
-
-            Debug.Log($"--- extraOperation {ResMgr.ExtraLoader.InitializeStatus}");
-            try
-            {
-                Debug.Log(ResMgr.ExtraLoader.GetPackageVersion());
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
-
-            await UniTask.Yield(PlayerLoopTiming.PreLateUpdate);
+            await ResMgr.InitDefaultPackage();
+            await ResMgr.InitRawPackage();
+            await ResMgr.InitExtraPackage();
         }
-
-
-
-
     }
 
     public enum RunState

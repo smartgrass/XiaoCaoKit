@@ -1,5 +1,6 @@
-﻿using System.IO;
-using UnityEditor;
+﻿using Cysharp.Threading.Tasks;
+using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using XiaoCao;
 using YooAsset;
@@ -20,7 +21,7 @@ public class ResMgr
         */
     }
 
-    public const string PACKAGENAME = "DefaultPackage";
+    public const string PACKAGENAME_DEFAULT = "DefaultPackage";
     public const string PACKAGENAME_RAW = "RawPackage";
     public const string PACKAGENAME_EXTRA = "ExtraPackage"; //用于Mod
 
@@ -30,6 +31,8 @@ public class ResMgr
     public static ResourcePackage ExtraLoader;
     public static ResourcePackage RawLoader;
 
+    public static bool hasExtraPackage;
+
     public static GameObject LoadInstan(string path, PackageType type = PackageType.DefaultPackage)
     {
         return GameObject.Instantiate(LoadPrefab(path, type));
@@ -38,19 +41,13 @@ public class ResMgr
     //只加载, 没有实例化
     public static GameObject LoadPrefab(string path, PackageType type = PackageType.DefaultPackage)
     {
-        if (type == PackageType.DefaultPackage)
+        if (type == PackageType.DefaultPackage || !hasExtraPackage)
         {
             var task = Loader.LoadAssetSync<GameObject>(path);
             return task.AssetObject as GameObject;
         }
         else
         {
-            foreach (var item in ExtraLoader.GetAssetInfos(""))
-            {
-                Debug.Log($"--- {item}");
-            }
-
-            //Extra
             if (ExtraLoader.CheckLocationValid(path))
             {
                 Debug.Log($"--- ExtraLoader {path}");
@@ -86,84 +83,41 @@ public class ResMgr
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包
-        Loader = YooAssets.CreatePackage(PACKAGENAME);
+        Loader = YooAssets.CreatePackage(PACKAGENAME_DEFAULT);
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
         YooAssets.SetDefaultPackage(Loader);
     }
 
-    public static InitializationOperation InitExtraPackage()
+    public static async Task InitExtraPackage()
     {
-        var tempPack = YooAssets.TryGetPackage(PACKAGENAME_EXTRA);
-        if (tempPack == null)
-        {
-            tempPack = YooAssets.CreatePackage(PACKAGENAME_EXTRA);
-        }
-        ExtraLoader = tempPack;
-        Debug.Log($"--- {tempPack == null} {tempPack.PackageName} ");
-
+        //EXTRA包的作用: 加载工程外资源
+        //编辑器模拟: 不使用,没意义
+        //离线编辑器: 加载 streamingAssetsPath 判断文件是否存在
+        //离线Exe: 加载指定位置资源,并且需要判断文件是否存在
+        string packageName = PACKAGENAME_EXTRA;
+        var tempPack = YooAssets.CreatePackage(packageName);
         InitializationOperation initializationOperation = null;
-
         EPlayMode playMode = GetEPlayMode();
+        ExtraLoader = tempPack;
 
-#if UNITY_EDITOR
-        //编辑器模式使用。
-        //Debuger.Warn($"编辑器模式使用:{playMode}");
-        //// 编辑器下的模拟模式
-        //if (playMode == EPlayMode.EditorSimulateMode)
-        //{
-        //    var par = new EditorSimulateModeParameters();
-        //    par.SimulateManifestFilePath =
-        //        EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME_EXTRA);
-        //    initializationOperation = tempPack.InitializeAsync(par);
-        //}
-        //return initializationOperation;
-#endif
-
-        string defaultHostServer = GetExtraPackageUrl();
+        string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
         string fallbackHostServer = defaultHostServer;
+        hasExtraPackage = hasManifest;
 
-        Debug.LogError($"--- {HasManifest(defaultHostServer, PACKAGENAME_EXTRA)}");
-
-        var initParameters = new HostPlayModeParameters();
-        //内置文件查询
-        initParameters.BuildinQueryServices = new GameQueryServices();
-        //解密不需要
-        //initParameters.DecryptionServices = new FileOffsetDecryption();
-        initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-
-
-       initializationOperation = tempPack.InitializeAsync(initParameters);
-
-        //需求是 检查Manifest是否存在,不存在则不执行
-        string mainifeatPath = "PackageManifest_ExtraPackage";
-        //initializationOperation.PackageVersion
-
-        return initializationOperation;
-    }
-
-    private static bool HasManifest(string dir,string packName)
-    {
-        string fileName = $"PackageManifest_{packName}.version";
-        string filePath = Path.Combine(dir, fileName);
-        filePath = filePath.RemoveHead("file://");
-        Debug.Log($"--- filePath {filePath} {FileTool.IsFileExist(filePath)}");
-        return FileTool.IsFileExist(filePath);
-    }
-
-    private static string GetExtraPackageUrl()
-    {
-        if (Application.isEditor)
+        if (playMode == EPlayMode.OfflinePlayMode)
         {
-            return "file://" + Application.streamingAssetsPath + "/yoo/ExtraPackage/";
+            var initParameters = new HostPlayModeParameters();
+            initParameters.BuildinQueryServices = new GameQueryServices();
+            initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+            initializationOperation = tempPack.InitializeAsync(initParameters);
+            await initializationOperation.Task;
         }
-        else
-        {
-            //设置扩展资源路径
-            return "file://" + Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
-        }
+        await Task.Yield();
     }
 
-    public static InitializationOperation InitRawPackage()
+
+
+    public static Task InitRawPackage()
     {
         EPlayMode playMode = GetEPlayMode();
 
@@ -188,26 +142,18 @@ public class ResMgr
         }
 
 
-        return initializationOperation;
+        return initializationOperation.Task;
     }
 
     //需要等待
-    public static InitializationOperation InitPackage()
+    public static Task InitDefaultPackage()
     {
-        // 创建默认的资源包
-        var tempPack = YooAssets.TryGetPackage(PACKAGENAME);
-        if (tempPack == null)
-        {
-            tempPack = YooAssets.CreatePackage(PACKAGENAME);
-            YooAssets.SetDefaultPackage(tempPack);
-        }
-
+        string packageName = PACKAGENAME_DEFAULT;
+        var tempPack = YooAssets.CreatePackage(packageName);
+        InitializationOperation initializationOperation = null;
+        EPlayMode playMode = GetEPlayMode();
         Loader = tempPack;
 
-
-        InitializationOperation initializationOperation = null;
-
-        EPlayMode playMode = GetEPlayMode();
 #if UNITY_EDITOR
         //编辑器模式使用。
         Debuger.Warn($"编辑器模式使用:{playMode}");
@@ -216,7 +162,7 @@ public class ResMgr
         {
             var par = new EditorSimulateModeParameters();
             par.SimulateManifestFilePath =
-                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, PACKAGENAME);
+                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, packageName);
             initializationOperation = tempPack.InitializeAsync(par);
         }
 #endif
@@ -240,8 +186,40 @@ public class ResMgr
             Debuger.Warn($"HostPlayMode 无");
         }
 
-        return initializationOperation;
+        return initializationOperation.Task;
     }
+
+
+    private static string GetExtraPackageUrl(string packName, out bool hasManifest)
+    {
+        if (Application.isEditor)
+        {
+            string path = $" {Application.streamingAssetsPath}/yoo/{packName}/";
+
+            hasManifest = HasManifest(path, packName);
+
+            return $"file://{path}";
+        }
+        else
+        {
+            string path = Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
+
+            hasManifest = HasManifest(path, packName);
+
+            return $"file://{path}";
+        }
+    }
+
+    private static bool HasManifest(string dir, string packName)
+    {
+        string fileName = $"PackageManifest_{packName}.version";
+        string filePath = Path.Combine(dir, fileName);
+
+        bool ret = FileTool.IsFileExist(filePath);
+        Debug.Log($"has {ret} {filePath}");
+        return ret;
+    }
+
 
     private static EPlayMode GetEPlayMode()
     {
