@@ -4,7 +4,7 @@ namespace XiaoCao
 {
     public class UIMgr : MonoSingletonPrefab<UIMgr>
     {
-        public BattleUI battleUI;
+        public BattleView battleUI;
 
         public LevelSelectionView levelSelectionView;
 
@@ -15,9 +15,9 @@ namespace XiaoCao
         public override void Init()
         {
             base.Init();
-            battleUI.Init();
-            levelSelectionView.Init();
-            skillBar.Init();
+            battleUI?.Init();
+            levelSelectionView?.Init();
+            skillBar?.Init();
         }
 
         public void ShowLevelSelectionView()

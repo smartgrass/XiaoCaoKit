@@ -31,7 +31,14 @@ namespace XiaoCao
             GameEvent.Send(EventType.GameStartFinsh.Int());
 
             //ui在游戏启动后才执行
-            var uiMgr = UIMgr.Inst;
+            try
+            {
+                var uiMgr = UIMgr.Inst;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"--- uiMgr");
+            }
 
 
 

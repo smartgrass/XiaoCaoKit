@@ -9,14 +9,14 @@ namespace XiaoCao
 
         public Image image;
 
-        public Image maskImg;
+        public Image fieldImg;
 
 
         public bool isCold;
 
         public void OnUpdate(float fill)
         {
-            maskImg.fillAmount = fill;
+            fieldImg.fillAmount = fill;
         }
 
         public void Clear()

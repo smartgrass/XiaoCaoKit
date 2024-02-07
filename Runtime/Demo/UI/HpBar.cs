@@ -18,13 +18,6 @@ namespace XiaoCao
 
         public Image barImgSlow;
 
-        public Text numText;
-
-
-        public Transform topImg;//指示玩家用
-
-        private Transform barImgTF;
-
         private RectTransform healthBarRectTransform;
 
         public float referenceDistance;
@@ -35,7 +28,6 @@ namespace XiaoCao
         public Color emptyColor;
 
         public Vector3 offSet;
-
 
         private Camera mainCamera;
 

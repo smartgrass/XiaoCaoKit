@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class BattleUI : MonoBehaviour
+    public class BattleView : MonoBehaviour
     {
         public Dictionary<int, HpBar> barDic = new Dictionary<int, HpBar>();
 
-        private GameObject prefab;
+        public GameObject prefab;
 
         private AssetPool pool;
 
