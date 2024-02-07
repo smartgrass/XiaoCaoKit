@@ -37,7 +37,7 @@ namespace XiaoCao
             }
             catch (Exception e)
             {
-                Debug.LogError($"--- uiMgr");
+                Debug.LogError($"--- uiMgr {e}");
             }
 
 

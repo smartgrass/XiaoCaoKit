@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class SkillBar : MonoBehaviour
+    public class SkillBarHud : MonoBehaviour
     {
         public GameObject prefab;
         public skillBarData barData => PlayerSaveData.Current.skillBarData;

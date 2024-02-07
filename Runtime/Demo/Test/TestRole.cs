@@ -1,4 +1,4 @@
-using NaughtyAttributes;
+锘縰sing NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,8 +21,8 @@ public class TestRole : GameStartMono
         }
     }
 
-    //需要一个生成敌人预制体
-    [Button("生成")]
+    //闇�瑕佷竴涓敓鎴愭晫浜洪鍒朵綋
+    [Button("鐢熸垚")]
     void Gen()
     {
         if (roleType == RoleType.Enemy)

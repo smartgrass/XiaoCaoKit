@@ -15,3 +15,6 @@ MonoBehaviour:
   moveSettings:
   - norAtkCount: 3
     resetNorAckTime: 1.5
+    playerSkillSettingArray:
+    - cd: 4
+      sprite: {fileID: 0}

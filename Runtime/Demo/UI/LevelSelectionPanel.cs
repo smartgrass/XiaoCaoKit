@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace XiaoCao
 {
-    public class LevelSelectionView : StandardView
+    public class LevelSelectionPanel : StandardView
     {
         public int num = 5;
 
@@ -13,10 +13,15 @@ namespace XiaoCao
 
         public CachePool<ImgBtn> cachePool;
 
+
         public override void Init()
         {
-            base.Init();
+            if (IsInited)
+            {
+                return;
+            }
 
+            base.Init();
             cachePool = new CachePool<ImgBtn>(prefab);
             cachePool.UpdateCachedAmount(num);
 
@@ -27,6 +32,7 @@ namespace XiaoCao
 
                 cachePool.cacheList[i].button.onClick.AddListener(() => { OnSelectButton(i); });
             }
+            IsInited = true;
         }
 
         public override void OnCloseBtnClick()
@@ -36,7 +42,7 @@ namespace XiaoCao
 
         public override void OnSureBtnClick()
         {
-            Show();
+
         }
 
         public override void Hide()
@@ -46,6 +52,11 @@ namespace XiaoCao
 
         public override void Show()
         {
+            if (!IsInited)
+            {
+                Init();
+            }
+
             gameObject.SetActive(true);
         }
 

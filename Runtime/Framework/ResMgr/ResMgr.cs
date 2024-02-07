@@ -95,7 +95,7 @@ public class ResMgr
         //离线编辑器: 加载 streamingAssetsPath 判断文件是否存在
         //离线Exe: 加载指定位置资源,并且需要判断文件是否存在
         string packageName = PACKAGENAME_EXTRA;
-        var tempPack = YooAssets.CreatePackage(packageName);
+        ResourcePackage tempPack = GetOrCreatPackage(packageName);
         InitializationOperation initializationOperation = null;
         EPlayMode playMode = GetEPlayMode();
         ExtraLoader = tempPack;
@@ -121,7 +121,12 @@ public class ResMgr
     {
         EPlayMode playMode = GetEPlayMode();
 
-        RawLoader = YooAssets.CreatePackage(PACKAGENAME_RAW);
+        string packageName = PACKAGENAME_RAW;
+
+        ResourcePackage tempPack = GetOrCreatPackage(packageName);
+
+        RawLoader = tempPack;
+
         InitializationOperation initializationOperation = null;
 
 #if UNITY_EDITOR
@@ -130,7 +135,7 @@ public class ResMgr
             var rawPar = new EditorSimulateModeParameters();
             rawPar.SimulateManifestFilePath =
                 EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.RawFileBuildPipeline, PACKAGENAME_RAW);
-            initializationOperation = RawLoader.InitializeAsync(rawPar);
+            initializationOperation = tempPack.InitializeAsync(rawPar);
         }
 #endif
 
@@ -138,7 +143,7 @@ public class ResMgr
         if (playMode == EPlayMode.OfflinePlayMode)
         {
             var par = new OfflinePlayModeParameters();
-            initializationOperation = RawLoader.InitializeAsync(par);
+            initializationOperation = tempPack.InitializeAsync(par);
         }
 
 
@@ -149,7 +154,7 @@ public class ResMgr
     public static Task InitDefaultPackage()
     {
         string packageName = PACKAGENAME_DEFAULT;
-        var tempPack = YooAssets.CreatePackage(packageName);
+        ResourcePackage tempPack = GetOrCreatPackage(packageName);
         InitializationOperation initializationOperation = null;
         EPlayMode playMode = GetEPlayMode();
         Loader = tempPack;
@@ -189,6 +194,16 @@ public class ResMgr
         return initializationOperation.Task;
     }
 
+    private static ResourcePackage GetOrCreatPackage(string packageName)
+    {
+        var tempPack = YooAssets.TryGetPackage(packageName);
+        if (tempPack == null)
+        {
+            tempPack = YooAssets.CreatePackage(packageName);
+        }
+
+        return tempPack;
+    }
 
     private static string GetExtraPackageUrl(string packName, out bool hasManifest)
     {

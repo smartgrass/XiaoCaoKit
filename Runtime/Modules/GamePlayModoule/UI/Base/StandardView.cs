@@ -10,6 +10,7 @@ namespace XiaoCao
 
         public Button closeBtn;
 
+        public bool IsInited { get; set; }  
 
         public virtual void Init()
         {
