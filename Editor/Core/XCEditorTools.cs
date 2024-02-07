@@ -19,6 +19,7 @@ namespace XiaoCaoEditor
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string ObjectViewWindow = "XiaoCao/对象检查器";
+        
 
         ///<see cref="EditorAssetsExtend"/>
         public const string AssetCheck = "Assets/Check/";
@@ -26,6 +27,8 @@ namespace XiaoCaoEditor
         public const string XiaoCaoFlux = "XiaoCao/Flux/";
 
         public const string XiaoCaoLuban = "XiaoCao/Luban/";
+        
+        public const string XiaoCaoGameObject = "GameObject/XiaoCao/";
 
 
 

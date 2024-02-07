@@ -491,6 +491,7 @@ namespace XiaoCao
 
         public void OnUpdate(float deltaTime)
         {
+            DebugGUI.ShowInfo("BreakState",state);
             if (recoverSpeedInner > 0)
             {
                 armor += deltaTime * recoverSpeedInner;
@@ -513,7 +514,6 @@ namespace XiaoCao
             {
                 armor = maxArmor;
                 state = BreakSubState.None;
-                Debug.Log($"--- recover finish");
             }
         }
 

@@ -11,11 +11,11 @@ public class TestRole : GameStartMono
 {
     public RoleType roleType = RoleType.Enemy;
 
-    public int genId = -1;
+    public int raceId = -1;
 
     public override void OnGameStart()
     {
-        if (genId >= 0)
+        if (raceId >= 0)
         {
             Gen();
         }

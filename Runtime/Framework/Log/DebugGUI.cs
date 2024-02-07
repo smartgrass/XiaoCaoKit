@@ -5,7 +5,12 @@ using System.Diagnostics;
 
 public class DebugGUI : MonoBehaviour
 {
-
+    // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
+    [Conditional("DEBUG")]
+    public static void ShowInfo(string key, object value)
+    {
+        GetInstance().SetDebugInfo(key, value);
+    }
 #if DEBUG
     private GUIStyle guiStyle = new GUIStyle();
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
@@ -76,11 +81,4 @@ public class DebugGUI : MonoBehaviour
         startY = 10f; // 重置显示位置
     }
 #endif
-
-    // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
-    [Conditional("DEBUG")]
-    public static void SetDebugInfoStatic(string key, object value)
-    {
-        GetInstance().SetDebugInfo(key, value);
-    }
 }

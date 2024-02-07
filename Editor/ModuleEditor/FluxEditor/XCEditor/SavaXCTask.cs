@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DG.Tweening;
 using UnityEditor;
 using UnityEditor.SearchService;
 using UnityEditor.VersionControl;
@@ -25,6 +26,8 @@ public class SavaXCTask
 
     public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "导入表格数据";
     public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "导入表格数据&代码";
+    
+    public const string SavaCurSeqName = XCEditorTools.XiaoCaoGameObject + "保存Sequence技能&代码";
 
     public static XCSeqSetting fSeqSetting;
     public static FSequence curSequence;
@@ -38,7 +41,25 @@ public class SavaXCTask
         var seqs = root.GetComponentsInChildren<FSequence>(true);
         seqs.LogListStr();
 
+        foreach (var seq in seqs)
+        {
+            SavaOneSeq(seq);
+        }
     }
+    
+    [MenuItem(SavaCurSeqName)]
+    private static void  SavaSelectSeq()
+    {
+        foreach (var i in Selection.objects)
+        {
+            GameObject go = i as GameObject;;
+            if (go.TryGetComponent<FSequence>(out FSequence seq))
+            {
+                SavaOneSeq(seq);
+            }
+        }
+    }
+
     public static void SavaCurSeq()
     {
         var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
