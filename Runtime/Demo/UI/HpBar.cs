@@ -13,44 +13,44 @@ namespace XiaoCao
 {
     public class HpBar : MonoBehaviour
     {
-
         public Image fillImage;
 
         public Image barImgSlow;
 
         private RectTransform healthBarRectTransform;
 
-        public float referenceDistance;
-
-
-        public Color fullColor;
-
-        public Color emptyColor;
+        public float referenceDistance = 15;
 
         public Vector3 offSet;
 
-        private Camera mainCamera;
+        private Camera mainCamera => CameraMgr.Main;
 
 
-        [Header("Color Setting")]
-        public Color playerAColor;
-        public Color playerBColor;
-        public Color NpcColor;
+        //Color Setting
+        public static Color PlayerColor = new Color(0,0.3f,1);
+        public static Color EnemyColor = new Color(1,0,0);
 
+        
 
         private void Start()
         {
             // 获取血条的RectTransform组件
-            healthBarRectTransform = GetComponent<RectTransform>();
-            // 获取主相机
-            mainCamera = Camera.main;
-
-            GameEvent.AddEventListener(EventType.CameraChange.Int(), OnCamChange);
+            healthBarRectTransform = transform as RectTransform;
+          
         }
 
-        private void OnCamChange()
+
+        public void Init(RoleType roleType)
         {
-            mainCamera = Camera.main;
+            if (roleType == RoleType.Player)
+            {
+                fillImage.color = PlayerColor;
+            }
+            else
+            {
+                fillImage.color = EnemyColor;
+            }
+
         }
 
         public void UpdatePostion(GameObject gameObject)
@@ -78,7 +78,7 @@ namespace XiaoCao
         }
 
         // 根据视场角和目标到相机的距离计算缩放因子
-        private float CalculateScaleFactor(float cameraFOV, Vector3 targetPosition,Vector3 camPos)
+        private float CalculateScaleFactor(float cameraFOV, Vector3 targetPosition, Vector3 camPos)
         {
             // 获取目标到相机的距离
             float distanceToCamera = Vector3.Distance(targetPosition, camPos);
@@ -91,6 +91,7 @@ namespace XiaoCao
 
             return scaleFactor;
         }
+
     }
 
 }

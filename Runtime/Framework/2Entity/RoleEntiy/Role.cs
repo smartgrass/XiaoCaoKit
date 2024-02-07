@@ -106,7 +106,7 @@ namespace XiaoCao
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakState.OnHit((int)setting.BreakPower);
-
+                HitStop.Do(setting.HitStop);
 
                 if (roleData.breakState.isBreak)
                 {
@@ -115,11 +115,9 @@ namespace XiaoCao
                     Vector3 horVec = MathTool.Rotate(ackInfo.hitDir, setting.HorForward);
                     idRole.cc.DOHit(setting.AddY, horVec, setting.NoGravityT);
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
-
-
+                    HitStop.Do(setting.HitStop);
                     // 打断当前技能
                     OnBreak();
-
                 }
 
                 //playerMover.SetNoGravityT(setting.NoGravityT);

@@ -1,23 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 
 public class DebugGUI : MonoBehaviour
 {
     // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
     [Conditional("DEBUG")]
-    public static void ShowInfo(string key, object value)
+    public static void ShowInfo(string key, params object[] value)
     {
-        GetInstance().SetDebugInfo(key, value);
+#if DEBUG
+        GetInstance().AddDebugInfo(key, value);
+#endif
     }
 #if DEBUG
     private GUIStyle guiStyle = new GUIStyle();
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
-    private float clearInterval = 10f;
+    private float clearInterval = 4;
 
-    private float startY = 10f;
+    private const float SetStartY = 10;
+
+    private float startY = SetStartY;
     private float lineHeight = 20f;
 
     // 单例实例
@@ -31,13 +36,24 @@ public class DebugGUI : MonoBehaviour
             instance = new GameObject("DebugGUI").AddComponent<DebugGUI>();
             DontDestroyOnLoad(instance.gameObject);
         }
+
         return instance;
     }
 
     void OnGUI()
     {
         guiStyle.fontSize = 18;
-        guiStyle.normal.textColor = Color.white;
+        guiStyle.normal.textColor = Color.blue;
+
+        // 调用示例
+        AddDebugInfo("FPS", 1 / Time.deltaTime);
+        // 添加更多的调试信息...
+        startY = SetStartY;
+        // 显示所有信息
+        foreach (var kvp in debugInfo)
+        {
+            ShowDebug(kvp.Key, kvp.Value);
+        }
 
         // 检查是否需要清空信息
         if (Time.time - lastClearTime > clearInterval)
@@ -45,27 +61,17 @@ public class DebugGUI : MonoBehaviour
             ClearDebugInfo();
             lastClearTime = Time.time;
         }
-
-        // 调用示例
-        SetDebugInfo("FPS", 1 / Time.deltaTime);
-        // 添加更多的调试信息...
-
-        // 显示所有信息
-        foreach (var kvp in debugInfo)
-        {
-            ShowDebug(kvp.Key, kvp.Value);
-        }
     }
 
-    public void SetDebugInfo(string key, object value)
+    public void AddDebugInfo(string key, params object[] value)
     {
-        if (debugInfo.ContainsKey(key))
+        if (value != null && value.Length > 1)
         {
-            debugInfo[key] = value;
+            debugInfo[key] =  string.Join(" ", value);
         }
         else
         {
-            debugInfo.Add(key, value);
+            debugInfo[key] = value;
         }
     }
 
@@ -78,7 +84,6 @@ public class DebugGUI : MonoBehaviour
     private void ClearDebugInfo()
     {
         debugInfo.Clear();
-        startY = 10f; // 重置显示位置
     }
 #endif
 }

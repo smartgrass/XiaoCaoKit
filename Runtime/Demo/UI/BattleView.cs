@@ -46,6 +46,7 @@ namespace XiaoCao
                         {
                             GameObject newBarGo = pool.Get();
                             bar = newBarGo.GetComponent<HpBar>();
+                            bar.Init(role.RoleType);
                             barDic[role.id] = bar;
                         }
                         bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);

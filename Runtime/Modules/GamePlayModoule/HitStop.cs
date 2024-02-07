@@ -5,21 +5,26 @@ using DG.Tweening;
 
 public class HitStop : MonoSingleton<HitStop>
 {
-    public float shakeTime = 0.025f;
+    //和顿帧时间的相关倍数
+    public float shakeTimeFactor = 0.25f;
     public float shakeLength = 0.25f;
-    public int shakeCount = 8;
+    public int shakePower = 10;
 
     public Coroutine currentDo;
 
-    bool waiting =false;
+    bool waiting = false;
     float refSmooth;
     float waitingTime; //等待时间
     float lastWaitlen;
 
     bool isEnbleHitShop = true;
 
+    public static void Do(float time = 0.001f)
+    {
+        Inst.DoHitStop(time, time * Inst.shakeTimeFactor);
+    }
 
-    public void DoHitStop(float time = 0.001f)
+    public void DoHitStop(float time = 0.001f, float ShakeTime = 0)
     {
         if (!isEnbleHitShop)
             return;
@@ -31,61 +36,54 @@ public class HitStop : MonoSingleton<HitStop>
 
         if (waiting)
         {
-            if(lastWaitlen < time)
+            if (lastWaitlen < time)
             {
                 //时停50%累加
-                waitingTime = +0.5f * time;
+                waitingTime += 0.5f * time;
             }
         }
         else
         {
             lastWaitlen = time;
-            StartCoroutine(Wait(time));
+            StartCoroutine(Wait(time, ShakeTime));
         }
 
     }
 
-    public void DoHitStop(float time ,bool isShake)
-    {
-        if (!isEnbleHitShop)
-            return;
-        if (waiting || time==0)
-        {
-            if (lastWaitlen < time)
-                waitingTime = +0.2f * time;
-            return;
-        }
-        //if (isShake && CurrentPlayerData.shakeLengthRate >0)
-        //    CameraController.instance.CamShake(shakeTime, shakeLength, shakeCount);
-        lastWaitlen = time;
-        currentDo = StartCoroutine(Wait(time));
-    }
 
-
-    IEnumerator Wait(float time)
+    IEnumerator Wait(float time, float ShakeTime = 0)
     {
         waiting = true;
         waitingTime = Time.unscaledTime + time;
 
-        while (waitingTime  > Time.unscaledTime)
+        while (waitingTime > Time.unscaledTime)
         {
-            Time.timeScale = Mathf.SmoothDamp(Time.timeScale, 0.1f,ref refSmooth, 0.2f);
+            Time.timeScale = Mathf.SmoothDamp(Time.timeScale, 0.1f, ref refSmooth, 0.2f);
             yield return null;
+        }
+        if (ShakeTime > 0)
+        {
+            Shake(ShakeTime);
         }
         Time.timeScale = 1.0f;
         waiting = false;
     }
 
-    public void Shake(float time = 0.2f)
+    private Tween shakeTween;
+
+    public void Shake(float time)
     {
-        Camera.main.DOShakePosition(time, 0.2f, 10);
-        //if (CurrentPlayerData.shakeLengthRate > 0)
-        //CameraController.instance.CamShake(shakeTime, shakeLength, shakeCount);
+        if (null != shakeTween)
+        {
+            shakeTween.Pause();
+        }
+
+        shakeTween = Camera.main.DOShakePosition(time, shakeLength, shakePower);
     }
 
     public void Cancel()
     {
-        if(currentDo != null)
+        if (currentDo != null)
             StopCoroutine(currentDo);
         Time.timeScale = 1.0f;
         waiting = false;

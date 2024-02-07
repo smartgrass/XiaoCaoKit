@@ -241,11 +241,7 @@ namespace XiaoCao
         {
             int len = ieStr.Count;
             title = $"{title} (len = " + len + ")\n";
-            string res = "";
-            for (int j = 0; j < len; j++)
-            {
-                res = $"{res}{ieStr[j].ToString()},";
-            }
+            string res = string.Join(" ", ieStr);
             string end = $"{title}{res}";
             if (isLog)
                 Debug.Log(end);

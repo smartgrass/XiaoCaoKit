@@ -60,8 +60,4 @@ namespace XiaoCao
 
     }
 
-    public class skillBarData
-    {
-        public int[] onSkill = new int[GameSetting.SkillCountOnBar];
-    }
 }

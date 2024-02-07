@@ -350,6 +350,12 @@ namespace XiaoCao
         public PlayerSetting playerSetting;
     }
 
+
+    public class skillBarData
+    {
+        public int[] onSkill = new int[GameSetting.SkillCountOnBar];
+    }
+
     public class PlayerInputData
     {
         public float x;
