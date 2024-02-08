@@ -19,24 +19,25 @@ namespace XiaoCaoEditor
 {
     public static class XCEditorTools
     {
-        public const string OpenPath_Sava = "XiaoCao/打开路径/存档位置";
-        public const string OpenPath_LuabnExcel = "XiaoCao/打开路径/技能配置表格";
-        public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
-        public const string ObjectsWindow = "XiaoCao/对象收藏夹";
-        public const string ObjectViewWindow = "XiaoCao/对象检查器";
-        public const string CheckPackage = "XiaoCao/检查Package";
-
-
         ///<see cref="EditorAssetsExtend"/>
         public const string AssetCheck = "Assets/Check/";
+
+        public const string XiaoCaoGameObject = "GameObject/XiaoCao/";
 
         public const string XiaoCaoFlux = "XiaoCao/Flux/";
 
         public const string XiaoCaoLuban = "XiaoCao/Luban/";
 
-        public const string XiaoCaoGameObject = "GameObject/XiaoCao/";
+        public const string XiaoCaoPath = "XiaoCao/打开路径/";
 
+        //ToolBar
+        public const string OpenPath_Sava = XiaoCaoPath + "存档位置";
+        public const string OpenPath_LuabnExcel = XiaoCaoPath + "技能配置表格";
 
+        public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
+        public const string ObjectsWindow = "XiaoCao/对象收藏夹";
+        public const string ObjectViewWindow = "XiaoCao/对象检查器";
+        public const string CheckPackage = "XiaoCao/检查Package";
 
     }
 
@@ -239,14 +240,15 @@ namespace XiaoCaoEditor
             EditorUtility.RevealInFinder(path);
         }
 
-        [MenuItem(XCEditorTools.CheckPackage)]
+        //[MenuItem(XCEditorTools.CheckPackage)]
+        ///<see cref="XCEditorTools.CheckPackage"/>
         static void CheckAndInstallPackage()
         {
-            string packageName = "com.example.package"; // 替换为你要安装的 package 的名称
+            string packageName = "com.tuyoogame.yooasset";
 
             if (UnityEditor.PackageManager.PackageInfo.FindForAssetPath(packageName) != null)
             {
-                Debug.Log("Installing package: " + packageName);
+                Debug.LogError("no package: " + packageName);
                 InstallPackage(packageName);
             }
             else
