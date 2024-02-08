@@ -39,6 +39,8 @@
 
 	* 配置加载 √ LoadSoConfig.cs (自动new)
 	* 存档加载 √ SavaMgr.cs
+	* 编辑器工具
+		* 组件绑定扩展  XCComponentMenu.AutoBind()
 
 * 3.GamePlayModule GamePlay模块
 	* 3.1 相机控制 √ CameraMgr.cs

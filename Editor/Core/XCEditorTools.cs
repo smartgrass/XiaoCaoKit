@@ -24,6 +24,7 @@ namespace XiaoCaoEditor
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string ObjectViewWindow = "XiaoCao/对象检查器";
+        public const string CheckPackage = "XiaoCao/检查Package";
 
 
         ///<see cref="EditorAssetsExtend"/>
@@ -237,6 +238,27 @@ namespace XiaoCaoEditor
             Debug.Log($"--- OpenPath_Excel {path}");
             EditorUtility.RevealInFinder(path);
         }
+
+        [MenuItem(XCEditorTools.CheckPackage)]
+        static void CheckAndInstallPackage()
+        {
+            string packageName = "com.example.package"; // 替换为你要安装的 package 的名称
+
+            if (UnityEditor.PackageManager.PackageInfo.FindForAssetPath(packageName) != null)
+            {
+                Debug.Log("Installing package: " + packageName);
+                InstallPackage(packageName);
+            }
+            else
+            {
+                Debug.Log("Package already installed: " + packageName);
+            }
+
+            void InstallPackage(string packageName)
+            {
+                //UnityEditor.PackageManager.Client.Add(packageName); // 开始安装 package
+            }
+        }
     }
 
     public static class XCComponentMenu
@@ -290,7 +312,7 @@ namespace XiaoCaoEditor
                 }
 
                 // 属于 Mono 查找和赋值
-                if (!isFound &&  fieldType.IsSubclassOf(monoType))
+                if (!isFound && fieldType.IsSubclassOf(monoType))
                 {
                     object value = field.GetValue(component);
                     if (value == null)

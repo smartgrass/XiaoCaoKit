@@ -1252,7 +1252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: -1
-  _skillId: 152
+  _skillId: 151
   _des: 
   _seqSetting: {fileID: 11400000, guid: 693a2f4bd5170fb4d9e63244f7a83126, type: 2}
   _content: {fileID: 212063487}
