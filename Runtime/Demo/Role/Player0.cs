@@ -109,7 +109,6 @@ namespace XiaoCao
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
             {
                 data.inputs[InputKey.NorAck] = true;
-                Debug.Log($"--- InputKey.NorAck");
             }
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -158,10 +157,6 @@ namespace XiaoCao
 
         protected override Vector3 GetInputMoveDir()
         {
-            if (RoleState.IsMoveLock)
-            {
-                return Vector3.zero;
-            }
             Vector3 forward = camForward;
             forward.y = 0;
             Vector3 hor = -Vector3.Cross(forward, Vector3.up).normalized;
@@ -198,13 +193,16 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
-            Debug.Log($"--- TryNorAck {Data_R.IsFree}");
             if (!Data_R.IsFree || IsBusy())
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());
 
+
+
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
+
+            DebugGUI.Debug("nextNorAckIndex", nextNorAckIndex);
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 
@@ -239,21 +237,26 @@ namespace XiaoCao
 
         public Dictionary<int, SkillCdData> dic = new Dictionary<int, SkillCdData>();
 
-        public float resetNorAckTimer;
+        public float norAckTimer;
 
-        public int GetNextNorAckIndex()
+        public int GetNextNorAckIndex(bool setTime = true)
         {
-            if (Time.time < resetNorAckTimer)
+            int ret = 0;
+            if (Time.time < norAckTimer)
             {
                 int len = playerSetting.norAtkCount;// norAtkIds.Count;
-                return (Data_P.curNorAckIndex + 1) % len;
+                ret = (Data_P.curNorAckIndex + 1) % len;
             }
-            return 0;
+            if (setTime)
+            {
+                SetNorAckTime();
+            }
+            return ret;
         }
 
         public void SetNorAckTime()
         {
-            resetNorAckTimer = Time.time + playerSetting.resetNorAckTime;
+            norAckTimer = Time.time + playerSetting.resetNorAckTime;
         }
 
 

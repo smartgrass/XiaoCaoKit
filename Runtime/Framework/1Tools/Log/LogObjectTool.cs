@@ -248,16 +248,4 @@ namespace XiaoCao
             return end;
         }
     }
-
-#if UNITY_EDITOR
-    public static class LogObjectToolEditorExtend
-    {
-        [MenuItem("CONTEXT/Object/LogThis")]
-        private static void LogThis(MenuCommand menuCommand)
-        {
-            var obj = menuCommand.context;
-            LogObjectTool.LogObjectAll(obj, obj.GetType());
-        }
-    }
-#endif
 }

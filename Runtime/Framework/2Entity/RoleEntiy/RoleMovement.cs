@@ -11,9 +11,11 @@ namespace XiaoCao
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
-        public MoveSetting setting => Data_R.moveSetting;
+        public MoveSetting moveSetting => Data_R.moveSetting;
 
         public Vector3 camForward => CameraMgr.Forword;
+
+        Vector3 inputDir;
 
         public override void FixedUpdate()
         {
@@ -26,18 +28,18 @@ namespace XiaoCao
 
         protected virtual void MoveFixUpdate()
         {
-            Vector3 moveDir = GetInputMoveDir();
+            inputDir = GetInputMoveDir();
+
+            Vector3 moveDir = inputDir;
+
+            Data_R.roleState.inputDir = inputDir;
 
             SetMoveDir(moveDir);
         }
 
         protected virtual Vector3 GetInputMoveDir()
         {
-            if (RoleState.IsMoveLock)
-            {
-                return Vector3.zero;
-            }
-            return Data_R.roleState.moveDir;
+            return Data_R.roleState.inputDir;
         }
 
         public void SetMoveDir(Vector3 moveDir, bool isLookDir = true)
@@ -46,10 +48,16 @@ namespace XiaoCao
             {
                 moveDir = Vector3.zero;
             }
+            if (Data_R.IsBusy || !Data_R.IsFree)
+            {
+                moveDir = Vector3.zero;
+            }
 
             bool isInput = (Mathf.Abs(moveDir.x) + Mathf.Abs(moveDir.z)) > 0;
 
             ComputeMoveValue(isInput);
+
+            CheckBackToIdle(isInput);
 
             if (isLookDir)
             {
@@ -70,6 +78,16 @@ namespace XiaoCao
             FixUpdateLockTime();
         }
 
+        void CheckBackToIdle(bool isInput)
+        {
+            if (Data_R.skillState is ESkillState.SkillEnd && isInput)
+            {
+                Data_R.skillState = ESkillState.Idle;
+                owner.Anim?.CrossFade(AnimHash.Idle, 0.05f);
+            }
+        }
+
+
         void RotateByMoveDir(Vector3 worldMoveDir)
         {
             if (worldMoveDir.IsNaN())
@@ -77,7 +95,7 @@ namespace XiaoCao
 
             var targetRotation = MathTool.ForwardToRotation(worldMoveDir);
             var startRotation = tf.rotation;
-            var rotation = Quaternion.Lerp(startRotation, targetRotation, 0.5f);
+            var rotation = Quaternion.Lerp(startRotation, targetRotation, moveSetting.rotationLerp);
             tf.rotation = rotation;
         }
 
@@ -98,7 +116,7 @@ namespace XiaoCao
         {
             float inputTotal = isInput ? 1 : 0;
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, setting.moveSmooth);
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, moveSetting.moveSmooth);
 
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
         }

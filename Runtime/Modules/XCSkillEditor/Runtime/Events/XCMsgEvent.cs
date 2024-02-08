@@ -2,18 +2,29 @@
 {
     public class XCMsgEvent : XCEvent
     {
-        public EntityMsgType entityMsg;
+        public EntityMsgType msgType;
         public BaseMsg baseMsg;
+        public bool isUndoOnFinish;
 
         public override void OnTrigger(float timeSinceTrigger)
         {
             base.OnTrigger(timeSinceTrigger);
-            if (entityMsg == EntityMsgType.SkillFinish_Num)
+            if (msgType == EntityMsgType.SkillFinish_Num)
             {
                 task.SetFinish();
             }
+            baseMsg.state = 0;
+            Info.role.ReceiveMsg(msgType, Info.entityId, baseMsg);
+        }
 
-            Info.role.ReceiveMsg(entityMsg, Info.entityId, baseMsg);
+        public override void OnFinish()
+        {
+            base.OnFinish();
+            if (HasTrigger && isUndoOnFinish)
+            {
+                baseMsg.state = 1;
+                Info.role.ReceiveMsg(msgType, Info.entityId, baseMsg);
+            }
         }
     }
 }

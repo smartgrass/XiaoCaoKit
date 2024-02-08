@@ -191,6 +191,18 @@ namespace XiaoCao
                 int skillId = (int)msg;
                 roleData.roleControl.TryPlaySkill(skillId);
             }
+            else if (type is EntityMsgType.AddTag)
+            {
+                BaseMsg baseMsg = (BaseMsg)msg;
+                if (baseMsg.state == 0)
+                {
+                    AddTag((int)baseMsg.numMsg);
+                }
+                else
+                {
+                    RemoveTag((int)baseMsg.numMsg);
+                }
+            }
         }
 
         public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
@@ -294,6 +306,8 @@ namespace XiaoCao
     public interface IRoleControl
     {
         public void TryPlaySkill(int skillId);
+
+        public bool IsBusy(int level = 0);
     }
 
     //技能通用体
@@ -322,9 +336,23 @@ namespace XiaoCao
             //读表 读配置
             return false;
         }
+
+        //TaskEnd与角色恢复自主移动不同, 如飞行剑气释放完后, 角色恢复控制, 但剑气可以一直运动
         public void OnTaskEnd(XCTaskRunner runner)
         {
             curTaskData.Remove(runner);
+        }
+        public void OnBreak()
+        {
+            foreach (var task in curTaskData)
+            {
+                task.SetBreak();
+            }
+        }
+
+        public void OnSkillFinish(XCTaskRunner runner)
+        {
+            Data_R.skillState = ESkillState.SkillEnd;
         }
 
         public virtual void TryPlaySkill(int skillId)
@@ -357,17 +385,12 @@ namespace XiaoCao
             };
             var task = XCTaskRunner.CreatNew(skillId, owner.RoleType, taskInfo);
             curTaskData.Add(task);
+            task.onFinishEvent.AddListener(OnSkillFinish);
             task.onEndEvent.AddListener(OnTaskEnd);
+            Data_R.skillState = ESkillState.Skill;
+
         }
 
-
-        public void OnBreak()
-        {
-            foreach (var task in curTaskData)
-            {
-                task.SetBreak();
-            }
-        }
 
         #region FullSkillId
         public int GetFullSkillId(int index)
@@ -411,6 +434,8 @@ namespace XiaoCao
 
         public EBodyState bodyState;
 
+        public ESkillState skillState;
+
         public BreakState breakState = new BreakState();
 
         public PlayerAttr playerAttr = new PlayerAttr();
@@ -423,6 +448,10 @@ namespace XiaoCao
         public MoveSetting moveSetting;
         public RoleMovement movement;
         public bool IsFree => bodyState is not EBodyState.Break or EBodyState.Dead;
+
+        public bool IsBusy => roleControl.IsBusy();
+
+       
 
         //优先级规则
         //0. 非死亡&非控制中 属于自由状态
@@ -447,13 +476,13 @@ namespace XiaoCao
 
         public float animMoveSpeed = 0;
 
-        public Vector3 moveDir = Vector3.zero;
+        public Vector3 inputDir = Vector3.zero;
         public float MoveMultFinal => moveSpeedMult * moveAnimMult;
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
 
         public void Used()
         {
-            moveDir = Vector3.zero;
+            inputDir = Vector3.zero;
         }
 
     }
@@ -489,7 +518,7 @@ namespace XiaoCao
 
         public void OnUpdate(float deltaTime)
         {
-            DebugGUI.ShowInfo("BreakState",state);
+            DebugGUI.Debug("BreakState", state);
             if (recoverSpeedInner > 0)
             {
                 armor += deltaTime * recoverSpeedInner;
@@ -537,6 +566,14 @@ namespace XiaoCao
         Break, //被打断的中,眩晕中
         Dead  //最高优先级
     }
+
+    public enum ESkillState
+    {
+        Idle,
+        Skill,
+        SkillEnd //后摇
+    }
+
     public enum EAckState
     {
         None,

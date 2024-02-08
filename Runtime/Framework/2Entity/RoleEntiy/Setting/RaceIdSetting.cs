@@ -20,19 +20,19 @@
 
         ///技能ID规划
         ///raceId * 100 + 技能id
-        ///玩家raceId = 1 => 101~ 199
-        ///敌人raceId = 10 =>  1001~1099
+        ///玩家raceId = 1 => 100~ 199
+        ///敌人raceId = 10 =>  1000~1099
         ///
 
         ///玩家普通技能 id  101~149
         ///特殊技能 id > 151~199
-        public static int GetFullSkillId(int raceId, int skillId)
+        public static int GetFullSkillId(int raceId, int index)
         {
-            return raceId * 100 + skillId;
+            return raceId * 100 + index;
         }
-        public static int GetFullNorAckId(int raceId, int skillId)
+        public static int GetFullNorAckId(int raceId, int index)
         {
-            return raceId * 100 + 50 + skillId;
+            return raceId * 100 + 50 + index;
         }
         public static int GetRollId(int raceId)
         {

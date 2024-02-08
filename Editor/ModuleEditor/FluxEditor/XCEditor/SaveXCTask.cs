@@ -19,7 +19,7 @@ using Debug = UnityEngine.Debug;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 using Task = System.Threading.Tasks.Task;
 
-public class SavaXCTask
+public class SaveXCTask
 {
     public const string SavaAllSeqName = XCEditorTools.XiaoCaoFlux + "SavaAllSeq";
     public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
@@ -164,6 +164,14 @@ public class SavaXCTask
             {
                 FMoveEvent moveEvent = (FMoveEvent)e;
                 taskData._events.AddRange(moveEvent.ToXCEventList());
+            });
+        }
+        else if (eventType == typeof(FMsgEvent))
+        {
+            _track.Events.ForEach((e) =>
+            {
+                FMsgEvent fe = (FMsgEvent)e;
+                taskData._events.AddRange(fe.ToXCEventList());
             });
         }
         else if (eventType == typeof(FPlayAnimationEvent))

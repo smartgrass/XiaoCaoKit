@@ -8,7 +8,7 @@ public class DebugGUI : MonoBehaviour
 {
     // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
     [Conditional("DEBUG")]
-    public static void ShowInfo(string key, params object[] value)
+    public static void Debug(string key, params object[] value)
     {
 #if DEBUG
         GetInstance().AddDebugInfo(key, value);
@@ -18,7 +18,7 @@ public class DebugGUI : MonoBehaviour
     private GUIStyle guiStyle = new GUIStyle();
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
-    private float clearInterval = 4;
+    private float clearInterval = 3;
 
     private const float SetStartY = 10;
 
@@ -65,13 +65,13 @@ public class DebugGUI : MonoBehaviour
 
     public void AddDebugInfo(string key, params object[] value)
     {
-        if (value != null && value.Length > 1)
+        if (value != null)
         {
-            debugInfo[key] =  string.Join(" ", value);
+            debugInfo[key] = string.Join(" ", value);
         }
         else
         {
-            debugInfo[key] = value;
+            debugInfo[key] = null;
         }
     }
 

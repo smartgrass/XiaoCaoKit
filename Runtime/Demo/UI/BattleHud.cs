@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class BattleView : MonoBehaviour
+    public class BattleHud : MonoBehaviour
     {
         public Dictionary<int, HpBar> barDic = new Dictionary<int, HpBar>();
 

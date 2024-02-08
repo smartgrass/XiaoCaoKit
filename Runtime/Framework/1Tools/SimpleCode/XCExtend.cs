@@ -1,9 +1,10 @@
+using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public static class XCExtension
+public static class XCExtend
 {
-    static public T GetOrAddComponent<T>(this GameObject go) where T : Component
+    public static T GetOrAddComponent<T>(this GameObject go) where T : Component
     {
         T ret = go.GetComponent<T>();
         if (null == ret)
@@ -11,15 +12,40 @@ public static class XCExtension
         return ret;
     }
 
-    static public Transform FindOrNewChildren(this Transform tf, string childrenName)
+    public static Transform FindOrNewChildren(this Transform tf, string childrenName)
     {
         Transform ret = tf.Find(childrenName);
         if (ret == null)
         {
             var newObject = new GameObject(childrenName);
-            newObject.transform.SetParent(tf,false);
+            newObject.transform.SetParent(tf, false);
         }
         return ret;
+    }
+
+    // 递归方法来查找子物体
+    public static Transform FindChildEx(this Transform parent, string name)
+    {
+
+        // 遍历所有子物体
+        int len = parent.childCount;
+        for (int i = 0; i < len; i++)
+        {
+            Transform child = parent.GetChild(i);
+
+            // 忽略大小写
+            if (string.Equals(child.name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+
+            Transform result = FindChildEx(child, name);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+        return null;
     }
 
 

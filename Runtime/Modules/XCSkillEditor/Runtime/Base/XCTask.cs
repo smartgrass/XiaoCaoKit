@@ -26,9 +26,9 @@ namespace XiaoCao
 
         public bool IsBreak { get; set; }
 
-        public bool IsForceFinish { get; set; }
+        public bool HasFinish { get; set; }
 
-        public bool IsBusy => State == XCState.Running && !IsForceFinish;
+        public bool IsBusy => State == XCState.Running && !HasFinish;
 
         public TaskInfo Info;
 
@@ -127,7 +127,7 @@ namespace XiaoCao
                     command.OnExit();
                 }
                 State = XCState.Stopped;
-                Runner.AllFinsh();
+                Runner.AllEnd();
             }
         }
 
@@ -145,7 +145,7 @@ namespace XiaoCao
 
             ObjectData?.OnFrameUpdate(_curFrame);
 
-            if (null == command)
+            if (null != command)
             {
                 command.OnUpdate();
             }
@@ -210,7 +210,8 @@ namespace XiaoCao
         public void SetFinish()
         {
             //不占用角色任务
-            IsForceFinish = true;
+            HasFinish = true;
+            Runner.OnFinish();
         }
 
         public void SetBreak()

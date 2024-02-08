@@ -66,18 +66,24 @@ namespace XiaoCao
             Task.OnEventUpdate();
         }
 
-        public void AllFinsh()
+        public void AllEnd()
         {
-            if (!IsBreak)
-            {
-                onFinishEvent?.Invoke(this);
-                onFinishEvent.RemoveAllListeners();
-            }
+            OnFinish();
             OnEnd();
             Task = null;
             gameObject.SetActive(false);
             Debug.Log($"--- Release {gameObject} ");
             runnerPool.Release(gameObject);
+        }
+        //角色恢复自由控制
+        public void OnFinish()
+        {
+            if (!IsBreak && !Task.HasFinish)
+            {
+                Task.HasFinish = true;
+                onFinishEvent?.Invoke(this);
+                onFinishEvent.RemoveAllListeners();
+            }
         }
 
         public void SetFinish()

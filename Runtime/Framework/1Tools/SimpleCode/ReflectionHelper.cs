@@ -1,16 +1,31 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using UnityEngine;
 
 namespace XiaoCao
 {
     /// <summary>
     /// 反射相关
     /// </summary>
-    internal static class ReflectionHelper
+    public static class ReflectionHelper
     {
+
+        public static List<FieldInfo> GetFields(Type type)
+        {
+            List<FieldInfo> fields = new List<FieldInfo>();
+            // 如果type继承自 MonoBehaviour,那么递归到此为止
+            while (type != null && type != typeof(MonoBehaviour) && type != typeof(object))
+            {
+                fields.AddRange(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
+                type = type.BaseType;
+            }
+            return fields;
+        }
+
         internal static MethodInfo GetInstanceMethod(Type declaringType, string name)
             => declaringType.GetMethod(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
@@ -143,7 +158,7 @@ namespace XiaoCao
     /// - with missing types
     /// - existing on WinRT
     /// </summary>
-    internal enum ProtoTypeCode
+    public enum ProtoTypeCode
     {
         Empty = 0,
         Unknown = 1, // maps to TypeCode.Object

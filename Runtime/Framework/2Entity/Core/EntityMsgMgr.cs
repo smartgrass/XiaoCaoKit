@@ -28,7 +28,7 @@ namespace XiaoCao
         
         SkillFinish_Num = 10,
         SetUnMoveTime = 11,
-
+        AddTag = 12,
 
 
     }
@@ -43,11 +43,14 @@ namespace XiaoCao
     {
         public float numMsg;
         public string strMsg;
+        [HideInInspector]
+        public int state;  //0 ,1
     }
 
     public struct XCEventMsg
     {
-        public EntityMsgType entityMsg;
+        public EntityMsgType msgType;
         public BaseMsg baseMsg;
+        public bool isUndoOnFinish; //是否反转
     }
 }

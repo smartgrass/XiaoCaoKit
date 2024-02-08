@@ -1889,9 +1889,9 @@ namespace FluxEditor
                         if (track is FAnimationTrack)
                         {
                             (track as FAnimationTrack).ClearSnapshot();
+                            FAnimationTrackInspector.RebuildStateMachine((track as FAnimationTrack));
                         }
                     }
-
                 }
             }
         }

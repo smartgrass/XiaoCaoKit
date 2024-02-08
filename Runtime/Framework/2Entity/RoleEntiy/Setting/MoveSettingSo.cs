@@ -18,6 +18,8 @@ namespace XiaoCao
 
         public float moveSmooth = 0.05f;
 
+        public float rotationLerp = 0.2f;
+
         public float angleSpeed = 10;
 
         public float g = -40;
