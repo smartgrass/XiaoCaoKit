@@ -1,25 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityEngine.UI;
-using XiaoCao;
-using static UnityEditor.Progress;
-using static UnityEngine.EventSystems.EventTrigger;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace XiaoCaoEditor
 {
+
     public static class XCEditorTools
     {
-        ///<see cref="EditorAssetsExtend"/>
+        ///<see cref="XCEditorMenu"/>
         public const string AssetCheck = "Assets/Check/";
 
         public const string XiaoCaoGameObject = "GameObject/XiaoCao/";
@@ -36,9 +30,7 @@ namespace XiaoCaoEditor
 
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
-        public const string ObjectViewWindow = "XiaoCao/对象检查器";
-        public const string CheckPackage = "XiaoCao/检查Package";
-
+        public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
     }
 
     /// <summary>
@@ -105,7 +97,6 @@ namespace XiaoCaoEditor
             GUI.color = color2;
         }
     }
-
 
     /// <summary>
     /// 资源处理相关
@@ -224,124 +215,6 @@ namespace XiaoCaoEditor
         }
     }
 
-
-    public static class XCToolBarMenu
-    {
-        [MenuItem(XCEditorTools.OpenPath_Sava)]
-        static void OpenPath_Sava()
-        {
-            EditorUtility.RevealInFinder($"{Application.persistentDataPath}/");
-        }
-        [MenuItem(XCEditorTools.OpenPath_LuabnExcel)]
-        static void OpenPath_Excel()
-        {
-            string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/Config/Datas/SkillSetting.xlsx";
-            Debug.Log($"--- OpenPath_Excel {path}");
-            EditorUtility.RevealInFinder(path);
-        }
-
-        //[MenuItem(XCEditorTools.CheckPackage)]
-        ///<see cref="XCEditorTools.CheckPackage"/>
-        static void CheckAndInstallPackage()
-        {
-            string packageName = "com.tuyoogame.yooasset";
-
-            if (UnityEditor.PackageManager.PackageInfo.FindForAssetPath(packageName) != null)
-            {
-                Debug.LogError("no package: " + packageName);
-                InstallPackage(packageName);
-            }
-            else
-            {
-                Debug.Log("Package already installed: " + packageName);
-            }
-
-            void InstallPackage(string packageName)
-            {
-                //UnityEditor.PackageManager.Client.Add(packageName); // 开始安装 package
-            }
-        }
-    }
-
-    public static class XCComponentMenu
-    {
-        [MenuItem("CONTEXT/Component/AutoBind", priority = 10)]
-        private static void AutoBind(MenuCommand menuCommand)
-        {
-            Component component = menuCommand.context as Component;
-            var type = component.GetType();
-            //mono类
-            var monoType = typeof(MonoBehaviour);
-            //ui类
-            var uiType = typeof(MaskableGraphic);
-            //按钮类/交互类
-            var selectType = typeof(Selectable);
-            //实体对象类
-            var ObjectType = typeof(Object);
-
-            var fields = GetFields(type);
-
-
-            foreach (var field in fields)
-            {
-                Type fieldType = field.FieldType;
-
-                bool isFound = false;
-
-                if (fieldType.IsSubclassOf(uiType) || fieldType.IsSubclassOf(selectType) || fieldType.IsSubclassOf(ObjectType))
-                {
-                    //ui 更具名字查找      
-                    Object value = field.GetValue(component) as Object;
-                    if (value == null)
-                    {
-                        Transform tf = component.transform.FindChildEx(field.Name);
-
-                        if (tf)
-                        {
-                            if (field.FieldType == typeof(GameObject))
-                            {
-                                field.SetValue(component, tf.gameObject);
-                            }
-                            else
-                            {
-                                var findComponent = tf.GetComponentInChildren(field.FieldType, true);
-                                field.SetValue(component, findComponent);
-                            }
-                            isFound = true;
-                        }
-                    }
-                    Debug.Log($"--- {field.FieldType} {field.Name}");
-                }
-
-                // 属于 Mono 查找和赋值
-                if (!isFound && fieldType.IsSubclassOf(monoType))
-                {
-                    object value = field.GetValue(component);
-                    if (value == null)
-                    {
-                        var findComponent = component.transform.GetComponentInChildren(field.FieldType, true);
-
-                        field.SetValue(component, findComponent);
-
-                        Debug.Log($"--- {field.Name} {findComponent}");
-                    }
-                }
-            }
-
-
-            static List<FieldInfo> GetFields(Type type)
-            {
-                List<FieldInfo> fields = new List<FieldInfo>();
-                // 如果type继承自 MonoBehaviour,那么递归到此为止
-                while (type != null && type != typeof(MonoBehaviour) && type != typeof(object))
-                {
-                    fields.AddRange(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly));
-                    type = type.BaseType;
-                }
-                return fields;
-            }
-        }
-    }
 
     public static class CommandHelper
     {
