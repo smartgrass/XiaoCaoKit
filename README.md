@@ -102,6 +102,13 @@ yooAsset -> PackageManager
 
 
 
+## 其他
+
+虽不做网络部分，但有网络框架引路
+
+[Fantasy](https://github.com/qq362946/Fantasy)
+
+[Magiconion](https://github.com/Cysharp/MagicOnion)
 
 
 ## 关于开源项目的看法
