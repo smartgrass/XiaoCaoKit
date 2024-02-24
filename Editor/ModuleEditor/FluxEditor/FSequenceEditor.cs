@@ -459,9 +459,6 @@ namespace FluxEditor
                 TimelineSelection.Clear();
                 ContainerSelection.Clear();
                 Editors.Clear();
-
-                if (sequence != null)
-                    sequence.Speed = sequence.DefaultSpeed;
             }
             else if (!EditorApplication.isPlaying)
             {

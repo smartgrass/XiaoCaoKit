@@ -70,12 +70,12 @@ namespace Flux
 			bool ownerIsActive = Track.Owner.gameObject.activeSelf;
 
 			float speed = sequence.Speed;
-			if( speed != 1 )
+			if( speed == 0 )
 				sequence.Speed = 1f;
-			
-			Animator.speed = 1f;
-			
-			int currentFrame = sequence.CurrentFrame;
+
+			Animator.speed = sequence.Speed;
+
+            int currentFrame = sequence.CurrentFrame;
 			bool isPlaying = sequence.IsPlaying;
 			
 			if( !sequence.IsStopped )

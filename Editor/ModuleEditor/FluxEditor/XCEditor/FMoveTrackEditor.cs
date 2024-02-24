@@ -180,7 +180,11 @@ namespace FluxEditor
                 }
 
                 Handles.CapFunction handle = Handles.SphereHandleCap;
+#if UNITY_2022_3_OR_NEWER
                 newPointPosition = Handles.FreeMoveHandle(newPointPosition, HandleUtility.GetHandleSize(newPointPosition) * 0.15f, Vector3.one, handle);
+#else
+                newPointPosition = Handles.FreeMoveHandle(newPointPosition,Quaternion.identity, HandleUtility.GetHandleSize(newPointPosition) * 0.15f, Vector3.one, handle);
+#endif
 
                 if (Event.handlePionts[i] != newPointPosition)
                 {

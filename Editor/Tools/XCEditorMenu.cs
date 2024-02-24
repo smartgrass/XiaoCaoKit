@@ -77,7 +77,7 @@ namespace XiaoCaoEditor
             EditorUtility.OpenWithDefaultApp(path);
         }
 
-        [MenuItem("Assets/Create/ReadMe", false, 20, secondaryPriority = 1)]
+        [MenuItem("Assets/Create/ReadMe", false, 20)]
         static void CreateMd()
         {
             // 获取选中的文件夹或文件的路径
@@ -94,7 +94,7 @@ namespace XiaoCaoEditor
         }
 
         //创建UTF-8代码
-        [MenuItem("Assets/Create/C# Script UTF-8", false, 20, secondaryPriority = 10)]
+        [MenuItem("Assets/Create/C# Script UTF-8", false, 20)]
         static void CreateCodeText()
         {
             // 获取选中的文件夹或文件的路径

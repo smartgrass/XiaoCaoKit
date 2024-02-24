@@ -20,9 +20,9 @@ public class DebugGUI : MonoBehaviour
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
 
-    private float SetStartY = 10;
+    private float SetStartY = 10; 
     private float lineCount = 20; //行数决定字体大小
-    private float clearInterval = 3;
+    private float clearInterval = 3; //定时刷新
 
     private float lineHeight;
     private float startY;
