@@ -1,4 +1,6 @@
-﻿namespace XiaoCao
+﻿using System.Data;
+
+namespace XiaoCao
 {
     public static class RaceIdSetting
     {
@@ -24,19 +26,21 @@
         ///敌人raceId = 10 =>  1000~1099
         ///
 
-        ///玩家普通技能 id  101~149
-        ///特殊技能 id > 151~199
-        public static int GetFullSkillId(int raceId, int index)
+        ///平a 100~109
+        ///特殊技能 110~119 (Roll = 110)
+        ///普通技能 131~199
+
+        public static int GetSkillIdFull(int raceId, int index)
+        {
+            return raceId * 100 + index + 30;
+        }
+        public static int GetNorAckIdFull(int raceId, int index)
         {
             return raceId * 100 + index;
         }
-        public static int GetFullNorAckId(int raceId, int index)
+        public static int GetRollSkillId(int raceId)
         {
-            return raceId * 100 + 50 + index;
-        }
-        public static int GetRollId(int raceId)
-        {
-            return raceId * 100 + 60;
+            return raceId * 100 + 10;
         }
 
 
@@ -48,7 +52,38 @@
             }
             return $"{ackId}_{subAckId}";
         }
+
+        public static EActType GetSkillType(int skillId)
+        {
+            int sub = skillId % 100;
+            if (sub < 10)
+            {
+                return EActType.None;
+            }
+            else if (sub < 30)
+            {
+                if (sub == 10)
+                {
+                    return EActType.Roll;
+                }
+                else if (sub == 11)
+                {
+                    return EActType.Jump;
+                }
+                else
+                {
+                    return EActType.Other;
+                }
+            }
+            else
+            {
+                return EActType.Skill;
+            }
+        }
+
     }
+
+
 
 }
 

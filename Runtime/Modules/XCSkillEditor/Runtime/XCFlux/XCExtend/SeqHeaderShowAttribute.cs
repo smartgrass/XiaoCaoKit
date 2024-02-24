@@ -9,13 +9,15 @@ public class SeqHeaderShowAttribute : PropertyAttribute
     public int posX;
     public int width;
     public string label;
+    public string desLabel;
 
-    public SeqHeaderShowAttribute(int line, int posX, int width,string label = null)
+    public SeqHeaderShowAttribute(int line, int posX, int width,string label = null, string desLabel = null)
     {
         this.line = line;
         this.posX = posX;
         this.width = width;
         this.label = label;
+        this.desLabel = desLabel;
     }
 
 #if UNITY_EDITOR
@@ -23,7 +25,7 @@ public class SeqHeaderShowAttribute : PropertyAttribute
     {
         if (!string.IsNullOrEmpty(label))
         {
-            return new GUIContent(label);
+            return new GUIContent(label,desLabel);
         }
         return new GUIContent(pro.displayName);
     }

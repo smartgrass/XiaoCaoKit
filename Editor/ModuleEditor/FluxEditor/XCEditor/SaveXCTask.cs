@@ -133,7 +133,7 @@ public class SaveXCTask
     [MenuItem(ReadSkillDataName)]
     private static void Read()
     {
-        if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(".data"))
+        if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(".bytes"))
         {
             Debug.Log($" no .data file {AssetDatabase.GetAssetPath(Selection.activeObject)}");
             return;

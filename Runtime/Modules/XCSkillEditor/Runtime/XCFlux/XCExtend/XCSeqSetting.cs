@@ -23,7 +23,7 @@ namespace XiaoCao
         }
         public static string GetSkillDataPath(RoleType roleType, int skillId)
         {
-            return $"{DataDir}/{roleType.ToString()}/{skillId}.data";
+            return $"{DataDir}/{roleType.ToString()}/{skillId}.bytes";
         }
 
         public static string GetRolePrefabPath(RoleType roleType, int prefabId)

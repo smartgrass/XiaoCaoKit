@@ -206,7 +206,7 @@ namespace XiaoCao
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 
-            RcpPlaySkill(GetFullNorAckId(nextNorAckIndex));
+            RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
         }
 
 

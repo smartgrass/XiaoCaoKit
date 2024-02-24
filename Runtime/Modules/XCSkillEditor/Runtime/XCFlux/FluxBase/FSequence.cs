@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,11 +16,8 @@ namespace Flux
 		Play
 	}
 
-	/**
-	 * @brief FSequence is the main runtime class. It holds all the timelines and controls their behaviour.
-	 * @sa FTimeline, FTrack, FEvent
-	 */
-	public class FSequence : FObject
+    ///<see cref="SeqHeaderShowAttribute"/> 绘制头部
+    public class FSequence : FObject
 	{
 		public const int DEFAULT_FRAMES_PER_SECOND = 30;
 		public const int DEFAULT_LENGTH = 10;
@@ -49,7 +46,7 @@ namespace Flux
 
         #region XCSeq
         [SerializeField]
-		[SeqHeaderShow(1,5,80,"ID")]
+		[SeqHeaderShow(1,5,80,"ID", "平a 100~109\r\n特殊技能 110~119 (Roll = 110)\r\n普通技能 id 131~199")]
         public int _skillId;
         [SerializeField]
 		[SeqHeaderShow(1, 100, 100,"Des")]

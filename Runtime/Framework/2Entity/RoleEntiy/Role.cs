@@ -393,18 +393,18 @@ namespace XiaoCao
 
 
         #region FullSkillId
-        public int GetFullSkillId(int index)
+        public int GetSkillIdFull(int index)
         {
-            return RaceIdSetting.GetFullSkillId(owner.raceId, index);
+            return RaceIdSetting.GetSkillIdFull(owner.raceId, index);
         }
-        public int GetFullNorAckId(int index)
+        public int GetNorAckIdFull(int index)
         {
-            return RaceIdSetting.GetFullNorAckId(owner.raceId, index);
+            return RaceIdSetting.GetNorAckIdFull(owner.raceId, index);
         }
 
-        public int GetRollId()
+        public int GetRollSkillId()
         {
-            return RaceIdSetting.GetRollId(owner.raceId);
+            return RaceIdSetting.GetRollSkillId(owner.raceId);
         }
 
         #endregion
@@ -574,11 +574,15 @@ namespace XiaoCao
         SkillEnd //后摇
     }
 
-    public enum EAckState
+    //行为类型
+    public enum EActType
     {
         None,
+        Jump,
         NorAck,
-        Skill
+        Skill,
+        Roll,
+        Other
     }
     /// <summary>
     /// 清除缓存数据, 如输入按键
