@@ -15,15 +15,17 @@ public class DebugGUI : MonoBehaviour
 #endif
     }
 #if DEBUG
+
     private GUIStyle guiStyle = new GUIStyle();
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
+
+    private float SetStartY = 10;
+    private float lineCount = 20; //行数决定字体大小
     private float clearInterval = 3;
 
-    private const float SetStartY = 10;
-
-    private float startY = SetStartY;
-    private float lineHeight = 20f;
+    private float lineHeight;
+    private float startY;
 
     // 单例实例
     private static DebugGUI instance;
@@ -42,7 +44,9 @@ public class DebugGUI : MonoBehaviour
 
     void OnGUI()
     {
-        guiStyle.fontSize = 18;
+        //GUI.skin.font.fontSize * 
+        guiStyle.fontSize = (int)(Screen.height / lineCount);
+        lineHeight = guiStyle.fontSize;
         guiStyle.normal.textColor = Color.blue;
 
         // 调用示例

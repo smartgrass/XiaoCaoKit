@@ -60,14 +60,16 @@ namespace Flux
         // keep track of the current event we're updating
         private int _currentEvent = 0;
 
-        public int GetEndFrame()
+        public XCRange GetFrameRange()
         {
-            int frame = 0;
+            int maxFrame = 0;
+            int minFrame = 9999;
             foreach (FEvent e in _events)
             {
-                frame = Math.Max(frame, e.End);
+                maxFrame = Math.Max(maxFrame, e.End);
+                minFrame = Math.Min(minFrame, e.Start);
             }
-            return frame;
+            return new XCRange(minFrame,maxFrame);
         }
 
         /**

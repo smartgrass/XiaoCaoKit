@@ -25,7 +25,7 @@ namespace XiaoCao
             var handle = ResMgr.Loader.LoadAssetSync<GameObject>(path);
             prefab = handle.AssetObject as GameObject;
 
-            if (prefab != null)
+            if (prefab == null)
             {
                 //Cube代替
                 prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);

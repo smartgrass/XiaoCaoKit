@@ -16,10 +16,6 @@ namespace XiaoCao
     [Serializable]
     public class XCTaskData
     {
-        public int start;
-
-        public int end;
-
         public ObjectData objectData;
 
         public List<XCEvent> _events = new List<XCEvent>();
@@ -76,6 +72,7 @@ namespace XiaoCao
         public bool isPs;
 
         public int endFrame;
+        public int startFrame;
         public TransfromType transfromType;
         public Vector3 position;
         public Vector3 eulerAngle;

@@ -100,7 +100,7 @@ public class SaveXCTask
                     data.objectData = MakeObjectData(_track);
                     data.objectData.index = timelineId;
                 }
-                ReadTrack(_track, data, timelineId);
+                ReadTrack(_track, data);
             }
 
             timelineId++;
@@ -155,7 +155,7 @@ public class SaveXCTask
     }
 
 
-    private static void ReadTrack(FTrack _track, XCTaskData taskData, int timelineIndex = 0)
+    private static void ReadTrack(FTrack _track, XCTaskData taskData)
     {
         var eventType = _track.GetEventType();
         if (eventType == typeof(FMoveEvent))
@@ -180,10 +180,9 @@ public class SaveXCTask
         }
         else if (eventType == typeof(FPlayParticleEvent))
         {
-            if (timelineIndex > 0)
-            {
-                Debug.LogError($"-- 多个特效在 不做处理");
-            }
+            taskData.objectData.isPs = true;
+            //taskData.start = e
+            Debug.Log($"--- {taskData.objectData.ObjectPath} isPs");
             return;
         }
         else if (DefaultXCEvents.Contains(eventType))
@@ -248,7 +247,9 @@ public class SaveXCTask
         objectData.eulerAngle = _track.Owner.localEulerAngles;
         objectData.position = _track.Owner.localPosition;
         objectData.transfromType = _track.transfromType;
-        objectData.endFrame = _track.GetEndFrame();
+        var range = _track.GetFrameRange();
+        objectData.startFrame = range.Start;
+        objectData.endFrame = range.End;
         return objectData;
     }
 

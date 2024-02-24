@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DG.Tweening.Plugins.Core.PathCore;
+using OdinSerializer.Utilities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -9,6 +11,7 @@ using UnityEngine.UI;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
+using Path = System.IO.Path;
 
 namespace XiaoCaoEditor
 {
@@ -135,12 +138,48 @@ namespace XiaoCaoEditor
 
 
         ///play相关
-        [MenuItem(XCEditorTools.AssetCheck + "复制到")]
+        [MenuItem(XCEditorTools.AssetCheck + "复制到_Res下")]
         private static void CopyToSkillPrefab()
         {
+            UnityEngine.Object selectedObject = Selection.activeObject;
 
+            string oldPath = AssetDatabase.GetAssetPath (selectedObject);
+
+            FileInfo info = new FileInfo(oldPath);
+
+            string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir(RoleType.Player), info.Name);
+
+            Debug.Log($"FLog {info.Name} CopyTo {newPath}");
+
+            AssetDatabase.CopyAsset(oldPath, newPath);
         }
 
+
+        [MenuItem(XCEditorTools.AssetCheck + "粒子特效 关闭Loop")]
+        private static void CloseLoop()
+        {
+            UnityEngine.Object selectedObject = Selection.activeObject;
+
+            string path = AssetDatabase.GetAssetPath(selectedObject);
+
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+
+            root.GetComponentsInChildren<ParticleSystem>().ForEach(p =>
+            {
+                var main = p.main;
+                main.loop = false;
+            });
+
+            PrefabUtility.SaveAsPrefabAsset(root, path, out bool success);
+            if (!success)
+            {
+                Debug.LogError($"预制体：{path} 保存失败!");
+            }
+            else
+            {
+                Debug.Log($"预制体：{path} 保存成功!");
+            }
+        }
     }
 
     /// <summary>

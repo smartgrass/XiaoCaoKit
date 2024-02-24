@@ -87,12 +87,13 @@ namespace XiaoCao
         void UpdateSubTask()
         {
             int subLen = data.subDatas == null ? 0 : data.subDatas.Count;
+
             for (int i = _startSubTrackIndex; i < subLen; i++)
             {
                 var subData = data.subDatas[i];
                 if (!subData.HasTrigger)
                 {
-                    if (subData.start >= _curFrame)
+                    if (subData.objectData.startFrame <= _curFrame)
                     {
                         var subTask = CreatTask(subData, Info);
                         subTask.Runner = Runner;
