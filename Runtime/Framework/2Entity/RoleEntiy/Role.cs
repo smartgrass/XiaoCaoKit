@@ -384,6 +384,10 @@ namespace XiaoCao
                 playerAnimator = owner.Anim,
             };
             var task = XCTaskRunner.CreatNew(skillId, owner.RoleType, taskInfo);
+            if (task ==  null)
+            {
+                return;
+            }
             curTaskData.Add(task);
             task.onFinishEvent.AddListener(OnSkillFinish);
             task.onEndEvent.AddListener(OnTaskEnd);

@@ -45,7 +45,6 @@ namespace XiaoCao
         private int _finshiCout = 0;
 
         public int GetCurFrame => _curFrame;
-        public IXCCommand command { get; set; }
 
         public static XCTask CreatTask(XCTaskData data, TaskInfo info)
         {
@@ -74,13 +73,6 @@ namespace XiaoCao
             {
                 _endFrame = Math.Max(_events[i].End, _endFrame);
                 _events[i].task = this;
-            }
-
-            command = CommandFinder.Inst.GetCommand($"XCCommand_{Info.skillId}");
-            if (null != command)
-            {
-                command.task = this;
-                command.OnStart();
             }
         }
 
@@ -123,10 +115,6 @@ namespace XiaoCao
 
             if (subFinish && State != XCState.Running && IsMainTask)
             {
-                if (null != command)
-                {
-                    command.OnExit();
-                }
                 State = XCState.Stopped;
                 Runner.AllEnd();
             }
@@ -145,11 +133,6 @@ namespace XiaoCao
             //Debug.Log("  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
 
             ObjectData?.OnFrameUpdate(_curFrame);
-
-            if (null != command)
-            {
-                command.OnUpdate();
-            }
 
             UpdateEvent();
 

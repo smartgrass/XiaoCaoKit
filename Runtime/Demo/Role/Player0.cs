@@ -86,7 +86,10 @@ namespace XiaoCao
         {
             base.ReceiveMsg(type, fromId, msg);
 
-
+            if (type is EntityMsgType.PlayNextNorAck)
+            {
+                component.control.TryNorAck();
+            }
         }
 
         public override void OnBreak()
@@ -197,7 +200,6 @@ namespace XiaoCao
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());
-
 
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();

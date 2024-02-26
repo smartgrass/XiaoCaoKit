@@ -14,12 +14,13 @@ namespace XiaoCao
     public interface IXCCommand
     {
         public XCTask task { get; set; }
+        public XCCommondEvent curEvent { get; set; }
 
-        public void OnStart();
+        public void OnTrigger();
 
         public void OnUpdate();
 
-        public void OnExit();
+        public void OnFinish(bool hasTrigger);
 
     }
 

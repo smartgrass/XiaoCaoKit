@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -25,6 +26,7 @@ namespace XiaoCao
     public enum EntityMsgType
     {
         PlayNextSkill = 1,
+        PlayNextNorAck = 2,
         
         SkillFinish_Num = 10,
         SetUnMoveTime = 11,
@@ -38,7 +40,7 @@ namespace XiaoCao
         void ReceiveMsg(EntityMsgType type, int fromId, object msg);
     }
 
-
+    [Serializable]
     public struct BaseMsg
     {
         public float numMsg;
@@ -47,6 +49,7 @@ namespace XiaoCao
         public int state;  //0 ,1
     }
 
+    [Serializable]
     public struct XCEventMsg
     {
         public EntityMsgType msgType;

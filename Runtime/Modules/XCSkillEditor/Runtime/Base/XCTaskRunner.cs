@@ -27,6 +27,10 @@ namespace XiaoCao
         public static XCTaskRunner CreatNew(int skillId, RoleType roleType, TaskInfo info)
         {
             XCTaskData data = SkillDataMgr.Get(skillId, RoleType.Player);
+            if (data == null)
+            {
+                return null;
+            }
             info.speed = data.speed;
             return CreatNewByData(data, info);
         }
@@ -53,7 +57,7 @@ namespace XiaoCao
             //深复制
             var newData = SerializationUtility.CreateCopy(data) as XCTaskData;
 
-            Task = XCTask.CreatTask(newData,info);
+            Task = XCTask.CreatTask(newData, info);
             newData.IsMainTask = true;
             Task.Runner = this;
             Task.StartRun();
@@ -86,14 +90,9 @@ namespace XiaoCao
             }
         }
 
-        public void SetFinish()
-        {
-            Task.SetFinish();
-        }
-
         public void SetBreak()
         {
-            IsBreak = false;        
+            IsBreak = false;
             //主技能中断
             Task.SetBreak();
             OnEnd();

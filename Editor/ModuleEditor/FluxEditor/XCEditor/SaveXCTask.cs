@@ -172,6 +172,7 @@ public class SaveXCTask
             {
                 FMsgEvent fe = (FMsgEvent)e;
                 taskData._events.AddRange(fe.ToXCEventList());
+                //XCMsgEvent lastEvent = taskData._events[taskData._events.Count - 1] as XCMsgEvent;
             });
         }
         else if (eventType == typeof(FPlayAnimationEvent))
