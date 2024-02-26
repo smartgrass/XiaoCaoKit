@@ -32,43 +32,4 @@ namespace XiaoCao
             }
         }
     }
-
-
-    public class XCCommondEvent : XCEvent
-    {
-        public IXCCommand cmd;
-
-        private bool hasCmd = false;
-
-        public override void OnTrigger(float startOffsetTime)
-        {
-            base.OnTrigger(startOffsetTime);
-            cmd = CommandFinder.Inst.GetCommand(eName);
-            if (cmd != null)
-            {
-                hasCmd = true;
-                cmd.task = this.task;
-                cmd.curEvent = this;
-                cmd.OnTrigger();
-            }
-        }
-
-        public override void OnUpdateEvent(int frame, float timeSinceTrigger)
-        {
-            base.OnUpdateEvent(frame, timeSinceTrigger);
-            if (hasCmd)
-            {
-                cmd.OnUpdate();
-            }
-        }
-
-        public override void OnFinish()
-        {
-            base.OnFinish();
-            if (hasCmd)
-            {
-                cmd.OnFinish(HasTrigger);
-            }
-        }
-    }
 }
