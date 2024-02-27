@@ -7,19 +7,6 @@ namespace GG.Extensions
 {
     public static class WebExtensions
     {
-        /// <summary>
-        /// Quickly pings a URL and returns if it is accessible
-        /// Defaults to ping google, cause if you cant reach google then the world has already ended.
-        /// </summary>
-        /// <returns></returns>
-        //public static async Task<bool> CanReachInternet(string toPing = "http://google.com")
-        //{
-        //    UnityWebRequest request = new UnityWebRequest(toPing);
-
-        //    request.SendWebRequest();
-
-        //    return !request.isNetworkError;
-        //}
         
         /// <summary>
         ///     Setup a web request to send a JSON in the body
@@ -28,13 +15,18 @@ namespace GG.Extensions
         /// <param name="uri">The URI to send to</param>
         public static UnityWebRequest SetupPostWebRequest(string json, string uri)
         {
+#if UNITY_2022_3_OR_NEWER
+            UnityWebRequest request = UnityWebRequest.PostWwwForm(uri, "");
+#else
             UnityWebRequest request = UnityWebRequest.Post(uri, "");
+#endif
+
             byte[] bodyRaw = new UTF8Encoding().GetBytes(json);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw) {contentType = "application/json"};
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw) { contentType = "application/json" };
             request.downloadHandler = new DownloadHandlerBuffer();
             return request;
         }
-		
+
         /// <summary>
         /// Adds a Parameter value to the url
         /// </summary>
@@ -53,11 +45,6 @@ namespace GG.Extensions
             }
         }
         
-        /// <summary>
-        /// Download texture from a urlImagePath
-        /// </summary>
-        /// <param name="urlToImage"></param>
-        /// <returns></returns>
         //public static async Task<Texture2D> GetTexture(string urlToImage) 
         //{
         //    UnityWebRequest www = UnityWebRequestTexture.GetTexture(urlToImage);

@@ -219,8 +219,10 @@ public class SaveXCTask
 
 
     static Type[] DefaultXCEvents = {
-        typeof(FTweenRotationEvent)  ,
-        typeof(FTweenScaleEvent)};
+        typeof(FTweenRotationEvent) ,
+        typeof(FTweenScaleEvent),
+        typeof(FCommandEvent)
+    };
 
 
     private static ObjectData MakeObjectData(FTrack _track)

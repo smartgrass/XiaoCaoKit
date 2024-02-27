@@ -12,13 +12,10 @@ namespace XiaoCao
 
         public bool getInput;
 
-        public void OnFinish(bool hasTrigger)
+
+        public void Init(BaseMsg baseMsg)
         {
-            if (hasTrigger && getInput)
-            {
-                task.SetFinish();
-                player0.ReceiveMsg(EntityMsgType.PlayNextNorAck, task.Info.entityId, null);
-            }
+
         }
 
         public void OnTrigger()
@@ -44,5 +41,15 @@ namespace XiaoCao
                 }
             }
         }
+
+        public void OnFinish(bool hasTrigger)
+        {
+            if (hasTrigger && getInput)
+            {
+                task.SetFinish();
+                player0.ReceiveMsg(EntityMsgType.PlayNextNorAck, task.Info.entityId, null);
+            }
+        }
+
     }
 }

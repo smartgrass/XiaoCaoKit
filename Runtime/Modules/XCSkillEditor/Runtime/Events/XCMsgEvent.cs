@@ -12,7 +12,7 @@ namespace XiaoCao
         public override void OnTrigger(float timeSinceTrigger)
         {
             base.OnTrigger(timeSinceTrigger);
-            if (msgType == EntityMsgType.SkillFinish_Num)
+            if (msgType == EntityMsgType.SkillFinish)
             {
                 task.SetFinish();
             }

@@ -28,7 +28,7 @@ namespace XiaoCao
         PlayNextSkill = 1,
         PlayNextNorAck = 2,
         
-        SkillFinish_Num = 10,
+        SkillFinish = 10,
         SetUnMoveTime = 11,
         AddTag = 12,
 

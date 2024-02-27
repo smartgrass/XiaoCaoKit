@@ -181,7 +181,7 @@ namespace XiaoCao
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             Debug.Log($"--- Receive {type} fromId: {fromId}");
-            if (type is EntityMsgType.SkillFinish_Num or EntityMsgType.SetUnMoveTime)
+            if (type is EntityMsgType.SkillFinish or EntityMsgType.SetUnMoveTime)
             {
                 float t = (float)msg;
                 roleData.movement.SetUnMoveTime(t);

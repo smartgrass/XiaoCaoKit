@@ -5,6 +5,8 @@
     /// </summary>
     public class XCCommondEvent : XCEvent
     {
+        public BaseMsg baseMsg;
+
         public IXCCommand Cmd { get; set;}
 
         private bool HasCmd { get; set; }
@@ -18,6 +20,7 @@
                 HasCmd = true;
                 Cmd.task = this.task;
                 Cmd.curEvent = this;
+                Cmd.Init(baseMsg);
                 Cmd.OnTrigger();
             }
         }

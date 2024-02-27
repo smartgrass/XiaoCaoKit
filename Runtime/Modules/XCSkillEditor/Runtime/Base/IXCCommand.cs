@@ -21,7 +21,7 @@ namespace XiaoCao
         public void OnUpdate();
 
         public void OnFinish(bool hasTrigger);
-
+        void Init(BaseMsg baseMsg);
     }
 
 
