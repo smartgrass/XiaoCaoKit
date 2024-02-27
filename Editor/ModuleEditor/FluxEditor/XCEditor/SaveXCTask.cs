@@ -3,34 +3,39 @@ using FluxEditor;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using DG.Tweening;
 using UnityEditor;
 using UnityEditor.SearchService;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XiaoCao;
 using XiaoCaoEditor;
 using Debug = UnityEngine.Debug;
 using SerializationUtility = OdinSerializer.SerializationUtility;
-using Task = System.Threading.Tasks.Task;
 
 public class SaveXCTask
 {
     public const string SavaAllSeqName = XCEditorTools.XiaoCaoFlux + "SavaAllSeq";
+    public const string OpenWindowName = XCEditorTools.XiaoCaoFlux + "OpenWindow";
     public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
 
     public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "导入表格数据";
     public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "导入表格数据&代码";
-    
+
     public const string SavaCurSeqName = XCEditorTools.XiaoCaoGameObject + "保存Sequence技能&代码";
 
     public static XCSeqSetting fSeqSetting;
     public static FSequence curSequence;
+
+
+    [MenuItem(OpenWindowName)]
+    private static void OpenWindow()
+    {
+        FSequenceEditorWindow.Open();
+    }
 
     [MenuItem(SavaAllSeqName)]
     private static void Sava()
@@ -46,13 +51,13 @@ public class SaveXCTask
             SavaOneSeq(seq);
         }
     }
-    
+
     [MenuItem(SavaCurSeqName)]
-    private static void  SavaSelectSeq()
+    private static void SavaSelectSeq()
     {
         foreach (var i in Selection.objects)
         {
-            GameObject go = i as GameObject;;
+            GameObject go = i as GameObject; ;
             if (go.TryGetComponent<FSequence>(out FSequence seq))
             {
                 SavaOneSeq(seq);

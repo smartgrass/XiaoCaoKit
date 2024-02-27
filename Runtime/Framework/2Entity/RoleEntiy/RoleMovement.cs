@@ -80,8 +80,10 @@ namespace XiaoCao
 
         void CheckBackToIdle(bool isInput)
         {
+            DebugGUI.Debug("skillState", Data_R.skillState);
             if (Data_R.skillState is ESkillState.SkillEnd && isInput)
             {
+                Debug.Log($"--- CheckBackToIdle ");
                 Data_R.skillState = ESkillState.Idle;
                 owner.Anim?.CrossFade(AnimHash.Idle, 0.05f);
             }
@@ -90,7 +92,7 @@ namespace XiaoCao
 
         void RotateByMoveDir(Vector3 worldMoveDir)
         {
-            if (worldMoveDir.IsNaN())
+            if (worldMoveDir.IsZore())
                 return;
 
             var targetRotation = MathTool.ForwardToRotation(worldMoveDir);

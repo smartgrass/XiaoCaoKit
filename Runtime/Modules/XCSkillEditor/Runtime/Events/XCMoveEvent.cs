@@ -63,6 +63,10 @@ namespace XiaoCao
 
         public void Execute(Vector3 detalMove)
         {
+            if (detalMove.IsZore())
+            {
+                return;
+            }
             if (cc != null)
             {
                 // 等价与 Quaternion.Euler(Info.castEuler) * position;
@@ -70,7 +74,8 @@ namespace XiaoCao
             }
             else
             {
-                Tran.Translate(m4.MultiplyVector(detalMove), Space.World);
+                var getDelta = m4.MultiplyVector(detalMove);
+                Tran.Translate(getDelta, Space.World);
             }
 
             //if (lookForward) //TODO

@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
+using Cinemachine.Utility;
 
 //矩形排列, TODO: 圆形排列
 public static class MathLayoutTool
@@ -249,15 +250,18 @@ public static class MathTool
 
     #endregion
     #region Vector & Rotate
-    public static bool IsNaN(this Vector2 v)
+    public static bool IsZore(this Vector2 v)
     {
-        return v == Vector2.zero;
+        return v == Vector2.zero || float.IsNaN(v.x) || float.IsNaN(v.y);
     }
-    public static bool IsNaN(this Vector3 v)
+    public static bool IsZore(this Vector3 v)
     {
         return v == Vector3.zero;
     }
-
+    public static bool IsZoreOrNaN(this Vector3 v)
+    {
+        return v == Vector3.zero || float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z); ;
+    }
 
     /// <summary>
     /// 旋转向量,忽略y轴 

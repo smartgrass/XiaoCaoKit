@@ -98,7 +98,7 @@ namespace XiaoCao
 
         private void On3rdCamFixedUpdate()
         {
-            if (_inputLook.IsNaN())
+            if (_inputLook.IsZore())
             {
                 _curAngleY += _inputLook.x;
                 _curAngleX += _inputLook.y * -1f;

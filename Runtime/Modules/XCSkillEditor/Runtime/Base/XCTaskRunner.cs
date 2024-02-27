@@ -18,6 +18,8 @@ namespace XiaoCao
 
         private bool IsBreak { get; set; } //非正常执行
 
+        public bool IsStop { get; set; }
+
         public UnityEvent<XCTaskRunner> onEndEvent = new UnityEvent<XCTaskRunner>(); //无论退出还是完成都会执行
 
         public UnityEvent<XCTaskRunner> onFinishEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
@@ -60,10 +62,11 @@ namespace XiaoCao
             Task = XCTask.CreatTask(newData, info);
             newData.IsMainTask = true;
             Task.Runner = this;
+            this.IsStop = false;
             Task.StartRun();
         }
 
-        private void Update()
+        public void OnUpdate()
         {
             if (Task == null)
                 return;

@@ -86,12 +86,11 @@ namespace Flux
 		/// @brief Does the sequence loop when it reaches the end?
 		public bool Loop { get { return _loop; } set { _loop = value; } }
 
-		[SerializeField]
-		private float _defaultSpeed = DEFAULT_SPEED;
 		/// @brief Speed that is used when sequence is loaded. When you want to change runtime see, use Speed instead
-		public float DefaultSpeed { get { return _defaultSpeed; } set { _defaultSpeed = value; } }
+		public float DefaultSpeed => DEFAULT_SPEED;
 
-		private float _speed = DEFAULT_SPEED;
+        [SerializeField]
+        private float _speed = DEFAULT_SPEED;
 		/// @brief Current speed, used to control the speed of the sequence. If negative, sequence will play backwards.
 		public float Speed { 
 			get{ return _speed; } 

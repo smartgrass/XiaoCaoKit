@@ -51,7 +51,6 @@ namespace XiaoCao
         {
             if (owner.IsOnAi)
             {
-
                 //查找目标
                 CheckTargetAndAct();
                 //执行动作

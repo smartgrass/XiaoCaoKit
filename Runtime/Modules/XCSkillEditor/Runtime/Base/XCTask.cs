@@ -194,7 +194,6 @@ namespace XiaoCao
         public void SetFinish()
         {
             //不占用角色任务
-            HasFinish = true;
             Runner.OnFinish();
         }
 

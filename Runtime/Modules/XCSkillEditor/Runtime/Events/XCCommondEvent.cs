@@ -30,7 +30,7 @@
             base.OnUpdateEvent(frame, timeSinceTrigger);
             if (HasCmd)
             {
-                Cmd.OnUpdate();
+                Cmd.OnUpdate(frame, timeSinceTrigger);
             }
         }
 

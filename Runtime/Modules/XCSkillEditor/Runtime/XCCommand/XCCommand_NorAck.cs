@@ -10,46 +10,61 @@ namespace XiaoCao
 
         private Player0 player0;
 
-        public bool getInput;
+        public int inputState;
 
+        public float minSwitchTime = 0.8f;
 
         public void Init(BaseMsg baseMsg)
         {
-
+            if (baseMsg.numMsg > 0)
+            {
+                minSwitchTime = baseMsg.numMsg;
+            }
         }
 
         public void OnTrigger()
         {
-            player0 =  task.Info.role as Player0;
+            player0 = task.Info.role as Player0;
             //Debug.Log("XCCommand_101 OnStart");
         }
 
-        public void OnUpdate()
+        public void OnUpdate(int frame, float timeSinceTrigger)
         {
-            //需求: 需要一个nextSkll id的一个衔接, 最好是可以能据进度来触发.
-            //期间检测不合理, 期间外检测也不合理
-            //假如延长检测,并且加入finish时间是否可以?
-            ////输入控制->一定拆开 交给代码最灵活 轨道脚本
-            ///TriggerRange 检测时间, TranslateTime最小切换时间
-            Debug.Log("XCCommand_101 OnUpdate " + task.GetCurFrame);
-            if (task.Info.role.RoleType == RoleType.Player)
+            //检测触发
+            if (inputState == 0)
             {
                 if (player0.playerData.inputData.inputs[InputKey.NorAck])
                 {
-                    Debug.Log($"--- InputKey NorAck");
-                    getInput = true;
+                    inputState = 1;
                 }
             }
+
+            //等待触发
+            if (inputState == 1)
+            {
+                if (timeSinceTrigger > curEvent.LengthTime * minSwitchTime)
+                {
+                    CallNext();
+                }
+            }
+
+
         }
 
         public void OnFinish(bool hasTrigger)
         {
-            if (hasTrigger && getInput)
+            CallNext();
+        }
+
+        //执行触发
+        private void CallNext()
+        {
+            if (inputState == 1)
             {
+                inputState = 2;
                 task.SetFinish();
                 player0.ReceiveMsg(EntityMsgType.PlayNextNorAck, task.Info.entityId, null);
             }
         }
-
     }
 }

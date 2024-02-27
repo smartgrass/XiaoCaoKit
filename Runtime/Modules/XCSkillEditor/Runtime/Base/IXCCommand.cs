@@ -18,7 +18,7 @@ namespace XiaoCao
 
         public void OnTrigger();
 
-        public void OnUpdate();
+        public void OnUpdate(int frame, float timeSinceTrigger);
 
         public void OnFinish(bool hasTrigger);
         void Init(BaseMsg baseMsg);
@@ -38,12 +38,15 @@ namespace XiaoCao
             }
             return null;
         }
+
+
+
         protected override void Init()
         {
             commandTypes = GetAllCommandTypes();
         }
 
-        private Dictionary<string, Type> GetAllCommandTypes()
+        public Dictionary<string, Type> GetAllCommandTypes()
         {
             // Find all types in the assembly that inherit from Command
             var types = AppDomain.CurrentDomain.GetAssemblies()

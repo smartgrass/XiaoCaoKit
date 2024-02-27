@@ -181,9 +181,9 @@ namespace XiaoCao
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             Debug.Log($"--- Receive {type} fromId: {fromId}");
-            if (type is EntityMsgType.SkillFinish or EntityMsgType.SetUnMoveTime)
+            if (type is EntityMsgType.SetUnMoveTime)
             {
-                float t = (float)msg;
+                float t = ((BaseMsg)msg).numMsg;
                 roleData.movement.SetUnMoveTime(t);
             }
             else if (type is EntityMsgType.PlayNextSkill)
@@ -324,7 +324,7 @@ namespace XiaoCao
             {
                 //&& item.Task.Info.skillId > 0 TODO
                 //break的话, 不算busy
-                if (item.Task.IsBusy)
+                if (!item.IsStop && item.Task.IsBusy)
                 {
                     return true;
                 }
@@ -340,7 +340,8 @@ namespace XiaoCao
         //TaskEnd与角色恢复自主移动不同, 如飞行剑气释放完后, 角色恢复控制, 但剑气可以一直运动
         public void OnTaskEnd(XCTaskRunner runner)
         {
-            curTaskData.Remove(runner);
+            //curTaskData.Remove(runner);
+            runner.IsStop = true;
         }
         public void OnBreak()
         {
@@ -350,9 +351,41 @@ namespace XiaoCao
             }
         }
 
+        public void OnTaskUpdate()
+        {
+            bool hasStop = false;
+            int firstLen = curTaskData.Count;
+            for (int i = 0; i < firstLen; i++)
+            {
+                if (!curTaskData[i].IsStop)
+                {
+                    curTaskData[i].OnUpdate();
+                }
+                else
+                {
+                    hasStop = true;
+                }
+            }
+
+
+            //移除结束任务
+            if (hasStop)
+            {
+                int len = curTaskData.Count;
+                for (int i = len - 1; i > 0; i--)
+                {
+                    if (curTaskData[i].IsStop)
+                    {
+                        curTaskData.RemoveAt(i);
+                    }
+                }
+            }
+
+        }
         public void OnSkillFinish(XCTaskRunner runner)
         {
             Data_R.skillState = ESkillState.SkillEnd;
+            Debug.Log($"---  OnSkillFinish ");
         }
 
         public virtual void TryPlaySkill(int skillId)
@@ -384,7 +417,7 @@ namespace XiaoCao
                 playerAnimator = owner.Anim,
             };
             var task = XCTaskRunner.CreatNew(skillId, owner.RoleType, taskInfo);
-            if (task ==  null)
+            if (task == null)
             {
                 return;
             }
@@ -455,7 +488,7 @@ namespace XiaoCao
 
         public bool IsBusy => roleControl.IsBusy();
 
-       
+
 
         //优先级规则
         //0. 非死亡&非控制中 属于自由状态

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using NaughtyAttributes;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using XiaoCao;
 
@@ -9,10 +11,22 @@ namespace Flux
     public class FCommandEvent : FEvent
     {
         //类名
+        [Dropdown(nameof(GetCommandNames))]
         public string commandName;
 
-        public XCEventMsg baseMsg;
+        public BaseMsg baseMsg;
 
+        public string[] GetCommandNames
+        {
+            get
+            {
+                var dic = CommandFinder.Inst.GetAllCommandTypes();
+                List<string> list = new List<string>();
+                list.Add("");
+                list.AddRange(dic.Keys);
+                return list.ToArray();
+            }
+        }
 
         public override string Text
         {
@@ -33,10 +47,9 @@ namespace Flux
             FCommandEvent fe = this;
 
             XCCommondEvent xce = new XCCommondEvent();
-            var msg = baseMsg;
             xce.eName = commandName;
             xce.range = new XCRange(fe.Start, fe.End);
-            xce.baseMsg = msg.baseMsg;
+            xce.baseMsg = baseMsg;
             return xce;
         }
     }

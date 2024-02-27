@@ -61,6 +61,7 @@ namespace XiaoCao
             component.input.Update();
             component.aiControl.Update();
             component.control.Update();
+            component.control.OnTaskUpdate();
             component.movement.Update();
             //考虑增加add模式
         }
@@ -204,6 +205,8 @@ namespace XiaoCao
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
+            Debug.Log($"--- nextNorAckIndex {nextNorAckIndex}");
+
             DebugGUI.Debug("nextNorAckIndex", nextNorAckIndex);
 
             Data_P.curNorAckIndex = nextNorAckIndex;
@@ -215,8 +218,6 @@ namespace XiaoCao
         //执行使用技能, 一般不直接使用
         public override void RcpPlaySkill(int skillId)
         {
-            //TODO
-            Debug.Log($" PlaySkill {skillId}");
 
             bool isOtherSkill = IsOtherSkill(skillId);
 
