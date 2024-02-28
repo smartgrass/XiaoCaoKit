@@ -28,17 +28,14 @@ namespace XiaoCao
 
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
-            playerData = new PlayerData0();
-
             this.CreateGameObject();
+            BaseInit();
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
             int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
             roleData.playerAttr.Init(savaData.lv);
 
-            idRole.animator = body.GetComponent<Animator>();
-            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             roleData.roleControl = component.control;

@@ -1,4 +1,5 @@
-﻿using TEngine;
+﻿using NaughtyAttributes;
+using TEngine;
 using UnityEngine;
 using XiaoCao;
 using EventType = XiaoCao.EventType;
@@ -11,8 +12,8 @@ public class GameStartMono: MonoBehaviour
     /// <summary>
     /// Mono执行start时, GameState可能还处于加载中, 所以需要等待加载完成
     /// </summary>
-
-    public bool isInited;
+    [ReadOnly]
+    public bool isGameStarted;
 
     public virtual void Start()
     {
@@ -33,6 +34,6 @@ public class GameStartMono: MonoBehaviour
 
     public virtual void OnGameStart()
     {
-        isInited = true;
+        isGameStarted = true;
     }
 }

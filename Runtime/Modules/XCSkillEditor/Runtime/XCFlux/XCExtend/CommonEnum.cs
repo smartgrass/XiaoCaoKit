@@ -22,12 +22,12 @@ namespace XiaoCao
         Enemy = 0,
         Player = 1,
     }
-
     public enum MeshType
     {
         Box = 0,
         Sphere = 1,
-        Sector = 2,  //扇形
+        [EnumLabel("扇形 (半径,高,角度)")]
+        Sector = 2,
         Other = 3,
     }
 

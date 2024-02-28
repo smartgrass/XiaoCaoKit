@@ -67,6 +67,42 @@ namespace NaughtyAttributes.Editor
             ReorderableListPropertyDrawer.Instance.ClearCache();
         }
 
+
+        /// <summary>
+        /// 绘制
+        ///SerializedProperty property = this.serializedObject.GetIterator();
+	    ///NaughtyInspector.DrawContent(property);
+        /// </summary>
+        /// <param name="property"></param>
+        public static void DrawContent(SerializedProperty property)
+        {
+            bool isExpend = true; //第一次是整个类, 需要展开子项
+            int index = 0;
+            while (property.NextVisible(isExpend))
+            {
+                if (!isExpend)
+                {
+                    if (PropertyUtility.IsVisible(property))
+                    {
+                        EditorGUI.BeginChangeCheck();
+
+
+                        EditorGUILayout.PropertyField(property, new GUIContent(PropertyUtility.GetLabel(property)), true);
+
+
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            //EditorUtility.SetDirty(this);
+                            //this.SaveChanges();
+                            PropertyUtility.CallOnValueChangedCallbacks(property);
+                        }
+                    }
+                }
+                isExpend = false; //关闭展开子项
+                index++;
+            }
+        }
+
         public override void OnInspectorGUI()
         {
             GetSerializedProperties(ref _serializedProperties);

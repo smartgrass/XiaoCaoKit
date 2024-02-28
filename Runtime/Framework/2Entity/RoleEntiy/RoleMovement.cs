@@ -83,7 +83,6 @@ namespace XiaoCao
             DebugGUI.Debug("skillState", Data_R.skillState);
             if (Data_R.skillState is ESkillState.SkillEnd && isInput)
             {
-                Debug.Log($"--- CheckBackToIdle ");
                 Data_R.skillState = ESkillState.Idle;
                 owner.Anim?.CrossFade(AnimHash.Idle, 0.05f);
             }

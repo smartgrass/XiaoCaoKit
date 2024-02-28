@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Xml;
 using TEngine;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.UIElements;
@@ -18,6 +19,9 @@ namespace XiaoCao
         public abstract RoleType RoleType { get; }
         public virtual IData data { get; }
         public virtual IShareData componentData { get; }
+
+        public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
+        public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
 
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
 
@@ -99,13 +103,13 @@ namespace XiaoCao
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
         {
-            //血量计算 toHp
-            //死亡处理: 关闭行为,发送消息
-            //受击处理: 受击动作, 僵直时间计算
+            //非死亡则往下执行
             if (BaseDamageCheck(ackInfo))
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakState.OnHit((int)setting.BreakPower);
+                DebugGUI.Debug("breakArmor", roleData.breakState.armor);
+
                 HitStop.Do(setting.HitStop);
 
                 if (roleData.breakState.isBreak)
@@ -146,7 +150,6 @@ namespace XiaoCao
             {
                 return false;
             }
-
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
             if (targetHp <= 0)
             {
@@ -164,7 +167,12 @@ namespace XiaoCao
             Anim.Play(AnimNames.Dead);
         }
 
+        protected void BaseInit()
+        {
+            idRole.animator = body.GetComponent<Animator>();
+            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
 
+        }
 
         public void RoleIn()
         {

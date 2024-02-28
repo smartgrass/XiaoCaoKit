@@ -59,7 +59,6 @@ namespace XiaoCao
         /// </summary>
         public void StartRun()
         {
-            Debug.Log($" StartRun {Info.skillId}");
             data.HasTrigger = true;
             data.objectData?.OnTrigger(Info);
             State = XCState.Running;

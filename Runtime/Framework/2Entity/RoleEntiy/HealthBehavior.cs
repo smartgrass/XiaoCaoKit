@@ -2,8 +2,8 @@
 {
     public class HealthBehavior : BehaviorEntity, IHealth
     {
-        public int Hp { get; set; }
-        public int MaxHp { get; set; }
+        public virtual int Hp { get; set; }
+        public virtual int MaxHp { get; set; }
 
         public virtual bool IsDie => Hp <= 0;
 

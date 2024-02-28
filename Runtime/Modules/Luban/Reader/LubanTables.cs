@@ -80,8 +80,14 @@ namespace cfg
             string path;
             if (Application.isEditor)
             {
-                var upperPath = Directory.GetParent(Application.dataPath).Parent.FullName;
-                path = $"{upperPath}/GameConfig/Luban/bytes/{file}.bytes";
+                var upperPath = Directory.GetParent(Application.dataPath).FullName;
+                path = $"{upperPath}/GameConfig/Luban/{file}.bytes";
+
+                if (!File.Exists(path))
+                {
+                    Debug.LogError($"--- 找不到数据,先生成luban");
+                }
+
             }
             else
             {

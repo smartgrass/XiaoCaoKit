@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 #endif
 using UnityEngine;
+using XiaoCao;
 
 public class Test_AnimPreview : MonoBehaviour
 {

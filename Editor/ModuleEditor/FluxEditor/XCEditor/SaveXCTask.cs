@@ -195,6 +195,10 @@ public class SaveXCTask
         {
             _track.Events.ForEach((e) => taskData._events.Add(e.ToXCEvent()));
         }
+        else
+        {
+            Debug.LogWarning($"no eventType {eventType}");
+        }
 
         //else if (eventType == typeof(FObjectEvent)){}
         //else if (eventType == typeof(FTriggerRangeEvent)){}
@@ -226,6 +230,7 @@ public class SaveXCTask
     static Type[] DefaultXCEvents = {
         typeof(FTweenRotationEvent) ,
         typeof(FTweenScaleEvent),
+        typeof(FTriggerRangeEvent),
         typeof(FCommandEvent)
     };
 

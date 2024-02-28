@@ -50,6 +50,7 @@ namespace XiaoCao
         public void OnSector()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
+            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = Vector3.one;
@@ -65,6 +66,7 @@ namespace XiaoCao
         private void OnSphere()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
+            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = meshInfo.size;
@@ -80,6 +82,7 @@ namespace XiaoCao
         private void OnBox()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
+            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = meshInfo.size;
@@ -94,12 +97,10 @@ namespace XiaoCao
 
         private void SetCurAtkTrigger()
         {
-            CurTrigger = Go.GetComponent<AtkTrigger>();
-
             PlayerAttr attr = Info.role.roleData.playerAttr;
             int atk = attr.GetAtk();
             bool isCrit = MathTool.IsInRandom(attr.crit / 100f);
-
+            CurCol.isTrigger = true;
             CurTrigger.info = new AtkInfo()
             {
                 skillId = Info.skillId,
@@ -128,9 +129,7 @@ namespace XiaoCao
         public static Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
         public static GameObject GetTrigger(MeshType meshType)
         {
-            AssetPool assetPool = dicPool[meshType];
-
-            if (assetPool != null)
+            if (dicPool.TryGetValue(meshType, out AssetPool assetPool))
             {
                 return assetPool.Get();
             }
@@ -138,6 +137,7 @@ namespace XiaoCao
             var newObject = new GameObject(XCTriggerEvent.TriggerName);
 
             newObject.AddComponent<AtkTrigger>();
+ 
             //拼接得到一个key
             switch (meshType)
             {

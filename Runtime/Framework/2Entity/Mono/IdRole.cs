@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using UnityEngine;
 using XiaoCao;
 
 //[RequireComponent(typeof(Rigidbody))]
@@ -21,7 +22,7 @@ public class IdRole : IdComponent
     [HideInInspector]
     public Transform tf;
 
-    [HideInInspector]
+    [ReadOnly]
     public Animator animator;
 
     private void Awake()

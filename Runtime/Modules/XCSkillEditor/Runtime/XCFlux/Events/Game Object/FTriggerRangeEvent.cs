@@ -24,6 +24,7 @@ namespace Flux
     [Serializable]
     public class MeshInfo
     {
+        [EnumLabel("¿‡–Õ")]
         public MeshType meshType;
 
         [Header("[Size],[eulerAngles],[center]")]

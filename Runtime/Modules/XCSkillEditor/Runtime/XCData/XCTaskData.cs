@@ -92,8 +92,8 @@ namespace XiaoCao
             var instance = PoolMgr.Inst.Get(ObjectPath);
             Tran = instance.transform;
             PlayerTF = info.playerTF;
-            info.curTF = Tran;
             info.curGO = instance;
+            info.curTF = instance.transform;
             if (isPs && instance.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
             {
                 InitPs(ps);

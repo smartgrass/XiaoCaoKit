@@ -23,7 +23,7 @@ namespace XiaoCao
 /// <summary>
 /// 枚举注释
 /// </summary>
-[AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
+//[AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
     public class EnumLabelAttribute : PropertyAttribute
     {
         public string label;
@@ -94,6 +94,7 @@ namespace XiaoCao
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            Debug.Log($"--- OnGUI {label}");
             SetUpCustomEnumNames(property, property.enumNames);
 
             if (property.propertyType == SerializedPropertyType.Enum)
