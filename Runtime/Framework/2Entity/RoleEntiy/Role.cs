@@ -25,21 +25,19 @@ namespace XiaoCao
 
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
 
-        /// <summary>
+
         ///职业,种族: 每一个角色和敌人都有对应的 raceId
-        ///和技能id规划有关  <see cref="PlayerSetting"/>
-        /// </summary>
-        public int raceId = 0;
+        ///<see cref="PlayerSetting"/>
+        public int raceId;
 
-        /// <summary>
-        /// 绑定的资源
-        /// </summary>
-        public int prefabID = 0;
+        /// 绑定的模型文件
+        public int prefabID;
 
-        /// <summary>
-        /// 势力,相同为友军
-        /// </summary>
-        public int team = 0;
+        //势力,相同为友军
+        public int team;
+
+        protected int settingId;
+
 
         public GameObject body;
 
@@ -115,7 +113,7 @@ namespace XiaoCao
                 if (roleData.breakState.isBreak)
                 {
                     Anim.Play(AnimNames.Break);
-
+                    //击飞处理
                     Vector3 horVec = MathTool.Rotate(ackInfo.hitDir, setting.HorForward);
                     idRole.cc.DOHit(setting.AddY, horVec, setting.NoGravityT);
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
@@ -172,10 +170,13 @@ namespace XiaoCao
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
 
+            settingId = RaceIdSetting.GetConfigId(raceId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
         }
 
         public void RoleIn()
         {
+            Enable = true;
             RoleMgr.Inst.roleDic.Add(id, this);
             GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Add);
         }

@@ -31,8 +31,7 @@ namespace XiaoCao
             this.CreateGameObject();
             BaseInit();
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
+
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
             roleData.playerAttr.Init(savaData.lv);
 
@@ -42,7 +41,6 @@ namespace XiaoCao
             component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
             component.movement = new PlayerMovement(this);
-            Enable = true;
 
             if (isMainPlayer)
             {

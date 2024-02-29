@@ -8,6 +8,9 @@ namespace XiaoCao
         public RoleMovement(Role _owner) : base(_owner) { }
 
         protected float _tempAnimMoveSpeed;
+
+        protected float velocityY = 0;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -16,6 +19,8 @@ namespace XiaoCao
         public Vector3 camForward => CameraMgr.Forword;
 
         Vector3 inputDir;
+
+        protected bool isGrounded = true;
 
         public override void FixedUpdate()
         {
@@ -67,10 +72,18 @@ namespace XiaoCao
             Vector3 moveDelta = moveDir * Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
 
             //速度 v = v + gt
-            float velocityY = 0;
-            velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
-            moveDelta.y += velocityY * XCTime.fixedDeltaTime;
+            //处于空中时
 
+            velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
+            GroundedCheck();
+            if (isGrounded)
+            {
+                velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * 0.25f);
+            }
+
+
+            moveDelta.y += velocityY * XCTime.fixedDeltaTime;
+            DebugGUI.Debug(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
 
             cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
@@ -134,6 +147,22 @@ namespace XiaoCao
                 RoleState.moveLockTime = Mathf.Max(t, RoleState.moveLockTime);
             }
 
+        }
+
+        private void GroundedCheck()
+        {
+            float GroundedOffset = -0.14f;
+            float GroundedRadius = 0.28f;
+            LayerMask GroundLayers = LayerMask.GetMask("Default");
+            // set sphere position, with offset
+            Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
+            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+
+            // update animator if using character
+            if (owner.Anim)
+            {
+                owner.Anim.SetBool(AnimHash.IsGround, isGrounded);
+            }
         }
     }
 
