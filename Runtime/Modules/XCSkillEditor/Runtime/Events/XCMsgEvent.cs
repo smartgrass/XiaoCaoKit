@@ -12,9 +12,9 @@ namespace XiaoCao
         public override void OnTrigger(float timeSinceTrigger)
         {
             base.OnTrigger(timeSinceTrigger);
-            if (msgType == EntityMsgType.FinishSkill)
+            if (msgType == EntityMsgType.SetNoBusy)
             {
-                task.SetFinish();
+                task.SetNoBusy();
             }
             baseMsg.state = 0;
             Info.role.ReceiveMsg(msgType, Info.entityId, baseMsg);

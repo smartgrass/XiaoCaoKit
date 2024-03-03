@@ -48,7 +48,7 @@ public class TriggerDrawer : MonoBehaviour
 
         foreach (FTriggerRangeTrack track in tracks.Values)
         {
-            if(track == null) 
+            if (track == null)
                 continue;
             foreach (var item in track.Events)
             {
@@ -69,11 +69,12 @@ public class TriggerDrawer : MonoBehaviour
     void DrawMesh(MeshInfo meshInfo, Transform targetTran)
     {
         var rotation = targetTran.rotation;
-        var angle = rotation.eulerAngles + meshInfo.eulerAngles;
-        var center = meshInfo.center;
-        var size = meshInfo.size;
+        var angle = rotation.eulerAngles + meshInfo.GetEulerAngles;
+        var center = meshInfo.GetCenter;
+        var size = meshInfo.GetSize;
 
         Gizmos.color = drawColor;
+        //坐标系选为targetTran
         Gizmos.matrix = Matrix4x4.TRS(targetTran.position, Quaternion.Euler(angle), targetTran.lossyScale);
 
         if (meshInfo.meshType == MeshType.Box)
@@ -86,8 +87,8 @@ public class TriggerDrawer : MonoBehaviour
         }
         else if (meshInfo.meshType == MeshType.Sector)
         {
-            Mesh mesh = MathLayoutTool.GetSectorCylinderMesh(meshInfo.angle, meshInfo.radius, meshInfo.hight, 20);
-            Gizmos.DrawWireMesh(mesh, targetTran.position + meshInfo.center, Quaternion.Euler(angle), Vector3.one);
+            Mesh mesh = MathLayoutTool.GetSectorMesh(meshInfo.GetAngle, meshInfo.GetRadius, meshInfo.GetHight, 20);
+            Gizmos.DrawWireMesh(mesh, meshInfo.GetCenter, Quaternion.identity, Vector3.one);
         }
         else
         {

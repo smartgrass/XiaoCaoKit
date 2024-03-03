@@ -13,6 +13,8 @@ public class Test_AnimPreview : MonoBehaviour
 {
 
 #if UNITY_EDITOR
+    [ShowNativeProperty]
+    public bool GetBool => true;
 
     public GameObject characterPrefab; // 你的角色预制体
     public Object[] dirs; // 包含文件夹路径的Object数组

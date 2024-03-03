@@ -8,7 +8,7 @@ public class DebugGUI : MonoBehaviour
 {
     // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
     [Conditional("DEBUG")]
-    public static void Debug(string key, params object[] value)
+    public static void Log(string key, params object[] value)
     {
 #if DEBUG
         GetInstance().AddDebugInfo(key, value);
@@ -22,7 +22,7 @@ public class DebugGUI : MonoBehaviour
 
     private float SetStartY = 10; 
     private float lineCount = 20; //行数决定字体大小
-    private float clearInterval = 3; //定时刷新
+    private float clearInterval = 5; //定时刷新
 
     private float lineHeight;
     private float startY;

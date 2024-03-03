@@ -1,4 +1,9 @@
-﻿using NaughtyAttributes;
+﻿#define NaughtyAttributes
+#if NaughtyAttributes
+using NaughtyAttributes;
+using NaughtyAttributes.Editor;
+#endif
+
 using NUnit.Framework;
 using System;
 using System.Collections;
@@ -77,9 +82,6 @@ namespace ET
                 return;
             try
             {
-                FieldInfo[] fields = entity.GetType()
-                        .GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
-
                 if (curLayer == 0)
                 {
                     isDebug = EditorGUILayout.Toggle("===Editor View===", (bool)isDebug);
@@ -88,20 +90,23 @@ namespace ET
                         return;
                     }
                 }
+                DrawShowProperty(entity);
+
+                FieldInfo[] fields = entity.GetType()
+        .GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
 
                 EditorGUILayout.BeginVertical();
 
                 foreach (FieldInfo fieldInfo in fields)
                 {
                     Type type = fieldInfo.FieldType;
-
+                    string fieldName = fieldInfo.Name;
                     //if (fieldInfo.IsDefined(typeof (HideInInspector), false))
                     if (type.IsDefined(typeof(HideInInspector), false))
                     {
                         continue;
                     }
 
-                    string fieldName = fieldInfo.Name;
                     object value = fieldInfo.GetValue(entity);
                     bool isDrawed = false;
                     //值类型绘制
@@ -156,14 +161,14 @@ namespace ET
                         {
                             if (value == null)
                             {
-                                GUILayout.Label($"{fieldInfo.Name} null", EditorStyles.boldLabel);
+                                GUILayout.Label($"{fieldName} null", EditorStyles.boldLabel);
                                 continue;
                             }
 
                             if (value is ICollection listValue)
                             {
                                 int count = listValue.Count;
-                                if (IsFoldoutKey(type, fieldInfo.Name, count))
+                                if (IsFoldoutKey(type, fieldName, count))
                                 {
                                     bool isObjectType = objectDrawer.IsObjectType(elementType);
                                     bool isDicType = IDictionaryType.IsAssignableFrom(type);
@@ -185,7 +190,8 @@ namespace ET
                                         }
                                         else
                                         {
-                                            if (typeDrawers.TryGetValue(elementType,out ITypeDrawer drawer)){
+                                            if (typeDrawers.TryGetValue(elementType, out ITypeDrawer drawer))
+                                            {
                                                 var newSub = drawer.DrawAndGetNewValue(elementType, i.ToString(), sub, null);
                                                 if (!sub.Equals(newSub))
                                                 {
@@ -215,7 +221,7 @@ namespace ET
                         }
 
                         //绘制普通类
-                        if (IsFoldoutKey(type, fieldInfo.Name))
+                        if (IsFoldoutKey(type, fieldName))
                         {
                             DrawChildren(value);
                         }
@@ -229,6 +235,20 @@ namespace ET
                 UnityEngine.Debug.LogError($"component view error: {entity.GetType().FullName} {e}");
             }
         }
+        /// <summary>
+        /// 绘制用 [ShowNativeProperty] 标记属性
+        /// </summary>
+        private static void DrawShowProperty(object entity)
+        {
+            #if NaughtyAttributes
+            IEnumerable<PropertyInfo> _nativeProperties = ReflectionUtility.GetAllProperties(entity, p => p.GetCustomAttributes(typeof(ShowNativePropertyAttribute), true).Length > 0);
+            foreach (var property in _nativeProperties)
+            {
+                NaughtyEditorGUI.Field_Layout(property.GetValue(entity, null), property.Name);
+            }
+            #endif  
+        }
+
 
         private static void TrySetListValue(object setValue, ICollection listValue, int i)
         {
@@ -250,7 +270,7 @@ namespace ET
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogWarning($"--- TrySetListValue {e}");
             }

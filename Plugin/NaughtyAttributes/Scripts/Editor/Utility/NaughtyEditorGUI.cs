@@ -259,6 +259,16 @@ namespace NaughtyAttributes.Editor
             }
         }
 
+        public static void DrawNativeProperty_Layout(object target, PropertyInfo property)
+        {
+            object value = property.GetValue(target, null);
+
+            if (value != null)
+            {
+                Field_Layout(value, property.Name);
+            }
+        }
+
         public static void NativeProperty_Layout(UnityEngine.Object target, PropertyInfo property)
         {
             object value = property.GetValue(target, null);

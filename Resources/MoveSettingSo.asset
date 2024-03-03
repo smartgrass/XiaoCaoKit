@@ -15,5 +15,6 @@ MonoBehaviour:
   moveSettings:
   - baseMoveSpeed: 4
     moveSmooth: 0.05
+    rotationLerp: 0.2
     angleSpeed: 10
-    g: -40
+    g: -35

@@ -10,7 +10,8 @@ namespace XiaoCao
     [Serializable]
     public class XCTriggerEvent : XCEvent
     {
-        public const string TriggerName = "Trigger";
+        public static string[] TriggerNames = new[] 
+        { "BoxTrigger", "SphereTrigger", "SectorTrigger", "OtherTrigger" };
 
         public MeshInfo meshInfo;
 
@@ -51,15 +52,19 @@ namespace XiaoCao
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
+
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = Vector3.one;
-            tf.localPosition = meshInfo.center;
-            tf.localRotation = Quaternion.Euler(meshInfo.eulerAngles);
+            tf.localPosition = meshInfo.GetCenter;
+            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = this.Go.GetComponent<MeshCollider>();
-            col.sharedMesh = MathLayoutTool.GetSectorCylinderMesh(meshInfo.angle, meshInfo.radius, meshInfo.hight, 20);
-            //TODO 拉伸以后做
+            var col = CurTrigger.GetComponent<MeshCollider>();
+            col.convex = true;
+            col.isTrigger = true;
+            //TODO 缩放要特殊处理下,暂无
+            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetAngle, meshInfo.GetRadius, meshInfo.GetHight, 20);
+
             CurCol = col;
         }
 
@@ -69,14 +74,15 @@ namespace XiaoCao
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
-            tf.localScale = meshInfo.size;
-            tf.localPosition = meshInfo.center;
-            tf.localRotation = Quaternion.Euler(meshInfo.eulerAngles);
+            tf.localScale = meshInfo.GetSize;
+            tf.localPosition = meshInfo.GetCenter;
+            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = this.Go.GetComponent<SphereCollider>();
+            var col = CurTrigger.GetComponent<SphereCollider>();
             col.radius = 1;
 
             CurCol = col;
+            CurCol.isTrigger = true;
         }
 
         private void OnBox()
@@ -85,14 +91,15 @@ namespace XiaoCao
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
-            tf.localScale = meshInfo.size;
-            tf.localPosition = meshInfo.center;
-            tf.localRotation = Quaternion.Euler(meshInfo.eulerAngles);
+            tf.localScale = meshInfo.GetSize;
+            tf.localPosition = meshInfo.GetCenter;
+            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = tf.GetComponent<BoxCollider>();
+            var col = CurTrigger.GetComponent<BoxCollider>();
             col.center = Vector3.zero;
             col.size = Vector3.one;
             CurCol = col;
+            CurCol.isTrigger = true;
         }
 
         private void SetCurAtkTrigger()
@@ -100,9 +107,10 @@ namespace XiaoCao
             PlayerAttr attr = Info.role.roleData.playerAttr;
             int atk = attr.GetAtk();
             bool isCrit = MathTool.IsInRandom(attr.crit / 100f);
-            CurCol.isTrigger = true;
+
             CurTrigger.info = new AtkInfo()
             {
+                team = Info.role.team,
                 skillId = Info.skillId,
                 subSkillId = subSkillId,
                 atk = atk,
@@ -117,6 +125,11 @@ namespace XiaoCao
             if (CurCol)
             {
                 TriggerCache.Release(MeshType, CurCol.gameObject);
+                Debug.Log($"--- Release col {MeshType}");
+            }
+            else
+            {
+                Debug.LogError($"--- no col {MeshType}");
             }
         }
 
@@ -134,10 +147,10 @@ namespace XiaoCao
                 return assetPool.Get();
             }
 
-            var newObject = new GameObject(XCTriggerEvent.TriggerName);
+            var newObject = new GameObject(XCTriggerEvent.TriggerNames[(int)meshType]);
 
             newObject.AddComponent<AtkTrigger>();
- 
+
             //拼接得到一个key
             switch (meshType)
             {

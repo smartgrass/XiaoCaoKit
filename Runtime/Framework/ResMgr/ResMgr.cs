@@ -161,7 +161,7 @@ public class ResMgr
 
 #if UNITY_EDITOR
         //编辑器模式使用。
-        Debuger.Warn($"编辑器模式使用:{playMode}");
+        Debuger.LogWarning($"编辑器模式使用:{playMode}");
         // 编辑器下的模拟模式
         if (playMode == EPlayMode.EditorSimulateMode)
         {
@@ -188,7 +188,7 @@ public class ResMgr
             //initParameters.DecryptionServices = new FileOffsetDecryption();
             //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer
             //initializationOperation =package.InitializeAsync(initParameters);
-            Debuger.Warn($"HostPlayMode 无");
+            Debuger.LogWarning($"HostPlayMode 无");
         }
 
         return initializationOperation.Task;

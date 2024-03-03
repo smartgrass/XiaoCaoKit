@@ -25,8 +25,7 @@ public class IdComponentEditor : Editor
             if (entity != null)
             {
                 var role = entity as Role;
-                ComponentViewHelper.Draw(role.data);
-                ComponentViewHelper.Draw(role.roleData);
+                ComponentViewHelper.Draw(role);
             }
         }
     }

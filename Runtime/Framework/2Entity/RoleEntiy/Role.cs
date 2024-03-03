@@ -1,5 +1,6 @@
 ﻿
 using cfg;
+using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,7 +23,7 @@ namespace XiaoCao
 
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
-
+        [ShowNativeProperty]
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
 
 
@@ -75,6 +76,7 @@ namespace XiaoCao
             go.transform.SetParent(baseGo.transform, false);
             body = go;
             BindGameObject(baseGo);
+
         }
 
         //一般用不上
@@ -106,7 +108,7 @@ namespace XiaoCao
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakState.OnHit((int)setting.BreakPower);
-                DebugGUI.Debug("breakArmor", roleData.breakState.armor);
+                DebugGUI.Log("breakArmor", roleData.breakState.armor);
 
                 HitStop.Do(setting.HitStop);
 
@@ -172,6 +174,10 @@ namespace XiaoCao
 
             settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
+
+            gameObject.layer = GameSetting.GetTeamLayer(team);
+
+
         }
 
         public void RoleIn()
@@ -259,7 +265,7 @@ namespace XiaoCao
             maxS = 0;
             foreach (var item in roleDic.Values)
             {
-                if (item.team != team && item.IsDie)
+                if (item.team != team && !item.IsDie)
                 {
                     GetAngleAndDistance(self, item.transform, out float curAngle, out float dis);
                     if (curAngle > seeAngle)
@@ -331,9 +337,7 @@ namespace XiaoCao
         {
             foreach (var item in curTaskData)
             {
-                //&& item.Task.Info.skillId > 0 TODO
-                //break的话, 不算busy
-                if (!item.IsStop && item.Task.IsBusy)
+                if (item.IsBusy)
                 {
                     return true;
                 }
@@ -350,7 +354,6 @@ namespace XiaoCao
         public void OnTaskEnd(XCTaskRunner runner)
         {
             //curTaskData.Remove(runner);
-            runner.IsStop = true;
         }
         public void OnBreak()
         {
@@ -366,7 +369,7 @@ namespace XiaoCao
             int firstLen = curTaskData.Count;
             for (int i = 0; i < firstLen; i++)
             {
-                if (!curTaskData[i].IsStop)
+                if (!curTaskData[i].IsAllStop)
                 {
                     curTaskData[i].OnUpdate();
                 }
@@ -383,7 +386,7 @@ namespace XiaoCao
                 int len = curTaskData.Count;
                 for (int i = len - 1; i > 0; i--)
                 {
-                    if (curTaskData[i].IsStop)
+                    if (curTaskData[i].IsAllStop)
                     {
                         curTaskData.RemoveAt(i);
                     }
@@ -391,10 +394,18 @@ namespace XiaoCao
             }
 
         }
-        public void OnSkillFinish(XCTaskRunner runner)
+        public void OnMainTaskEnd(XCTaskRunner runner)
         {
-            Data_R.skillState = ESkillState.SkillEnd;
-            Debug.Log($"---  OnSkillFinish ");
+            if (!runner.IsBreak)
+            {
+                Data_R.skillState = ESkillState.SkillEnd;
+                Debug.Log($"---  OnSkillFinish ");
+            }
+            else
+            {
+                Data_R.skillState = ESkillState.Idle;
+            }
+
         }
 
         public virtual void TryPlaySkill(int skillId)
@@ -431,8 +442,8 @@ namespace XiaoCao
                 return;
             }
             curTaskData.Add(task);
-            task.onFinishEvent.AddListener(OnSkillFinish);
-            task.onEndEvent.AddListener(OnTaskEnd);
+            task.onMainEndEvent.AddListener(OnMainTaskEnd);
+            task.onAllTaskEndEvent.AddListener(OnTaskEnd);
             Data_R.skillState = ESkillState.Skill;
 
         }
@@ -564,7 +575,7 @@ namespace XiaoCao
 
         public void OnUpdate(float deltaTime)
         {
-            DebugGUI.Debug("BreakState", state);
+            DebugGUI.Log("BreakState", state);
             if (recoverSpeedInner > 0)
             {
                 armor += deltaTime * recoverSpeedInner;

@@ -62,7 +62,7 @@ namespace XiaoCao
             if (inputState == 1)
             {
                 inputState = 2;
-                task.SetFinish();
+                task.SetNoBusy();
                 player0.ReceiveMsg(EntityMsgType.PlayNextNorAck, task.Info.entityId, null);
             }
         }

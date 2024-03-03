@@ -24,6 +24,8 @@ namespace XiaoCaoEditor
 
         public const string XiaoCaoPath = "XiaoCao/打开路径/";
 
+        public const string XiaoCaoGenCode = "XiaoCao/GenCode/";
+
         //ToolBar
         public const string OpenPath_Sava = XiaoCaoPath + "存档位置";
         public const string OpenPath_LuabnExcel = XiaoCaoPath + "技能配置表格";
@@ -218,7 +220,7 @@ namespace XiaoCaoEditor
 
     public static class CommandHelper
     {
-        public static void ExecuteBatCommand(string batPath)
+        public static string ExecuteBatCommand(string batPath)
         {
             string batDirectory = System.IO.Path.GetDirectoryName(batPath);
 
@@ -253,7 +255,7 @@ namespace XiaoCaoEditor
             process.WaitForExit();
 
             // 输出日志到Unity控制台
-            UnityEngine.Debug.Log("Bat Command Output:\n" + output);
+            return output;
         }
     }
 }

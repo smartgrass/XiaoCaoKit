@@ -13,8 +13,6 @@ namespace FluxEditor
 
 		private FSequence _sequence;
 
-		private bool _advancedInspector = false;
-
 		private const string CHANGE_FRAME_RATE_TITLE = "Change Frame Rate?";
 		private const string CHANGE_FRAME_RATE_MSG = "Changing Frame Rate may cause the Sequence to " +
 			"drop certain events that are Frame Rate dependent " +

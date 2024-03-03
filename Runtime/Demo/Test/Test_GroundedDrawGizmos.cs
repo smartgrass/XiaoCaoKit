@@ -2,11 +2,11 @@
 using static UnityEngine.UI.GridLayoutGroup;
 using XiaoCao;
 
-public class Test_DrawGizmos : MonoBehaviour
+public class Test_GroundedDrawGizmos : MonoBehaviour
 {
     private bool isGrounded;
-    float GroundedOffset = -0.14f;
-    float GroundedRadius = 0.28f;
+    public float GroundedOffset = -0.14f;
+    public float GroundedRadius = 0.28f;
     public Transform tf => transform;
 
 
@@ -17,10 +17,9 @@ public class Test_DrawGizmos : MonoBehaviour
 
     private void GroundedCheck()
     {
-        LayerMask GroundLayers = LayerMask.GetMask("Default");
         // set sphere position, with offset
         Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
-        isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+        isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK, QueryTriggerInteraction.Ignore);
     }
     private void OnDrawGizmosSelected()
     {

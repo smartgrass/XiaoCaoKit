@@ -28,7 +28,7 @@ namespace XiaoCao
         PlayNextSkill = 1,
         PlayNextNorAck = 2,
         
-        FinishSkill = 10,
+        SetNoBusy = 10,
         SetUnMoveTime = 11,
         AddTag = 12,
 

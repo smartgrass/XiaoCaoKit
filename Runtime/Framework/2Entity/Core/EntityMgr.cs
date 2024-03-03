@@ -63,13 +63,13 @@ namespace XiaoCao
                     }
                     else
                     {
-                        DebugGUI.Debug("no Runing",entity.id);
+                        DebugGUI.Log("no Runing",entity.id);
                     }
                 }
                 else
                 {
                     behaviorEntityDic.Remove(item.Key);
-                    Debuger.Error($"remove behaviorEntity {item.Key}");
+                    Debuger.LogError($"remove behaviorEntity {item.Key}");
                 }
             }
         }

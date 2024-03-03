@@ -24,11 +24,10 @@ namespace XiaoCao
 
         public XCState State { get; set; }
 
-        public bool IsBreak { get; set; }
+        //标记为不占用, 但可以继续Running
+        public bool IsNoBusyFlag { get; set; }
 
-        public bool HasFinish { get; set; }
-
-        public bool IsBusy => State == XCState.Running && !HasFinish;
+        public bool IsBusy => State == XCState.Running && !IsNoBusyFlag;
 
         public TaskInfo Info;
 
@@ -75,50 +74,6 @@ namespace XiaoCao
             }
         }
 
-        void UpdateSubTask()
-        {
-            int subLen = data.subDatas == null ? 0 : data.subDatas.Count;
-
-            for (int i = _startSubTrackIndex; i < subLen; i++)
-            {
-                var subData = data.subDatas[i];
-                if (!subData.HasTrigger)
-                {
-                    if (subData.objectData.startFrame <= _curFrame)
-                    {
-                        var subTask = CreatTask(subData, Info);
-                        subTask.Runner = Runner;
-                        subTasks.Add(subTask);
-                        subTask.StartRun();
-                        _startSubTrackIndex = i + 1;
-                    }
-                    else
-                    {
-                        //subTask 进行过排序, 所以后面不需要检测
-                        break;
-                    }
-                }
-            }
-
-            bool subFinish = true;
-            //代替Runner执行
-            int len = subTasks.Count;
-            for (int i = 0; i < len; i++)
-            {
-                subTasks[i].OnEventUpdate();
-                if (subTasks[i].State == XCState.Running)
-                {
-                    subFinish = false;
-                }
-            }
-
-            if (subFinish && State != XCState.Running && IsMainTask)
-            {
-                State = XCState.Stopped;
-                Runner.AllEnd();
-            }
-        }
-
         public void OnEventUpdate()
         {
 
@@ -133,12 +88,12 @@ namespace XiaoCao
 
             ObjectData?.OnFrameUpdate(_curFrame);
 
-            UpdateEvent();
+            UpdateMainEvent();
 
             UpdateSubTask();
         }
 
-        private void UpdateEvent()
+        private void UpdateMainEvent()
         {
 
             if (State != XCState.Running)
@@ -186,20 +141,74 @@ namespace XiaoCao
 
             if (_curFrame >= _endFrame)
             {
-                State = XCState.Stopped;
+                StopMain();
             }
         }
 
-        public void SetFinish()
+        private void StopMain()
+        {
+            State = XCState.Stopped;
+            //主Task结束
+            if (IsMainTask)
+            {
+                SetNoBusy();
+            }
+        }
+
+        void UpdateSubTask()
+        {
+            int subLen = data.subDatas == null ? 0 : data.subDatas.Count;
+
+            for (int i = _startSubTrackIndex; i < subLen; i++)
+            {
+                var subData = data.subDatas[i];
+                if (!subData.HasTrigger)
+                {
+                    if (subData.objectData.startFrame <= _curFrame)
+                    {
+                        var subTask = CreatTask(subData, Info);
+                        subTask.Runner = Runner;
+                        subTasks.Add(subTask);
+                        subTask.StartRun();
+                        _startSubTrackIndex = i + 1;
+                    }
+                    else
+                    {
+                        //subTask 进行过排序, 所以后面不需要检测
+                        break;
+                    }
+                }
+            }
+
+            bool subFinish = true;
+            //代替Runner执行
+            int len = subTasks.Count;
+            for (int i = 0; i < len; i++)
+            {
+                subTasks[i].OnEventUpdate();
+                if (subTasks[i].State == XCState.Running)
+                {
+                    subFinish = false;
+                }
+            }
+
+            if (IsMainTask && subFinish && State == XCState.Stopped)
+            {
+                Runner.AllEnd();
+            }
+        }
+
+
+        public void SetNoBusy()
         {
             //不占用角色任务
-            Runner.OnFinish();
+            Runner.OnNoBusy();
         }
 
         public void SetBreak()
         {
             //主技能中断
-            State = XCState.Stopped;
+            StopMain();
             foreach (var e in _events)
             {
                 if (e.State == XCState.Running)
@@ -207,7 +216,7 @@ namespace XiaoCao
                     e.OnFinish();
                 }
             }
-            //子技能如果已经生成, 则继续Update
+            //子技能如果已经生成, 则继续执行
             foreach (var t in subTasks)
             {
                 //为开始的停止
@@ -215,12 +224,7 @@ namespace XiaoCao
                 {
                     t.State = XCState.Stopped;
                 }
-                else if (t.State == XCState.Running)
-                {
-                    //已经执行的任务啥都不做
-                    //只有保存一个标志
-                    IsBreak = true;
-                }
+                //已经执行的任务啥都不做
             }
 
         }

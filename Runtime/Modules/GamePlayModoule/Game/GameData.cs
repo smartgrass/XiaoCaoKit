@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -43,6 +45,35 @@ namespace XiaoCao
     public static class GameSetting
     {
         public const int SkillCountOnBar = 6;
+
+        //根据阵营分层级
+        public static int GetTeamLayer(int team)
+        {
+            if (team == 1)
+            {
+                return Layers.PLAYER;
+            }
+            return Layers.ENEMY;
+        }
+
+        public static int GetTeamAtkLayer(int team)
+        {
+            if (team == 1)
+            {
+                return Layers.PLAYER_ATK;
+            }
+            return Layers.ENEMY_ATK;
+        }
+    
+    
+        public static int GetTeamGroundCheckMash(int team)
+        {
+            if (team == 1)
+            {
+                return Layers.ENEMY_MASK;
+            }
+            return Layers.PLAYER_MASK;
+        }
     }
 
 

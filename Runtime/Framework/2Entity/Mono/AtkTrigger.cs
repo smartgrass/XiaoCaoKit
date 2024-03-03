@@ -9,13 +9,15 @@ public class AtkTrigger : IdComponent
     {
         if (other.TryGetComponent<IdRole>(out IdRole role))
         {
-
             if (EntityMgr.Inst.FindEntity<Role>(role.id, out Role entity))
             {
-
-                info.hitPos = other.ClosestPointOnBounds(transform.position);
-                info.hitDir = transform.forward;
-                entity.OnDamage(id,info);
+                if (entity.team != info.team)
+                {
+                    //阵营判断
+                    info.hitPos = other.ClosestPointOnBounds(transform.position);
+                    info.hitDir = transform.forward;
+                    entity.OnDamage(id, info);
+                }
             }
         }
     }
@@ -24,6 +26,7 @@ public class AtkTrigger : IdComponent
 [Serializable]
 public class AtkInfo
 {
+    public int team;
     public int atk;
     public bool isCrit; //暴击
 

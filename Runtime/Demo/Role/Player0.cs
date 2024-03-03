@@ -1,6 +1,7 @@
 ﻿using Cinemachine.Utility;
 using NaughtyAttributes;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
@@ -29,12 +30,12 @@ namespace XiaoCao
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
             this.CreateGameObject();
+            this.team = 1;
             BaseInit();
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
-
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
             roleData.playerAttr.Init(savaData.lv);
-
+            
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             roleData.roleControl = component.control;
@@ -200,11 +201,22 @@ namespace XiaoCao
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
-            Debug.Log($"--- nextNorAckIndex {nextNorAckIndex}");
-
-            DebugGUI.Debug("nextNorAckIndex", nextNorAckIndex);
+            DebugGUI.Log("nextNorAckIndex", nextNorAckIndex);
 
             Data_P.curNorAckIndex = nextNorAckIndex;
+
+            //索敌
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3, 30, out float maxS, owner.team);
+            if (findRole != null)
+            {
+                owner.transform.RotaToPos(findRole.transform.position);
+                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
+            }
+            else
+            {
+                Debug.Log($"--- findRole no");
+            }
+
 
             RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
         }

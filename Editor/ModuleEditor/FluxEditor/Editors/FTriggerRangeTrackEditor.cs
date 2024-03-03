@@ -52,7 +52,7 @@ namespace FluxEditor
                 return;
             }
             drawer.Regist(Track as FTriggerRangeTrack);
-            Debug.Log($"--- draw {frame}");
+            //Debug.Log($"--- draw {frame}");
 
             //foreach (var item in Track.Events)
             //{
