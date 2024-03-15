@@ -69,7 +69,7 @@ public class TriggerDrawer : MonoBehaviour
     void DrawMesh(MeshInfo meshInfo, Transform targetTran)
     {
         var rotation = targetTran.rotation;
-        var angle = rotation.eulerAngles + meshInfo.GetEulerAngles;
+        var angle = rotation.eulerAngles;
         var center = meshInfo.GetCenter;
         var size = meshInfo.GetSize;
 
@@ -87,8 +87,9 @@ public class TriggerDrawer : MonoBehaviour
         }
         else if (meshInfo.meshType == MeshType.Sector)
         {
-            Mesh mesh = MathLayoutTool.GetSectorMesh(meshInfo.GetAngle, meshInfo.GetRadius, meshInfo.GetHight, 20);
-            Gizmos.DrawWireMesh(mesh, meshInfo.GetCenter, Quaternion.identity, Vector3.one);
+            Mesh mesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
+            Quaternion rota = Quaternion.Euler(meshInfo.GetEulerAngles);
+            Gizmos.DrawWireMesh(mesh, meshInfo.GetCenter, rota, Vector3.one);
         }
         else
         {

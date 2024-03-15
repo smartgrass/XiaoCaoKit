@@ -116,7 +116,8 @@ namespace XiaoCao
                 {
                     Anim.Play(AnimNames.Break);
                     //击飞处理
-                    Vector3 horVec = MathTool.Rotate(ackInfo.hitDir, setting.HorForward);
+                    Vector3 horVec = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.TargetHor;
+
                     idRole.cc.DOHit(setting.AddY, horVec, setting.NoGravityT);
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
                     HitStop.Do(setting.HitStop);

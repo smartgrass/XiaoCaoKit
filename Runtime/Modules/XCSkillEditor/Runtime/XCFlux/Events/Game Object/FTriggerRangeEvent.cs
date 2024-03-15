@@ -20,6 +20,8 @@ namespace Flux
             return xce;
         }
 
+
+
     }
     [Serializable]
     public class MeshInfo
@@ -37,7 +39,7 @@ namespace Flux
         //扇形
         public float GetRadius => GetSize.x; //半径
         public float GetHight => GetSize.y; //高
-        public float GetAngle => GetSize.z;  //弧度
+        public float GetRadian => GetSize.z;  //弧度
     }
 
 }

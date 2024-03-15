@@ -123,7 +123,6 @@ public static class MathLayoutTool
     {
         float angleRad = Mathf.Deg2Rad * angledegree;
         float angleStart = -angleRad / 2; // 扇形开始角度
-        float endStart = angleRad / 2; // 扇形结束角度
         float angledelta = angleRad / segments;
 
         //扇环两条弧上, 一条弧上顶点的数量
@@ -365,6 +364,8 @@ public static class MathTool
         //Vec3 = R * Vec3
         return Quaternion.AngleAxis(angle, Vector3.up) * (dir);
     }
+
+
     /// <summary>
     /// 二维向量旋转
     /// </summary>
@@ -376,7 +377,6 @@ public static class MathTool
 
         float x = vector.x * cosAngle - vector.y * sinAngle;
         float y = vector.x * sinAngle + vector.y * cosAngle;
-
         return new Vector2(x, y);
     }
 

@@ -86,8 +86,6 @@ namespace XiaoCao
             _curFrame = Mathf.FloorToInt(_curTime * XCSetting.FrameRate);
             //Debug.Log("  _curFrame " + _currentFrame + "_curTime "+ _currentTime + " curEvent" + _currentEvent);
 
-            ObjectData?.OnFrameUpdate(_curFrame);
-
             UpdateMainEvent();
 
             UpdateSubTask();
@@ -148,6 +146,7 @@ namespace XiaoCao
         private void StopMain()
         {
             State = XCState.Stopped;
+            ObjectData?.OnEnd();
             //主Task结束
             if (IsMainTask)
             {

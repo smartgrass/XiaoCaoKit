@@ -63,7 +63,7 @@ namespace XiaoCao
             col.convex = true;
             col.isTrigger = true;
             //TODO 缩放要特殊处理下,暂无
-            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetAngle, meshInfo.GetRadius, meshInfo.GetHight, 20);
+            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
 
             CurCol = col;
         }

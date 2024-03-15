@@ -61,7 +61,7 @@ namespace XiaoCao
         }
         public void Init(XCTaskData data, TaskInfo info)
         {
-            Debug.Log($"--- skill {info.skillId} {data}");
+            //Debug.Log($"--- skill {info.skillId} {data}");
             //深复制
             var newData = SerializationUtility.CreateCopy(data) as XCTaskData;
 
