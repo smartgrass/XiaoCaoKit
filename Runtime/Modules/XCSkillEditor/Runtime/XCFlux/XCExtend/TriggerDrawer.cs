@@ -69,13 +69,13 @@ public class TriggerDrawer : MonoBehaviour
     void DrawMesh(MeshInfo meshInfo, Transform targetTran)
     {
         var rotation = targetTran.rotation;
-        var angle = rotation.eulerAngles;
+        //var angle = rotation.eulerAngles;
         var center = meshInfo.GetCenter;
         var size = meshInfo.GetSize;
 
         Gizmos.color = drawColor;
         //坐标系选为targetTran
-        Gizmos.matrix = Matrix4x4.TRS(targetTran.position, Quaternion.Euler(angle), targetTran.lossyScale);
+        Gizmos.matrix = Matrix4x4.TRS(targetTran.position, rotation, targetTran.lossyScale);
 
         if (meshInfo.meshType == MeshType.Box)
         {

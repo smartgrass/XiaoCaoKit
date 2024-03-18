@@ -52,6 +52,11 @@ namespace cfg
             }
         }
 
+        public void Reset()
+        {
+            _init = false;
+        }
+
         /// <summary>
         /// 加载配置。
         /// </summary>

@@ -17,4 +17,6 @@ MonoBehaviour:
     moveSmooth: 0.05
     rotationLerp: 0.2
     angleSpeed: 10
-    g: -35
+    g: -73.04
+    GOnGroundMult: 0.8
+    MaxGOnGroundMult: 4

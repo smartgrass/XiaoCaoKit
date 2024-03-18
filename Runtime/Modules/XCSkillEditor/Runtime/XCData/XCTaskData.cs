@@ -87,7 +87,7 @@ namespace XiaoCao
 
         public IXCCommand command { get; set; }
 
-        private bool HasStart { get; set; }
+        public bool HasStart { get; set; }
 
         public void OnTrigger(TaskInfo info)
         {

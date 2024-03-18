@@ -6,10 +6,15 @@ namespace XiaoCao
 {
     public class Enemy0 : EnemyBase, IMsgReceiver
     {
+        public override void DataCreat()
+        {
+            enemyData = new EnemyData0();
+            roleData = enemyData;
+        }
 
-        internal EnemyData0 enemyData = new EnemyData0();
+        public EnemyData0 enemyData;
 
-        public EnemyShareData0 component = new EnemyShareData0();
+        public EnemyShareData0 component => enemyData.component;
 
 
         public void Init(int level = 1)
@@ -92,9 +97,9 @@ namespace XiaoCao
     }
 
 
-    public class EnemyData0 : IData
+    public class EnemyData0 : RoleData
     {
-
+        public EnemyShareData0 component = new EnemyShareData0();
     }
 
 

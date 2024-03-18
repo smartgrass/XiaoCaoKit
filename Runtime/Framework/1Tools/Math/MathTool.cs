@@ -354,6 +354,14 @@ public static class MathTool
         return v == Vector3.zero || float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z); ;
     }
 
+    //排除y的距离计算
+    public static float GetHorDistance(Vector3 a,Vector3 b)
+    {
+        float num = a.x - b.x;
+        float num3 = a.z - b.z;
+        return (float)Math.Sqrt(num * num  + num3 * num3);
+    }
+
     /// <summary>
     /// 旋转向量,忽略y轴 
     /// </summary>

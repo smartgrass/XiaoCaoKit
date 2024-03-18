@@ -23,5 +23,9 @@ namespace XiaoCao
         public float angleSpeed = 10;
 
         public float g = -40;
+
+        public float GOnGroundMult = 0.8f;
+
+        public float MaxGOnGroundMult = 4;
     }
 }

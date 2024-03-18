@@ -14,6 +14,7 @@ public class AtkTrigger : IdComponent
                 if (entity.team != info.team)
                 {
                     //阵营判断
+                    info.ackObjectPos = transform.position;
                     info.hitPos = other.ClosestPointOnBounds(transform.position);
                     info.hitDir = transform.parent.forward;
                     info.hitDir.y = 0;
@@ -36,5 +37,6 @@ public class AtkInfo
 
     internal Vector3 hitDir;
     internal Vector3 hitPos;
+    internal Vector3 ackObjectPos;
 }
 

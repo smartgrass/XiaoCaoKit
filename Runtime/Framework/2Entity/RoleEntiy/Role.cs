@@ -17,9 +17,17 @@ namespace XiaoCao
     [TypeLabel(typeof(RoleTagCommon))]
     public abstract class Role : HealthBehavior
     {
+        public Role()
+        {
+            DataCreat();
+        }
+
+        public abstract void DataCreat();
+
         public abstract RoleType RoleType { get; }
-        public virtual IData data { get; }
-        public virtual IShareData componentData { get; }
+
+        //roleData
+        public RoleData roleData;
 
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
@@ -43,8 +51,6 @@ namespace XiaoCao
         public GameObject body;
 
         public IdRole idRole;
-
-        public RoleData roleData = new RoleData();
 
 
         #region Get
@@ -108,6 +114,7 @@ namespace XiaoCao
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakState.OnHit((int)setting.BreakPower);
+
                 DebugGUI.Log("breakArmor", roleData.breakState.armor);
 
                 HitStop.Do(setting.HitStop);
@@ -115,11 +122,21 @@ namespace XiaoCao
                 if (roleData.breakState.isBreak)
                 {
                     Anim.Play(AnimNames.Break);
-                    //击飞处理
-                    Vector3 horVec = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.TargetHor;
 
-                    idRole.cc.DOHit(setting.AddY, horVec, setting.NoGravityT);
+                    //击飞处理
+                    Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
+
+                    Vector3 targetHorVec = ackInfo.ackObjectPos + horDir * setting.AddHor;
+
+                    float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
+
+                    idRole.cc.DOHit(setting.AddY, horDir * horDistance, setting.HitTime);
+
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
+
+                    //无重力时间
+                    roleData.movement.SetNoGravityT(setting.HitTime * setting.NoGTimeMulti);
+
                     HitStop.Do(setting.HitStop);
                     // 打断当前技能
                     OnBreak();
@@ -132,6 +149,11 @@ namespace XiaoCao
         public virtual void OnBreak()
         {
 
+        }
+
+        public virtual void SetNoBusy()
+        {
+            roleData.roleControl.SetNoBusy();
         }
 
         public void CheckBreakUpdate()
@@ -239,11 +261,20 @@ namespace XiaoCao
     {
         public override RoleType RoleType => RoleType.Player;
 
+        public override void DataCreat()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class EnemyBase : Role
     {
         public override RoleType RoleType => RoleType.Enemy;
+
+        public override void DataCreat()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class RoleMgr : Singleton<RoleMgr>, IClearCache
@@ -324,6 +355,7 @@ namespace XiaoCao
         public void TryPlaySkill(int skillId);
 
         public bool IsBusy(int level = 0);
+        public void SetNoBusy();
     }
 
     //技能通用体
@@ -364,6 +396,10 @@ namespace XiaoCao
             }
         }
 
+        public void SetNoBusy()
+        {
+            OnBreak();
+        }
         public void OnTaskUpdate()
         {
             bool hasStop = false;
@@ -504,6 +540,7 @@ namespace XiaoCao
 
         //特殊,需要手动赋值
         public MoveSetting moveSetting;
+
         public RoleMovement movement;
         public bool IsFree => bodyState is not EBodyState.Break or EBodyState.Dead;
 

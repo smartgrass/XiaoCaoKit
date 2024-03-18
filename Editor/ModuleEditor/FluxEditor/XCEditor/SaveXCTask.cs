@@ -1,4 +1,5 @@
-﻿using Flux;
+﻿using cfg;
+using Flux;
 using FluxEditor;
 using OdinSerializer;
 using System;
@@ -269,6 +270,22 @@ public class SaveXCTask
 
     [MenuItem(LoadLubanExcelName)]
     public static void LoadLubanExcel()
+    {
+        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_data.bat";
+        var msg = CommandHelper.ExecuteBatCommand(path);
+        if (msg.Contains("== succ =="))
+        {
+            Debug.Log("Luban succ!");
+            LubanTables.Inst.Reset();
+        }
+        else
+        {
+            Debug.LogError(msg);
+        }
+    }
+
+    [MenuItem(LoadLubanExcelCodeName)]
+    public static void LoadLubanExcelWithCode()
     {
         string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
         var msg = CommandHelper.ExecuteBatCommand(path);

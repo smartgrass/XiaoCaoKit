@@ -24,7 +24,9 @@ namespace XiaoCao
 
         public PlayerSkillSetting[] playerSkillSettingArray;
 
+        
 
+        //TODO cd
         public PlayerSkillSetting GetSkillCd(int index)
         {
             return playerSkillSettingArray.GetOrFrist(index);
@@ -34,6 +36,8 @@ namespace XiaoCao
     [Serializable]
     public class PlayerSkillSetting
     {
+        public int id;
+
         public float cd;
 
         public Sprite sprite;

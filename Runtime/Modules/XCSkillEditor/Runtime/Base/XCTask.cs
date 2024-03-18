@@ -56,14 +56,14 @@ namespace XiaoCao
         /// <summary>
         /// 任务创建时执行, 子任务在触发帧才执行
         /// </summary>
-        public void StartRun()
+        public void StartRun(float startTime = 0)
         {
             data.HasTrigger = true;
             data.objectData?.OnTrigger(Info);
             State = XCState.Running;
             _startSubTrackIndex = 0;
             _startEventIndex = 0;
-            _curTime = 0;
+            _curTime = startTime;
             _finshiCout = 0;
             //筛选数据
             _endFrame = 0;
@@ -145,12 +145,26 @@ namespace XiaoCao
 
         private void StopMain()
         {
-            State = XCState.Stopped;
-            ObjectData?.OnEnd();
             //主Task结束
             if (IsMainTask)
             {
+                State = XCState.Stopped;
                 SetNoBusy();
+                return;
+            }
+
+            if (ObjectData != null )
+            {
+                if (_curFrame >= ObjectData.endFrame && ObjectData.HasStart)
+                {
+                    State = XCState.Stopped;
+                    ObjectData.OnEnd();
+                }
+            }
+            else
+            {
+                State = XCState.Stopped;
+                Debug.LogError("--- no ObjectDataEnd ?");
             }
         }
 
@@ -168,7 +182,7 @@ namespace XiaoCao
                         var subTask = CreatTask(subData, Info);
                         subTask.Runner = Runner;
                         subTasks.Add(subTask);
-                        subTask.StartRun();
+                        subTask.StartRun(_curTime);
                         _startSubTrackIndex = i + 1;
                     }
                     else

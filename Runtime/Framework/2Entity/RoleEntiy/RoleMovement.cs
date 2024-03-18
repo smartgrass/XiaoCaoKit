@@ -18,6 +18,12 @@ namespace XiaoCao
 
         protected float velocityY = 0;
 
+        public bool enableGravity = true;
+
+        public float enableGravityTime;
+
+        public float disableGravityTimer;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -81,12 +87,27 @@ namespace XiaoCao
             //速度 v = v + gt
             //处于空中时
 
-            velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
+
+            CheckEnableGravity();
             GroundedCheck();
-            if (isGrounded)
+
+            if (enableGravity)
             {
-                velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * 0.25f);
+                if (isGrounded)
+                {
+                    velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * Data_R.moveSetting.GOnGroundMult);
+                }
+                else
+                {
+                    velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
+                }
             }
+            else
+            {
+                //衰减
+                velocityY = velocityY * Data_R.moveSetting.GOnGroundMult;
+            }
+
 
 
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
@@ -186,6 +207,26 @@ namespace XiaoCao
                         break;
                     }
                 }
+            }
+        }
+
+        private void CheckEnableGravity()
+        {
+            if (disableGravityTimer > 0)
+            {
+                enableGravity = false;
+                disableGravityTimer -= Time.fixedDeltaTime;
+            }
+            else
+            {
+                enableGravity = true;
+            }
+        }
+        public void SetNoGravityT(float time)
+        {
+            if (time > disableGravityTimer)
+            {
+                disableGravityTimer = time;
             }
         }
     }
