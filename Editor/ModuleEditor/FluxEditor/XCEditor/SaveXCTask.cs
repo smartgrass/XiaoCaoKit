@@ -97,6 +97,7 @@ public class SaveXCTask
             //一个_timeline->一个Object->一个XCTaskData
             bool isMain = timelineId == 0;
             XCTaskData data = GetTaskData(ref mainData, timelineId);
+            data.speed = curSequence.Speed;
             bool hasObjectData = false;
             foreach (var _track in _timeline.Tracks.Where((t)=>t.enabled))
             {

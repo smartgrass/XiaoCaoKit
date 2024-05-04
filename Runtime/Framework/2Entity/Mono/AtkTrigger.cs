@@ -16,7 +16,7 @@ public class AtkTrigger : IdComponent
                     //阵营判断
                     info.ackObjectPos = transform.position;
                     info.hitPos = other.ClosestPointOnBounds(transform.position);
-                    info.hitDir = transform.parent.forward;
+                    info.hitDir = (info.hitPos - transform.position);
                     info.hitDir.y = 0;
                     entity.OnDamage(id, info);
                 }

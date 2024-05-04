@@ -47,6 +47,9 @@ namespace XiaoCao
 
             _animator.speed = task.Info.speed;
 
+
+            DebugGUI.Log($"--- task.Info.speed {task.Info.speed}");
+
             base.OnTrigger(timeSinceTrigger);
 
             //如果主技能被打断则不播放动画

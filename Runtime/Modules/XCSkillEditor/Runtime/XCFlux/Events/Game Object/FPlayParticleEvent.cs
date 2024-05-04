@@ -47,9 +47,12 @@ namespace Flux
 
 		protected override void OnFinish()
 		{
-			if( _particleSystem != null )
-				_particleSystem.Stop( true );
-		}
+            if (_particleSystem != null)
+            {
+                _particleSystem.Stop(true);
+                _particleSystem.Clear(true);
+            }
+        }
 
 		protected override void OnStop()
 		{

@@ -17,6 +17,8 @@ namespace XiaoCao
         public static readonly string DataDir = "Assets/_RawFile/SkillData";
         public static readonly string PerfabDir = "Assets/_Res/SkillPrefab";
 
+        public static readonly string HitEffectDir = "Assets/_Res/SkillPrefab/Hit";
+
         public static string GetSkillPrefabDir(RoleType roleType)
         {
             return $"{PerfabDir}/{roleType.ToString()}";
@@ -36,6 +38,11 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}.prefab";
         }
 
+
+        public static string GetHitEffectPath(int index)
+        {
+            return $"{HitEffectDir}/Hit_{index}.prefab";
+        }
     }
 
     ///<see cref="XCPathConfig"/>

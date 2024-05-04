@@ -143,6 +143,15 @@ namespace XiaoCao
                 }
 
                 //playerMover.SetNoGravityT(setting.NoGravityT);
+
+                var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
+                effect.SetActive(true);
+                effect.transform.SetParent(transform,true);
+                //Vector3 vector3 = transform.position;
+                //vector3.y = ackInfo.hitPos.y;
+                //vector3 = Vector3.Lerp(ackInfo.ackObjectPos, vector3, 0.8f);
+                effect.transform.position = ackInfo.hitPos;
+                effect.transform.forward = ackInfo.ackObjectPos - transform.position;
             }
         }
 

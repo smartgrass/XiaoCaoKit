@@ -19,6 +19,7 @@ public class Test_AnimPreview : MonoBehaviour
     public GameObject characterPrefab; // 你的角色预制体
     public Object[] dirs; // 包含文件夹路径的Object数组
     public int count = 10;
+    public int onelineCount = 7;
 
     private List<string> animationFiles = new List<string>();
     private List<GameObject> characters = new List<GameObject>();
@@ -75,9 +76,8 @@ public class Test_AnimPreview : MonoBehaviour
         int startLen = characters.Count;
         for (int i = startLen; i < count; i++)
         {
-            int oneLine = 8;
-            int lineIndex = i / oneLine;
-            Vector3 pos = new Vector3((i% oneLine) * 2 - 5,0 ,lineIndex * 2);
+            int lineIndex = i / onelineCount;
+            Vector3 pos = new Vector3((i% onelineCount) * 2 - 5,0 ,lineIndex * 2);
             characters.Add(Instantiate(characterPrefab, pos, Quaternion.identity, transform));
             // 给每个角色分配一个不同的动画
             Animator animator = characters[i].GetComponent<Animator>();

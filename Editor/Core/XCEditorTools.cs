@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,7 @@ namespace XiaoCaoEditor
         public const string OpenPath_LuabnExcel = XiaoCaoPath + "技能配置表格";
 
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
+        public const string XCToolWindow = "XiaoCao/XCToolWindow";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
     }
@@ -178,8 +180,6 @@ namespace XiaoCaoEditor
                 stateDic.Add(item.state.name, item.state);
             }
 
-            int posXIndex = skillId % 10;
-
             bool isChange = false;
             int i = 0;
             foreach (var kv in animDic)
@@ -190,7 +190,7 @@ namespace XiaoCaoEditor
                 {
                     //添加
                     isChange = true;
-                    Vector3 pos = new Vector3(800 + posXIndex * 100, i * 20, 0);
+                    Vector3 pos = GetClipPos(skillId, i);
                     AnimatorState state = sm.AddState(key, pos);
                     state.motion = value;
                     state.AddExitTransition(true);
@@ -214,6 +214,60 @@ namespace XiaoCaoEditor
                 //AssetDatabase.ForceReserializeAssets(new[] { path });
                 EditorUtility.SetDirty(ac);
             }
+        }
+
+        [MenuItem(XCEditorTools.AssetCheck + "排序clip")]
+        private static void SortEditrorAnimatorPos()
+        {
+            var select = Selection.activeObject;
+            AnimatorController ac = select as AnimatorController;
+            if (ac == null)
+            {
+                return;
+            }
+            AnimatorStateMachine sm = ac.layers[0].stateMachine;
+            var newStates = sm.states;
+            for (int i = 0; i < newStates.Length; i++)
+            {
+                string name = newStates[i].state.name;
+                int index = 0;
+                int subIndex = 0;
+
+                var strArr = name.Split('_');
+                if (strArr.Length > 1)
+                {
+                    if (int.TryParse(strArr[0], out int outIndex))
+                    {
+                        index = outIndex;
+                    }
+                    if (int.TryParse(strArr[1], out int outSubIndex))
+                    {
+                        subIndex = outSubIndex;
+                    }
+                    newStates[i].position = GetClipPos(index, subIndex);
+                }
+            }
+
+            sm.states = newStates;
+
+            EditorUtility.SetDirty(ac);
+            AssetDatabase.SaveAssets();     //保存改动的资源
+            AssetDatabase.Refresh();
+
+        }
+
+        private static Vector3 GetClipPos(int index, int subIndex)
+        {
+            int subPosYIndex = index % 10; //个位数
+
+            index = index % 100;
+
+            int posYIndex = index / 10;//十位数
+
+            posYIndex = posYIndex % 20;
+
+
+            return new Vector3(600 + subPosYIndex * 220, (posYIndex + subIndex / 5f) * 50, 0);
         }
     }
 

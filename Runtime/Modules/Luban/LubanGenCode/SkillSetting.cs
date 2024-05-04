@@ -27,7 +27,7 @@ public sealed partial class SkillSetting :  Bright.Config.BeanBase
         HitStop = _buf.ReadFloat();
         BreakPower = _buf.ReadFloat();
         Sound = _buf.ReadInt();
-        HitEffect = _buf.ReadString();
+        HitEffect = _buf.ReadInt();
         PostInit();
     }
 
@@ -87,7 +87,7 @@ public sealed partial class SkillSetting :  Bright.Config.BeanBase
     /// <summary>
     /// 击中特效
     /// </summary>
-    public string HitEffect { get; private set; }
+    public int HitEffect { get; private set; }
 
     public const int __ID__ = 633610975;
     public override int GetTypeId() => __ID__;

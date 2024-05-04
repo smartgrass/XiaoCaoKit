@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
-
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 namespace XiaoCao
 {
     /// <summary>
@@ -30,6 +32,11 @@ namespace XiaoCao
                 //Cube代替
                 prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 Debug.LogError($"no Asset!! {path}");
+#if UNITY_EDITOR
+                var obj = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                //编辑器兼容大小写,可能是大小写的问题
+                Debug.LogError($"Editor test has ? {obj!=null}");
+#endif
             }
 
             pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
