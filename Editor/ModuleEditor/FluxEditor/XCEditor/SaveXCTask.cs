@@ -1,4 +1,5 @@
-﻿using Flux;
+﻿using cfg;
+using Flux;
 using FluxEditor;
 using OdinSerializer;
 using System;
@@ -22,8 +23,8 @@ public class SaveXCTask
     public const string OpenWindowName = XCEditorTools.XiaoCaoFlux + "OpenWindow";
     public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
 
-    public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "导入表格数据";
-    public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "导入表格数据&代码";
+    public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "生成数据";
+    public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "生成数据&代码";
 
     public const string SavaCurSeqName = XCEditorTools.XiaoCaoGameObject + "保存Sequence技能&代码";
 
@@ -97,7 +98,7 @@ public class SaveXCTask
             bool isMain = timelineId == 0;
             XCTaskData data = GetTaskData(ref mainData, timelineId);
             bool hasObjectData = false;
-            foreach (var _track in _timeline.Tracks)
+            foreach (var _track in _timeline.Tracks.Where((t)=>t.enabled))
             {
                 if (!isMain && !hasObjectData)
                 {
@@ -270,8 +271,32 @@ public class SaveXCTask
     [MenuItem(LoadLubanExcelName)]
     public static void LoadLubanExcel()
     {
+        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_data.bat";
+        var msg = CommandHelper.ExecuteBatCommand(path);
+        if (msg.Contains("== succ =="))
+        {
+            Debug.Log("Luban succ!");
+            LubanTables.Inst.Reset();
+        }
+        else
+        {
+            Debug.LogError(msg);
+        }
+    }
+
+    [MenuItem(LoadLubanExcelCodeName)]
+    public static void LoadLubanExcelWithCode()
+    {
         string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
-        CommandHelper.ExecuteBatCommand(path);
+        var msg = CommandHelper.ExecuteBatCommand(path);
+        if (msg.Contains("== succ =="))
+        {
+            Debug.Log("Luban succ!");
+        }
+        else
+        {
+            Debug.LogError(msg);
+        }
     }
 
 

@@ -119,4 +119,4 @@ yooAsset -> PackageManager
 
 示例项目就不建议开源了, 带来的后果是技术贬值, 开源的作者干活累了自己。
 
-Act_Example属于示例项目阶段，可能不会直接开源了。
+Act_Example属于示例项目阶段，不会开源了, 摆烂了。

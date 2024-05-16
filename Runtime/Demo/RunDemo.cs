@@ -1,8 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
+﻿#define EnableLog	
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading.Tasks;
 using TEngine;
 using UnityEngine;
+
+
 
 namespace XiaoCao
 {
@@ -12,8 +15,8 @@ namespace XiaoCao
         {
 
             //这里做点编辑器开关
-            //Debuger.LogLevel = LogLevel.Info;
-            Debuger.LogLevel = LogLevel.Error;
+            Debuger.LogLevel = LogLevel.Info;
+            //Debuger.LogLevel = LogLevel.Error;
 
             //初始化
             await InitYooAsset();

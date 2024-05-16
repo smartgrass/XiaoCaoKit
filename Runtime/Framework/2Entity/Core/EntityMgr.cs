@@ -23,7 +23,7 @@ namespace XiaoCao
         void AddEntity(Entity entity)
         {
             int id = entity.id;
-            Debuger.Log($"--- AddEntity {id}");
+            Debug.Log($"--- AddEntity {id}");
             if (entity.BindType == EntityBaseType.BehaviorEntity)
             {
                 behaviorEntityDic[id] = entity as BehaviorEntity;
@@ -61,11 +61,15 @@ namespace XiaoCao
                     {
                         entity.UpdateEvent?.Invoke();
                     }
+                    else
+                    {
+                        DebugGUI.Log("no Runing",entity.id);
+                    }
                 }
                 else
                 {
                     behaviorEntityDic.Remove(item.Key);
-                    Debuger.Error($"remove behaviorEntity {item.Key}");
+                    Debuger.LogError($"remove behaviorEntity {item.Key}");
                 }
             }
         }

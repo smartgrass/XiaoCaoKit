@@ -20,6 +20,8 @@ namespace Flux
             return xce;
         }
 
+
+
     }
     [Serializable]
     public class MeshInfo
@@ -30,14 +32,14 @@ namespace Flux
         [Header("[Size],[eulerAngles],[center]")]
         public Vector3[] values = new Vector3[3] { Vector3.one ,Vector3.zero, Vector3.zero};
 
-        public Vector3 size => values[0];
-        public Vector3 eulerAngles => values[1];
-        public Vector3 center => values[2];
+        public Vector3 GetSize => values[0];
+        public Vector3 GetEulerAngles => values[1];
+        public Vector3 GetCenter => values[2];
 
         //扇形
-        public float radius => size.x; //半径
-        public float hight => size.y; //高
-        public float angle => size.z;  //弧度
+        public float GetRadius => GetSize.x; //半径
+        public float GetHight => GetSize.y; //高
+        public float GetRadian => GetSize.z;  //弧度
     }
 
 }

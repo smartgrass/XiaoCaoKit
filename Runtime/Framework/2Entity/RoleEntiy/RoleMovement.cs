@@ -1,13 +1,29 @@
 ﻿using System;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
     public class RoleMovement : RoleComponent<Role>
     {
-        public RoleMovement(Role _owner) : base(_owner) { }
+        public RoleMovement(Role _owner) : base(_owner)
+        {
+#if UNITY_EDITOR
+            var testDraw = owner.gameObject.AddComponent<Test_GroundedDrawGizmos>();
+
+#endif
+        }
 
         protected float _tempAnimMoveSpeed;
+
+        protected float velocityY = 0;
+
+        public bool enableGravity = true;
+
+        public float enableGravityTime;
+
+        public float disableGravityTimer;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -16,6 +32,8 @@ namespace XiaoCao
         public Vector3 camForward => CameraMgr.Forword;
 
         Vector3 inputDir;
+
+        protected bool isGrounded = true;
 
         public override void FixedUpdate()
         {
@@ -67,10 +85,33 @@ namespace XiaoCao
             Vector3 moveDelta = moveDir * Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
 
             //速度 v = v + gt
-            float velocityY = 0;
-            velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
-            moveDelta.y += velocityY * XCTime.fixedDeltaTime;
+            //处于空中时
 
+
+            CheckEnableGravity();
+            GroundedCheck();
+
+            if (enableGravity)
+            {
+                if (isGrounded)
+                {
+                    velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * Data_R.moveSetting.GOnGroundMult);
+                }
+                else
+                {
+                    velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
+                }
+            }
+            else
+            {
+                //衰减
+                velocityY = velocityY * Data_R.moveSetting.GOnGroundMult;
+            }
+
+
+
+            moveDelta.y += velocityY * XCTime.fixedDeltaTime;
+            DebugGUI.Log(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
 
             cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
@@ -80,7 +121,7 @@ namespace XiaoCao
 
         void CheckBackToIdle(bool isInput)
         {
-            DebugGUI.Debug("skillState", Data_R.skillState);
+            DebugGUI.Log("skillState", Data_R.skillState);
             if (Data_R.skillState is ESkillState.SkillEnd && isInput)
             {
                 Data_R.skillState = ESkillState.Idle;
@@ -134,6 +175,59 @@ namespace XiaoCao
                 RoleState.moveLockTime = Mathf.Max(t, RoleState.moveLockTime);
             }
 
+        }
+
+        private void GroundedCheck()
+        {
+            float GroundedOffset = -0.14f;
+            float GroundedRadius = 0.28f;
+            // set sphere position, with offset
+            Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
+            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK, QueryTriggerInteraction.Ignore);
+
+            // update animator if using character
+            if (owner.Anim)
+            {
+                owner.Anim.SetBool(AnimHash.IsGround, isGrounded);
+            }
+
+            if (!isGrounded)
+            {
+                int layerMask = GameSetting.GetTeamGroundCheckMash(owner.team);
+                Collider[] cols = Physics.OverlapSphere(spherePosition, GroundedRadius * 2f, layerMask);
+                if (cols.Length > 0)
+                {
+                    for (int i = 0; i < cols.Length; i++)
+                    {
+                        Vector3 offset = (cc.transform.position - cols[i].transform.position);
+                        offset.y = 0;
+                        offset = offset.normalized * XCTime.fixedDeltaTime;
+                        //排斥角色之间, 防重叠
+                        cc.Move(offset);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void CheckEnableGravity()
+        {
+            if (disableGravityTimer > 0)
+            {
+                enableGravity = false;
+                disableGravityTimer -= Time.fixedDeltaTime;
+            }
+            else
+            {
+                enableGravity = true;
+            }
+        }
+        public void SetNoGravityT(float time)
+        {
+            if (time > disableGravityTimer)
+            {
+                disableGravityTimer = time;
+            }
         }
     }
 

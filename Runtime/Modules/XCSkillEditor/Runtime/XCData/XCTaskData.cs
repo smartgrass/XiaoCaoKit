@@ -79,12 +79,15 @@ namespace XiaoCao
         public Vector3 scale;
 
         public XCState State { get; set; }
+
         public TaskInfo Info { get; set; }
         public Transform Tran { get; set; }
         public Transform PlayerTF { get; set; }
         public ParticleSystem Ps { get; set; }
 
         public IXCCommand command { get; set; }
+
+        public bool HasStart { get; set; }
 
         public void OnTrigger(TaskInfo info)
         {
@@ -100,6 +103,7 @@ namespace XiaoCao
             }
             SetPos();
             State = XCState.Running;
+            HasStart = true;
         }
 
         private void InitPs(ParticleSystem ps)
@@ -111,15 +115,6 @@ namespace XiaoCao
                 main.simulationSpeed = Info.speed;
             }
             Ps.Play();
-        }
-
-        public void OnFrameUpdate(int frame)
-        {
-            if (frame>= endFrame && State == XCState.Running)
-            {
-                State = XCState.Stopped;
-                Hide();
-            }
         }
 
         //设置起始位置
@@ -145,8 +140,14 @@ namespace XiaoCao
         }
 
 
-        public void Hide()
+        //TODO 回收错误
+        //回收时机: 特效帧结束就回收
+        public void OnEnd()
         {
+            if (State != XCState.Running)
+            {
+                return;
+            }
             if (Ps)
             {
                 Ps.Stop();
@@ -155,8 +156,8 @@ namespace XiaoCao
             {
                 Tran.gameObject.SetActive(false);
             }
-
             PoolMgr.Inst.Release(ObjectPath, Tran.gameObject);
+            State = XCState.Stopped;
         }
 
     }

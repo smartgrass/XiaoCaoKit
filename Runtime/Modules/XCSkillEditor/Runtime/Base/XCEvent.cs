@@ -79,8 +79,6 @@ namespace XiaoCao
         /// <param name="startOffsetTime">超出触发时间的偏移量,一般用不上</param>
         public virtual void OnTrigger(float startOffsetTime)
         {
-            State = XCState.Start;
-       
             State = XCState.Running;
         }
         public virtual void OnFinish() 
@@ -104,8 +102,7 @@ namespace XiaoCao
     public enum XCState
     {
         Sleep, //未激活
-        Start, //已激活,等待执行
-        Running, //执行中
+        Running, //已激活,执行中
         Stopped  //结束/完成
     }
 

@@ -79,7 +79,7 @@ namespace XiaoCao
             }
         }
 
-        private static void Internal_Warn(string msg, object context = null)
+        private static void Internal_LogWarning(string msg, object context = null)
         {
             bool useUnityEngine = UseUnityEngine;
             if (useUnityEngine)
@@ -154,46 +154,46 @@ namespace XiaoCao
 
         #region Warn
         [Conditional("EnableLog")]
-        public static void Warn(object message)
+        public static void LogWarning(object message)
         {
             if (LogLevel >= LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), "", message);
-                Internal_Warn(msg, null);
+                Internal_LogWarning(msg, null);
                 WriteToFile(msg, false);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Warn(object message, object context)
+        public static void LogWarning(object message, object context)
         {
             if (LogLevel >= LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), "", message);
-                Internal_Warn(msg, context);
+                Internal_LogWarning(msg, context);
                 WriteToFile(msg, false);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Warn(string tag, string message)
+        public static void LogWarning(string tag, string message)
         {
             if (LogLevel >= LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), tag, message);
-                Internal_Warn(msg, null);
+                Internal_LogWarning(msg, null);
                 WriteToFile(msg, false);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Warn(string tag, string format, params object[] args)
+        public static void LogWarning(string tag, string format, params object[] args)
         {
             if (LogLevel >= LogLevel.Warn)
             {
                 string msg = string.Format(format, args);
                 msg = string.Format(WarnFormat, GetLogTime(), tag, msg);
-                Internal_Warn(msg, null);
+                Internal_LogWarning(msg, null);
                 WriteToFile(msg, false);
             }
         }
@@ -201,7 +201,7 @@ namespace XiaoCao
 
         #region Error
         [Conditional("EnableLog")]
-        public static void Error(object message)
+        public static void LogError(object message)
         {
             if (LogLevel >= LogLevel.Error)
             {
@@ -212,7 +212,7 @@ namespace XiaoCao
         }
 
         [Conditional("EnableLog")]
-        public static void Error(object message, object context)
+        public static void LogError(object message, object context)
         {
             if (LogLevel >= LogLevel.Error)
             {
@@ -223,7 +223,7 @@ namespace XiaoCao
         }
 
         [Conditional("EnableLog")]
-        public static void Error(string tag, string message)
+        public static void LogError(string tag, string message)
         {
             if (LogLevel >= LogLevel.Error)
             {
@@ -234,7 +234,7 @@ namespace XiaoCao
         }
 
         [Conditional("EnableLog")]
-        public static void Error(string tag, string format, params object[] args)
+        public static void LogError(string tag, string format, params object[] args)
         {
             if (LogLevel >= LogLevel.Error)
             {
@@ -370,36 +370,36 @@ namespace XiaoCao
         {
             if (Debuger.LogLevel >= LogLevel.Warn)
             {
-                Debuger.Warn(GetLogTag(obj), message);
+                Debuger.LogWarning(GetLogTag(obj), message);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Warn(this object obj, string format, params object[] args)
+        public static void LogWarning(this object obj, string format, params object[] args)
         {
             if (Debuger.LogLevel >= LogLevel.Warn)
             {
                 string message = string.Format(format, args);
-                Debuger.Warn(GetLogTag(obj), message);
+                Debuger.LogWarning(GetLogTag(obj), message);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Error(this object obj, string message)
+        public static void LogError(this object obj, string message)
         {
             if (Debuger.LogLevel >= LogLevel.Error)
             {
-                Debuger.Error(GetLogTag(obj), message);
+                Debuger.LogError(GetLogTag(obj), message);
             }
         }
 
         [Conditional("EnableLog")]
-        public static void Error(this object obj, string format, params object[] args)
+        public static void LogError(this object obj, string format, params object[] args)
         {
             if (Debuger.LogLevel >= LogLevel.Error)
             {
                 string message = string.Format(format, args);
-                Debuger.Error(GetLogTag(obj), message);
+                Debuger.LogError(GetLogTag(obj), message);
             }
         }
         /// <summary>

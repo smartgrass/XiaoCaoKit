@@ -1,6 +1,7 @@
 ﻿using Cinemachine.Utility;
 using NaughtyAttributes;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
@@ -12,13 +13,16 @@ namespace XiaoCao
 {
     public class Player0 : PlayerBase, IMsgReceiver
     {
+        public override void DataCreat()
+        {
+            playerData = new PlayerData0();
+            roleData = playerData;
+        }
 
-        public PlayerData0 playerData = new PlayerData0();
 
-        public PlayerShareData0 component = new PlayerShareData0();
+        public PlayerData0 playerData;
 
-        public override IData data => playerData;
-        public override IShareData componentData => component;
+        public PlayerShareData0 component => playerData.component;
 
 
         protected override void Awake()
@@ -29,20 +33,18 @@ namespace XiaoCao
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
             this.CreateGameObject();
+            this.team = 1;
             BaseInit();
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
             roleData.playerAttr.Init(savaData.lv);
-
+            
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             roleData.roleControl = component.control;
             component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
             component.movement = new PlayerMovement(this);
-            Enable = true;
 
             if (isMainPlayer)
             {
@@ -60,6 +62,8 @@ namespace XiaoCao
             component.control.Update();
             component.control.OnTaskUpdate();
             component.movement.Update();
+
+            DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             //考虑增加add模式
         }
 
@@ -181,6 +185,12 @@ namespace XiaoCao
             }
             owner.CheckBreakUpdate();
 
+            if (InputData.inputs[InputKey.LeftShift])
+            {
+                TryRoll();
+                return;
+            }
+
             if (InputData.skillInput != 0)
             {
                 TryPlaySkill(InputData.skillInput);
@@ -190,6 +200,28 @@ namespace XiaoCao
             {
                 TryNorAck();
             }
+        }
+
+        public void TryRoll()
+        {
+            int rollId = GetRollSkillId();
+
+            //判断冷缩
+            if (!AtkTimers.IsSkillReady(rollId))
+            {
+                DebugGUI.Log($"{rollId} cd", AtkTimers.GetWaitTime(rollId));
+                return;
+            }
+
+            AtkTimers.SetSkillEnterCD(rollId);
+
+            //停止&打断当前动作
+            if (IsBusy())
+            {
+                SetNoBusy(); 
+            }
+
+            RcpPlaySkill(rollId);
         }
 
         public void TryNorAck()
@@ -202,11 +234,22 @@ namespace XiaoCao
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
-            Debug.Log($"--- nextNorAckIndex {nextNorAckIndex}");
-
-            DebugGUI.Debug("nextNorAckIndex", nextNorAckIndex);
+            DebugGUI.Log("nextNorAckIndex", nextNorAckIndex);
 
             Data_P.curNorAckIndex = nextNorAckIndex;
+
+            //索敌
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3, 30, out float maxS, owner.team);
+            if (findRole != null)
+            {
+                owner.transform.RotaToPos(findRole.transform.position);
+                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
+            }
+            else
+            {
+                Debug.Log($"--- findRole no");
+            }
+
 
             RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
         }
@@ -289,6 +332,12 @@ namespace XiaoCao
             return dic[skillIndex].GetCurProccess();
         }
 
+        public float GetWaitTime(int skillIndex)
+        {
+            CheckDic(skillIndex);
+            return dic[skillIndex].GetWaitTime();
+        }
+
 
         public class SkillCdData
         {
@@ -311,6 +360,15 @@ namespace XiaoCao
                     return (cdFinishTime - Time.time) / cd;
                 }
                 return 1;
+            }
+
+            public float GetWaitTime()
+            {
+                if (IsCd)
+                {
+                    return (cdFinishTime - Time.time);
+                }
+                return 0;
             }
         }
     }
@@ -344,8 +402,10 @@ namespace XiaoCao
     }
 
     //玩家特有数据
-    public class PlayerData0 : IData
+    public class PlayerData0 : RoleData
     {
+        public PlayerShareData0 component = new PlayerShareData0();
+
         public int curNorAckIndex;
 
         public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格

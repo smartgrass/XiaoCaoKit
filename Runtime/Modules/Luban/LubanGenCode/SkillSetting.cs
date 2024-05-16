@@ -20,8 +20,8 @@ public sealed partial class SkillSetting :  Bright.Config.BeanBase
         Desc = _buf.ReadString();
         AckRate = _buf.ReadFloat();
         AddY = _buf.ReadFloat();
-        NoGravityT = _buf.ReadFloat();
-        TargetHor = _buf.ReadFloat();
+        HitTime = _buf.ReadFloat();
+        NoGTimeMulti = _buf.ReadFloat();
         AddHor = _buf.ReadFloat();
         HorForward = _buf.ReadFloat();
         HitStop = _buf.ReadFloat();
@@ -57,13 +57,13 @@ public sealed partial class SkillSetting :  Bright.Config.BeanBase
     /// </summary>
     public float AddY { get; private set; }
     /// <summary>
-    /// 上升时间/停止重力时间
+    /// 上升时间
     /// </summary>
-    public float NoGravityT { get; private set; }
+    public float HitTime { get; private set; }
     /// <summary>
-    /// 目标距离(未使用)
+    /// 无重力时间率
     /// </summary>
-    public float TargetHor { get; private set; }
+    public float NoGTimeMulti { get; private set; }
     /// <summary>
     /// 水平推力
     /// </summary>
@@ -109,8 +109,8 @@ public sealed partial class SkillSetting :  Bright.Config.BeanBase
         + "Desc:" + Desc + ","
         + "AckRate:" + AckRate + ","
         + "AddY:" + AddY + ","
-        + "NoGravityT:" + NoGravityT + ","
-        + "TargetHor:" + TargetHor + ","
+        + "HitTime:" + HitTime + ","
+        + "NoGTimeMulti:" + NoGTimeMulti + ","
         + "AddHor:" + AddHor + ","
         + "HorForward:" + HorForward + ","
         + "HitStop:" + HitStop + ","

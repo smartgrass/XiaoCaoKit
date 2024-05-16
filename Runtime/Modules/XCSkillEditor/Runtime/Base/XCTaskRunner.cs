@@ -16,13 +16,18 @@ namespace XiaoCao
     {
         public XCTask Task { get; set; }
 
-        private bool IsBreak { get; set; } //非正常执行
+        public bool IsBusy => CheckIsBusy(); //主Task占用中
 
-        public bool IsStop { get; set; }
+        public bool IsBreak { get; set; } //受到打断
 
-        public UnityEvent<XCTaskRunner> onEndEvent = new UnityEvent<XCTaskRunner>(); //无论退出还是完成都会执行
+        public bool IsAllStop { get; set; } //全部task结束
 
-        public UnityEvent<XCTaskRunner> onFinishEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
+        ///<see cref="Role.OnSkillFinish"/>  主Task结束时执行
+        public UnityEvent<XCTaskRunner> onMainEndEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
+
+        ///<see cref="Role.OnTaskEnd"/>
+        public UnityEvent<XCTaskRunner> onAllTaskEndEvent = new UnityEvent<XCTaskRunner>(); //所有Task不执行时触发
+
 
         public static AssetPool runnerPool;
 
@@ -34,6 +39,7 @@ namespace XiaoCao
                 return null;
             }
             info.speed = data.speed;
+            info.skillId = skillId;
             return CreatNewByData(data, info);
         }
         /// <summary>
@@ -43,7 +49,7 @@ namespace XiaoCao
         {
             if (runnerPool == null)
             {
-                GameObject go = new GameObject();
+                GameObject go = new GameObject($"Runner_{info.skillId}");
                 go.AddComponent<XCTaskRunner>();
                 runnerPool = new AssetPool(go);
             }
@@ -55,14 +61,14 @@ namespace XiaoCao
         }
         public void Init(XCTaskData data, TaskInfo info)
         {
-            Debug.Log($"--- skill {info.skillId} {data}");
+            //Debug.Log($"--- skill {info.skillId} {data}");
             //深复制
             var newData = SerializationUtility.CreateCopy(data) as XCTaskData;
 
             Task = XCTask.CreatTask(newData, info);
             newData.IsMainTask = true;
             Task.Runner = this;
-            this.IsStop = false;
+            IsAllStop = false;
             Task.StartRun();
         }
 
@@ -75,35 +81,57 @@ namespace XiaoCao
 
         public void AllEnd()
         {
-            OnFinish();
             OnEnd();
+            IsAllStop = true;
             Task = null;
             gameObject.SetActive(false);
-            Debug.Log($"--- Release {gameObject} ");
+            Debug.Log($"--- AllEnd {gameObject} ");
             runnerPool.Release(gameObject);
         }
-        //角色恢复自由控制
-        public void OnFinish()
+        //角色恢复自由控制时触发
+        public void OnNoBusy()
         {
-            if (!IsBreak && !Task.HasFinish)
+            if (!Task.IsNoBusyFlag)
             {
-                Task.HasFinish = true;
-                onFinishEvent?.Invoke(this);
-                onFinishEvent.RemoveAllListeners();
+                Task.IsNoBusyFlag = true;
+                if (onMainEndEvent != null)
+                {
+                    onMainEndEvent.Invoke(this);
+                    onMainEndEvent.RemoveAllListeners();
+                }
             }
         }
 
         public void SetBreak()
         {
-            IsBreak = false;
-            //主技能中断
-            Task.SetBreak();
-            OnEnd();
+            if (IsBusy)
+            {
+                IsBreak = false;
+                //主技能中断
+                Task.SetBreak();
+
+            }
         }
         private void OnEnd()
         {
-            onEndEvent?.Invoke(this);
-            onEndEvent.RemoveAllListeners();
+            if (onAllTaskEndEvent != null)
+            {
+                onAllTaskEndEvent.Invoke(this);
+                onAllTaskEndEvent.RemoveAllListeners();
+            }
+        }
+
+        private bool CheckIsBusy()
+        {
+            if (IsAllStop)
+            {
+                return false;
+            }
+            if (IsBreak)
+            {
+                return false;
+            }
+            return Task.IsBusy;
         }
     }
 

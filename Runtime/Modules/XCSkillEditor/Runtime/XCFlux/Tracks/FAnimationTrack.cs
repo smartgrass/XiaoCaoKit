@@ -61,7 +61,11 @@ namespace Flux
 
 		public static void DeleteAnimationPreviews( FSequence sequence )
 		{
-			Dictionary<int, FAnimationTrackCache> sequencePreviews = null;
+            if (sequence == null)
+            {
+				return;
+            }
+            Dictionary<int, FAnimationTrackCache> sequencePreviews = null;
 			if( _animPreviews.TryGetValue( sequence.GetInstanceID(), out sequencePreviews ) )
 			{
 				Dictionary<int, FAnimationTrackCache>.Enumerator e = sequencePreviews.GetEnumerator();

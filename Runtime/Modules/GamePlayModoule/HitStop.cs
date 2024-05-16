@@ -2,6 +2,7 @@
 using System.Collections;
 using XiaoCao;
 using DG.Tweening;
+using UnityEngine.TextCore;
 
 public class HitStop : MonoSingleton<HitStop>
 {
@@ -94,6 +95,7 @@ public class HitStop : MonoSingleton<HitStop>
 
 public static class HitTween
 {
+
     public static Tween DOHit(this CharacterController cc, float totalY, Vector3 horVec, float duration)
     {
         Transform tf = cc.transform;
