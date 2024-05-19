@@ -1,4 +1,4 @@
-﻿using Bright.Serialization;
+﻿using Luban;
 using System.IO;
 using UnityEngine;
 using XiaoCao;
@@ -9,6 +9,19 @@ namespace cfg
     {
         #region Get
         private static SkillSettingReader SkillSettingReader => LubanTables.Inst.Tables.SkillSettingReader;
+        private static LevelSettingReader LevelSettingReader => LubanTables.Inst.Tables.LevelSettingReader;
+
+
+        public static LevelSetting GetSkillSetting(int key)
+        {
+            var ret = LevelSettingReader.GetOrDefault(key);
+            if (ret == null)
+            {
+                //默认值
+                ret = LevelSettingReader.DataList[0];
+            }
+            return ret;
+        }
 
 
         public static SkillSetting GetSkillSetting(int skillId,int subSkillId)

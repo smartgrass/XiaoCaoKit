@@ -28,6 +28,17 @@ public class CachePool<T> where T : MonoBehaviour
     {
         this.prefab = prefab;
         this.cachedAmount = 0;
+    }    
+    
+    public CachePool(GameObject prefab, int newAmount)
+    {
+        this.prefab = prefab;
+        prefab.gameObject.SetActive(false);
+        if (prefab.GetComponent<T>() == null)
+        {
+            Debug.LogError($"--- prefab need component{typeof(T)} ");
+        }
+        UpdateCachedAmount(newAmount);
     }
 
 
@@ -51,6 +62,8 @@ public class CachePool<T> where T : MonoBehaviour
 
     private T CreatNew()
     {
-        return Object.Instantiate(prefab).GetComponent<T>();
+        var obj = Object.Instantiate(prefab);
+        obj.SetActive(true);
+        return obj.GetComponent<T>();
     }
 }

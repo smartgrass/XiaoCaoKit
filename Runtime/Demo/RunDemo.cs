@@ -15,8 +15,13 @@ namespace XiaoCao
         {
 
             //这里做点编辑器开关
-            Debuger.LogLevel = LogLevel.Info;
-            //Debuger.LogLevel = LogLevel.Error;
+            //Debuger.LogLevel = LogLevel.Info;
+            Debuger.LogLevel = LogLevel.Error;
+
+            if (Application.isEditor)
+            {
+                GameData.Init();
+            }
 
             //初始化
             await InitYooAsset();
@@ -24,7 +29,6 @@ namespace XiaoCao
             Debuger.Log("==== InitYooAsset Finish ====");
 
             //版本判断 无
-
 
             //玩家数据
             LoadPlayerData();
@@ -44,7 +48,6 @@ namespace XiaoCao
             }
 
 
-
         }
 
         private void LoadPlayerData()
@@ -55,6 +58,8 @@ namespace XiaoCao
 
             //读取存档数据
             var data0 = SavaMgr.ReadData<PlayerSaveData>(out bool isSuc);
+
+            data0.CheckNull();
 
             GameData.playerSaveData = data0;
 

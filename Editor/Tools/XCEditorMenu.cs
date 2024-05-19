@@ -250,6 +250,7 @@ namespace XiaoCaoEditor
                 }
             }
 
+            EditorUtility.SetDirty(component);
 
             static List<FieldInfo> GetFields(Type type)
             {

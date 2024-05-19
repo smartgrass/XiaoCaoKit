@@ -392,13 +392,28 @@ namespace XiaoCao
         public int raceId = 1;
 
 
-        public skillBarData skillBarData = new skillBarData();
+        public SkillBarData skillBarData = new SkillBarData();
 
-        public Inventory inventory;
-
+        public Inventory inventory = new Inventory();
         //持有物
         public List<Item> holdItems = new List<Item>();
 
+        //反序列化读取的数据, 可能会出现空的现象
+        internal void CheckNull()
+        {
+            if (skillBarData == null)
+            {
+                skillBarData = new SkillBarData();
+            }
+            if (inventory == null)
+            {
+                inventory = new Inventory();
+            }
+            if (holdItems == null)
+            {
+                holdItems = new List<Item>();
+            }
+        }
     }
 
     //玩家特有数据
@@ -414,7 +429,7 @@ namespace XiaoCao
     }
 
 
-    public class skillBarData
+    public class SkillBarData
     {
         public int[] onSkill = new int[GameSetting.SkillCountOnBar];
     }

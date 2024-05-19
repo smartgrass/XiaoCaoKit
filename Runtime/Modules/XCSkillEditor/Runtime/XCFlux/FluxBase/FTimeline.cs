@@ -41,12 +41,18 @@ namespace Flux
 		public override FSequence Sequence { get { return _container.Sequence; } }
 
 		public override Transform Owner { get { return _owner; } }
+		public Transform GerOwnerOrFind { 
+			get {
+                if (_owner == null && !string.IsNullOrEmpty(_ownerPath))
+                    _owner = transform.Find(_ownerPath);
+                return _owner; 
+			} 
+		}
 
 		public void Awake()
 		{
-			if( _owner == null && !string.IsNullOrEmpty(_ownerPath) )
-				_owner = transform.Find( _ownerPath );
-		}
+			var get = GerOwnerOrFind;
+        }
 
 		/// @brief Sets the owner of this timeline
 		public void SetOwner( Transform owner ) { 

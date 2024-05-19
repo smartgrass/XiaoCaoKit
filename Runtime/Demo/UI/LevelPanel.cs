@@ -1,18 +1,22 @@
-﻿using System;
+﻿using cfg;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace XiaoCao
 {
-    public class LevelSelectionPanel : StandardView
+    public class LevelPanel : StandardPanel<UIData0>
     {
         public int num = 5;
 
-        public GameObject prefab;
+        public GameObject levelPrefab;
 
         public CachePool<ImgBtn> cachePool;
 
+        public Transform content;
+
+        public Transform levelsParent;
 
         public override void Init()
         {
@@ -22,18 +26,30 @@ namespace XiaoCao
             }
 
             base.Init();
-            cachePool = new CachePool<ImgBtn>(prefab);
-            cachePool.UpdateCachedAmount(num);
+            cachePool = new CachePool<ImgBtn>(levelPrefab, num);
 
             for (int i = 0; i < num; i++)
             {
                 int tmp = i;
                 cachePool.cacheList[i].index = tmp;
 
+                cachePool.cacheList[i].transform.SetParent(levelsParent);
+
                 cachePool.cacheList[i].button.onClick.AddListener(() => { OnSelectButton(i); });
             }
             IsInited = true;
         }
+
+
+        public void LoadData()
+        {
+            //图标,标题,难度,目标关卡->So文件
+
+            //LevelSettingHelper.
+
+            //LubanTables.Inst.
+        }
+
 
         public override void OnCloseBtnClick()
         {
@@ -64,6 +80,7 @@ namespace XiaoCao
         {
             Debug.Log($"--- {index}");
         }
+
     }
 
 

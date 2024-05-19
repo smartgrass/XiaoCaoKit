@@ -30,6 +30,8 @@ public class DebugGUI : MonoBehaviour
     // 单例实例
     private static DebugGUI instance;
 
+    public static bool IsShow;
+
     // 获取DebugGUI实例的方法
     public static DebugGUI GetInstance()
     {
@@ -44,6 +46,12 @@ public class DebugGUI : MonoBehaviour
 
     void OnGUI()
     {
+        if (!IsShow)
+        {
+            return;
+        }
+
+
         //GUI.skin.font.fontSize * 
         guiStyle.fontSize = (int)(Screen.height / lineCount);
         lineHeight = guiStyle.fontSize;

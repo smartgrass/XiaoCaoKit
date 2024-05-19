@@ -6,7 +6,7 @@ namespace XiaoCao
     public class SkillBarHud : MonoBehaviour
     {
         public GameObject prefab;
-        public skillBarData barData => PlayerSaveData.Current.skillBarData;
+        public SkillBarData BarData => PlayerSaveData.Current.skillBarData;
 
         public CachePool<SkillSlot> cachePool;
 
@@ -16,19 +16,18 @@ namespace XiaoCao
 
         public void Init()
         {
-            cachePool = new CachePool<SkillSlot>(prefab);
-            cachePool.UpdateCachedAmount(SkillCount);
+            cachePool = new CachePool<SkillSlot>(prefab, SkillCount);
             CheckImg();
         }
 
 
-        private void CheckImg()
+        private void CheckImg()         
         {
             atkTimer = GameDataCommon.Current.player0.component.atkTimers;
             for (int i = 0; i < SkillCount; i++)
             {
                 var solt = cachePool.cacheList[i];
-                int skillndex = barData.onSkill[i];
+                int skillndex = BarData.onSkill[i];
                 solt.image.sprite = atkTimer.playerSetting.GetSkillCd(skillndex).sprite;
             }
         }
@@ -44,7 +43,7 @@ namespace XiaoCao
             for (int i = 0; i < SkillCount; i++)
             {
                 var solt = cachePool.cacheList[i];
-                float process = atkTimer.GetProcess(barData.onSkill[i]);
+                float process = atkTimer.GetProcess(BarData.onSkill[i]);
 
                 bool isCd = process < 1;
                 if (solt.isCold && !isCd)

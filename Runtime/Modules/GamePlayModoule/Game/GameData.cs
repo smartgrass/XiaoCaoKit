@@ -9,10 +9,18 @@ namespace XiaoCao
     {
         //不会清空
         public static GameDataCommon commonData = new GameDataCommon();
-        //定时请空
+        //过关卡时请空
         public static BattleData battleData = new BattleData();
 
-        public static PlayerSaveData playerSaveData = new PlayerSaveData();
+        //由玩家缓存数据读取 , 不需要初始值
+        public static PlayerSaveData playerSaveData;
+
+        public static void Init()
+        {
+            commonData = new GameDataCommon();
+            battleData = new BattleData();
+        }
+
     }
 
     public class GameDataCommon

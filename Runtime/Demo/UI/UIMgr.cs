@@ -12,7 +12,9 @@ namespace XiaoCao
 
         public SkillBarHud skillBarHud;
 
-        public LevelSelectionPanel levelSelectionPanel;
+        public LevelPanel levelPanel;
+
+        public DebugPanel debugPanel;
 
         //懒加载 或 主动加载
 
@@ -21,11 +23,12 @@ namespace XiaoCao
             base.Init();
             battleHud?.Init();
             skillBarHud?.Init();
+            debugPanel?.Init();
         }
 
-        public void ShowLevelSelectionView()
+        public void ShowLevelView()
         {
-            levelSelectionPanel.Show();
+            levelPanel.Show();
         }
 
 

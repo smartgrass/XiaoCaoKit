@@ -80,6 +80,7 @@ public class ResMgr
     #region Init
     public static void InitYooAsset()
     {
+
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包

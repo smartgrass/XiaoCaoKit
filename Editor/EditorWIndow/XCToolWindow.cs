@@ -4,7 +4,6 @@
 // ReSharper disable once CheckNamespace
 using NaughtyAttributes;
 using UnityEditor;
-using UnityEngine;
 using XiaoCao;
 using XiaoCaoEditor;
 
@@ -12,32 +11,23 @@ namespace AssetEditor.Editor
 {
     public class XCToolWindow : XiaoCaoWindow
     {
-        public GameObject prefabInstance;
-        public GameObject prefab;
-
         [MenuItem(XCEditorTools.XCToolWindow)]
-        static void Open()
+        public static XCToolWindow Open()
         {
-            OpenWindow<XCToolWindow>("XCToolWindow");
+            return OpenWindow<XCToolWindow>("XCToolWindow");
         }
 
+        public const int Line1 = 1;
 
-        [Button]
-        public void ReplaceToPrefaB()
+
+        [Button("选中角色",Line1)]
+        void SelectPlayer()
         {
-            //PrefabUtility.UnpackPrefabInstance(prefabInstance, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
-
-            //string newPath = AssetDatabase.GetAssetPath(prefab);
-
-
-
-            //PrefabUtility.SaveAsPrefabAssetAndConnect(prefabInstance, newPath, InteractionMode.AutomatedAction);
-
-            Debug.Log($"--- Do");
+            if (GameDataCommon.Current.gameState ==  GameState.Running )
+            {
+                Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
+            }
         }
-
-
-
     }
 }
 #endif

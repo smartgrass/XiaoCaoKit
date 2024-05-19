@@ -1,4 +1,5 @@
-﻿using cfg;
+﻿using AssetEditor.Editor;
+using cfg;
 using Flux;
 using FluxEditor;
 using OdinSerializer;
@@ -27,6 +28,7 @@ public class SaveXCTask
     public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "生成数据&代码";
 
     public const string SavaCurSeqName = XCEditorTools.XiaoCaoGameObject + "保存Sequence技能&代码";
+    public const string RepalcePrefabName = XCEditorTools.XiaoCaoGameObject + "打开替换工具(skillEditor)";
 
     public static XCSeqSetting fSeqSetting;
     public static FSequence curSequence;
@@ -39,7 +41,7 @@ public class SaveXCTask
     }
 
     [MenuItem(SavaAllSeqName)]
-    private static void Sava()
+    public static void SavaAll()
     {
         var Scene = SceneManager.GetSceneByName("SkillEditor");
         GameObject root = Scene.GetRootGameObjects().First((o) => o.name == "Editor");
@@ -64,6 +66,15 @@ public class SaveXCTask
                 SavaOneSeq(seq);
             }
         }
+    }
+
+    [MenuItem(RepalcePrefabName)]
+    private static void RepalcePrefab()
+    {
+        var win = XCRepalceToolWin.Open();
+        win.instance = Selection.activeGameObject as GameObject;
+
+
     }
 
     public static void SavaCurSeq()
@@ -99,7 +110,7 @@ public class SaveXCTask
             XCTaskData data = GetTaskData(ref mainData, timelineId);
             data.speed = curSequence.Speed;
             bool hasObjectData = false;
-            foreach (var _track in _timeline.Tracks.Where((t)=>t.enabled))
+            foreach (var _track in _timeline.Tracks.Where((t) => t.enabled))
             {
                 if (!isMain && !hasObjectData)
                 {
@@ -293,6 +304,7 @@ public class SaveXCTask
         if (msg.Contains("== succ =="))
         {
             Debug.Log("Luban succ!");
+            AssetDatabase.Refresh();
         }
         else
         {

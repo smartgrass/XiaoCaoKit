@@ -11,9 +11,9 @@ namespace XiaoCao
         public List<Item> items = new List<Item>(); // 存储物品的列表
 
         // 添加物品到背包
-        public void AddItem(string itemName, ItemType itemType, int itemCount)
+        public void AddItem(ItemType itemType, string itemName,  int itemCount)
         {
-            Item newItem = new Item(itemName, itemType, itemCount);
+            Item newItem = new Item(itemType, itemName,  itemCount);
             items.Add(newItem);
             Debug.Log("Added " + newItem.name + " to inventory. Count: " + newItem.count);
         }
@@ -76,11 +76,11 @@ namespace XiaoCao
     [System.Serializable]
     public class Item
     {
-        public string name;
         public ItemType type;
+        public string name;
         public int count;
 
-        public Item(string itemName, ItemType itemType, int itemCount)
+        public Item( ItemType itemType, string itemName, int itemCount)
         {
             name = itemName;
             type = itemType;

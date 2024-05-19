@@ -126,7 +126,7 @@ namespace Flux
         }
 
         public override FSequence Sequence { get { return _timeline.Sequence; } }
-        public override Transform Owner { get { return _timeline.Owner; } }
+        public override Transform Owner { get { return _timeline.GerOwnerOrFind; } }
 
         public override void Init()
         {
