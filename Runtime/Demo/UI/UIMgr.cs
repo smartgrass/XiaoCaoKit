@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -16,6 +17,8 @@ namespace XiaoCao
 
         public DebugPanel debugPanel;
 
+        //public Stack<ViewBase> panelStack = new Stack<XiaoCao.ViewBase>();
+
         //懒加载 或 主动加载
 
         public override void Init()
@@ -24,12 +27,26 @@ namespace XiaoCao
             battleHud?.Init();
             skillBarHud?.Init();
             debugPanel?.Init();
+
         }
 
-        public void ShowLevelView()
+        public void ShowView(TriggerUIType type)
         {
-            levelPanel.Show();
+            if (type == TriggerUIType.LevelPanel)
+            {
+                levelPanel.Show();
+            }
+
         }
+
+        public void HideView(TriggerUIType type)
+        {
+            if (type == TriggerUIType.LevelPanel)
+            {
+                levelPanel.Hide();
+            }
+        }
+
 
 
     }

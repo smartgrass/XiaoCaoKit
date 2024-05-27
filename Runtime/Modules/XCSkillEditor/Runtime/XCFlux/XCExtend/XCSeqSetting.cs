@@ -18,6 +18,7 @@ namespace XiaoCao
         public static readonly string PerfabDir = "Assets/_Res/SkillPrefab";
 
         public static readonly string HitEffectDir = "Assets/_Res/SkillPrefab/Hit";
+        public static readonly string SpriteDir = "Assets/_Res/SpriteDir";
 
         public static string GetSkillPrefabDir(RoleType roleType)
         {
@@ -43,6 +44,11 @@ namespace XiaoCao
         {
             return $"{HitEffectDir}/Hit_{index}.prefab";
         }
+
+        public static string GetLevelImage(int level)
+        {
+            return $"{SpriteDir}/{level}.png";
+;        }
     }
 
     ///<see cref="XCPathConfig"/>

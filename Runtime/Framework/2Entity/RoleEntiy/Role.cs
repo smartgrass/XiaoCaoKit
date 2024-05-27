@@ -76,6 +76,7 @@ namespace XiaoCao
 
             string baseRole = XCPathConfig.GetRoleBasePath(RoleType);
             GameObject baseGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
+            baseGo.tag = Tags.PLAYER;
             idRole = baseGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;

@@ -10,14 +10,24 @@ namespace cfg
         #region Get
         private static SkillSettingReader SkillSettingReader => LubanTables.Inst.Tables.SkillSettingReader;
         private static LevelSettingReader LevelSettingReader => LubanTables.Inst.Tables.LevelSettingReader;
+        private static ChapterSettingReader ChapterSettingReader => LubanTables.Inst.Tables.ChapterSettingReader;
 
+        public static ChapterSetting GetChapterSetting(int key)
+        {
+            var ret = ChapterSettingReader.GetOrDefault(key);
+            if (ret == null)
+            {
+                //默认值
+                ret = ChapterSettingReader.DataList[0];
+            }
+            return ret;
+        }
 
-        public static LevelSetting GetSkillSetting(int key)
+        public static LevelSetting GetLevelSetting(int key)
         {
             var ret = LevelSettingReader.GetOrDefault(key);
             if (ret == null)
             {
-                //默认值
                 ret = LevelSettingReader.DataList[0];
             }
             return ret;

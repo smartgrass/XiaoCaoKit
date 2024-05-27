@@ -12,5 +12,4 @@ namespace XiaoCao
             gameObject.SetActive(isActive);
         }
     }
-
 }

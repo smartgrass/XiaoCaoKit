@@ -18,7 +18,6 @@ public sealed partial class ChapterSetting : Luban.BeanBase
     {
         Id = _buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Levels = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); Levels.Add(_e0);}}
-        Reward = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf));
     }
 
     public static ChapterSetting DeserializeChapterSetting(ByteBuf _buf)
@@ -31,17 +30,12 @@ public sealed partial class ChapterSetting : Luban.BeanBase
     /// </summary>
     public readonly int Id;
     public readonly System.Collections.Generic.List<int> Levels;
-    /// <summary>
-    /// 奖励
-    /// </summary>
-    public readonly XiaoCao.Item Reward;
    
     public const int __ID__ = 1556673891;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
-        
         
         
     }
@@ -51,7 +45,6 @@ public sealed partial class ChapterSetting : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "levels:" + Luban.StringUtil.CollectionToString(Levels) + ","
-        + "reward:" + Reward + ","
         + "}";
     }
 }

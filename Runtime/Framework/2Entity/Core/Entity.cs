@@ -26,21 +26,21 @@ namespace XiaoCao
 
         #region Tag
 
-        public HashSet<int> Tags = new HashSet<int>();
+        public HashSet<int> TagHash = new HashSet<int>();
 
         public void AddTag(int tag)
         {
-            Tags.Add(tag);
+            TagHash.Add(tag);
         }
 
         public bool HasTag(int tag)
         {
-            return Tags.Contains(tag);
+            return TagHash.Contains(tag);
         }
 
         public void RemoveTag(int tag)
         {
-            Tags.Remove(tag);
+            TagHash.Remove(tag);
         }
 
         public void Dispose()

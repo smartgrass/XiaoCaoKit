@@ -301,7 +301,7 @@ public class SaveXCTask
     {
         string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
         var msg = CommandHelper.ExecuteBatCommand(path);
-        if (msg.Contains("== succ =="))
+        if (msg.Contains("bye~"))
         {
             Debug.Log("Luban succ!");
             AssetDatabase.Refresh();

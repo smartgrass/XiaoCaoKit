@@ -17,7 +17,9 @@ public sealed partial class LevelSetting : Luban.BeanBase
     public LevelSetting(ByteBuf _buf) 
     {
         Id = _buf.ReadInt();
+        Title = _buf.ReadString();
         ImgName = _buf.ReadString();
+        Reward = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf));
     }
 
     public static LevelSetting DeserializeLevelSetting(ByteBuf _buf)
@@ -30,9 +32,17 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// </summary>
     public readonly int Id;
     /// <summary>
+    /// 标题
+    /// </summary>
+    public readonly string Title;
+    /// <summary>
     /// 图片id
     /// </summary>
     public readonly string ImgName;
+    /// <summary>
+    /// 奖励
+    /// </summary>
+    public readonly XiaoCao.Item Reward;
    
     public const int __ID__ = -865590708;
     public override int GetTypeId() => __ID__;
@@ -41,13 +51,17 @@ public sealed partial class LevelSetting : Luban.BeanBase
     {
         
         
+        
+        
     }
 
     public override string ToString()
     {
         return "{ "
         + "id:" + Id + ","
+        + "title:" + Title + ","
         + "imgName:" + ImgName + ","
+        + "reward:" + Reward + ","
         + "}";
     }
 }

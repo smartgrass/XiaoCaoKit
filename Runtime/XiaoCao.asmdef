@@ -6,7 +6,8 @@
         "YooAsset",
         "UniTask",
         "UniTask.TextMeshPro",
-        "Cinemachine"
+        "Cinemachine",
+        "FancyScrollView"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

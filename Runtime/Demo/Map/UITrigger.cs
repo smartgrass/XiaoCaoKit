@@ -12,21 +12,28 @@ namespace XiaoCao
         {
             //情况1. 完成关卡离开
             //GameMgr.Inst.FinishLevel(sceneId);
-
-            //2 进入关卡 ,显示选关界面
-            UIMgr.Inst.ShowLevelView();
+            UIMgr.Inst.ShowView(type);
         }
+        [Button]
+        private void TriggerExit()
+        {
+            UIMgr.Inst.HideView(type);
 
+        }
         private void OnTriggerEnter(Collider other)
         {
+            Debug.Log($"--- {other}");
             if (other.CompareTag(Tags.PLAYER))
             {
-                if (type == TriggerUIType.LevelPanel)
-                {
-                    Trigger();
-                }
+                Trigger();
             }
         }
+
+        private void OnTriggerExit(Collider other)
+        {
+            TriggerExit();
+        }
+
     }
 
     public enum TriggerUIType
