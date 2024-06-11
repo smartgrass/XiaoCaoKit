@@ -5,7 +5,7 @@ namespace XiaoCao
 {
     public class UITrigger : MonoBehaviour
     {
-        public TriggerUIType type;
+        public UIPanelType type;
 
         [Button]
         private void Trigger()
@@ -22,7 +22,6 @@ namespace XiaoCao
         }
         private void OnTriggerEnter(Collider other)
         {
-            Debug.Log($"--- {other}");
             if (other.CompareTag(Tags.PLAYER))
             {
                 Trigger();
@@ -36,8 +35,9 @@ namespace XiaoCao
 
     }
 
-    public enum TriggerUIType
+    public enum UIPanelType
     {
+        Null = -1,
         LevelPanel,
     }
 

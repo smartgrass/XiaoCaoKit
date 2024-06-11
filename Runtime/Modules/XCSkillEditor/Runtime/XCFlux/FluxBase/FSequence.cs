@@ -54,6 +54,9 @@ namespace Flux
         [SerializeField]
 		[SeqHeaderShow(1, 220, 140,"Setting")]
 		private XCSeqSetting _seqSetting;
+        [SerializeField]
+        [SeqHeaderShow(1, 380, 100, "声音")]
+        public bool isPlayClip = true;
 
         public XCSeqSetting SeqSetting { get => _seqSetting; set => _seqSetting = value; }
         public string Des { get => _des; set => _des = value; }

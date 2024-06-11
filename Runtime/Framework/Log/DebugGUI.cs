@@ -20,7 +20,7 @@ public class DebugGUI : MonoBehaviour
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
 
-    private float SetStartY = 10; 
+    private float SetStartY = 10;
     private float lineCount = 20; //行数决定字体大小
     private float clearInterval = 5; //定时刷新
 
@@ -30,7 +30,8 @@ public class DebugGUI : MonoBehaviour
     // 单例实例
     private static DebugGUI instance;
 
-    public static bool IsShow;
+    private static bool IsShow { get { return "DebugGUI/IsShow".GetKeyBool(); } }
+    private static bool IsOtherShowing { get { return "DebugGUI/IsOtherShowing".GetKeyBool(); } }
 
     // 获取DebugGUI实例的方法
     public static DebugGUI GetInstance()
@@ -49,16 +50,18 @@ public class DebugGUI : MonoBehaviour
         if (!IsShow)
         {
             return;
+        }        
+        
+        if (IsOtherShowing)
+        {
+            return;
         }
-
 
         //GUI.skin.font.fontSize * 
         guiStyle.fontSize = (int)(Screen.height / lineCount);
         lineHeight = guiStyle.fontSize;
         guiStyle.normal.textColor = Color.blue;
 
-        // 调用示例
-        AddDebugInfo("FPS", 1 / Time.deltaTime);
         // 添加更多的调试信息...
         startY = SetStartY;
         // 显示所有信息

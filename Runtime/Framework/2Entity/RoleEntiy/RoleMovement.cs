@@ -111,7 +111,7 @@ namespace XiaoCao
 
 
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
-            DebugGUI.Log(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
+            //DebugGUI.Log(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
 
             cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
@@ -121,7 +121,7 @@ namespace XiaoCao
 
         void CheckBackToIdle(bool isInput)
         {
-            DebugGUI.Log("skillState", Data_R.skillState);
+            //DebugGUI.Log("skillState", Data_R.skillState);
             if (Data_R.skillState is ESkillState.SkillEnd && isInput)
             {
                 Data_R.skillState = ESkillState.Idle;

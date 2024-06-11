@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class UIMgr : MonoSingletonPrefab<UIMgr>
+    public class UIMgr : MonoSingletonPrefab<UIMgr>,IMgr
     {
         //UI分类:
         //静态ui ->游戏开始就加载    hud
@@ -17,7 +17,7 @@ namespace XiaoCao
 
         public DebugPanel debugPanel;
 
-        //public Stack<ViewBase> panelStack = new Stack<XiaoCao.ViewBase>();
+        public HashSet<PanelBase> panels = new HashSet<PanelBase>();
 
         //懒加载 或 主动加载
 
@@ -30,24 +30,49 @@ namespace XiaoCao
 
         }
 
-        public void ShowView(TriggerUIType type)
+        public void ShowView(UIPanelType type)
         {
-            if (type == TriggerUIType.LevelPanel)
-            {
-                levelPanel.Show();
-            }
-
+            PanelBase panel = GetPanel(type);
+            panel.Show();
+            panels.Add(panel);
+            CheckPlayInputAble();
         }
 
-        public void HideView(TriggerUIType type)
+        public void HideView(UIPanelType type)
         {
-            if (type == TriggerUIType.LevelPanel)
+            PanelBase panel = GetPanel(type);
+            if (panel && panel.IsShowing)
             {
-                levelPanel.Hide();
+                panel.IsShowing = false;
+                panel.Hide();
+                panels.Remove(levelPanel);
             }
+            CheckPlayInputAble();
         }
 
+        //屏蔽输入
+        void CheckPlayInputAble()
+        {
+            bool can = true;
+            foreach (var panel in panels)
+            {
+                if (panel.StopPlayerControl && panel.IsShowing)
+                {
+                    can = false;
+                }
+            }
+            GameData.battleData.CanPlayerControl.SetValue(can);
+        }
 
+        public PanelBase GetPanel(UIPanelType type)
+        {
+            if (type == UIPanelType.LevelPanel)
+            {
+                return levelPanel;
+            }
+            Debuger.LogError($"--- no panel {type}");
+            return null;
+        }
 
     }
 }

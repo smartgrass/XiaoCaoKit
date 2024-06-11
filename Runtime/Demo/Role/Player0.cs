@@ -38,7 +38,7 @@ namespace XiaoCao
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
             roleData.playerAttr.Init(savaData.lv);
-            
+
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             roleData.roleControl = component.control;
@@ -107,8 +107,14 @@ namespace XiaoCao
         public PlayerInput(Player0 owner) : base(owner) { }
 
         public PlayerInputData data => Data_P.inputData;
+
         public override void Update()
         {
+            if (!GameData.battleData.CanPlayerControl)
+            {
+                return;
+            }
+
             data.x = Input.GetAxis("Horizontal");
             data.y = Input.GetAxis("Vertical");
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
@@ -218,7 +224,7 @@ namespace XiaoCao
             //停止&打断当前动作
             if (IsBusy())
             {
-                SetNoBusy(); 
+                SetNoBusy();
             }
 
             RcpPlaySkill(rollId);

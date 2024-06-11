@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
@@ -156,6 +156,30 @@ namespace XiaoCaoEditor
         public static Object[] ToObjectArray(this IEnumerable<UnityEngine.Object> list)
         {
             return list.ToArray();
+        }
+
+        /// <summary>
+        /// 查询字符在文本中的行数位置
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        public static int GetLineNumber(string filePath, string searchString)
+        {
+            int lineNumber = 0;
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    lineNumber++;
+                    if (line.Contains(searchString))
+                    {
+                        return lineNumber;
+                    }
+                }
+            }
+            return 0; // 如果未找到，返回0
         }
 
     }

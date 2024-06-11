@@ -7,9 +7,13 @@ using XiaoCao;
 namespace XiaoCao
 {
     ///<see cref="GameDataCommon"/>
-    public class GameMgr : MonoSingleton<GameMgr>
+    public class GameMgr : MonoSingleton<GameMgr>, IMgr
     {
-        #region static
+        #region AllMgr
+
+        public EntityMgr entityMgr;
+        public SoundMgr soundMgr;
+
 
         #endregion
         public override void Init()
@@ -78,7 +82,6 @@ namespace XiaoCao
         #endregion
     }
 
-
     public class SceneIndex
     {
         public const int InitScene = 0;
@@ -89,4 +92,8 @@ namespace XiaoCao
 
     ///สนำร<see cref="GameMgr"/>
     public class SceneMgr { }
+
+    
+
+
 }

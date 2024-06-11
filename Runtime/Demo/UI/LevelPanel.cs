@@ -13,6 +13,8 @@ namespace XiaoCao
 {
     public class LevelPanel : StandardPanel<UIData0>
     {
+        public override UIPanelType panelType => UIPanelType.LevelPanel;
+
         public int num = 5;
 
         [SerializeField] XCScrollView scrollView = default;
@@ -96,6 +98,8 @@ namespace XiaoCao
         public override void Hide()
         {
             gameObject.SetActive(false);
+            IsShowing = false;
+            UIMgr.Inst.HideView(panelType);
         }
 
         public override void Show()
@@ -104,7 +108,7 @@ namespace XiaoCao
             {
                 Init();
             }
-
+            IsShowing = true;
             gameObject.SetActive(true);
         }
 

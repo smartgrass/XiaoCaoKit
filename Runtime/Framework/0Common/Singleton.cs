@@ -48,3 +48,6 @@ public abstract class Singleton<T> where T : class, new()
 
 //标记为需要主动清除, 定时清除
 public interface IClearCache { }
+
+//管理器抽象
+public interface IMgr { }

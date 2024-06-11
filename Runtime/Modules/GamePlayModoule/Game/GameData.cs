@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace XiaoCao
         public static BattleData battleData = new BattleData();
 
         //由玩家缓存数据读取 , 不需要初始值
-        public static PlayerSaveData playerSaveData;
+        public static PlayerSaveData playerSaveData = null;
 
         public static void Init()
         {
@@ -39,12 +40,26 @@ namespace XiaoCao
 
     public class BattleData
     {
+        public BattleData()
+        {
+            CanPlayerControl.RegisterListener(OnControlChange);
+        }
+
         public static BattleData Current => GameData.battleData;
 
         public HashSet<string> map = new HashSet<string>();
 
         public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();
 
+        public bool CanPlayerControl1 = true;
+
+        public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
+
+
+        public void OnControlChange(bool v)
+        {
+            Debug.Log($"--- OnControlChange {v}");
+        }
 
     }
 
@@ -72,8 +87,8 @@ namespace XiaoCao
             }
             return Layers.ENEMY_ATK;
         }
-    
-    
+
+
         public static int GetTeamGroundCheckMash(int team)
         {
             if (team == 1)
@@ -133,6 +148,70 @@ namespace XiaoCao
         {
             return (int)t;
         }
+    }
+
+    /// <summary>
+    /// 值类型监听
+    /// </summary>
+    /// <typeparam name="T">数据类型</typeparam>
+    public class DataListener<T>
+    {
+        public DataListener(T initialValue = default(T))
+        {
+            _data = initialValue;
+        }
+
+        // 声明事件，当有数据变化时触发  
+        public event Action<T> OnValueChanged;
+
+        private T _data;
+
+        // 公共的getter  
+        public T Data
+        {
+            get { return _data; }
+        }
+
+        // 提供一个方法来设置数据并触发事件  
+        public void SetValue(T value)
+        {
+            T oldValue = _data;
+            _data = value;
+            OnValueChanged?.Invoke(value);
+        }
+        // 不触发回调
+        public void SetValueQuiet(T value)
+        {
+            _data = value;
+        }
+
+
+        // 示例：注册监听事件  
+        public void RegisterListener(Action<T> listener)
+        {
+            OnValueChanged += listener;
+        }
+
+        // 示例：注销监听事件  
+        public void UnregisterListener(Action<T> listener)
+        {
+            OnValueChanged -= listener;
+        }
+
+
+        // 隐式转换到T  
+        public static implicit operator T(DataListener<T> wrapper)
+        {
+            return wrapper._data;
+        }        
+
+        //// 隐式转换到T  
+        //public static implicit operator DataListener<T> (T wrapper)
+        //{
+        //    DataListener<T> v = new DataListener<T>();
+        //    v.SetValueQuiet (wrapper);
+        //    return v;
+        //}
     }
 
 }

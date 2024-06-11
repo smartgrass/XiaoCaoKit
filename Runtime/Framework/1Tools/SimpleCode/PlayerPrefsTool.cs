@@ -8,7 +8,7 @@ public static class PlayerPrefsTool
     {
         PlayerPrefs.SetInt(key,isOn.ToInt());
     }
-    public static bool GetKeyBool(this string key,bool isOn)
+    public static bool GetKeyBool(this string key)
     {
         return PlayerPrefs.GetInt(key).ToBool();
     }

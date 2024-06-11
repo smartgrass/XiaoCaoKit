@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEditor;
 using UnityEditor.SearchService;
@@ -204,7 +205,7 @@ public class SaveXCTask
             Debug.Log($"--- {taskData.objectData.ObjectPath} isPs");
             return;
         }
-        else if (DefaultXCEvents.Contains(eventType))
+        else if (HasOverrideToXCEvent(eventType))
         {
             _track.Events.ForEach((e) => taskData._events.Add(e.ToXCEvent()));
         }
@@ -219,6 +220,22 @@ public class SaveXCTask
         //排序 _events
         taskData.SortEvents();
 
+    }
+
+    private static bool HasOverrideToXCEvent(Type fEventType)
+    {
+        BindingFlags all = (BindingFlags)~BindingFlags.Default;
+        MethodInfo baseMethod = typeof(FEvent).GetMethod("ToXCEvent", all);
+        MethodInfo derivedMethod = fEventType.GetMethod("ToXCEvent", all);
+
+        if (baseMethod.MetadataToken == derivedMethod.MetadataToken)
+        {
+            return false;
+        }
+        else {
+            Debug.Log($"--- {fEventType}");
+            return true; 
+        }
     }
 
     private static void ReadAnimTrack(FTrack _track, XCTaskData taskData)
@@ -237,15 +254,6 @@ public class SaveXCTask
         XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic, curSequence._skillId);
     }
 
-
-
-
-    static Type[] DefaultXCEvents = {
-        typeof(FTweenRotationEvent) ,
-        typeof(FTweenScaleEvent),
-        typeof(FTriggerRangeEvent),
-        typeof(FCommandEvent)
-    };
 
 
     private static ObjectData MakeObjectData(FTrack _track)

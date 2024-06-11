@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     public class XCAnimEvent : XCEvent
     {
         #region private

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class EntityMgr : MonoSingleton<EntityMgr>
+    public class EntityMgr : MonoSingleton<EntityMgr>, IMgr
     {
         private Dictionary<int, Entity> entityDic = new Dictionary<int, Entity>();
         public Dictionary<int, BehaviorEntity> behaviorEntityDic = new Dictionary<int, BehaviorEntity>();

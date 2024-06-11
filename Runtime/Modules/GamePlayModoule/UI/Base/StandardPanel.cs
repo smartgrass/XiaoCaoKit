@@ -17,19 +17,21 @@ namespace XiaoCao
             base.Init();
 
         }
+        public override void Hide()
+        {
+            gameObject.SetActive(false);
+            IsShowing = false;
+            UIMgr.Inst.HideView(panelType);
+        }
+
         public override void Show()
         {
             if (!IsInited)
             {
                 Init();
             }
-
+            IsShowing = true;
             gameObject.SetActive(true);
-        }
-
-        public override void Hide()
-        {
-            gameObject.SetActive(false);
         }
 
         */

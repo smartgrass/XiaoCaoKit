@@ -5,6 +5,10 @@ using Flux;
 using OdinSerializer.Utilities;
 using NaughtyAttributes;
 using NaughtyAttributes.Editor;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
+using System.Linq;
+using System.IO;
 
 namespace FluxEditor
 {
@@ -273,6 +277,13 @@ namespace FluxEditor
                     }
                 }
             }
+            if (Event.current.type == EventType.ContextClick && rect_0.Contains(Event.current.mousePosition))
+            {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("编辑界面代码"), false, this.EditorCode);
+                menu.ShowAsContext();
+                Event.current.Use();
+            }
 
 
             if (Event.current.type == EventType.MouseDown && Event.current.alt && _sequencePopupRect.Contains(Event.current.mousePosition))
@@ -280,6 +291,7 @@ namespace FluxEditor
                 Selection.activeObject = sequence;
                 Event.current.Use();
             }
+
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.PrefixLabel(_sequenceLabelRect, _sequenceLabel);
@@ -379,6 +391,35 @@ namespace FluxEditor
 
             GUI.enabled = true;
         }
+
+        void EditorCode()
+        {
+            var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
+            MonoScript script = MonoScript.FromMonoBehaviour(editor.Sequence);
+            var fileAssetPath  = AssetDatabase.GetAssetPath(script);
+            int line = GetLineNumber(fileAssetPath, "[SeqHeaderShow");
+            Debug.Log($"--- {fileAssetPath} line {line}");
+            AssetDatabase.OpenAsset(script, line);
+        }
+
+        static int GetLineNumber(string filePath, string searchString)
+        {
+            int lineNumber = 0;
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    lineNumber++;
+                    if (line.Contains(searchString))
+                    {
+                        return lineNumber;
+                    }
+                }
+            }
+            return 0; // 如果未找到，返回0
+        }
+
 
         private void AddContainer()
         {

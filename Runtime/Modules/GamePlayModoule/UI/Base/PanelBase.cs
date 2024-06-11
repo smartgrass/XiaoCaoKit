@@ -6,7 +6,13 @@ namespace XiaoCao
         public Button sureBtn;
 
         public Button closeBtn;
+
+        public virtual bool StopPlayerControl => true;
         public bool IsInited { get; set; }
+
+        public bool IsShowing;
+
+        public virtual UIPanelType panelType { get; }
 
         public virtual void Init()
         {

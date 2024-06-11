@@ -27,7 +27,8 @@ namespace Flux
             _particleSystem = ((FParticleTrack)Track).ParticleSystem;
             if ( _particleSystem != null )
 			{
-				_particleSystem.randomSeed = _randomSeed;
+                _particleSystem.Stop();
+                _particleSystem.randomSeed = _randomSeed;
 				ParticleSystem.MainModule mainModule = _particleSystem.main;
 				mainModule.simulationSpeed = Sequence.Speed;
 			}

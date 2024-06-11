@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    internal class CameraMgr : MonoSingleton<CameraMgr>
+    internal class CameraMgr : MonoSingleton<CameraMgr>, IMgr
     {
         #region static
         public static Camera Main

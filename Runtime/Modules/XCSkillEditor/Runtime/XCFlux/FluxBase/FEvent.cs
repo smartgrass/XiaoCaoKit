@@ -215,9 +215,11 @@ namespace Flux
 
 		public virtual string Text { get { return null; } set { } }
 
+		
 		public virtual XCEvent ToXCEvent()
 		{
-			throw new Exception($"{GetType()} null");
+            ///<see cref="SaveXCTask.DefaultXCEvents"/>
+            throw new Exception($"{GetType()} null");
 		}
 
 

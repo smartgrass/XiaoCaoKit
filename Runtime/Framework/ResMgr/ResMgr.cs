@@ -64,8 +64,15 @@ public class ResMgr
     //只加载, 没有实例化
     public static Object LoadAseet(string path)
     {
-        var task = Loader.LoadAssetSync(path);
-        return task.AssetObject;
+        if (Loader.CheckLocationValid(path))
+        {
+            var task = Loader.LoadAssetSync(path);
+            return task.AssetObject;
+        }
+        else {
+            Debug.LogWarning($"--- no Asset {path}");
+            return null; 
+        }
     }
 
     public static byte[] LoadRawByte(string path)
