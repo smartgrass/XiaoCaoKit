@@ -1,27 +1,17 @@
-﻿#define NaughtyAttributes
-#if NaughtyAttributes
-using NaughtyAttributes;
-using NaughtyAttributes.Editor;
-#endif
-
-using NUnit.Framework;
+﻿using ET;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
-using static ET.SavedBool;
 using Debug = UnityEngine.Debug;
 
-namespace ET
+namespace NaughtyAttributes.Editor
 {
     //示例代码 设置CustomEditor中需要绘制的类即可
     //[CustomEditor(typeof(MonoBehaviour), true)]
-    public class MonoBehaviourEditor : Editor
+    public class MonoBehaviourEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -47,7 +37,7 @@ namespace ET
         private static int curLayer = 0;
         private static bool isDebug;
 
-        private static Dictionary<string, SavedBool> _foldouts = new Dictionary<string, SavedBool>();
+        private static Dictionary<string, EditorSavedBool> _foldouts = new Dictionary<string, EditorSavedBool>();
 
         static ComponentViewHelper()
         {
@@ -322,7 +312,7 @@ namespace ET
             }
             if (!_foldouts.ContainsKey(key))
             {
-                _foldouts[key] = new SavedBool(key, false);
+                _foldouts[key] = new EditorSavedBool(key, false);
             }
             _foldouts[key].Value = EditorGUILayout.Foldout(_foldouts[key].Value, label);
 
@@ -370,7 +360,7 @@ namespace ET
         }
     }
 
-    internal class SavedBool
+    internal class EditorSavedBool
     {
         private bool _value;
         private string _name;
@@ -393,7 +383,7 @@ namespace ET
             }
         }
 
-        public SavedBool(string name, bool value)
+        public EditorSavedBool(string name, bool value)
         {
             _name = name;
             _value = EditorPrefs.GetBool(name, value);
