@@ -76,7 +76,7 @@ namespace ET
             curLayer = 0;
         }
 
-        public static void Draw(object entity)
+        public static void Draw(object entity, string searchStr = "")
         {
             if (entity == null)
                 return;
@@ -101,11 +101,23 @@ namespace ET
                 {
                     Type type = fieldInfo.FieldType;
                     string fieldName = fieldInfo.Name;
-                    //if (fieldInfo.IsDefined(typeof (HideInInspector), false))
+                    string curSearch = searchStr;
+
                     if (type.IsDefined(typeof(HideInInspector), false))
                     {
                         continue;
                     }
+
+                    var searchState = GetSearchState(curSearch, fieldName);
+                    if (searchState == SearchState.IsTarget)
+                    {
+                        curSearch = "";
+                    }
+                    else if (searchState == SearchState.NotTarget)
+                    {
+                        continue;
+                    }
+
 
                     object value = fieldInfo.GetValue(entity);
                     bool isDrawed = false;
@@ -200,7 +212,7 @@ namespace ET
                                             }
                                             else
                                             {
-                                                Draw(sub);
+                                                Draw(sub, curSearch);
                                             }
                                         }
                                         i++;
@@ -367,6 +379,27 @@ namespace ET
             return type == types._string
                 || type.IsSubclassOf(types.ValueType)
                 || type.IsSubclassOf(types.Enum);
+        }
+
+        public static SearchState GetSearchState(string searchStr, string fieldName)
+        {
+            if (string.IsNullOrEmpty(searchStr))
+            {
+                return SearchState.Empty;
+            }
+
+            if (fieldName.ToLower().Contains(searchStr.ToLower()))
+            {
+                return SearchState.IsTarget;
+            }
+
+            return SearchState.NotTarget;
+        }
+        public enum SearchState
+        {
+            IsTarget,
+            NotTarget,
+            Empty
         }
     }
 
