@@ -36,7 +36,7 @@ namespace XiaoCao
 
 
         ///职业,种族: 每一个角色和敌人都有对应的 raceId
-        ///<see cref="PlayerSetting"/>
+        ///<see cref="RaceIdSetting"/>
         public int raceId;
 
         /// 绑定的模型文件
@@ -68,22 +68,18 @@ namespace XiaoCao
 
         protected void GenRoleBody(int prefabId)
         {
-            string path = XCPathConfig.GetRolePrefabPath(RoleType, prefabId);
-
-            GameObject go = ResMgr.LoadInstan(path);
-
-            Debuger.Log($"--- path {path}");
-
-            string baseRole = XCPathConfig.GetRoleBasePath(RoleType);
-            GameObject baseGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
-            baseGo.tag = Tags.PLAYER;
-            idRole = baseGo.transform.GetComponent<IdRole>();
+            string baseRole = XCPathConfig.GetIdRolePath(RoleType, prefabId);
+            GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
+            idRole = idRoleGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;
-            go.transform.SetParent(baseGo.transform, false);
-            body = go;
-            BindGameObject(baseGo);
+            idRoleGo.tag = Tags.PLAYER;
 
+            string bodyPath = XCPathConfig.GetRolePrefabPath(RoleType, prefabId);
+            GameObject body = ResMgr.LoadInstan(bodyPath);
+            this.body = body;
+            body.transform.SetParent(idRoleGo.transform, false);
+            BindGameObject(idRoleGo);
         }
 
         //一般用不上
@@ -122,8 +118,6 @@ namespace XiaoCao
 
                 if (roleData.breakState.isBreak)
                 {
-                    Anim.Play(AnimNames.Break);
-
                     //击飞处理
                     Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
 
@@ -141,13 +135,15 @@ namespace XiaoCao
                     HitStop.Do(setting.HitStop);
                     // 打断当前技能
                     OnBreak();
+
+                    Anim.TryPlayAnim(AnimHash.Break);
                 }
 
                 //playerMover.SetNoGravityT(setting.NoGravityT);
 
                 var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
                 effect.SetActive(true);
-                effect.transform.SetParent(transform,true);
+                effect.transform.SetParent(transform, true);
                 //Vector3 vector3 = transform.position;
                 //vector3.y = ackInfo.hitPos.y;
                 //vector3 = Vector3.Lerp(ackInfo.ackObjectPos, vector3, 0.8f);
@@ -197,7 +193,7 @@ namespace XiaoCao
         {
             base.OnDie();
             roleData.bodyState = EBodyState.Dead;
-            Anim.Play(AnimNames.Dead);
+            Anim.TryPlayAnim(AnimHash.Dead);
         }
 
         protected void BaseInit()
@@ -494,7 +490,6 @@ namespace XiaoCao
             Data_R.skillState = ESkillState.Skill;
 
         }
-
 
         #region FullSkillId
         public int GetSkillIdFull(int index)

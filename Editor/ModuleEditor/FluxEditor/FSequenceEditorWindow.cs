@@ -11,14 +11,15 @@ using Object = UnityEngine.Object;
 
 namespace FluxEditor
 {
-	public enum TimeFormat
+    public enum TimeFormat
 	{
 		Frames = 0,
 		Seconds,
 		SecondsFormatted
 	}
-	
-	public class FSequenceEditorWindow : EditorWindow
+
+
+    public class FSequenceEditorWindow : EditorWindow
 	{
 		public const string MENU_PATH = "Window/";
 		public const string PRODUCT_NAME = "Flux";

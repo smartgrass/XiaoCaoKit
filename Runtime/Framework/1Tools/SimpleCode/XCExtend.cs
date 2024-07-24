@@ -1,9 +1,21 @@
 using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using XiaoCao;
 
 public static class XCExtend
 {
+    public static bool TryPlayAnim(this Animator animator , int hash ,int layer = 0)
+    {
+        if (animator.HasState(layer, hash))
+        {
+            animator.Play(hash);
+            return true;
+        }
+        Debuger.Log($"--- no hash {hash}");
+        return false;
+    }
+
     public static T GetOrAddComponent<T>(this GameObject go) where T : Component
     {
         T ret = go.GetComponent<T>();

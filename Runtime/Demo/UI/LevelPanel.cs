@@ -19,10 +19,6 @@ namespace XiaoCao
 
         [SerializeField] XCScrollView scrollView = default;
 
-        //public GameObject levelPrefab;
-
-        //public CachePool<ImgTextBtn> cachePool;
-
         public Transform content;
 
         public Transform levelsParent;
@@ -42,30 +38,14 @@ namespace XiaoCao
 
             base.Init();
 
-            //cachePool = new CachePool<ImgTextBtn>(levelPrefab, num);
-
-            //for (int i = 0; i < num; i++)
-            //{
-            //    int tmp = i;
-            //    cachePool.cacheList[i].index = tmp;
-
-            //    cachePool.cacheList[i].transform.SetParent(levelsParent);
-
-            //    cachePool.cacheList[i].button.onClick.AddListener(() => { OnSelectButton(i); });
-            //}
-
             scrollView.OnCellClicked(OnSelectButton);
 
             var items = Enumerable.Range(0, num).Select(i => new ItemData($"Cell {i}")).ToArray();
             scrollView.UpdateData(items);
+            
             IsInited = true;
         }
 
-        //public void UpdateData(IList<ItemData> items)
-        //{
-        //    base.UpdateContents(items);
-        //    scroller.SetTotalCount(items.Count);
-        //}
 
         public void LoadData()
         {
@@ -73,15 +53,6 @@ namespace XiaoCao
             ChapterSetting chapterSetting = LubanTables.GetChapterSetting(1);
 
             int count = chapterSetting.Levels.Count;
-
-            //cachePool.UpdateCachedAmount(count);
-            //for (int i = 0;i < count;i++)
-            //{
-            //    cachePool.cacheList[i].text.text = LevelSettingHelper.GetText(chapterSetting.Levels[i]);
-            //}
-            //LevelSettingHelper.
-
-            //LubanTables.Inst.
         }
 
 

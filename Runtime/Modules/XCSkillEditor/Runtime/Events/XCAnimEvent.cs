@@ -46,9 +46,15 @@ namespace XiaoCao
                 return;
             }
 
-            _animator.speed = task.Info.speed;
+            if (task.Info.speed < 0)
+            {
+                Debug.LogError($"---  anim speed {task.Info.speed} < 0");
+                task.Info.speed = Mathf.Abs(task.Info.speed);
+            }
 
-            DebugGUI.Log($"task.Info.speed",task.Info.speed);
+            DebugGUI.Log($"task.Info.speed", task.Info.speed);
+
+            _animator.speed = task.Info.speed;
 
             base.OnTrigger(timeSinceTrigger);
 

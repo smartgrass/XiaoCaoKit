@@ -16,6 +16,8 @@ public sealed class Tags
     
     public const string EDITOR_ONLY = "EditorOnly";
     
+    public const string ENEMY = "Enemy";
+    
     public const string FINISH = "Finish";
     
     public const string GAME_CONTROLLER = "GameController";
@@ -23,6 +25,8 @@ public sealed class Tags
     public const string MAIN_CAMERA = "MainCamera";
     
     public const string PLAYER = "Player";
+    
+    public const string PLAYER_ATTACK = "PlayerAttack";
     
     public const string RESPAWN = "Respawn";
     

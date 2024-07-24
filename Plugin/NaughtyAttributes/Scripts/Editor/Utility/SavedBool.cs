@@ -2,7 +2,7 @@ using UnityEditor;
 
 namespace NaughtyAttributes.Editor
 {
-	internal class SavedBool
+    internal class SavedBool
 	{
 		private bool _value;
 		private string _name;

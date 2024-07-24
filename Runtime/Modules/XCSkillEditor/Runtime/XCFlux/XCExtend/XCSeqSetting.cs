@@ -32,12 +32,12 @@ namespace XiaoCao
 
         public static string GetRolePrefabPath(RoleType roleType, int prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}Body{prefabId}.prefab";
         }
 
-        public static string GetRoleBasePath(RoleType roleType)
+        public static string GetIdRolePath(RoleType roleType, int prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}.prefab";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}{prefabId}.prefab";
         }
 
 

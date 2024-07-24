@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -44,15 +45,20 @@ public class SaveXCTask
     [MenuItem(SavaAllSeqName)]
     public static void SavaAll()
     {
-        var Scene = SceneManager.GetSceneByName("SkillEditor");
-        GameObject root = Scene.GetRootGameObjects().First((o) => o.name == "Editor");
+        //var Scene = EditorSceneManager.GetActiveScene();
 
-        var seqs = root.GetComponentsInChildren<FSequence>(true);
+        //GameObject root = Scene.GetRootGameObjects().First((o) => o.name == "Editor");
+
+        FSequence[] seqs = GameObject.FindObjectsOfType<FSequence>();
+
         seqs.LogListStr();
 
         foreach (var seq in seqs)
         {
-            SavaOneSeq(seq);
+            if (seq.gameObject.activeInHierarchy)
+            {
+                SavaOneSeq(seq);
+            }
         }
     }
 
@@ -109,7 +115,17 @@ public class SaveXCTask
             //一个_timeline->一个Object->一个XCTaskData
             bool isMain = timelineId == 0;
             XCTaskData data = GetTaskData(ref mainData, timelineId);
-            data.speed = curSequence.Speed;
+
+            if (curSequence.Speed < 0)
+            {
+                Debug.Log("--- Speed < 0 ");
+            }
+            if (curSequence.Speed == 0)
+            {
+                Debug.LogError("--- Speed = 0");
+            }
+
+            data.speed = Mathf.Abs(curSequence.Speed);
             bool hasObjectData = false;
             foreach (var _track in _timeline.Tracks.Where((t) => t.enabled))
             {
@@ -232,9 +248,10 @@ public class SaveXCTask
         {
             return false;
         }
-        else {
+        else
+        {
             Debug.Log($"--- {fEventType}");
-            return true; 
+            return true;
         }
     }
 

@@ -4,9 +4,11 @@ namespace XiaoCao
 {
     public static class RaceIdSetting
     {
+
+        // 获取基本配置
         public static int GetConfigId(int raceId)
         {
-            //0~9 玩家
+            //raceId在 0~9 玩家
             if (raceId < 10) 
             {  
                 return 0;
@@ -14,7 +16,7 @@ namespace XiaoCao
             else
             {
 
-                //敌人默认为1, 其他情况另作处理
+                //敌人默认配置序号1, 其他情况另作处理
                 return 1;
             }
         }

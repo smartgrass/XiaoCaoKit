@@ -1,11 +1,10 @@
-﻿using ET;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NaughtyAttributes.Editor
 {
@@ -121,8 +120,23 @@ namespace NaughtyAttributes.Editor
             DrawNativeProperties();
             DrawButtons();
 
-            ComponentViewHelper.Draw(target);
+            if (IsDrawDebug(target.GetType()))
+            {
+                ComponentViewHelper.Draw(target);
+            }
+
         }
+
+        public bool IsDrawDebug(Type type)
+        {
+            if (type.IsSubclassOf(typeof(ScriptableObject)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         protected void DrawButtons(bool drawHeader = true)
         {
             foreach (var item in methPosSortList)

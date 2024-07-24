@@ -281,6 +281,7 @@ namespace FluxEditor
             {
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("编辑界面代码"), false, this.EditorCode);
+                menu.AddItem(new GUIContent("切换模型"), false, this.SwitchModel);
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -334,11 +335,11 @@ namespace FluxEditor
 
             _sequenceSO.Update();
 
-            if (_showUpdadeMode)
-            {
-                EditorGUI.PrefixLabel(_updateModeLabelRect, _updateModeLabel);
-                EditorGUI.PropertyField(_updateModeFieldRect, _sequenceUpdateMode, GUIContent.none);
-            }
+            //if (_showUpdadeMode)
+            //{
+            //    EditorGUI.PrefixLabel(_updateModeLabelRect, _updateModeLabel);
+            //    EditorGUI.PropertyField(_updateModeFieldRect, _sequenceUpdateMode, GUIContent.none);
+            //}
 
             if (_showFramerate)
             {
@@ -392,13 +393,18 @@ namespace FluxEditor
             GUI.enabled = true;
         }
 
+        private void SwitchModel()
+        {
+            FSequenceSubEditor.Show(FSequenceSubEditor.FSequenceSubType.SwitchModel);
+        }
+
         void EditorCode()
         {
             var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
             MonoScript script = MonoScript.FromMonoBehaviour(editor.Sequence);
             var fileAssetPath  = AssetDatabase.GetAssetPath(script);
             int line = GetLineNumber(fileAssetPath, "[SeqHeaderShow");
-            Debug.Log($"--- {fileAssetPath} line {line}");
+            Debug.Log($"--- EditorCode {fileAssetPath} line {line}");
             AssetDatabase.OpenAsset(script, line);
         }
 

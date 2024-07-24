@@ -1,5 +1,4 @@
-﻿using ET;
-using System.Runtime.CompilerServices;
+﻿using NaughtyAttributes.Editor;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
