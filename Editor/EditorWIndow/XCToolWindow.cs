@@ -4,6 +4,7 @@
 // ReSharper disable once CheckNamespace
 using NaughtyAttributes;
 using UnityEditor;
+using UnityEngine;
 using XiaoCao;
 using XiaoCaoEditor;
 
@@ -26,6 +27,11 @@ namespace AssetEditor.Editor
             if (GameDataCommon.Current.gameState ==  GameState.Running )
             {
                 Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
+            }
+
+            if (!Application.isPlaying)
+            {
+                Selection.activeObject = GameObject.Find("Editor/Player").transform.GetChild(0);
             }
         }
     }
