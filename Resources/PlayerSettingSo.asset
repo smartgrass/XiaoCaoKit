@@ -12,10 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 740baf4945e9fcb4aa5e89f06ae198df, type: 3}
   m_Name: PlayerSettingSo
   m_EditorClassIdentifier: 
-  moveSettings:
-  - norAtkCount: 3
-    resetNorAckTime: 1.5
-    playerSkillSettingArray:
+  array:
+  - array:
     - id: 0
-      cd: 4
+      cd: 3
       sprite: {fileID: 0}
+    - id: 110
+      cd: 2
+      sprite: {fileID: 0}
+    hasInited: 0
+    id: 0
+    norAtkCount: 3
+    resetNorAckTime: 1.5

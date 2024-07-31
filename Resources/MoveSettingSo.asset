@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63b068c9c07c44f47ad013d3176e8618, type: 3}
   m_Name: MoveSettingSo
   m_EditorClassIdentifier: 
-  moveSettings:
-  - baseMoveSpeed: 4
+  array:
+  - id: 0
+    baseMoveSpeed: 4
     moveSmooth: 0.05
     rotationLerp: 0.2
     angleSpeed: 10

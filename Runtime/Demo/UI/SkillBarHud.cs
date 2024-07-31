@@ -28,7 +28,7 @@ namespace XiaoCao
             {
                 var solt = cachePool.cacheList[i];
                 int skillndex = BarData.onSkill[i];
-                solt.image.sprite = atkTimer.playerSetting.GetSkillCd(skillndex).sprite;
+                solt.image.sprite = atkTimer.playerSetting.GetSkillSetting(skillndex).sprite;
             }
         }
 

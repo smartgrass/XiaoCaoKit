@@ -36,7 +36,7 @@ namespace XiaoCao
             this.team = 1;
             BaseInit();
             Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
-            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetSetting(settingId);
+            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
             roleData.playerAttr.Init(savaData.lv);
 
             component.input = new PlayerInput(this);
@@ -63,9 +63,18 @@ namespace XiaoCao
             component.control.OnTaskUpdate();
             component.movement.Update();
 
-            DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             //考虑增加add模式
+            ForDebug();
         }
+
+        void ForDebug()
+        {
+            DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
+            DebugGUI.Log("Anim", Anim.speed);
+            DebugGUI.Log("BreakState", playerData.breakState.state);
+            DebugGUI.Log("breakArmor", roleData.breakState.armor);
+        }
+
 
         protected override void OnFixedUpdate()
         {
@@ -215,7 +224,7 @@ namespace XiaoCao
             //判断冷缩
             if (!AtkTimers.IsSkillReady(rollId))
             {
-                DebugGUI.Log($"{rollId} cd", AtkTimers.GetWaitTime(rollId));
+                Debug.Log($"{rollId} cd {AtkTimers.GetWaitTime(rollId)}");
                 return;
             }
 
@@ -239,8 +248,6 @@ namespace XiaoCao
 
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
-
-            DebugGUI.Log("nextNorAckIndex", nextNorAckIndex);
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 
@@ -314,7 +321,7 @@ namespace XiaoCao
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.cd = playerSetting.GetSkillCd(skillIndex).cd;
+                skillCdData.cd = playerSetting.GetSkillSetting(skillIndex).cd;
                 dic[skillIndex] = skillCdData;
             }
         }

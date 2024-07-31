@@ -22,7 +22,7 @@ namespace XiaoCao
             this.CreateGameObject();
             BaseInit();
             component.aiControl = new AIControl(this);
-            component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSo>().GetSetting(idRole.aiId);
+            component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;

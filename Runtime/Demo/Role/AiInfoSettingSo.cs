@@ -6,7 +6,7 @@ using UnityEngine;
 namespace XiaoCao
 {
     [CreateAssetMenu(menuName = "SO/AiInfoSo")]
-    public class AiInfoSo : SettingSo<AiInfo>
+    public class AiInfoSettingSo : SettingSo<AiInfo>
     {
 
     }
@@ -14,8 +14,11 @@ namespace XiaoCao
     //行为池具体放So
     //运行时作为info读入
     [Serializable]
-    public class AiInfo
+    public class AiInfo : IIndex
     {
+        public int id = 0;
+        public int Id => id;
+
         public List<AiAct> actPool;
 
         private void Example()
@@ -31,7 +34,6 @@ namespace XiaoCao
         public List<AiAct> actPool { get; set; }
 
         public int Count { get; set; }
-
         public bool IsAllFinish { get; set; }
         public List<AiPoolData> RuntimeDatas { get; set; }
 

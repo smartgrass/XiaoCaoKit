@@ -112,8 +112,6 @@ namespace XiaoCao
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakState.OnHit((int)setting.BreakPower);
 
-                DebugGUI.Log("breakArmor", roleData.breakState.armor);
-
                 HitStop.Do(setting.HitStop);
 
                 if (roleData.breakState.isBreak)
@@ -202,7 +200,7 @@ namespace XiaoCao
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
 
             settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetSetting(settingId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
 
             gameObject.layer = GameSetting.GetTeamLayer(team);
 
@@ -442,13 +440,14 @@ namespace XiaoCao
             if (!runner.IsBreak)
             {
                 Data_R.skillState = ESkillState.SkillEnd;
+                owner.Anim.speed = 1;
                 Debug.Log($"---  OnSkillFinish ");
             }
             else
             {
                 Data_R.skillState = ESkillState.Idle;
+                owner.Anim.speed = 1;
             }
-
         }
 
         public virtual void TryPlaySkill(int skillId)
@@ -618,7 +617,6 @@ namespace XiaoCao
 
         public void OnUpdate(float deltaTime)
         {
-            DebugGUI.Log("BreakState", state);
             if (recoverSpeedInner > 0)
             {
                 armor += deltaTime * recoverSpeedInner;

@@ -11,36 +11,98 @@ namespace XiaoCao
     [CreateAssetMenu(menuName = "SO/PlayerSettingSo")]
     public class PlayerSettingSo : SettingSo<PlayerSetting>
     {
-
+        public override void OnInit()
+        {
+            base.OnInit();
+            foreach (var item in array)
+            {
+                item.OnInit();
+            }
+        }
     }
 
 
     [Serializable]
-    public class PlayerSetting
+    public class PlayerSetting : ArrayDic<PlayerSkillSetting>, IIndex
     {
+        public int id = 0;
+        public int Id => id;
+
         public int norAtkCount = 3;
         //平a重置时间
         public float resetNorAckTime = 1.5f;
 
-        public PlayerSkillSetting[] playerSkillSettingArray;
 
-        
-
-        //TODO cd
-        public PlayerSkillSetting GetSkillCd(int index)
+        //TODO 序号和id
+        public PlayerSkillSetting GetSkillSetting(int skillIndex)
         {
-            return playerSkillSettingArray.GetOrFrist(index);
+            //InitMap(playerSkillSettingArray);
+            return GetOrFrist(skillIndex);
         }
     }
 
+    public class ArrayDic<T> where T : IIndex
+    {
+        public Dictionary<int, T> map;
+
+        public T[] array;
+
+        public bool hasInited = false;
+
+        public void InitMap(T[] array)
+        {
+            hasInited = true;
+            map = ArrayToMap(array);
+        }
+
+        public T GetOrFrist(int key)
+        {
+            if (!hasInited)
+            {
+                InitMap(array);
+            }
+
+            if (map.ContainsKey(key))
+            {
+                return map[key];
+            }
+            else if (array.Length > 0)
+            {
+                return array[0];
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        public static Dictionary<int, T2> ArrayToMap<T2>(T2[] array) where T2 : IIndex
+        {
+            Dictionary<int, T2> dic = new Dictionary<int, T2>();
+            foreach (var item in array)
+            {
+                dic[item.Id] = item;
+            }
+            return dic;
+        }
+
+        public void OnInit()
+        {
+            hasInited = false;
+        }
+    }
+
+
     [Serializable]
-    public class PlayerSkillSetting
+    public class PlayerSkillSetting : IIndex
     {
         public int id;
 
         public float cd;
 
         public Sprite sprite;
+
+        public int Id => id;
     }
 
 
@@ -61,6 +123,16 @@ namespace XiaoCao
             }
 #endif
             return array[0];
+        }
+
+        public static Dictionary<int, T> ArrayToMap<T>(T[] array) where T : IIndex
+        {
+            Dictionary<int, T> dic = new Dictionary<int, T>();
+            foreach (var item in array)
+            {
+                dic[item.Id] = item;
+            }
+            return dic;
         }
     }
 }

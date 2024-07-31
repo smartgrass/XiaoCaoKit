@@ -12,8 +12,11 @@ namespace XiaoCao
 
     //基础数值
     [Serializable]
-    public class MoveSetting
+    public class MoveSetting : IIndex
     {
+        public int id = 0;
+        public int Id => id;
+
         public float baseMoveSpeed = 4;
 
         public float moveSmooth = 0.05f;
