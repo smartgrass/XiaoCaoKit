@@ -484,7 +484,7 @@ namespace XiaoCao
                 Debuger.Log("--- cancellationTokenSource");
             }
             cts = new CancellationTokenSource();
-            animSpeedTask = XCTime.DelayRun(stopTime, ()=> { SetAnimSpeed(1); }, cts); 
+            animSpeedTask = XCTime.DelayRun(stopTime, ()=> { SetAnimSpeed(1); }, cts);
         }
 
 

@@ -1,19 +1,4 @@
-﻿//https://github.com/Cysharp/UniTask#getting-started
-
-/*
-await UniTask.WaitUntil(() => isActive == false);
-await UniTask.Delay(TimeSpan.FromSeconds(10), ignoreTimeScale: false);
-async UniTask<Sprite> LoadAsSprite(string path)
-{
-    var resource = await Resources.LoadAsync<Sprite>(path);
-    return (resource as Sprite);
-}
-
-
-await UniTask.WhenAll(task1, task2);
-await UniTask.WhenAny(task1, task2);  //任意一个完成
- */
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using System;
 using System.Threading;
@@ -24,6 +9,72 @@ using Object = UnityEngine.Object;
 
 public class XCTime
 {
+    ///<see UniTask示例 cref="Example"/>
+    /// <summary>
+    /// 对时间都做一层封装,方便处理
+    /// </summary>
+    internal static float deltaTime => Time.deltaTime;
+    internal static float fixedDeltaTime => Time.fixedDeltaTime;
+    internal static float unscaledDeltaTime => Time.unscaledDeltaTime;
+
+
+    //task.Start(); 启动
+    //task.Dispose(); 停止
+    public static async Task DelayTask(float time, Action action)
+    {
+        await Task.Delay((int)time * 1000);
+        action?.Invoke();
+    }
+
+
+    //UniTask的取消需要依赖 CancellationTokenSource.Cancel(); 相对麻烦
+    //但性能上比Task更有优势
+    public static async UniTask DelayRun(float time, Action action, CancellationTokenSource cancellationToken = null)
+    {
+        CancellationToken token = cancellationToken != null ? cancellationToken.Token : default(CancellationToken);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(time), cancellationToken: token);
+
+        action();
+    }
+    public static async UniTask DelayRun<T>(float time, Action<T> action, T t, Object bindObject = null)
+    {
+        bool isBind = bindObject != null;
+        await UniTask.Delay(TimeSpan.FromSeconds(time));
+        if (!isBind || (bindObject != null))
+        {
+            action(t);
+        }
+    }
+
+
+    public static async UniTask LoopRun(float time, CancellationTokenSource cancellation, Action action)
+    {
+        var cancelToken = cancellation.Token;
+        while (true)
+        {
+            cancelToken.ThrowIfCancellationRequested();
+            await UniTask.Delay(TimeSpan.FromSeconds(time), cancellationToken: cancelToken);
+            action();
+        }
+    }
+
+
+    //https://github.com/Cysharp/UniTask#getting-started
+    /*
+    await UniTask.WaitUntil(() => isActive == false);
+    await UniTask.Delay(TimeSpan.FromSeconds(10), ignoreTimeScale: false);
+    async UniTask<Sprite> LoadAsSprite(string path)
+    {
+        var resource = await Resources.LoadAsync<Sprite>(path);
+        return (resource as Sprite);
+    }
+
+
+    await UniTask.WhenAll(task1, task2);
+    await UniTask.WhenAny(task1, task2);  //任意一个完成
+     */
+
     public static async UniTask Example()
     {
         //Loop 每秒执行一次
@@ -37,6 +88,7 @@ public class XCTime
             {
                 //取消循环
                 cts.Cancel();
+                cts.Dispose();
                 //cts.CancelAfter(1000); //1000毫秒以后取消
             }
         });
@@ -65,53 +117,5 @@ public class XCTime
         //To use an async lambda
         Action actEvent = null;
         actEvent += UniTask.Action(async () => { await UniTask.Yield(); });
-    }
-
-
-    /// <summary>
-    /// 对时间都做一层封装,方便处理
-    /// </summary>
-    internal static float deltaTime => Time.deltaTime;
-    internal static float fixedDeltaTime => Time.fixedDeltaTime;
-    internal static float unscaledDeltaTime => Time.unscaledDeltaTime;
-
-
-    private async Task TestAsynsFun2()
-    {
-        await Task.Delay(2000); 
-    }
-
-
-    /// <param name="bindObject">当bindObject被销毁则不执行 </param>
-    /// <returns></returns>
-    public static async UniTask DelayRun(float time, Action action, CancellationTokenSource cancellationToken = null)
-    {
-        CancellationToken token = cancellationToken != null ? cancellationToken.Token : default(CancellationToken);
-
-        await UniTask.Delay(TimeSpan.FromSeconds(time), cancellationToken: token);
-
-        action();
-    }
-    public static async UniTask DelayRun<T>(float time, Action<T> action, T t, Object bindObject = null)
-    {
-        bool isBind = bindObject != null;
-        await UniTask.Delay(TimeSpan.FromSeconds(time));
-        if (!isBind || (bindObject != null))
-        {
-            action(t);
-        }
-    }
-
-
-
-    public static async UniTask LoopRun(float time, CancellationTokenSource cancellation, Action action)
-    {
-        var cancelToken = cancellation.Token;
-        while (true)
-        {
-            cancelToken.ThrowIfCancellationRequested();
-            await UniTask.Delay(TimeSpan.FromSeconds(time), cancellationToken: cancelToken);
-            action();
-        }
     }
 }
