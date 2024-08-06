@@ -52,7 +52,7 @@ namespace XiaoCao
                 task.Info.speed = Mathf.Abs(task.Info.speed);
             }
 
-            _animator.speed = task.Info.speed;
+            //_animator.speed = task.Info.speed;
 
             base.OnTrigger(timeSinceTrigger);
 

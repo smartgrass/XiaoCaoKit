@@ -42,7 +42,7 @@ namespace XiaoCao
     {
         public BattleData()
         {
-            CanPlayerControl.RegisterListener(OnControlChange);
+            CanPlayerControl.AddListener(OnControlChange);
         }
 
         public static BattleData Current => GameData.battleData;
@@ -187,13 +187,13 @@ namespace XiaoCao
 
 
         // 示例：注册监听事件  
-        public void RegisterListener(Action<T> listener)
+        public void AddListener(Action<T> listener)
         {
             OnValueChanged += listener;
         }
 
         // 示例：注销监听事件  
-        public void UnregisterListener(Action<T> listener)
+        public void RemoveListener(Action<T> listener)
         {
             OnValueChanged -= listener;
         }

@@ -122,9 +122,10 @@ namespace XiaoCao
         void CheckBackToIdle(bool isInput)
         {
             //DebugGUI.Log("skillState", Data_R.skillState);
-            if (Data_R.skillState is ESkillState.SkillEnd && isInput)
+            //有移动则取消后摇
+            if (Data_R.skillState.Data is ESkillState.SkillEnd && isInput)
             {
-                Data_R.skillState = ESkillState.Idle;
+                Data_R.skillState.SetValue(ESkillState.Idle);
                 owner.Anim?.CrossFade(AnimHash.Idle, 0.05f);
             }
         }

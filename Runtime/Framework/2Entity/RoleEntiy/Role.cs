@@ -1,9 +1,11 @@
 ﻿
 using cfg;
+using Cysharp.Threading.Tasks;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Xml;
 using TEngine;
 using UnityEditor;
@@ -11,6 +13,7 @@ using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.UIElements;
+using static Cinemachine.CinemachineOrbitalTransposer;
 
 namespace XiaoCao
 {
@@ -365,10 +368,15 @@ namespace XiaoCao
     //技能通用体
     public abstract class RoleControl<T> : RoleComponent<T>, IRoleControl where T : Role
     {
-        public RoleControl(T _owner) : base(_owner) { }
+        public RoleControl(T _owner) : base(_owner) { AddListener(); }
 
         public List<XCTaskRunner> curTaskData = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
+
+        private void AddListener()
+        {
+            Data_R.skillState.AddListener(OnStateChange);
+        }
 
         public bool IsBusy(int level = 0)
         {
@@ -439,16 +447,46 @@ namespace XiaoCao
         {
             if (!runner.IsBreak)
             {
-                Data_R.skillState = ESkillState.SkillEnd;
-                owner.Anim.speed = 1;
+                Data_R.skillState.SetValue(ESkillState.SkillEnd);
                 Debug.Log($"---  OnSkillFinish ");
             }
             else
             {
-                Data_R.skillState = ESkillState.Idle;
-                owner.Anim.speed = 1;
+                Data_R.skillState.SetValue(ESkillState.Idle);
             }
         }
+
+        private void OnStateChange(ESkillState state)
+        {
+            if (state == ESkillState.Idle)
+            {
+                SetAnimSpeed(1);
+            }
+        }
+
+        private void SetAnimSpeed(float speed)
+        {
+            owner.Anim.speed = speed;
+        }
+
+
+        private UniTask animSpeedTask;
+        CancellationTokenSource cts;
+
+        //动画顿帧
+        private void AddAnimHitStop(float stopTime = 0.5f)
+        {
+            SetAnimSpeed(0);
+            if (cts!= null && animSpeedTask.Status == UniTaskStatus.Pending)
+            {
+                cts.Cancel();
+                cts.Dispose();
+                Debuger.Log("--- cancellationTokenSource");
+            }
+            cts = new CancellationTokenSource();
+            animSpeedTask = XCTime.DelayRun(stopTime, ()=> { SetAnimSpeed(1); }, cts); 
+        }
+
 
         public virtual void TryPlaySkill(int skillId)
         {
@@ -483,11 +521,11 @@ namespace XiaoCao
             {
                 return;
             }
+            SetAnimSpeed(taskInfo.speed);
             curTaskData.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnTaskEnd);
-            Data_R.skillState = ESkillState.Skill;
-
+            Data_R.skillState.SetValue(ESkillState.Skill);
         }
 
         #region FullSkillId
@@ -532,7 +570,9 @@ namespace XiaoCao
 
         public EBodyState bodyState;
 
-        public ESkillState skillState;
+        //public ESkillState skillState;
+
+        public DataListener<ESkillState> skillState;
 
         public BreakState breakState = new BreakState();
 
