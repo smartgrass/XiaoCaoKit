@@ -15,22 +15,32 @@ public class Test_AnimPreview : MonoBehaviour
 #if UNITY_EDITOR
     [ShowNativeProperty]
     public bool GetBool => true;
-
-    public GameObject characterPrefab; // 你的角色预制体
     public Object[] dirs; // 包含文件夹路径的Object数组
+    [HorLayout(true)]
+    
+    public GameObject characterPrefab; // 你的角色预制体
+    [HorLayout(false)]
     public int count = 10;
+
+
+    [Label("行数")]
+    //[NewLine]
+    //[HorLayout(true)]
+    [MiniBtn(nameof(LoadAnimations), "生成模型0")]
+    [MiniBtn(nameof(LoadAnimations), "生成模型1")]
+    [MiniBtn(nameof(LoadAnimations), "生成模型2")]
     public int onelineCount = 7;
 
     private List<string> animationFiles = new List<string>();
     private List<GameObject> characters = new List<GameObject>();
     private int currentAnimationIndex = 0;
 
-    [Button("生成模型", enabledMode: EButtonEnableMode.Playmode)]
     void LoadAnimations()
     {
         GetPaths();
         CreateCharacters();
     }
+
 
     private void GetPaths()
     {

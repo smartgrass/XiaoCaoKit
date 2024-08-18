@@ -98,7 +98,7 @@ namespace FluxEditor
 		private static GUIStyle _evtStyle = null;
 		private static GUIStyle _simpleButtonStyle = null;
 
-		public static string FindFluxDirectory()
+		public static string GetFluxDirectoryPath()
 		{
             string[] directories = Directory.GetDirectories("Assets", "FluxEditor", SearchOption.AllDirectories);
 
@@ -117,7 +117,7 @@ namespace FluxEditor
 		{
 			if( _fluxPath == null )
 			{
-				_fluxPath = FindFluxDirectory()+'/';
+				_fluxPath = GetFluxDirectoryPath()+'/';
 				_fluxEditorPath = _fluxPath;
 				_fluxSkinPath = _fluxEditorPath + "Skin/";
 			}

@@ -282,6 +282,7 @@ namespace FluxEditor
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("编辑界面代码"), false, this.EditorCode);
                 menu.AddItem(new GUIContent("切换模型"), false, this.SwitchModel);
+                menu.AddItem(new GUIContent("帮助文档"), false, this.ShowHelp);
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -401,11 +402,22 @@ namespace FluxEditor
         void EditorCode()
         {
             var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
+            if (editor.Sequence == null ) {
+                Debug.Log($"--- cur sequence null");
+                return;
+            }
             MonoScript script = MonoScript.FromMonoBehaviour(editor.Sequence);
+            //FSequence
             var fileAssetPath  = AssetDatabase.GetAssetPath(script);
+            Debug.Log($"--- fileAssetPath {fileAssetPath}");
             int line = GetLineNumber(fileAssetPath, "[SeqHeaderShow");
             Debug.Log($"--- EditorCode {fileAssetPath} line {line}");
             AssetDatabase.OpenAsset(script, line);
+        }
+
+        void ShowHelp()
+        {
+            SaveXCTask.ShowHelp();
         }
 
         static int GetLineNumber(string filePath, string searchString)

@@ -34,6 +34,12 @@ namespace AssetEditor.Editor
                 Selection.activeObject = GameObject.Find("Editor/Player").transform.GetChild(0);
             }
         }
+
+        [Button("打开替换面板", Line1)]
+        void OpenRepalceTool()
+        {
+            XCRepalceToolWin.Open();
+        }
     }
 }
 #endif

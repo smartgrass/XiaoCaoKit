@@ -29,7 +29,7 @@ namespace NaughtyAttributes.Editor
         }
 
 
-        public static bool DoDrawDefaultInspector(SerializedObject obj ,bool hander = false)
+        public static bool DoDrawDefaultInspector(SerializedObject obj, bool hander = false)
         {
             EditorGUI.BeginChangeCheck();
             obj.UpdateIfRequiredOrScript();
@@ -38,7 +38,7 @@ namespace NaughtyAttributes.Editor
             bool expanded = true;
             while (property.NextVisible(expanded))
             {
-                if("m_Script" == property.propertyPath && hander)
+                if ("m_Script" == property.propertyPath && hander)
                 {
                     using (new EditorGUI.DisabledScope(true))
                     {
@@ -55,15 +55,34 @@ namespace NaughtyAttributes.Editor
             obj.ApplyModifiedProperties();
             return EditorGUI.EndChangeCheck();
         }
-
+        const int LABEL_SPACE = 5;
         private static void DrawPropertyField(Rect rect, SerializedProperty property, GUIContent label, bool includeChildren)
         {
-            EditorGUI.PropertyField(rect, property, label, includeChildren);
+            var labelRect = rect;
+            labelRect.width = EditorStyles.label.CalcSize(label).x;
+            if (labelRect.width > rect.width * 0.4f)
+            {
+                labelRect.width = rect.width * 0.4f;
+            }
+            rect.xMin = labelRect.xMax + LABEL_SPACE;
+            EditorGUI.PrefixLabel(labelRect, label);
+            EditorGUI.PropertyField(rect, property, GUIContent.none, includeChildren);
         }
 
         private static void DrawPropertyField_Layout(Rect rect, SerializedProperty property, GUIContent label, bool includeChildren)
         {
-            EditorGUILayout.PropertyField(property, label, includeChildren);
+            if (property.hasVisibleChildren)
+            {
+                EditorGUILayout.PropertyField(property, label, includeChildren);
+                return;
+            }
+            float labelWidth = EditorStyles.label.CalcSize(label).x;
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(labelWidth));
+            EditorGUILayout.PropertyField(property, GUIContent.none, includeChildren);
+            GUILayout.Space(LABEL_SPACE);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(LABEL_SPACE);
         }
 
         private static void PropertyField_Implementation(Rect rect, SerializedProperty property, bool includeChildren, PropertyFieldFunction propertyFieldFunction)
@@ -222,7 +241,7 @@ namespace NaughtyAttributes.Editor
 
                 EditorGUI.BeginDisabledGroup(!buttonEnabled);
 
-                if (GUILayout.Button(buttonText))
+                if (GUILayout.Button(buttonText, GUILayout.Height(28)))
                 {
                     object[] defaultParams = methodInfo.GetParameters().Select(p => p.DefaultValue).ToArray();
                     IEnumerator methodResult = methodInfo.Invoke(target, defaultParams) as IEnumerator;

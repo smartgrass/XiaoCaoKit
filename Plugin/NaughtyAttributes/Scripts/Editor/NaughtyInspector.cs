@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
+using XiaoCao;
 using Object = UnityEngine.Object;
 
 namespace NaughtyAttributes.Editor
@@ -17,6 +19,7 @@ namespace NaughtyAttributes.Editor
         private IEnumerable<PropertyInfo> _nativeProperties;
         //private IEnumerable<MethodInfo> _methods;
         private Dictionary<int, List<MethodInfo>> methodDic;
+        private Dictionary<string, IXCDrawAttribute> layoutDic;
         private List<int> methPosSortList;
 
         private Dictionary<string, SavedBool> _foldouts = new Dictionary<string, SavedBool>();
@@ -29,7 +32,21 @@ namespace NaughtyAttributes.Editor
 
             _nativeProperties = ReflectionUtility.GetAllProperties(
                 target, p => p.GetCustomAttributes(typeof(ShowNativePropertyAttribute), true).Length > 0);
+
+            CacheLayoutDic();
+
             GetSortMethods();
+        }
+
+        private void CacheLayoutDic()
+        {
+            var fields = ReflectionUtility.GetAllFields(
+                target, f => f.GetCustomAttributes(typeof(IXCDrawAttribute), true).Length > 0);
+            foreach (var field in fields)
+            {
+                //layoutDic.Add(field.GetValue )
+            }
+
         }
 
         private void GetSortMethods()
@@ -168,66 +185,108 @@ namespace NaughtyAttributes.Editor
         //弃用
         //public bool CheckDrawSubProperty(SerializedProperty property)
         //{
-            //if (property.propertyType == SerializedPropertyType.ObjectReference)
-            //{
-            //    if (property.objectReferenceValue && PropertyUtility.GetAttribute<SerializeField>(property) != null)
-            //    {
-            //        var so = GetSO(property.objectReferenceValue);
+        //if (property.propertyType == SerializedPropertyType.ObjectReference)
+        //{
+        //    if (property.objectReferenceValue && PropertyUtility.GetAttribute<SerializeField>(property) != null)
+        //    {
+        //        var so = GetSO(property.objectReferenceValue);
 
-            //        property.objectReferenceValue = EditorGUILayout.ObjectField(PropertyUtility.GetLabel(property), property.objectReferenceValue, typeof(Object), true);
+        //        property.objectReferenceValue = EditorGUILayout.ObjectField(PropertyUtility.GetLabel(property), property.objectReferenceValue, typeof(Object), true);
 
 
-            //        if (property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, property.displayName))
-            //        {
-            //            NaughtyEditorGUI.DoDrawDefaultInspector(so);
-            //        }
-            //        return true;
-            //    }
-            //}
-            //return false;
+        //        if (property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, property.displayName))
+        //        {
+        //            NaughtyEditorGUI.DoDrawDefaultInspector(so);
+        //        }
+        //        return true;
+        //    }
+        //}
+        //return false;
         //}
 
 
-        protected  void DrawSerializedProperties()
+        protected void DrawSerializedProperties()
         {
             serializedObject.Update();
             int i = 1;
             // Draw non-grouped serialized properties
-            foreach (var property in GetNonGroupedProperties(_serializedProperties))
+            foreach (var property in GetProperties(_serializedProperties))
             {
-                if (property.name.Equals("m_Script", System.StringComparison.Ordinal))
+                if (DrawScriptHander(property))
                 {
-                    using (new EditorGUI.DisabledScope(disabled: true))
-                    {
-                        if (property.objectReferenceValue == null)
-                        {
-                            //if (serializedObject.targetObject is ScriptableObject so)
-                            //{
-                            //    MonoScript ms = MonoScript.FromScriptableObject(so);
-                            //    EditorGUILayout.ObjectField("", ms, typeof(Object), true);
-                            //}              
-                            var namePro = serializedObject.FindProperty("m_Name");
-                            EditorGUILayout.ObjectField(namePro.stringValue, targets[0], typeof(Object), true);
-                        }
-                        else
-                        {
-                            EditorGUILayout.PropertyField(property);
-                        }
-                    }
+                    continue;
+                }
+
+                IXCDrawAttribute[] xcLayouts = PropertyUtility.GetAttributes<IXCDrawAttribute>(property);
+                if (xcLayouts.Length == 0)
+                {
+                    NaughtyEditorGUI.PropertyField_Layout(property, true);
                 }
                 else
                 {
-                    NaughtyEditorGUI.PropertyField_Layout(property, true);
-
-                    //按钮
-                    if (methodDic.ContainsKey(-i))
+                    int length = xcLayouts.Length;
+                    bool hasHor = false;
+                    for (int j = 0; j < length; j++)
                     {
-                        NaughtyEditorGUI.ButtonList(serializedObject.targetObject, methodDic[-i]);
+                        var xcLayout = xcLayouts[j];
+                        if (length == 1)
+                        {
+                            xcLayout.OnDraw(serializedObject.targetObject, () =>
+                            {
+                                NaughtyEditorGUI.PropertyField_Layout(property, true);
+                            });
+                            continue;
+                        }
+
+
+                        bool isLast = j == length - 1;
+                        bool isFrist = j == 0;
+                        if (isFrist)
+                        {
+                            xcLayout.OnDraw(serializedObject.targetObject, () =>
+                            {
+                                GUILayout.BeginHorizontal();
+                                hasHor = true;
+                                NaughtyEditorGUI.PropertyField_Layout(property, true);
+                            });
+                        }
+
+                        if (hasHor && xcLayout.GetType() == typeof(NewLineAttribute))
+                        {
+                            GUILayout.EndHorizontal();
+                            hasHor = false;
+                        }
+
+                        if (isLast)
+                        {
+                            xcLayout.OnDraw(serializedObject.targetObject, () =>
+                             {
+                                 if (hasHor)
+                                 {
+                                     GUILayout.EndHorizontal();
+                                 }
+                             });
+                        }
+
+
+
+                        if (!isFrist && !isLast)
+                        {
+                            xcLayout.OnDraw(serializedObject.targetObject, null);
+                        }
                     }
-                    i++;
                 }
+
+
+                //按钮
+                if (methodDic.ContainsKey(-i))
+                {
+                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, methodDic[-i]);
+                }
+                i++;
             }
 
+            /* Obsolete  FoldoutAttribute & BoxGroupAttribute
             // Draw grouped serialized properties
             foreach (var group in GetGroupedProperties(_serializedProperties))
             {
@@ -269,9 +328,34 @@ namespace NaughtyAttributes.Editor
                     }
                 }
             }
+            */
 
             serializedObject.ApplyModifiedProperties();
         }
+
+        private bool DrawScriptHander(SerializedProperty property)
+        {
+            bool isHander = property.name.Equals("m_Script", System.StringComparison.Ordinal);
+            if (!isHander)
+            {
+                return false;
+            }
+            using (new EditorGUI.DisabledScope(disabled: true))
+            {
+                if (property.objectReferenceValue == null)
+                {
+                    //MonoScript ms = MonoScript.FromScriptableObject(so);  
+                    var namePro = serializedObject.FindProperty("m_Name");
+                    EditorGUILayout.ObjectField(namePro.stringValue, targets[0], typeof(Object), true);
+                }
+                else
+                {
+                    NaughtyEditorGUI.PropertyField_Layout(property, true);
+                }
+            }
+            return true;
+        }
+
 
         protected void DrawNonSerializedFields(bool drawHeader = false)
         {
@@ -311,24 +395,29 @@ namespace NaughtyAttributes.Editor
             }
         }
 
-        private static IEnumerable<SerializedProperty> GetNonGroupedProperties(IEnumerable<SerializedProperty> properties)
+        private static IEnumerable<SerializedProperty> GetProperties(IEnumerable<SerializedProperty> properties)
         {
-            return properties.Where(p => PropertyUtility.GetAttribute<IGroupAttribute>(p) == null);
+            return properties;
         }
 
-        private static IEnumerable<IGrouping<string, SerializedProperty>> GetGroupedProperties(IEnumerable<SerializedProperty> properties)
-        {
-            return properties
-                .Where(p => PropertyUtility.GetAttribute<BoxGroupAttribute>(p) != null)
-                .GroupBy(p => PropertyUtility.GetAttribute<BoxGroupAttribute>(p).Name);
-        }
+        //private static IEnumerable<SerializedProperty> GetNonGroupedProperties(IEnumerable<SerializedProperty> properties)
+        //{
+        //    return properties.Where(p => PropertyUtility.GetAttribute<IGroupAttribute>(p) == null);
+        //}
 
-        private static IEnumerable<IGrouping<string, SerializedProperty>> GetFoldoutProperties(IEnumerable<SerializedProperty> properties)
-        {
-            return properties
-                .Where(p => PropertyUtility.GetAttribute<FoldoutAttribute>(p) != null)
-                .GroupBy(p => PropertyUtility.GetAttribute<FoldoutAttribute>(p).Name);
-        }
+        //private static IEnumerable<IGrouping<string, SerializedProperty>> GetGroupedProperties(IEnumerable<SerializedProperty> properties)
+        //{
+        //    return properties
+        //        .Where(p => PropertyUtility.GetAttribute<BoxGroupAttribute>(p) != null)
+        //        .GroupBy(p => PropertyUtility.GetAttribute<BoxGroupAttribute>(p).Name);
+        //}
+
+        //private static IEnumerable<IGrouping<string, SerializedProperty>> GetFoldoutProperties(IEnumerable<SerializedProperty> properties)
+        //{
+        //    return properties
+        //        .Where(p => PropertyUtility.GetAttribute<FoldoutAttribute>(p) != null)
+        //        .GroupBy(p => PropertyUtility.GetAttribute<FoldoutAttribute>(p).Name);
+        //}
 
         private static GUIStyle GetHeaderGUIStyle()
         {

@@ -572,7 +572,7 @@ namespace XiaoCao
 
         //public ESkillState skillState;
 
-        public DataListener<ESkillState> skillState;
+        public DataListener<ESkillState> skillState = new DataListener<ESkillState>();
 
         public BreakState breakState = new BreakState();
 

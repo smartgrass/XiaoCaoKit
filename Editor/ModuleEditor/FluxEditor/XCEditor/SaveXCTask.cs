@@ -18,11 +18,14 @@ using UnityEngine.SceneManagement;
 using XiaoCao;
 using XiaoCaoEditor;
 using Debug = UnityEngine.Debug;
+using FUtility = FluxEditor.FUtility;
+using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
 public class SaveXCTask
 {
     public const string SavaAllSeqName = XCEditorTools.XiaoCaoFlux + "SavaAllSeq";
+    public const string HelpName = XCEditorTools.XiaoCaoFlux + "编辑器说明";
     public const string OpenWindowName = XCEditorTools.XiaoCaoFlux + "OpenWindow";
     public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
 
@@ -35,6 +38,12 @@ public class SaveXCTask
     public static XCSeqSetting fSeqSetting;
     public static FSequence curSequence;
 
+    [MenuItem(HelpName)]
+    public static void ShowHelp()
+    {
+        string path = FUtility.GetFluxDirectoryPath() + "/ReadMe.FluxEditor.md";
+        Selection.activeObject = AssetDatabase.LoadAssetAtPath<Object>(path);
+    }
 
     [MenuItem(OpenWindowName)]
     private static void OpenWindow()

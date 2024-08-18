@@ -21,7 +21,6 @@ public class XiaoCaoEexample_1 : XiaoCaoWindow
 
 
     //1.========== XCLabel 显示别名 ==========
-    [NaughtyAttributes.BoxGroup("1Group")]
     [Label("这是str1")]
     public string str1;
 
