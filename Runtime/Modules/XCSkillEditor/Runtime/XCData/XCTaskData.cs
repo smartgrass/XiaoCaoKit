@@ -111,10 +111,21 @@ namespace XiaoCao
             Ps = ps;
             if (!Info.speed.IsFEqual(1))
             {
-                var main = Ps.main;
-                main.simulationSpeed = Info.speed;
+                //var main = Ps.main;
+                //main.simulationSpeed = Info.speed;
+                //TODO 特效自定义速度
+                foreach (var p in ps.GetComponentsInChildren<ParticleSystem>())
+                {
+                    SetSimulationSpeed(p,Info.speed);
+                }
             }
             Ps.Play();
+        }
+
+        void SetSimulationSpeed(ParticleSystem ps,float speed)
+        {
+            var main = ps.main;
+            main.simulationSpeed = Info.speed;
         }
 
         //设置起始位置
