@@ -45,11 +45,12 @@ namespace XiaoCao
         /// 绑定的模型文件
         public int prefabId;
 
+        public int bodyId;
+
         //势力,相同为友军
         public int team;
 
         protected int settingId;
-
 
         public GameObject body;
 
@@ -76,12 +77,14 @@ namespace XiaoCao
             idRole = idRoleGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;
-            idRoleGo.tag = Tags.PLAYER;
+            bodyId = idRole.bodyId < 0 ? prefabId : idRole.bodyId;
+            
 
             string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, prefabId);
             GameObject body = ResMgr.LoadInstan(bodyPath);
             this.body = body;
             body.transform.SetParent(idRoleGo.transform, false);
+            idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRoleGo);
         }
 
@@ -418,14 +421,14 @@ namespace XiaoCao
         private void AddAnimHitStop(float stopTime = 0.5f)
         {
             SetAnimSpeed(0);
-            if (cts!= null && animSpeedTask.Status == UniTaskStatus.Pending)
+            if (cts != null && animSpeedTask.Status == UniTaskStatus.Pending)
             {
                 cts.Cancel();
                 cts.Dispose();
                 Debuger.Log("--- cancellationTokenSource");
             }
             cts = new CancellationTokenSource();
-            animSpeedTask = XCTime.DelayRun(stopTime, ()=> { SetAnimSpeed(1); }, cts);
+            animSpeedTask = XCTime.DelayRun(stopTime, () => { SetAnimSpeed(1); }, cts);
         }
 
 

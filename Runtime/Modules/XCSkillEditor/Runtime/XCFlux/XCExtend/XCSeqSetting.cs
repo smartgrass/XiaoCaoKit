@@ -32,20 +32,19 @@ namespace XiaoCao
 
         public static string GetRoleBodyPath(RoleType roleType, int prefabId)
         {
-            string frontName = roleType == RoleType.Enemy? "E" : "P";
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{frontName}_Body_{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_Body_{prefabId}.prefab";
         }
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_{prefabId}.prefab";
         }
 
 
         public static string GetHitEffectPath(int index)
         {
             return $"{HitEffectDir}/Hit_{index}.prefab";
-        }        
+        }
         public static string GetAudioPath(string name)
         {
             return $"{AudioClipDir}/{name}";
@@ -54,7 +53,13 @@ namespace XiaoCao
         public static string GetLevelImage(int level)
         {
             return $"{SpriteDir}/{level}.png";
-;        }
+        }
+
+        public static string ToShortName(this RoleType roleType)
+        {
+            string shortName = roleType == RoleType.Enemy ? "E" : "P";
+            return shortName;
+        }
     }
 
     ///<see cref="XCPathConfig"/>

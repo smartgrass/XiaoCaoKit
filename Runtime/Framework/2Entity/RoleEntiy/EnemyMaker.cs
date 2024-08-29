@@ -5,7 +5,7 @@ namespace XiaoCao
 {
     public class EnemyMaker : Singleton<EnemyMaker>, IClearCache
     {
-        public Dictionary<int, Type> enemyTypeDic;
+        public Dictionary<int, Type> enemyTypeDic = new Dictionary<int, Type>();
         protected override void Init()
         {
             base.Init();
@@ -17,19 +17,19 @@ namespace XiaoCao
             enemyTypeDic[enemyId] = type;
         }
 
-        public void CreatEnemy(int enemyId, int bodyId = -1)
+        public void CreatEnemy(int enemyId)
         {
             if (enemyTypeDic.ContainsKey(enemyId))
             {
                 Type enemyType = enemyTypeDic[enemyId];
                 Enemy0 enemy = EntityMgr.Inst.CreatEntityByType(enemyType) as Enemy0;
-                enemy.Init(enemyId,bodyId);
+                enemy.Init(enemyId);
                 return;
             }
             else
             {
                 Enemy0 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
-                enemy.Init(enemyId, bodyId);
+                enemy.Init(enemyId);
             }
         }
     }

@@ -19,7 +19,7 @@ namespace XiaoCao
 
 
         //prefabId = enemyId
-        public void Init(int prefabId, int bodyId = -1,int level = 1)
+        public void Init(int prefabId, int level = 1)
         {
             this.prefabId = prefabId;
             this.CreateGameObject();

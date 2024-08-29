@@ -26,7 +26,7 @@ namespace XiaoCao
         {
             Type t1 = this.GetType();
             //BindingFlags all = (BindingFlags)~BindingFlags.Default;
-            MethodInfo info = t1.GetMethod(nameof(CreatEntity), null);
+            MethodInfo info = t1.GetMethod(nameof(CreatEntity), new Type[] { } );
             object ret = info.MakeGenericMethod(t2).Invoke(EntityMgr.Inst, null);
             return ret as Entity;
         }
