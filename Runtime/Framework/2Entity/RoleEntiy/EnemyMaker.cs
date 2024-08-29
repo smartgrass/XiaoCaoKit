@@ -22,7 +22,7 @@ namespace XiaoCao
             if (enemyTypeDic.ContainsKey(enemyId))
             {
                 Type enemyType = enemyTypeDic[enemyId];
-                Enemy0 enemy = EntityMgr.Inst.CreatEntityByType(enemyType) as Enemy0;
+                Enemy0 enemy = EntityMgr.Inst.CreatEntity(enemyType) as Enemy0;
                 enemy.Init(enemyId);
                 return;
             }

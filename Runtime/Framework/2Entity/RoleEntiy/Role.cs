@@ -78,9 +78,8 @@ namespace XiaoCao
             idRole.id = id;
             raceId = idRole.raceId;
             bodyId = idRole.bodyId < 0 ? prefabId : idRole.bodyId;
-            
 
-            string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, prefabId);
+            string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, bodyId);
             GameObject body = ResMgr.LoadInstan(bodyPath);
             this.body = body;
             body.transform.SetParent(idRoleGo.transform, false);

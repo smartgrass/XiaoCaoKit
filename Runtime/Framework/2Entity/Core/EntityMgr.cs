@@ -10,27 +10,35 @@ namespace XiaoCao
     {
         private Dictionary<int, Entity> entityDic = new Dictionary<int, Entity>();
         public Dictionary<int, BehaviorEntity> behaviorEntityDic = new Dictionary<int, BehaviorEntity>();
+        public override void Init()
+        {
+            base.Init();       
+        }
+
         public T CreatEntity<T>() where T : Entity
         {
+            var entity = CreatEntity(typeof(T));
+            return entity as T;
+        }
+
+        public Entity CreatEntity(Type entityType)
+        {
             int id = IdMgr.GenId();
-            var type = typeof(T);
-
-
-            var entity = Activator.CreateInstance(type) as T;
+            var entity = Activator.CreateInstance(entityType) as Entity;
             entity.id = id;
             AddEntity(entity);
             return entity;
         }
-        //利用反射调用泛型方法
-        public Entity CreatEntityByType(Type t2)
+
+        /* 利用反射调用派生类方法
+        public Entity CreatEntityByType(Type genType)
         {
-            Type t1 = this.GetType();
-            //BindingFlags all = (BindingFlags)~BindingFlags.Default;
-            MethodInfo info = t1.GetMethod(nameof(CreatEntity), new Type[] { } );
-            object ret = info.MakeGenericMethod(t2).Invoke(EntityMgr.Inst, null);
+            var creatMethod = GetType().GetMethod(nameof(CreatEntity), new Type[] { });
+            MethodInfo genMethod = creatMethod.MakeGenericMethod(genType);
+            object ret = genMethod.Invoke(EntityMgr.Inst, null);
             return ret as Entity;
         }
-
+        */
 
         void AddEntity(Entity entity)
         {
