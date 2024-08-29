@@ -109,7 +109,12 @@ namespace FluxEditor
 				{
 					visibleEvtRange.End = viewRange.End;
 				}
-					
+
+				if (_currentClip == null)
+				{
+					return;
+				}
+
 				int numChannels = _currentClip.channels;
 				int numSamples = _clipMinMaxData.Length / (2 * numChannels);
 

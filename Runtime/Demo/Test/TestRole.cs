@@ -13,6 +13,10 @@ public class TestRole : GameStartMono
 
     public int raceId = -1;
 
+    public int bodyId = -1;
+
+    public bool enableAI = true;
+
     public override void OnGameStart()
     {
         if (raceId >= 0)
@@ -28,8 +32,10 @@ public class TestRole : GameStartMono
         if (roleType == RoleType.Enemy)
         {
             Enemy0 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
-            enemy.Init();
+            enemy.Init(raceId, bodyId);
             enemy.gameObject.transform.position = transform.position;
+            //TODO ai 设置
+            //皮肤
         }
 
     }

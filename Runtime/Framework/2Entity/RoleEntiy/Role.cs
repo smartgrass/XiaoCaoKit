@@ -43,7 +43,7 @@ namespace XiaoCao
         public int raceId;
 
         /// 绑定的模型文件
-        public int prefabID;
+        public int bodyId;
 
         //势力,相同为友军
         public int team;
@@ -66,7 +66,7 @@ namespace XiaoCao
 
         public virtual void CreateGameObject(bool isGen = false)
         {
-            GenRoleBody(prefabID);
+            GenRoleBody(bodyId);
         }
 
         protected void GenRoleBody(int prefabId)
@@ -282,65 +282,6 @@ namespace XiaoCao
         {
             throw new NotImplementedException();
         }
-    }
-
-    public class RoleMgr : Singleton<RoleMgr>, IClearCache
-    {
-        public Dictionary<int, Role> roleDic = new Dictionary<int, Role>();
-
-
-        //首先获取所有范围内敌人
-        //获取最高分数
-        //视觉范围为angle
-        //超过视觉范围 做插值剔除  maxDis = Mathf.Lerp(hearR, seeR, angleP);
-        //距离越小分数越高 ds = 1/d  (d >0.1)
-        //夹角越小分数越高 as = cos(x)
-        //旧目标加分计算 暂无
-        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxScore, int team = TeamTag.Enemy)
-        {
-            float hearR = seeR * 0.4f;
-            float angleP = 1;
-            Role role = null;
-            maxScore = 0;
-            foreach (var item in roleDic.Values)
-            {
-                if (item.team != team && !item.IsDie)
-                {
-                    GetAngleAndDistance(self, item.transform, out float curAngle, out float dis);
-                    if (curAngle > seeAngle)
-                    {
-                        MathTool.ValueMapping(curAngle, seeAngle, 180, 1, 0);
-                    }
-                    float maxDis = Mathf.Lerp(hearR, seeR, angleP);
-                    if (dis < maxDis)
-                    {
-                        float _ds = 1 / dis;
-                        float _as = Mathf.Cos(curAngle / 2f * Mathf.Deg2Rad);
-                        float end = _ds * _as;
-
-                        //查找分数最高
-                        if (end > maxScore)
-                        {
-                            maxScore = end;
-                            role = item;
-                        }
-                    }
-                }
-            }
-            return role;
-        }
-
-        //计算两个物体正前方夹角 和距离
-        private void GetAngleAndDistance(Transform self, Transform target, out float curAngle, out float dis)
-        {
-            Vector3 dir = target.position - self.position;
-
-            curAngle = Vector3.Angle(dir, target.forward);
-
-            dis = Mathf.Max(0.1f, dir.magnitude);
-        }
-
-
     }
 
     #region Component

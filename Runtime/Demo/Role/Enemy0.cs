@@ -4,6 +4,7 @@ using UnityEngine.Tilemaps;
 
 namespace XiaoCao
 {
+    //Enemy0相当于base
     public class Enemy0 : EnemyBase, IMsgReceiver
     {
         public override void DataCreat()
@@ -17,7 +18,7 @@ namespace XiaoCao
         public EnemyShareData0 component => enemyData.component;
 
 
-        public void Init(int level = 1)
+        public void Init(int enemyId, int bodyId = -1,int level = 1)
         {
             this.CreateGameObject();
             BaseInit();

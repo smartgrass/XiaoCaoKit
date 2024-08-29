@@ -39,6 +39,10 @@ namespace Flux
         public static MethodInfo PlayPreviewClipMethod;
         public static void PlayEditorAudioClip(AudioClip audioClip)
         {
+            if (audioClip == null)
+            {
+                return;
+            }
             if (PlayPreviewClipMethod == null)
             {
                 var unityEditorAssembly = typeof(AudioImporter).Assembly;

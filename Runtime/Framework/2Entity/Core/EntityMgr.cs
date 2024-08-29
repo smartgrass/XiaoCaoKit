@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Flux;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace XiaoCao
@@ -19,6 +21,16 @@ namespace XiaoCao
             AddEntity(entity);
             return entity;
         }
+        //利用反射调用泛型方法
+        public Entity CreatEntityByType(Type t2)
+        {
+            Type t1 = this.GetType();
+            //BindingFlags all = (BindingFlags)~BindingFlags.Default;
+            MethodInfo info = t1.GetMethod(nameof(CreatEntity), null);
+            object ret = info.MakeGenericMethod(t2).Invoke(EntityMgr.Inst, null);
+            return ret as Entity;
+        }
+
 
         void AddEntity(Entity entity)
         {
@@ -45,7 +57,7 @@ namespace XiaoCao
                 behaviorEntityDic.Remove(id);
             }
             entityDic.Remove(id);
-            
+
             entity.Dispose();
         }
 
@@ -63,7 +75,7 @@ namespace XiaoCao
                     }
                     else
                     {
-                        DebugGUI.Log("no Runing",entity.id);
+                        DebugGUI.Log("no Runing", entity.id);
                     }
                 }
                 else
