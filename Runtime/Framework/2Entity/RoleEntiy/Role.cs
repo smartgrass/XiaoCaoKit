@@ -296,12 +296,12 @@ namespace XiaoCao
         //距离越小分数越高 ds = 1/d  (d >0.1)
         //夹角越小分数越高 as = cos(x)
         //旧目标加分计算 暂无
-        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS, int team = TeamTag.Enemy)
+        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxScore, int team = TeamTag.Enemy)
         {
             float hearR = seeR * 0.4f;
             float angleP = 1;
             Role role = null;
-            maxS = 0;
+            maxScore = 0;
             foreach (var item in roleDic.Values)
             {
                 if (item.team != team && !item.IsDie)
@@ -319,9 +319,9 @@ namespace XiaoCao
                         float end = _ds * _as;
 
                         //查找分数最高
-                        if (end > maxS)
+                        if (end > maxScore)
                         {
-                            maxS = end;
+                            maxScore = end;
                             role = item;
                         }
                     }
@@ -502,6 +502,7 @@ namespace XiaoCao
 
         public virtual void RcpPlaySkill(int skillId)
         {
+            PreSkillStart();
             Data_R.curSkillId = skillId;
             Transform selfTf = owner.transform;
             TaskInfo taskInfo = new TaskInfo()
@@ -526,6 +527,10 @@ namespace XiaoCao
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
+        }
+        //技能开始前根据输入调整方向 等数据
+        protected virtual void PreSkillStart()
+        {
         }
 
         #region FullSkillId

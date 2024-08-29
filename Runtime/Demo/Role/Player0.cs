@@ -93,6 +93,7 @@ namespace XiaoCao
             RoleOut();
         }
 
+
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             base.ReceiveMsg(type, fromId, msg);
@@ -217,6 +218,11 @@ namespace XiaoCao
             }
         }
 
+        protected override void PreSkillStart()
+        {
+
+        }
+
         public void TryRoll()
         {
             int rollId = GetRollSkillId();
@@ -250,21 +256,32 @@ namespace XiaoCao
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
+            
+            DefaultAutoDirect();
+            
+            RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
+        }
 
-            //索敌
-            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3, 30, out float maxS, owner.team);
-            if (findRole != null)
+        private void DefaultAutoDirect()
+        {
+            if (InputData.x != 0)
             {
-                owner.transform.RotaToPos(findRole.transform.position);
-                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
+                owner.transform.RotateY(30 * InputData.x);
             }
             else
             {
-                Debug.Log($"--- findRole no");
+                //索敌: 当无左右方向输入时开启索敌
+                var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3, 30, out float maxScore, owner.team);
+                if (findRole != null)
+                {
+                    owner.transform.RotaToPos(findRole.transform.position);
+                    Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
+                }
+                else
+                {
+                    Debug.Log($"--- findRole no");
+                }
             }
-
-
-            RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
         }
 
 
