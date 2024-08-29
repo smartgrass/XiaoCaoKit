@@ -9,7 +9,7 @@ namespace XiaoCao
         public static int GetConfigId(int raceId)
         {
             //raceId在 0~9 玩家
-            if (raceId < 10) 
+            if (IsPlayerRace(raceId)) 
             {  
                 return 0;
             }
@@ -19,6 +19,11 @@ namespace XiaoCao
                 //敌人默认配置序号1, 其他情况另作处理
                 return 1;
             }
+        }
+
+        public static bool IsPlayerRace(int raceId)
+        {
+            return raceId < 10;
         }
 
 

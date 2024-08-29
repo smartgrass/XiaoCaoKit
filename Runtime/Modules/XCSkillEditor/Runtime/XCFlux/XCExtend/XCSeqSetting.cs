@@ -30,9 +30,10 @@ namespace XiaoCao
             return $"{DataDir}/{roleType.ToString()}/{skillId}.bytes";
         }
 
-        public static string GetRolePrefabPath(RoleType roleType, int prefabId)
+        public static string GetRoleBodyPath(RoleType roleType, int prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType}Body{prefabId}.prefab";
+            string frontName = roleType == RoleType.Enemy? "E" : "P";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{frontName}_Body_{prefabId}.prefab";
         }
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)

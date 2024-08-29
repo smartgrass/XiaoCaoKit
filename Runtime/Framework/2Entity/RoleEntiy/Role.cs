@@ -43,7 +43,7 @@ namespace XiaoCao
         public int raceId;
 
         /// 绑定的模型文件
-        public int bodyId;
+        public int prefabId;
 
         //势力,相同为友军
         public int team;
@@ -66,7 +66,7 @@ namespace XiaoCao
 
         public virtual void CreateGameObject(bool isGen = false)
         {
-            GenRoleBody(bodyId);
+            GenRoleBody(prefabId);
         }
 
         protected void GenRoleBody(int prefabId)
@@ -78,7 +78,7 @@ namespace XiaoCao
             raceId = idRole.raceId;
             idRoleGo.tag = Tags.PLAYER;
 
-            string bodyPath = XCPathConfig.GetRolePrefabPath(RoleType, prefabId);
+            string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, prefabId);
             GameObject body = ResMgr.LoadInstan(bodyPath);
             this.body = body;
             body.transform.SetParent(idRoleGo.transform, false);

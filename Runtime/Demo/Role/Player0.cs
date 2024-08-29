@@ -35,7 +35,7 @@ namespace XiaoCao
             this.CreateGameObject();
             this.team = 1;
             BaseInit();
-            Debug.Log($"---  raceId {idRole.raceId} {idRole.aiId}");
+            Debug.Log($"---  raceId {idRole.aiId}");
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
             roleData.playerAttr.Init(savaData.lv);
 

@@ -18,8 +18,10 @@ namespace XiaoCao
         public EnemyShareData0 component => enemyData.component;
 
 
-        public void Init(int enemyId, int bodyId = -1,int level = 1)
+        //prefabId = enemyId
+        public void Init(int prefabId, int bodyId = -1,int level = 1)
         {
+            this.prefabId = prefabId;
             this.CreateGameObject();
             BaseInit();
             component.aiControl = new AIControl(this);

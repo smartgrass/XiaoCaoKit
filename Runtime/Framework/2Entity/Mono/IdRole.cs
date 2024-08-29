@@ -7,6 +7,7 @@ using XiaoCao;
 public class IdRole : IdComponent
 {
     public int raceId = 1;
+    public int defaultBodyId = -1;
     public int aiId = 0;
     public RuntimeAnimatorController runtimeAnim;
     public Rigidbody rb;
