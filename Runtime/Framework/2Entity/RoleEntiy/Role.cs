@@ -443,6 +443,7 @@ namespace XiaoCao
 
         public virtual void RcpPlaySkill(int skillId)
         {
+            PreSkillStart();
             Data_R.curSkillId = skillId;
             Transform selfTf = owner.transform;
             TaskInfo taskInfo = new TaskInfo()
@@ -467,6 +468,10 @@ namespace XiaoCao
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
+        }
+        //技能开始前根据输入调整方向 等数据
+        protected virtual void PreSkillStart()
+        {
         }
 
         #region FullSkillId

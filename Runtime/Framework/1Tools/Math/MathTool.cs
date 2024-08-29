@@ -18,26 +18,29 @@ public static class MathLayoutTool
     }
     private const int objectWidth = 0;
     private const int objectHeight = 0;
+
     //矩形排列
-    public static Vector2Int GetRectPos(int xIndex, int yIndex, int xCount, Alignment alignment, int spacingX = 10, int spacingY = 10)
+    //int x = i % xCount;
+    //int y = i / xCount;
+    public static Vector2 GetRectPos(int x, int y, int xCount, Alignment alignment, float spacingX = 10, float spacingY = 10)
     {
-        int startX = 0;
-        int startY = 0;
+        float startX = 0;
+        float startY = 0;
 
-        startY = yIndex * (objectHeight + spacingY);
+        startY = y * (objectHeight + spacingY);
 
-        int x = startX + xIndex * (objectWidth + spacingX);
+        float endX = startX + x * (objectWidth + spacingX);
         switch (alignment)
         {
             case Alignment.Center:
-                x += (objectWidth - spacingX * (xCount - 1)) / 2;
+                endX += (objectWidth - spacingX * (xCount - 1)) / 2;
                 break;
             case Alignment.Right:
-                x += (objectWidth - spacingX) * (xCount - 1);
+                endX += (objectWidth - spacingX) * (xCount - 1);
                 break;
         }
         //Left不需要任何处理
-        return new Vector2Int(x, startY);
+        return new Vector2(endX, startY);
     }
 
     //空心矩形排列
@@ -477,6 +480,12 @@ public static class MathTool
         Quaternion rotation = Quaternion.LookRotation(wordlPos - transform.position);
         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, lerp);
     }
+
+    public static void RotateY(this Transform transform,float angle)
+    {
+        transform.Rotate(Vector3.up, angle);
+    }
+
     #endregion
 
     #region 曲线
