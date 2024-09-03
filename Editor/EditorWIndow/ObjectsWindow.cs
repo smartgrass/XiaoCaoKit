@@ -40,24 +40,3 @@ public class ObjectsWindow : XiaoCaoWindow
 
 
 }
-
-
-public static class XiaoCaoObjectUsingExtend
-{
-    [MenuItem("Assets/XiaoCao/添加到收藏", priority = 100)]
-    private static void AddToFavor()
-    {
-        var objs = Selection.objects;
-        var win = ObjectsWindow.Instance;
-        if (win._objects.ObjectList == null)
-        {
-            win._objects.ObjectList = new List<Object>();
-        }
-
-        foreach (var item in objs)
-        {
-            win._objects.ObjectList.Add(item);
-            Debug.Log($" add {item.name}");
-        }
-    }
-}

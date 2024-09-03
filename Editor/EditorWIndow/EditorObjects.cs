@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using NaughtyAttributes;
+using UnityEngine.Serialization;
 
 public class EditorObjects : ScriptableObject
 {
-    [Label("收藏夾")]
-    public List<Object> ObjectList;
-    [Label("So")]
+    [Label("")]
     [Expandable]
     public ScriptableObject So;
 }

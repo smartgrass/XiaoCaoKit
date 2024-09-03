@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   des: 
   type: 1
-  targetAnimtorController: {fileID: 9100000, guid: 581fde17f65c40848b44b31e44204ba7, type: 2}
+  targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}

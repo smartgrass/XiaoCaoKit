@@ -20,10 +20,11 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace AssetEditor.Editor
 {
+    //弃用
     public class AssetEditorWindow : EditorWindow
     {
         public static readonly List<AssetEditorWindow> Windows = new List<AssetEditorWindow>();
-        public string[] assetFilterNames;
+        public string[] assetFilterNames = new string[0];
         public AssetEditorWindow Instance => this;
         const string Title = "AssetEditor";
         private const char SplitChar = '.';
@@ -40,7 +41,7 @@ namespace AssetEditor.Editor
         private Button _selectClickButton;
         private string _selectAssetGuid;
 
-        [MenuItem("Window/AssetEditor")]
+        [MenuItem("XiaoCao/AssetEditor(未完成)")]
         public static void GetWindow()
         {
             //if (AssetEditorPreference.Config.AssetFilterNames.Count <= 0)
@@ -63,12 +64,12 @@ namespace AssetEditor.Editor
         {
             string path = "Assets/Ignore/Editor/XCObjectUsing.asset";
             var objects = XCAseetTool.GetOrNewSO<EditorObjects>(path);
-            List<string> pathList = new List<string>();
-            foreach (var item in objects.ObjectList)
-            {
-                pathList.Add(AssetDatabase.GetAssetPath(item));
-            }
-            assetFilterNames = pathList.ToArray();
+            //List<string> pathList = new List<string>();
+            //foreach (var item in objects.data)
+            //{
+            //    pathList.Add(AssetDatabase.GetAssetPath(item));
+            //}
+            //assetFilterNames = pathList.ToArray();
             OnFocus();
         }
 

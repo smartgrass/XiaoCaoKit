@@ -26,9 +26,7 @@ public class Test_AnimPreview : MonoBehaviour
     [Label("行数")]
     //[NewLine]
     //[HorLayout(true)]
-    [MiniBtn(nameof(LoadAnimations), "生成模型0")]
-    [MiniBtn(nameof(LoadAnimations), "生成模型1")]
-    [MiniBtn(nameof(LoadAnimations), "生成模型2")]
+    [MiniBtn(nameof(LoadAnimations), "生成模型")]
     public int onelineCount = 7;
 
     private List<string> animationFiles = new List<string>();
@@ -37,6 +35,7 @@ public class Test_AnimPreview : MonoBehaviour
 
     void LoadAnimations()
     {
+        Debug.Log($"--- 生成模型");
         GetPaths();
         CreateCharacters();
     }

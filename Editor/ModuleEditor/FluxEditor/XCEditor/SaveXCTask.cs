@@ -87,10 +87,9 @@ public class SaveXCTask
     [MenuItem(RepalcePrefabName)]
     private static void RepalcePrefab()
     {
-        var win = XCRepalceToolWin.Open();
-        win.instance = Selection.activeGameObject as GameObject;
-
-
+        XiaoCaoWindow.OpenWindow<XCRepalceGuidWin>("XCRepalceGuidWin");
+        //var win = XCRepalceToolWin.Open();
+        //win.instance = Selection.activeGameObject as GameObject;
     }
 
     public static void SavaCurSeq()

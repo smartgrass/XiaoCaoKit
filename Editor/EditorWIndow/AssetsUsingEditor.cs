@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 //using AssetEditor.Editor.Window;
+using NaughtyAttributes;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ using Object = UnityEngine.Object;
 [CreateAssetMenu(menuName = "SO/AssetsUsing")]
 public  class AssetsUsingEditor :ScriptableObject
 {
-    public List<ObjectList> objectLists;  
+    [Label("")]
+    public List<ObjectList> d;  
 }
 [Serializable]
 public class ObjectList
