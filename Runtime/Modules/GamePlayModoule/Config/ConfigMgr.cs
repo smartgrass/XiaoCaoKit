@@ -6,6 +6,11 @@ using OdinSerializer;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 using System.Collections.Generic;
 using System.IO;
+using static OdinPlayerPrefs;
+using static UnityEngine.LightProbeProxyVolume;
+using DataFormat = OdinSerializer.DataFormat;
+
+
 
 
 #if UNITY_EDITOR
@@ -49,9 +54,22 @@ namespace XiaoCao
 
         public static PackageConfig GetPackageConfig()
         {
+            TestFile();
             string path = Application.dataPath + "Config/PackageConfig.text";
             byte[] bytes = File.ReadAllBytes(path);
             return SerializationUtility.DeserializeValue<PackageConfig>(bytes, DataFormat.JSON);
+
+
+        }
+
+        private static void TestFile()
+        {
+            string path = Application.dataPath + "Config/TestConfig.text";
+            SerializationNode node = new SerializationNode();
+            node.Data = "1";
+            node.Name = "index";
+            byte[] bytes1 = SerializationUtility.SerializeValue(node, DataFormat.JSON);
+            File.WriteAllBytes(path, bytes1);
         }
     }
 
