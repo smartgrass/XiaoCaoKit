@@ -264,6 +264,28 @@ namespace XiaoCao
 
             }
         }
+
+        public GameObject WeaponObject { get; set; }
+
+        public void TakeWeapon(GameObject weapon)
+        {
+            var hand = WeaponHelper.FindHand(Anim);
+            weapon.transform.SetParent(hand.transform, false);
+            weapon.transform.localPosition = Vector3.zero;
+            WeaponObject = weapon;
+            //TODO WeaponData weapon的属性加成
+            //可以简单通过名字确定武器id, 比如weapon_1
+        }
+        public void RemoveWeapon()
+        {
+            var weapon = WeaponObject;
+            Vector3 pos = idRole.transform.position;
+            var camForword = CameraMgr.Forword;
+            camForword.y = 0;
+            Vector3 dropPos = pos + camForword.normalized * 2;
+            weapon.transform.position = pos;
+            WeaponObject = null;    
+        }
     }
 
     public class PlayerBase : Role
