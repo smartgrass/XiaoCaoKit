@@ -113,6 +113,11 @@ public class SaveXCTask
 
     private static void SavaOneSeq(FSequence Sequence)
     {
+        if (Sequence == null)
+        {
+            return;
+        }
+        Debug.Log($"--- SavaOneSeq {Sequence.name} ");
         fSeqSetting = Sequence.SeqSetting;
         curSequence = Sequence;
         Transform playerTF = Sequence.Containers[0].Timelines[0].transform;
@@ -284,6 +289,10 @@ public class SaveXCTask
 
     private static ObjectData MakeObjectData(FTrack _track)
     {
+        if (_track.Owner == null)
+        {
+            throw new Exception($"--- {_track.name} owner is null ");
+        }
         string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(_track.Owner);
 
         if (!path.StartsWith(XCPathConfig.PerfabDir))

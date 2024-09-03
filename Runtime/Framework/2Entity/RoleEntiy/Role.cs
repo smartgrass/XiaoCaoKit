@@ -140,6 +140,13 @@ namespace XiaoCao
                     OnBreak();
 
                     Anim.TryPlayAnim(AnimHash.Break);
+                    Debug.Log($"--- AnimHash.Break");
+                }
+                else
+                {
+                    //Hit Index
+                    Debug.Log($"--- AnimHash.Hit");
+                    Anim.TryPlayAnim(AnimHash.Hit);
                 }
 
                 //playerMover.SetNoGravityT(setting.NoGravityT);

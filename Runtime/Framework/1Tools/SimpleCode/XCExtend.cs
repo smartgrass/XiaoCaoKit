@@ -12,7 +12,7 @@ public static class XCExtend
             animator.Play(hash);
             return true;
         }
-        Debuger.Log($"--- no hash {hash}");
+        Debuger.LogError($"--- no hash {hash}");
         return false;
     }
 
