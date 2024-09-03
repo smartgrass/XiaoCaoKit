@@ -96,6 +96,13 @@ public static class FileTool
         return data;
     }
 
+    public static T DeserializeReadJson<T>(string path)
+    {
+        byte[] bytes = File.ReadAllBytes(path);
+        T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.JSON);
+        JsonDataReader
+        return data;
+    }
 
     public static byte[] ReadByte(string filePath)
     {
