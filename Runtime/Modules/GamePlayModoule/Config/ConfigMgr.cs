@@ -55,7 +55,7 @@ namespace XiaoCao
         public static PackageConfig GetPackageConfig()
         {
             TestFile();
-            string path = Application.dataPath + "Config/PackageConfig.text";
+            string path = Application.dataPath + "PackageConfig/Main.text";
             byte[] bytes = File.ReadAllBytes(path);
             return SerializationUtility.DeserializeValue<PackageConfig>(bytes, DataFormat.JSON);
 
