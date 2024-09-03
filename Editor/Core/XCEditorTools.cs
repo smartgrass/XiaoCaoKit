@@ -35,6 +35,13 @@ namespace XiaoCaoEditor
         public const string XCToolWindow = "XiaoCao/XCToolWindow";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
+
+        //其他
+        ///打包相关 <see cref="BuildTool"/>
+        ///Scene绘制相关 <see cref="XCDraw"/>
+        ///资源处理相关 <see cref="XCAseetTool"/>
+        ///AnimatorController连线 <see cref="XCAnimatorTool"/>
+        ///批命令 <see cref="CommandHelper"/>
     }
 
     /// <summary>

@@ -100,7 +100,6 @@ public static class FileTool
     {
         byte[] bytes = File.ReadAllBytes(path);
         T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.JSON);
-        JsonDataReader
         return data;
     }
 
@@ -193,5 +192,36 @@ public static class FileTool
         t.LoadImage(bytes);
         return t;
     }
+
+
+
+    public static void CopyDirAll(string srcDir, string destDir)
+    {
+        DirectoryInfo diSource = new DirectoryInfo(srcDir);
+        DirectoryInfo diTarget = new DirectoryInfo(destDir);
+        CopyDirAll(diSource, diTarget);
+    }
+    private static void CopyDirAll(DirectoryInfo source, DirectoryInfo target)
+    {
+        // Check if the target directory exists, if not, create it
+        if (!Directory.Exists(target.FullName))
+        {
+            Directory.CreateDirectory(target.FullName);
+        }
+
+        // Copy each file into it's new directory
+        foreach (FileInfo fi in source.GetFiles())
+        {
+            fi.CopyTo(Path.Combine(target.FullName, fi.Name), true);
+        }
+
+        // Copy each subdirectory using recursion
+        foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+        {
+            DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
+            CopyDirAll(diSourceSubDir, nextTargetSubDir);
+        }
+    }
+
 
 }
