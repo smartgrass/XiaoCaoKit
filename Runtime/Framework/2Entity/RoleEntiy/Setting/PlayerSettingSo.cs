@@ -9,6 +9,10 @@ namespace XiaoCao
 {
 
     [CreateAssetMenu(menuName = "SO/PlayerSettingSo")]
+
+    /// <see cref="RaceIdSetting"/>
+    /// <see cref="PlayerSkillSetting"/>
+    /// player专属的设置
     public class PlayerSettingSo : SettingSo<PlayerSetting>
     {
         public override void OnInit()

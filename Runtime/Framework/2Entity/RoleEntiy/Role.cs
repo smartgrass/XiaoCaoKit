@@ -42,6 +42,8 @@ namespace XiaoCao
         ///<see cref="RaceIdSetting"/>
         public int raceId;
 
+        public RaceInfo raceInfo;
+
         /// 绑定的模型文件
         public int prefabId;
 
@@ -49,8 +51,6 @@ namespace XiaoCao
 
         //势力,相同为友军
         public int team;
-
-        protected int settingId;
 
         public GameObject body;
 
@@ -78,6 +78,7 @@ namespace XiaoCao
             idRole.id = id;
             raceId = idRole.raceId;
             bodyId = idRole.bodyId < 0 ? prefabId : idRole.bodyId;
+            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
 
             string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, bodyId);
             GameObject body = ResMgr.LoadInstan(bodyPath);
@@ -210,8 +211,7 @@ namespace XiaoCao
         {
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
-
-            settingId = RaceIdSetting.GetConfigId(raceId);
+            int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
 
             gameObject.layer = GameSetting.GetTeamLayer(team);
@@ -505,22 +505,6 @@ namespace XiaoCao
         {
         }
 
-        #region FullSkillId
-        public int GetSkillIdFull(int index)
-        {
-            return RaceIdSetting.GetSkillIdFull(owner.raceId, index);
-        }
-        public int GetNorAckIdFull(int index)
-        {
-            return RaceIdSetting.GetNorAckIdFull(owner.raceId, index);
-        }
-
-        public int GetRollSkillId()
-        {
-            return RaceIdSetting.GetRollSkillId(owner.raceId);
-        }
-
-        #endregion
     }
 
 

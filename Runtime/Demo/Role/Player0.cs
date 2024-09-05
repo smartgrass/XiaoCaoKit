@@ -36,6 +36,7 @@ namespace XiaoCao
             this.team = 1;
             BaseInit();
             Debug.Log($"---  raceId {idRole.aiId}");
+            int settingId = RaceIdSetting.GetConfigId(raceId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
             roleData.playerAttr.Init(savaData.lv);
 
@@ -225,8 +226,7 @@ namespace XiaoCao
 
         public void TryRoll()
         {
-            int rollId = GetRollSkillId();
-
+            int rollId = owner.raceInfo.RollId;
             //判断冷缩
             if (!AtkTimers.IsSkillReady(rollId))
             {
@@ -259,13 +259,14 @@ namespace XiaoCao
             
             DefaultAutoDirect();
             
-            RcpPlaySkill(GetNorAckIdFull(nextNorAckIndex));
+            RcpPlaySkill(RaceInfo.GetNorAckIdFull(nextNorAckIndex));
         }
 
         private void DefaultAutoDirect()
         {
             if (InputData.x != 0)
             {
+                Debug.Log($"--- RotateY {30 * InputData.x} ");
                 owner.transform.RotateY(30 * InputData.x);
             }
             else

@@ -298,7 +298,7 @@ public class SaveXCTask
         {
             FileInfo info = new FileInfo(path);
 
-            string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir(fSeqSetting.type), info.Name);
+            string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir(fSeqSetting.raceId), info.Name);
 
             Debug.LogWarning($"FLog {info.Name} CopyTo {newPath}");
 

@@ -82,7 +82,8 @@ namespace XiaoCao
             switch (actType)
             {
                 case ActMsgType.Skill:
-                    int skillId = component.aiControl.GetSkillIdFull(int.Parse(actMsg));
+                    int msgNum = int.Parse(actMsg);
+                    int skillId =  raceInfo.GetCmdSkillIndex(msgNum);
                     component.aiControl.TryPlaySkill(skillId);
                     break;
                 case ActMsgType.OtherSkill:

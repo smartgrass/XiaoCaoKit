@@ -22,9 +22,9 @@ namespace XiaoCao
         public static readonly string AudioClipDir = "Assets/_Res/Audio";
         public static readonly string SpriteDir = "Assets/_Res/SpriteDir";
 
-        public static string GetSkillPrefabDir(RoleType roleType)
+        public static string GetSkillPrefabDir(string raceId)
         {
-            return $"{PerfabDir}/{roleType.ToString()}";
+            return $"{PerfabDir}/{raceId.ToString()}";
         }
         public static string GetSkillDataPath(string dir, int skillId)
         {

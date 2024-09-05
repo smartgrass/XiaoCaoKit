@@ -30,26 +30,18 @@ namespace XiaoCao
         ///技能ID规划
         ///与使用string相比
         ///string可读性,扩展性强, 但解析上需要字符串比较,如 skill_1, atk_1,roll,skill_1_1 等等
-        ///建议加入raceId前缀
-        ///int 可读性差, 如 101,181,190
-        ///
-        ///raceId * 100 + 技能id
-        ///玩家raceId = 1 => 100~ 199
-        ///敌人raceId = 10 =>  1000~1099
-        ///
+        ///int 可读性差,但逻辑上可以大统一,  如 101,181,190
+        ///加入raceId前缀,各种族间不相干 roll -> 1/0, skil_1->1/1  ,atk1 =>1/101, 
 
-        ///平a 100~109
-        ///特殊技能 110~119 (Roll = 110)
-        ///普通技能 131~199
+        ///平a 101,102,103
+        ///特殊技能 50 >
+        ///普通技能 1,2,3,4
 
         public static int GetSkillIdFull(int raceId, int index)
         {
             return raceId * 100 + index + 30;
         }
-        public static int GetNorAckIdFull(int raceId, int index)
-        {
-            return raceId * 100 + index;
-        }
+
         public static int GetRollSkillId(int raceId)
         {
             return raceId * 100 + 10;
