@@ -28,6 +28,11 @@ namespace XiaoCao
 
 
         ///技能ID规划
+        ///与使用string相比
+        ///string可读性,扩展性强, 但解析上需要字符串比较,如 skill_1, atk_1,roll,skill_1_1 等等
+        ///建议加入raceId前缀
+        ///int 可读性差, 如 101,181,190
+        ///
         ///raceId * 100 + 技能id
         ///玩家raceId = 1 => 100~ 199
         ///敌人raceId = 10 =>  1000~1099

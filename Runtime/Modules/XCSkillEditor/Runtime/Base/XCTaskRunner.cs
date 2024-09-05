@@ -31,9 +31,9 @@ namespace XiaoCao
 
         public static AssetPool runnerPool;
 
-        public static XCTaskRunner CreatNew(int skillId, RoleType roleType, TaskInfo info)
+        public static XCTaskRunner CreatNew(int skillId, int roleId, TaskInfo info)
         {
-            XCTaskData data = SkillDataMgr.Get(skillId, RoleType.Player);
+            XCTaskData data = SkillDataMgr.Get(skillId, roleId);
             if (data == null)
             {
                 return null;
@@ -159,16 +159,16 @@ namespace XiaoCao
     {
         public Dictionary<int, XCTaskData> dataCache = new Dictionary<int, XCTaskData>();
 
-        public static XCTaskData Get(int skillId, RoleType roleType)
+        public static XCTaskData Get(int skillId, int raceId)
         {
-            int idKey = skillId + (int)roleType * 1000;
+            int idKey = skillId + raceId * 1000;
             if (Inst.dataCache.TryGetValue(idKey, out XCTaskData data))
             {
                 return data;
             }
 
             //需要表做什么事?  技能类型, 技能图标 ,cd
-            byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(roleType, skillId));
+            byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(raceId.ToString(), skillId));
             XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
             Inst.dataCache.Add(idKey, task);
             return task;

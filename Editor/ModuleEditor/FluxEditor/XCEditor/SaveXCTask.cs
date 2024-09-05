@@ -155,7 +155,7 @@ public class SaveXCTask
         }
 
 
-        string savaPath = XCPathConfig.GetSkillDataPath(fSeqSetting.type, Sequence._skillId);
+        string savaPath = XCPathConfig.GetSkillDataPath(fSeqSetting.raceId, Sequence._skillId);
 
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
 

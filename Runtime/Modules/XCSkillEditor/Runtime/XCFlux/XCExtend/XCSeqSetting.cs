@@ -9,6 +9,7 @@ namespace XiaoCao
         [Label("描述")]
         public string des;
         public RoleType type;
+        public string raceId;
         public RuntimeAnimatorController targetAnimtorController;
     }
 
@@ -25,9 +26,9 @@ namespace XiaoCao
         {
             return $"{PerfabDir}/{roleType.ToString()}";
         }
-        public static string GetSkillDataPath(RoleType roleType, int skillId)
+        public static string GetSkillDataPath(string dir, int skillId)
         {
-            return $"{DataDir}/{roleType.ToString()}/{skillId}.bytes";
+            return $"{DataDir}/{dir.ToString()}/{skillId}.bytes";
         }
 
         public static string GetRoleBodyPath(RoleType roleType, int prefabId)

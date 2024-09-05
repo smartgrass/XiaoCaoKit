@@ -489,7 +489,7 @@ namespace XiaoCao
                 castPos = selfTf.position,
                 playerAnimator = owner.Anim,
             };
-            var task = XCTaskRunner.CreatNew(skillId, owner.RoleType, taskInfo);
+            var task = XCTaskRunner.CreatNew(skillId, owner.raceId, taskInfo);
             if (task == null)
             {
                 return;
