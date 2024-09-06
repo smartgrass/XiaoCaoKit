@@ -1,15 +1,22 @@
 ﻿using System;
+using UnityEngine;
 
 namespace NaughtyAttributes
 {
+	/// <summary>
+	/// 字段注释
+	/// </summary>
 	[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
 	public class LabelAttribute : MetaAttribute
 	{
-		public string Label { get; private set; }
+		public string label;
 
-		public LabelAttribute(string label)
+		public string getValue;
+
+		public LabelAttribute(string label, string getValue = "")
 		{
-			Label = label;
+			this.label = label;
+			this.getValue = getValue;
 		}
 	}
 }

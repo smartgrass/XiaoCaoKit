@@ -67,12 +67,13 @@ namespace NaughtyAttributes.Editor
 			return (T[])fieldInfo.GetCustomAttributes(typeof(T), true);
 		}
 
-		public static string GetLabel(SerializedProperty property)
-		{
-			LabelAttribute labelAttribute = GetAttribute<LabelAttribute>(property);
-			return (labelAttribute == null)
-				? property.displayName
-				: labelAttribute.Label;
+		public static string GetLabel(SerializedProperty property){
+			LabelAttribute label = GetAttribute<LabelAttribute>(property);
+			if (label != null){
+				return XCLabelDrawer.GetShowText(property, label);
+			}
+
+			return property.displayName;
 		}
 
 		public static void CallOnValueChangedCallbacks(SerializedProperty property)

@@ -148,7 +148,7 @@ namespace XiaoCaoEditor
 
             FileInfo info = new FileInfo(oldPath);
 
-            string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir(RoleType.Player), info.Name);
+            string newPath = Path.Combine(XCPathConfig.GetSkillPrefabDir("1"), info.Name);
 
             Debug.Log($"FLog {info.Name} CopyTo {newPath}");
 

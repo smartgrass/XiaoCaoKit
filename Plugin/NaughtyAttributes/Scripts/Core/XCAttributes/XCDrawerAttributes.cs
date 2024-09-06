@@ -20,10 +20,10 @@ namespace XiaoCao
         }
     }
 
-/// <summary>
-/// 枚举注释
-/// </summary>
-//[AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
+    /// <summary>
+    /// 枚举注释
+    /// </summary>
+    //[AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field)]
     public class EnumLabelAttribute : PropertyAttribute
     {
         public string label;
@@ -40,19 +40,7 @@ namespace XiaoCao
         }
 
     }
-
-    /// <summary>
-    /// 字段注释
-    /// </summary>
-    public class XCLabelAttribute : PropertyAttribute
-    {
-        public string name;
-
-        public XCLabelAttribute(string name)
-        {
-            this.name = name;
-        }
-    }
+    
 
     public static class EnumLabelExtend
     {
@@ -70,20 +58,6 @@ namespace XiaoCao
     }
 
 #if UNITY_EDITOR
-    [CustomPropertyDrawer(typeof(XCLabelAttribute))]
-    public class LabelDrawer : PropertyDrawer
-    {
-        private GUIContent _label = null;
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            if (_label == null)
-            {
-                string name = (attribute as XCLabelAttribute).name;
-                _label = new GUIContent(name);
-            }
-            EditorGUI.PropertyField(position, property, _label);
-        }
-    }
 
 
     [CustomPropertyDrawer(typeof(EnumLabelAttribute))]
