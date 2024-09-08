@@ -81,7 +81,6 @@ namespace XiaoCao
         {
             if (Task == null)
                 return;
-            Debug.Log($"--- OnEventUpdate ");
             Task.OnEventUpdate();
         }
 

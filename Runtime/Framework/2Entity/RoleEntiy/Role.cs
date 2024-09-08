@@ -88,7 +88,7 @@ namespace XiaoCao
 
         protected void CreateRoleBody(string bodyName)
         {
-            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName); 
+            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName);
             body = ResMgr.LoadInstan(bodyPath);
             body.transform.SetParent(idRole.transform, false);
             BaseInit();
@@ -246,14 +246,15 @@ namespace XiaoCao
             }
         }
 
-        public virtual void AIMoveDir(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
+        public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
         {
-
+            roleData.movement.SetMoveDir(dir, isLookDir);
         }
 
-        public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
+        public virtual void AIMoveTo(Vector3 pos, float speedFactor, bool isLookDir = false)
         {
-            throw new NotImplementedException();
+            var dir = (pos - gameObject.transform.position).normalized;
+            roleData.movement.SetMoveDir(dir, isLookDir);
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -283,7 +284,7 @@ namespace XiaoCao
             camForword.y = 0;
             Vector3 dropPos = pos + camForword.normalized * 2;
             weapon.transform.position = pos;
-            WeaponObject = null;    
+            WeaponObject = null;
         }
     }
 
@@ -359,8 +360,10 @@ namespace XiaoCao
             return false;
         }
 
-        //TaskEnd与角色恢复自主移动不同, 如飞行剑气释放完后, 角色恢复控制, 但剑气可以一直运动
-        public void OnTaskEnd(XCTaskRunner runner)
+        //OnMainTaskEnd 角色恢复控制
+        //OnAllTaskEnd 所有序列任务结束
+        //如飞行剑气释放完后, 角色恢复控制, 但剑气还在运动
+        public virtual void OnAllTaskEnd(XCTaskRunner runner)
         {
             //curTaskData.Remove(runner);
         }
@@ -473,10 +476,6 @@ namespace XiaoCao
 
         public virtual void RcpPlaySkill(int skillId)
         {
-            if (owner.RoleType == RoleType.Enemy)
-            {
-                Debug.Log($"--- E RcpPlaySkill {skillId}");
-            }
             PreSkillStart();
             Data_R.curSkillId = skillId;
             Transform selfTf = owner.transform;
@@ -504,7 +503,7 @@ namespace XiaoCao
             SetAnimSpeed(taskInfo.speed);
             curTaskData.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
-            task.onAllTaskEndEvent.AddListener(OnTaskEnd);
+            task.onAllTaskEndEvent.AddListener(OnAllTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
         }
 

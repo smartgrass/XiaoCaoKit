@@ -72,16 +72,7 @@ namespace XiaoCao
 
         }
 
-        public override void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookDir = false)
-        {
-            var dir = (pos - gameObject.transform.position).normalized;
-            roleData.movement.SetMoveDir(dir, isLookDir);
-        }
 
-        public override void AIMoveDir(Vector3 dir, float speedFactor = 1, bool isLookDir = false)
-        {
-            roleData.movement.SetMoveDir(dir, isLookDir);
-        }
 
         public override void AIMsg(ActMsgType actType, string actMsg)
         {

@@ -243,6 +243,12 @@ namespace XiaoCao
         }
         private void OnEnd()
         {
+            if (owner.roleData.IsBusy)
+            {
+                //等待技能事件结束
+                return;
+            }
+
             if (CurAction.HasNextAct)
             {
                 CurAction = curPoolData.actPool.Find(a => a.actName == CurAction.nextActName);
@@ -256,16 +262,10 @@ namespace XiaoCao
         #region Move and Rotate
         private void Move(float speedRate = 1)
         {
-            if (curTarget != null)
-            {
-                Vector3 dir = (curTarget.transform.position - transform.position).normalized;
-                owner.AIMoveDir(dir, speedRate);
-            }
-            else
-            {
-                Vector3 dir = transform.forward;
-                owner.AIMoveDir(dir, speedRate);
-            }
+            Vector3 dir = curTarget == null ? transform.forward :
+                  (curTarget.transform.position - transform.position).normalized;
+
+            owner.AIMoveDir(dir, speedRate);
         }
 
 
@@ -285,7 +285,7 @@ namespace XiaoCao
 
             DebugGUI.Log("targetDir", targetDir, targetAngle);
 
-            //owner.AIMoveDir(targetDir, speedRate, !CurAction.isLookAtTargetOnHide);
+            owner.AIMoveDir(targetDir.normalized, speedRate, !CurAction.isLookAtTargetOnHide);
 
             if (CurAction.isLookAtTargetOnHide)
             {

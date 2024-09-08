@@ -96,7 +96,7 @@ namespace XiaoCao
 
             if (State != XCState.Running)
                 return;
-            Debug.Log($"--- _curTime {_curTime} {_events.Count}");
+
             int len = _events.Count;
 
             for (int i = _startEventIndex; i < len; i++)
