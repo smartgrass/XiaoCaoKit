@@ -49,7 +49,7 @@ namespace XiaoCao
 
         public override void Update()
         {
-            if (owner.IsOnAi)
+            if (owner.IsAiOn)
             {
                 //查找目标
                 CheckTargetAndAct();
@@ -259,12 +259,12 @@ namespace XiaoCao
             if (curTarget != null)
             {
                 Vector3 dir = (curTarget.transform.position - transform.position).normalized;
-                owner.AIMoveTo(dir, speedRate);
+                owner.AIMoveDir(dir, speedRate);
             }
             else
             {
                 Vector3 dir = transform.forward;
-                owner.AIMoveTo(dir, speedRate);
+                owner.AIMoveDir(dir, speedRate);
             }
         }
 
@@ -278,11 +278,14 @@ namespace XiaoCao
 
             targetAngle = curHideDir == HideDir.MoveLeft ? targetAngle : -targetAngle;
 
-            var dir = curTarget.transform.position - owner.transform.position;
+            Vector3 dir = curTarget.transform.position - owner.transform.position;
+            dir.y = 0;
 
-            var targetDir = MathTool.Rotate(dir, targetAngle);
+            var targetDir = MathTool.RotateY(dir, targetAngle);
 
-            owner.AIMoveTo(targetDir, speedRate, !CurAction.isLookAtTargetOnHide);
+            DebugGUI.Log("targetDir", targetDir, targetAngle);
+
+            //owner.AIMoveDir(targetDir, speedRate, !CurAction.isLookAtTargetOnHide);
 
             if (CurAction.isLookAtTargetOnHide)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace XiaoCao
 {
     public abstract class SettingSo<T> : ScriptableObject where T : IIndex
     {
-        public T[] array;
+        public T[] array = new T[1];
 
         public Dictionary<int, T> map;
 

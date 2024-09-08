@@ -14,4 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
-    actPool: []
+    actPool:
+    - power: 1
+      actType: 0
+      actMsg: 100
+      distance: 3
+      moveTime: 1.5
+      endWaitTime: 0
+      hideTime: 0.5
+      isLookAtTargetOnHide: 0
+      maxUseTime: 2
+      actName: 1
+      nextActName: 
+    - power: 1
+      actType: 0
+      actMsg: 101
+      distance: 3
+      moveTime: 1.5
+      endWaitTime: 0
+      hideTime: 0.5
+      isLookAtTargetOnHide: 0
+      maxUseTime: 2
+      actName: 1
+      nextActName: 

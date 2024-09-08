@@ -22,7 +22,7 @@ namespace XiaoCao
         //加入
         public List<XCTask> subTasks = new List<XCTask>();
 
-        public XCState State { get; set; }
+        public XCState State{ get; set; }
 
         //标记为不占用, 但可以继续Running
         public bool IsNoBusyFlag { get; set; }
@@ -96,7 +96,7 @@ namespace XiaoCao
 
             if (State != XCState.Running)
                 return;
-
+            Debug.Log($"--- _curTime {_curTime} {_events.Count}");
             int len = _events.Count;
 
             for (int i = _startEventIndex; i < len; i++)

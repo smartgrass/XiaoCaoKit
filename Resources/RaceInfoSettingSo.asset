@@ -9,10 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ad827f73059fa245b87340cbbfd5c52, type: 3}
-  m_Name: Player0
+  m_Script: {fileID: 11500000, guid: dbb797673222ab444b64311b410946e8, type: 3}
+  m_Name: RaceInfoSettingSo
   m_EditorClassIdentifier: 
-  des: 
-  type: 1
-  raceId: 1
-  targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}
+  array:
+  - raceId: 1
+    cmdSkillList: 0000000001000000
+    otherSkillList: 
+  - raceId: 10
+    cmdSkillList: 640000006500000066000000
+    otherSkillList: 

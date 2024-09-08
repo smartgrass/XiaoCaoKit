@@ -70,7 +70,7 @@ namespace NaughtyAttributes.Editor
 		public static string GetLabel(SerializedProperty property){
 			LabelAttribute label = GetAttribute<LabelAttribute>(property);
 			if (label != null){
-				return XCLabelDrawer.GetShowText(property, label);
+				return LabelHelper.GetShowText(property, label);
 			}
 
 			return property.displayName;

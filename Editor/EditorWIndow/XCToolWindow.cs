@@ -15,7 +15,7 @@ namespace AssetEditor.Editor
         [MenuItem(XCEditorTools.XCToolWindow)]
         public static XCToolWindow Open()
         {
-            return OpenWindow<XCToolWindow>("XCToolWindow");
+            return OpenWindow<XCToolWindow>("XiaoCao调试面板");
         }
 
         public const int Line1 = 1;

@@ -8,10 +8,6 @@ namespace XiaoCao
     {
         public RoleMovement(Role _owner) : base(_owner)
         {
-#if UNITY_EDITOR
-            var testDraw = owner.gameObject.AddComponent<Test_GroundedDrawGizmos>();
-
-#endif
         }
 
         protected float _tempAnimMoveSpeed;
@@ -31,9 +27,13 @@ namespace XiaoCao
 
         public Vector3 camForward => CameraMgr.Forword;
 
-        Vector3 inputDir;
+        public Vector3 inputDir;
+        public bool isLookDir;
 
         protected bool isGrounded = true;
+
+        //用于控制当前帧是否移动
+        public bool isMovingThisFrame = true;
 
         public override void FixedUpdate()
         {
@@ -48,19 +48,24 @@ namespace XiaoCao
         {
             inputDir = GetInputMoveDir();
 
-            Vector3 moveDir = inputDir;
+            Vector3 moveDir = GetInputMoveDir();
 
-            Data_R.roleState.inputDir = inputDir;
-
-            SetMoveDir(moveDir);
-        }
-
-        protected virtual Vector3 GetInputMoveDir()
-        {
-            return Data_R.roleState.inputDir;
+            OnMoveing(moveDir);
         }
 
         public void SetMoveDir(Vector3 moveDir, bool isLookDir = true)
+        {
+            inputDir = moveDir;
+            this.isLookDir = isLookDir;
+        }
+
+        ///<see cref="PlayerMovement.GetInputMoveDir"/>
+        protected virtual Vector3 GetInputMoveDir()
+        {
+            return inputDir;
+        }
+
+        public void OnMoveing(Vector3 moveDir, bool isLookDir = true)
         {
             if (RoleState.IsMoveLock)
             {
@@ -82,7 +87,8 @@ namespace XiaoCao
                 RotateByMoveDir(moveDir);
             }
 
-            Vector3 moveDelta = moveDir * Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
+            float speed = Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal;
+            Vector3 moveDelta = moveDir * speed * XCTime.fixedDeltaTime;
 
             //速度 v = v + gt
             //处于空中时
@@ -91,32 +97,49 @@ namespace XiaoCao
             CheckEnableGravity();
             GroundedCheck();
 
-            if (enableGravity)
+            if (enableGravity && !isGrounded)
             {
-                if (isGrounded)
-                {
-                    velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * Data_R.moveSetting.GOnGroundMult);
-                }
-                else
-                {
-                    velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
-                }
+                //加速
+                velocityY += Data_R.moveSetting.g * XCTime.fixedDeltaTime;
             }
             else
             {
                 //衰减
                 velocityY = velocityY * Data_R.moveSetting.GOnGroundMult;
+                if (velocityY > -0.1f)
+                {
+                    velocityY = -0.1f;
+                }
             }
 
-
-
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
-            //DebugGUI.Log(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
+            if (isMovingThisFrame)
+            {
+                cc.Move(moveDelta);
+            }
+            else
+            {
+                cc.transform.position += moveDelta;
+                isMovingThisFrame = true;
+            }
 
-            cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
 
             FixUpdateLockTime();
+
+            Used();
+        }
+
+        public void Used()
+        {
+            inputDir = Vector3.zero;
+            isLookDir = false;
+        }
+
+        public void MoveToImmediate(Vector3 pos)
+        {
+            cc.transform.position = pos;
+            isMovingThisFrame = false;
         }
 
         void CheckBackToIdle(bool isInput)

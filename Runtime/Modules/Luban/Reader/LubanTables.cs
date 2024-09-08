@@ -36,9 +36,17 @@ namespace cfg
 
         public static SkillSetting GetSkillSetting(int skillId,int subSkillId)
         {
-            string infoKey = RaceIdSetting.GetSkillAckKey(skillId,subSkillId);
+            string infoKey = GetSkillAckKey(skillId,subSkillId);
             
             return GetSkillSetting(infoKey);
+        }
+        public static string GetSkillAckKey(int ackId, int subAckId)
+        {
+            if (subAckId == 0)
+            {
+                return ackId.ToString();
+            }
+            return $"{ackId}_{subAckId}";
         }
 
         public static SkillSetting GetSkillSetting(string key)

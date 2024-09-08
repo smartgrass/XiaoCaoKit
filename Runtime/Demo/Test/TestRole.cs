@@ -32,9 +32,15 @@ public class TestRole : GameStartMono
             //Enemy0 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
             //enemy.Init(raceId, enemyId);
 
-            EnemyMaker.Inst.CreatEnemy(enemyId);
+            Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(enemyId);
 
             //enemy.gameObject.transform.position = transform.position;
+            enemy.enemyData.movement.MoveToImmediate(transform.position);
+
+            enemy.IsAiOn = true;
+            //enemy.enemyData
+
+            //enemy.idRole.rb.MovePosition(transform.position);
             //TODO ai 设置
             //皮肤
         }

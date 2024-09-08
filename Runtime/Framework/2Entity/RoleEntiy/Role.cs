@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.UIElements;
 using static Cinemachine.CinemachineOrbitalTransposer;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
@@ -63,7 +64,7 @@ namespace XiaoCao
         #endregion
 
         //AI控制
-        public bool IsOnAi { get; set; }
+        public bool IsAiOn;
 
         public virtual void CreateGameObject(bool isGen = false)
         {
@@ -86,6 +87,15 @@ namespace XiaoCao
             body.transform.SetParent(idRoleGo.transform, false);
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRoleGo);
+
+
+#if UNITY_EDITOR
+            var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
+            if (RoleType == RoleType.Enemy)
+            {
+                idRoleGo.AddComponent<Test_EnemyCmd>();
+            }
+#endif
         }
 
         //一般用不上
@@ -234,7 +244,7 @@ namespace XiaoCao
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
-            Debug.Log($"--- Receive {type} fromId: {fromId}");
+            Debuger.Log($"--- Receive {type} fromId: {fromId}");
             if (type is EntityMsgType.SetUnMoveTime)
             {
                 float t = ((BaseMsg)msg).numMsg;
@@ -259,9 +269,14 @@ namespace XiaoCao
             }
         }
 
-        public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
+        public virtual void AIMoveDir(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
         {
 
+        }
+
+        public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
+        {
+            throw new NotImplementedException();
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -386,6 +401,7 @@ namespace XiaoCao
         }
         public void OnTaskUpdate()
         {
+
             bool hasStop = false;
             int firstLen = curTaskData.Count;
             for (int i = 0; i < firstLen; i++)
@@ -462,6 +478,12 @@ namespace XiaoCao
 
         public virtual void TryPlaySkill(int skillId)
         {
+            if (owner.RoleType == RoleType.Enemy)
+            {
+                Debug.Log($"--- e skillId {skillId}");
+                Debug.Log($"--- e IsBusy() {IsBusy()}");
+            }
+
             //条件判断, 耗蓝等等
             if (!Data_R.IsFree)
                 return;
@@ -469,11 +491,17 @@ namespace XiaoCao
             if (IsBusy() && !IsHighLevelSkill(skillId))
                 return;
 
+
+
             RcpPlaySkill(skillId);
         }
 
         public virtual void RcpPlaySkill(int skillId)
         {
+            if (owner.RoleType == RoleType.Enemy)
+            {
+                Debug.Log($"--- E RcpPlaySkill {skillId}");
+            }
             PreSkillStart();
             Data_R.curSkillId = skillId;
             Transform selfTf = owner.transform;
@@ -492,6 +520,7 @@ namespace XiaoCao
             var task = XCTaskRunner.CreatNew(skillId, owner.raceId, taskInfo);
             if (task == null)
             {
+                Debug.LogError($"--- task null {skillId} ");
                 return;
             }
             SetAnimSpeed(taskInfo.speed);

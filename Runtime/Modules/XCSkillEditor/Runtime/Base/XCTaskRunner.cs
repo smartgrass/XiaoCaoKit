@@ -14,6 +14,9 @@ namespace XiaoCao
     /// </summary>
     public class XCTaskRunner : MonoBehaviour
     {
+
+        public TaskInfo debugInfo;
+
         public XCTask Task { get; set; }
 
         public bool IsBusy => CheckIsBusy(); //主Task占用中
@@ -70,12 +73,15 @@ namespace XiaoCao
             Task.Runner = this;
             IsAllStop = false;
             Task.StartRun();
+
+            this.debugInfo = info;
         }
 
         public void OnUpdate()
         {
             if (Task == null)
                 return;
+            Debug.Log($"--- OnEventUpdate ");
             Task.OnEventUpdate();
         }
 

@@ -2,6 +2,9 @@
 using static UnityEngine.UI.GridLayoutGroup;
 using XiaoCao;
 
+/// <summary>
+/// 调节地面射线检查用
+/// </summary>
 public class Test_GroundedDrawGizmos : MonoBehaviour
 {
     private bool isGrounded;

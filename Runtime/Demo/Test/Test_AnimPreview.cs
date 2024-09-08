@@ -11,17 +11,15 @@ using XiaoCao;
 
 public class Test_AnimPreview : MonoBehaviour
 {
-
 #if UNITY_EDITOR
     [ShowNativeProperty]
     public bool GetBool => true;
     public Object[] dirs; // 包含文件夹路径的Object数组
     [HorLayout(true)]
-    
+
     public GameObject characterPrefab; // 你的角色预制体
     [HorLayout(false)]
     public int count = 10;
-
 
     [Label("行数")]
     //[NewLine]
@@ -52,7 +50,7 @@ public class Test_AnimPreview : MonoBehaviour
         }
     }
 
-    [Button("播放下一组",enabledMode: EButtonEnableMode.Playmode)]
+    [Button("播放下一组", enabledMode: EButtonEnableMode.Playmode)]
     void PlayRemainingAnimations()
     {
         GetPaths();
@@ -73,7 +71,7 @@ public class Test_AnimPreview : MonoBehaviour
     {
         animationFiles = new List<string>();
         currentAnimationIndex = 0;
-        for (int i = 0;i < characters.Count; i++)
+        for (int i = 0; i < characters.Count; i++)
         {
             GameObject.Destroy(characters[i]);
         }
@@ -86,7 +84,7 @@ public class Test_AnimPreview : MonoBehaviour
         for (int i = startLen; i < count; i++)
         {
             int lineIndex = i / onelineCount;
-            Vector3 pos = new Vector3((i% onelineCount) * 2 - 5,0 ,lineIndex * 2);
+            Vector3 pos = new Vector3((i % onelineCount) * 2 - 5, 0, lineIndex * 2);
             characters.Add(Instantiate(characterPrefab, pos, Quaternion.identity, transform));
             // 给每个角色分配一个不同的动画
             Animator animator = characters[i].GetComponent<Animator>();
@@ -120,7 +118,7 @@ public class Test_AnimPreview : MonoBehaviour
         AnimatorController controller = new AnimatorController();
         controller.AddLayer("1");
         AnimatorControllerLayer layer = controller.layers[0];
-       
+
         // 添加一个新的状态机
         AnimatorStateMachine stateMachine = layer.stateMachine;
         AnimatorState state = stateMachine.AddState("Default");
