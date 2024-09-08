@@ -66,29 +66,17 @@ namespace XiaoCao
         //AI控制
         public bool IsAiOn;
 
-        public virtual void CreateGameObject(bool isGen = false)
+        public virtual void CreateIdRole(int prefabId)
         {
-            GenRoleBody(prefabId);
-        }
-
-        protected void GenRoleBody(int prefabId)
-        {
+            this.prefabId = prefabId;
             string baseRole = XCPathConfig.GetIdRolePath(RoleType, prefabId);
             GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
             idRole = idRoleGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;
-            bodyId = idRole.bodyId < 0 ? prefabId : idRole.bodyId;
-            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
-
-            string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, bodyId);
-            GameObject body = ResMgr.LoadInstan(bodyPath);
-            this.body = body;
-            body.transform.SetParent(idRoleGo.transform, false);
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
-            BindGameObject(idRoleGo);
-
-
+            BindGameObject(idRole.gameObject);
+            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
 #if UNITY_EDITOR
             var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
             if (RoleType == RoleType.Enemy)
@@ -98,27 +86,27 @@ namespace XiaoCao
 #endif
         }
 
-        //一般用不上
-        private void OtherGen(GameObject go)
+        protected void CreateRoleBody(string bodyName)
         {
-            if (go.transform.TryGetComponent<IdRole>(out IdRole getRole))
-            {
-                idRole = getRole;
-                idRole.id = id;
-                body = go.transform.Find("body").gameObject;
-                BindGameObject(go);
-            }
+            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName); 
+            body = ResMgr.LoadInstan(bodyPath);
+            body.transform.SetParent(idRole.transform, false);
+            BaseInit();
         }
 
-        private void RoleProcess()
+        protected void BaseInit()
         {
-            //加载动画机
-            //刚体, 碰撞体
-            //加载body, 赋予动画机
-
-
+            idRole.animator = body.GetComponent<Animator>();
+            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
+            int settingId = RaceIdSetting.GetConfigId(raceId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
         }
 
+        protected void SetTeam(int team)
+        {
+            this.team = team;
+            gameObject.layer = GameSetting.GetTeamLayer(team);
+        }
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
         {
@@ -217,17 +205,6 @@ namespace XiaoCao
             Anim.TryPlayAnim(AnimHash.Dead);
         }
 
-        protected void BaseInit()
-        {
-            idRole.animator = body.GetComponent<Animator>();
-            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
-
-            gameObject.layer = GameSetting.GetTeamLayer(team);
-
-
-        }
 
         public void RoleIn()
         {
@@ -480,8 +457,7 @@ namespace XiaoCao
         {
             if (owner.RoleType == RoleType.Enemy)
             {
-                Debug.Log($"--- e skillId {skillId}");
-                Debug.Log($"--- e IsBusy() {IsBusy()}");
+                Debug.Log($"--- e skillId {skillId} IsBusy {IsBusy()}");
             }
 
             //条件判断, 耗蓝等等
@@ -490,7 +466,6 @@ namespace XiaoCao
             //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
             if (IsBusy() && !IsHighLevelSkill(skillId))
                 return;
-
 
 
             RcpPlaySkill(skillId);
@@ -517,7 +492,10 @@ namespace XiaoCao
                 castPos = selfTf.position,
                 playerAnimator = owner.Anim,
             };
-            var task = XCTaskRunner.CreatNew(skillId, owner.raceId, taskInfo);
+            //指定技能目录,
+            int skillDirId = owner.raceId;
+
+            var task = XCTaskRunner.CreatNew(skillId, skillDirId, taskInfo);
             if (task == null)
             {
                 Debug.LogError($"--- task null {skillId} ");
@@ -529,6 +507,9 @@ namespace XiaoCao
             task.onAllTaskEndEvent.AddListener(OnTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
         }
+
+
+
         //技能开始前根据输入调整方向 等数据
         protected virtual void PreSkillStart()
         {

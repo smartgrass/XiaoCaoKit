@@ -21,9 +21,10 @@ namespace XiaoCao
         //prefabId = enemyId
         public void Init(int prefabId, int level = 1)
         {
-            this.prefabId = prefabId;
-            this.CreateGameObject();
-            BaseInit();
+            CreateIdRole(prefabId);
+            CreateRoleBody(idRole.bodyName);
+            SetTeam(0);
+
             component.aiControl = new AIControl(this);
             component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
 

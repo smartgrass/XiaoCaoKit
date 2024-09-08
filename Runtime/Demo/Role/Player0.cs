@@ -32,10 +32,10 @@ namespace XiaoCao
 
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
-            this.CreateGameObject();
-            this.team = 1;
-            BaseInit();
-            Debug.Log($"---  raceId {idRole.aiId}");
+            CreateIdRole(savaData.prefabId);
+            CreateRoleBody(idRole.bodyName);
+            SetTeam(1);
+
             int settingId = RaceIdSetting.GetConfigId(raceId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
             roleData.playerAttr.Init(savaData.lv);
@@ -410,7 +410,9 @@ namespace XiaoCao
 
         public int lv;
 
-        public int raceId = 1;
+        public int raceId = 0;
+
+        public int prefabId = 0;
 
 
         public SkillBarData skillBarData = new SkillBarData();

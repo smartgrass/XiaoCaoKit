@@ -35,5 +35,5 @@ MonoBehaviour:
       hideTime: 0.5
       isLookAtTargetOnHide: 0
       maxUseTime: 2
-      actName: 1
+      actName: 2
       nextActName: 

@@ -61,6 +61,8 @@ namespace XiaoCao
 
             data0.CheckNull();
 
+            data0.prefabId = 0;
+
             GameData.playerSaveData = data0;
 
             player.Init(data0, true);

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   des: 
   type: 1
-  raceId: 1
+  raceId: 0
   targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}
