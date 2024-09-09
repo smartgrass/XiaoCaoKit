@@ -147,6 +147,9 @@ namespace XiaoCao
             {
                 Tran.SetParent(PlayerTF, true);
             }
+            else{
+                Tran.SetParent(null, true);
+            }
             Tran.localScale = scale;
         }
 
@@ -163,10 +166,8 @@ namespace XiaoCao
             {
                 Ps.Stop();
             }
-            else
-            {
-                Tran.gameObject.SetActive(false);
-            }
+
+            Tran.gameObject.SetActive(false);
             PoolMgr.Inst.Release(ObjectPath, Tran.gameObject);
             State = XCState.Stopped;
         }

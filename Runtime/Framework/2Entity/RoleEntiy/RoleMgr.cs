@@ -11,7 +11,7 @@ namespace XiaoCao
         //首先获取所有范围内敌人
         //获取最高分数
         //视觉范围为angle
-        //超过视觉范围 做插值剔除  maxDis = (angle,180) => (seeR,hearR); 角度越偏,等效距离越远
+        //动态边界, 角度越偏, 边界越短  limitDis = (angle,180) => (seeR,hearR)
         //距离越小分数越高 ds = 1/d  (d >0.1)
         //夹角越小分数越高 as = cos(x)
         //旧目标加分计算 暂无
@@ -50,16 +50,14 @@ namespace XiaoCao
         }
 
         //计算两个物体正前方夹角 和距离
-        private void GetAngleAndDistance(Transform self, Transform target, out float curAngle, out float dis)
+        private void GetAngleAndDistance(Transform self, Transform target, out float curAngle, out float curDis)
         {
             Vector3 dir = target.position - self.position;
 
             curAngle = Vector3.Angle(dir, target.forward);
 
-            dis = Mathf.Max(0.1f, dir.magnitude);
+            curDis = Mathf.Max(0.1f, dir.magnitude);
         }
-
-
     }
 
 }
