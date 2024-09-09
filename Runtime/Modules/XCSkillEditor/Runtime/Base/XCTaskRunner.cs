@@ -3,6 +3,7 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -52,7 +53,7 @@ namespace XiaoCao
         {
             if (runnerPool == null)
             {
-                GameObject go = new GameObject($"Runner_{info.skillId}");
+                GameObject go = new GameObject($"Runner_{info.entityId}");
                 go.AddComponent<XCTaskRunner>();
                 runnerPool = new AssetPool(go);
             }
@@ -91,19 +92,27 @@ namespace XiaoCao
             Task = null;
             gameObject.SetActive(false);
             Debug.Log($"--- AllEnd {gameObject} ");
-            runnerPool.Release(gameObject);
         }
+
+        public static void AllEnd2(XCTaskRunner runner)
+        {
+            runnerPool.Release(runner.gameObject);
+        }
+
+
         //角色恢复自由控制时触发
         public void OnNoBusy()
         {
-            if (!Task.IsNoBusyFlag)
+            if (Task.IsNoBusyFlag)
             {
-                Task.IsNoBusyFlag = true;
-                if (onMainEndEvent != null)
-                {
-                    onMainEndEvent.Invoke(this);
-                    onMainEndEvent.RemoveAllListeners();
-                }
+                return;
+            }
+
+            Task.IsNoBusyFlag = true;
+            if (onMainEndEvent != null)
+            {
+                onMainEndEvent.Invoke(this);
+                onMainEndEvent.RemoveAllListeners();
             }
         }
 

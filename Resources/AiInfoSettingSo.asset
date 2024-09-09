@@ -17,22 +17,24 @@ MonoBehaviour:
     actPool:
     - power: 1
       actType: 0
-      actMsg: 100
+      actMsg: 0
       distance: 3
       moveTime: 1.5
-      endWaitTime: 0
-      hideTime: 0.5
+      minMoveTime: 0.3
+      endWaitTime: 0.5
+      hideTime: 3
       isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: 1
-      nextActName: 
+      nextActName: 2
     - power: 1
       actType: 0
-      actMsg: 101
+      actMsg: 1
       distance: 3
       moveTime: 1.5
-      endWaitTime: 0
-      hideTime: 0.5
+      minMoveTime: 0.3
+      endWaitTime: 0.5
+      hideTime: 3
       isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: 2

@@ -20,6 +20,8 @@ namespace XiaoCao
 
         public float disableGravityTimer;
 
+        public float maxAnimMoveSpeed = 1;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -53,10 +55,11 @@ namespace XiaoCao
             OnMoveing(moveDir);
         }
 
-        public void SetMoveDir(Vector3 moveDir, bool isLookDir = true)
+        public void SetMoveDir(Vector3 moveDir,float speedRate = 1, bool isLookDir = true)
         {
             inputDir = moveDir;
             this.isLookDir = isLookDir;
+            maxAnimMoveSpeed = speedRate;
         }
 
         ///<see cref="PlayerMovement.GetInputMoveDir"/>
@@ -182,8 +185,12 @@ namespace XiaoCao
         {
             float inputTotal = isInput ? 1 : 0;
 
+            //限制最大移速动画
+            inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
+
             RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, moveSetting.moveSmooth);
 
+            //影响移速倍率
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
         }
 

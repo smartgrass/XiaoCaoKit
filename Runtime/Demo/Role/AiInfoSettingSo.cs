@@ -20,6 +20,8 @@ namespace XiaoCao
         public int id = 0;
         public int Id => id;
 
+        public AIRoleConfig config;
+
         public List<AiAct> actPool = new List<AiAct>() { new AiAct() };
 
         private void Example()
@@ -27,6 +29,14 @@ namespace XiaoCao
             AiActPool poolData = new AiActPool(actPool);
             AiAct getAct = poolData.GetOne();
         }
+    }
+
+    [Serializable]
+    public class AIRoleConfig
+    {
+        public float moveSpeed = 3.5f;
+        public float walkSR = 0.35f; //SR = SpeedRate
+        public float walkAnimSR = 0.5f;
     }
 
     [Serializable]
@@ -68,6 +78,7 @@ namespace XiaoCao
 
             //随机取出一个
             curRuntimeData = RuntimeDatas.GetRandom(out index);
+            //DebugGUI.Log("GetRandom", RuntimeDatas.Count , curRuntimeData.);
             var info = actPool[curRuntimeData.index];
             curRuntimeData.useTimer++;
 
@@ -103,10 +114,11 @@ namespace XiaoCao
     public class AiAct : PowerModel
     {
         public ActMsgType actType;//事件      
-        public string actMsg = "1"; //信息
+        public string actMsg = "0"; //信息
         public float distance = 3; //执行距离
 
         public float moveTime = 1.5f; //追踪时间
+        public float minMoveTime = 0.3f; //追踪时间
         public float endWaitTime = 0; //攻击结束的后摇
         public float hideTime = 0.5f; //结束后躲避时间,默认是后退
 

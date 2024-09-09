@@ -248,13 +248,13 @@ namespace XiaoCao
 
         public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
         {
-            roleData.movement.SetMoveDir(dir, isLookDir);
+            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
         public virtual void AIMoveTo(Vector3 pos, float speedFactor, bool isLookDir = false)
         {
             var dir = (pos - gameObject.transform.position).normalized;
-            roleData.movement.SetMoveDir(dir, isLookDir);
+            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -335,7 +335,7 @@ namespace XiaoCao
     {
         public RoleControl(T _owner) : base(_owner) { AddListener(); }
 
-        public List<XCTaskRunner> curTaskData = new List<XCTaskRunner>();
+        public List<XCTaskRunner> runnerList = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
 
         private void AddListener()
@@ -345,7 +345,7 @@ namespace XiaoCao
 
         public bool IsBusy(int level = 0)
         {
-            foreach (var item in curTaskData)
+            foreach (var item in runnerList)
             {
                 if (item.IsBusy)
                 {
@@ -365,11 +365,12 @@ namespace XiaoCao
         //如飞行剑气释放完后, 角色恢复控制, 但剑气还在运动
         public virtual void OnAllTaskEnd(XCTaskRunner runner)
         {
+            //
             //curTaskData.Remove(runner);
         }
         public void OnBreak()
         {
-            foreach (var task in curTaskData)
+            foreach (var task in runnerList)
             {
                 task.SetBreak();
             }
@@ -381,14 +382,13 @@ namespace XiaoCao
         }
         public void OnTaskUpdate()
         {
-
             bool hasStop = false;
-            int firstLen = curTaskData.Count;
+            int firstLen = runnerList.Count;
             for (int i = 0; i < firstLen; i++)
             {
-                if (!curTaskData[i].IsAllStop)
+                if (!runnerList[i].IsAllStop)
                 {
-                    curTaskData[i].OnUpdate();
+                    runnerList[i].OnUpdate();
                 }
                 else
                 {
@@ -397,15 +397,18 @@ namespace XiaoCao
             }
 
 
-            //移除结束任务
+            //遍历结束后, 才移除结束任务
             if (hasStop)
             {
-                int len = curTaskData.Count;
+                int len = runnerList.Count;
                 for (int i = len - 1; i > 0; i--)
                 {
-                    if (curTaskData[i].IsAllStop)
+                    var runner = runnerList[i];
+                    if (runner.IsAllStop)
                     {
-                        curTaskData.RemoveAt(i);
+                        //资源回收
+                        XCTaskRunner.AllEnd2(runner);
+                        runnerList.RemoveAt(i);
                     }
                 }
             }
@@ -460,6 +463,10 @@ namespace XiaoCao
         {
             if (owner.RoleType == RoleType.Enemy)
             {
+                if (IsBusy())
+                {
+                    Debug.LogError($"--- curTaskData {runnerList.Count} skill {skillId} {runnerList[0].Task.Runner}");
+                }
                 Debug.Log($"--- e skillId {skillId} IsBusy {IsBusy()}");
             }
 
@@ -501,7 +508,7 @@ namespace XiaoCao
                 return;
             }
             SetAnimSpeed(taskInfo.speed);
-            curTaskData.Add(task);
+            runnerList.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnAllTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
