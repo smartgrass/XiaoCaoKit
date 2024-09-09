@@ -13,6 +13,7 @@ namespace XiaoCao
 
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
+        public CameraMgr CameraMgr;
 
 
         #endregion
