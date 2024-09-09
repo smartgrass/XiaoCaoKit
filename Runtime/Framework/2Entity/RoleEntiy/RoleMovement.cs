@@ -8,10 +8,6 @@ namespace XiaoCao
     {
         public RoleMovement(Role _owner) : base(_owner)
         {
-#if UNITY_EDITOR
-            var testDraw = owner.gameObject.AddComponent<Test_GroundedDrawGizmos>();
-
-#endif
         }
 
         protected float _tempAnimMoveSpeed;
@@ -24,6 +20,8 @@ namespace XiaoCao
 
         public float disableGravityTimer;
 
+        public float maxAnimMoveSpeed = 1;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -31,9 +29,13 @@ namespace XiaoCao
 
         public Vector3 camForward => CameraMgr.Forword;
 
-        Vector3 inputDir;
+        public Vector3 inputDir;
+        public bool isLookDir;
 
         protected bool isGrounded = true;
+
+        //用于控制当前帧是否移动
+        public bool isMovingThisFrame = true;
 
         public override void FixedUpdate()
         {
@@ -48,19 +50,25 @@ namespace XiaoCao
         {
             inputDir = GetInputMoveDir();
 
-            Vector3 moveDir = inputDir;
+            Vector3 moveDir = GetInputMoveDir();
 
-            Data_R.roleState.inputDir = inputDir;
-
-            SetMoveDir(moveDir);
+            OnMoveing(moveDir);
         }
 
+        public void SetMoveDir(Vector3 moveDir,float speedRate = 1, bool isLookDir = true)
+        {
+            inputDir = moveDir;
+            this.isLookDir = isLookDir;
+            maxAnimMoveSpeed = speedRate;
+        }
+
+        ///<see cref="PlayerMovement.GetInputMoveDir"/>
         protected virtual Vector3 GetInputMoveDir()
         {
-            return Data_R.roleState.inputDir;
+            return inputDir;
         }
 
-        public void SetMoveDir(Vector3 moveDir, bool isLookDir = true)
+        public void OnMoveing(Vector3 moveDir, bool isLookDir = true)
         {
             if (RoleState.IsMoveLock)
             {
@@ -82,7 +90,8 @@ namespace XiaoCao
                 RotateByMoveDir(moveDir);
             }
 
-            Vector3 moveDelta = moveDir * Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal * XCTime.fixedDeltaTime;
+            float speed = Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal;
+            Vector3 moveDelta = moveDir * speed * XCTime.fixedDeltaTime;
 
             //速度 v = v + gt
             //处于空中时
@@ -91,32 +100,49 @@ namespace XiaoCao
             CheckEnableGravity();
             GroundedCheck();
 
-            if (enableGravity)
+            if (enableGravity && !isGrounded)
             {
-                if (isGrounded)
-                {
-                    velocityY = MathF.Max(velocityY, Data_R.moveSetting.g * Data_R.moveSetting.GOnGroundMult);
-                }
-                else
-                {
-                    velocityY = velocityY + Data_R.moveSetting.g * XCTime.fixedDeltaTime;
-                }
+                //加速
+                velocityY += Data_R.moveSetting.g * XCTime.fixedDeltaTime;
             }
             else
             {
                 //衰减
                 velocityY = velocityY * Data_R.moveSetting.GOnGroundMult;
+                if (velocityY > -0.1f)
+                {
+                    velocityY = -0.1f;
+                }
             }
 
-
-
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
-            //DebugGUI.Log(owner.id.ToString(), "velocityY", velocityY, moveDelta.y);
+            if (isMovingThisFrame)
+            {
+                cc.Move(moveDelta);
+            }
+            else
+            {
+                cc.transform.position += moveDelta;
+                isMovingThisFrame = true;
+            }
 
-            cc.Move(moveDelta);
             owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
 
             FixUpdateLockTime();
+
+            Used();
+        }
+
+        public void Used()
+        {
+            inputDir = Vector3.zero;
+            isLookDir = false;
+        }
+
+        public void MoveToImmediate(Vector3 pos)
+        {
+            cc.transform.position = pos;
+            isMovingThisFrame = false;
         }
 
         void CheckBackToIdle(bool isInput)
@@ -159,8 +185,12 @@ namespace XiaoCao
         {
             float inputTotal = isInput ? 1 : 0;
 
+            //限制最大移速动画
+            inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
+
             RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, moveSetting.moveSmooth);
 
+            //影响移速倍率
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
         }
 

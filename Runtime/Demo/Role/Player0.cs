@@ -32,10 +32,10 @@ namespace XiaoCao
 
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
-            this.CreateGameObject();
-            this.team = 1;
-            BaseInit();
-            Debug.Log($"---  raceId {idRole.aiId}");
+            CreateIdRole(savaData.prefabId);
+            CreateRoleBody(idRole.bodyName);
+            SetTeam(1);
+
             int settingId = RaceIdSetting.GetConfigId(raceId);
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
             roleData.playerAttr.Init(savaData.lv);
@@ -43,9 +43,10 @@ namespace XiaoCao
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             roleData.roleControl = component.control;
-            component.aiControl = new AIControl(this);
+            //component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
-            component.movement = new PlayerMovement(this);
+            component.movement = new RoleMovement(this);
+            roleData.movement = component.movement;
 
             if (isMainPlayer)
             {
@@ -59,7 +60,6 @@ namespace XiaoCao
         protected override void OnUpdate()
         {
             component.input.Update();
-            component.aiControl.Update();
             component.control.Update();
             component.control.OnTaskUpdate();
             component.movement.Update();
@@ -79,7 +79,6 @@ namespace XiaoCao
 
         protected override void OnFixedUpdate()
         {
-            component.aiControl.FixedUpdate();
             component.control.FixedUpdate();
             component.movement.FixedUpdate();
             component.input.FixedUpdate();
@@ -118,6 +117,7 @@ namespace XiaoCao
         public PlayerInput(Player0 owner) : base(owner) { }
 
         public PlayerInputData data => Data_P.inputData;
+        public RoleMovement movement => Data_P.movement;
 
         public override void Update()
         {
@@ -159,31 +159,22 @@ namespace XiaoCao
         }
         public override void FixedUpdate()
         {
-
+            movement.SetMoveDir(GetInputMoveDir());
         }
+
+        protected Vector3 GetInputMoveDir()
+        {
+            Vector3 forward = movement.camForward;
+            forward.y = 0;
+            Vector3 hor = -Vector3.Cross(forward, Vector3.up).normalized;
+            Vector3 moveDir = (data.y * forward.normalized + data.x * hor).normalized;
+            return moveDir;
+        }
+
         //使用过
         public void Used()
         {
             data.Reset();
-        }
-    }
-
-    public class PlayerMovement : RoleMovement
-    {
-        public PlayerMovement(Player0 owner) : base(owner)
-        {
-            InputData = owner.playerData.inputData;
-            owner.roleData.movement = this;
-        }
-        public PlayerInputData InputData;
-
-        protected override Vector3 GetInputMoveDir()
-        {
-            Vector3 forward = camForward;
-            forward.y = 0;
-            Vector3 hor = -Vector3.Cross(forward, Vector3.up).normalized;
-            Vector3 moveDir = (InputData.y * forward.normalized + InputData.x * hor).normalized;
-            return moveDir;
         }
     }
 
@@ -252,14 +243,13 @@ namespace XiaoCao
 
             GameEvent.Send(EventType.AckingNorAck.Int());
 
-
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
             
             DefaultAutoDirect();
             
-            RcpPlaySkill(RaceInfo.GetNorAckIdFull(nextNorAckIndex));
+            RcpPlaySkill(RaceIdSetting.GetNorAckIdFull(nextNorAckIndex));
         }
 
         private void DefaultAutoDirect()
@@ -420,7 +410,9 @@ namespace XiaoCao
 
         public int lv;
 
-        public int raceId = 1;
+        public int raceId = 0;
+
+        public int prefabId = 0;
 
 
         public SkillBarData skillBarData = new SkillBarData();
@@ -535,8 +527,7 @@ namespace XiaoCao
 
         public PlayerInput input;
         public PlayerControl control;
-        public AIControl aiControl;
-        public PlayerMovement movement;
+        public RoleMovement movement;
         public PlayerAtkTimer atkTimers;
     }
 

@@ -1,6 +1,7 @@
 ﻿using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace XiaoCao
@@ -19,7 +20,9 @@ namespace XiaoCao
         public int id = 0;
         public int Id => id;
 
-        public List<AiAct> actPool;
+        public AIRoleConfig config;
+
+        public List<AiAct> actPool = new List<AiAct>() { new AiAct() };
 
         private void Example()
         {
@@ -28,7 +31,15 @@ namespace XiaoCao
         }
     }
 
-    [System.Serializable]
+    [Serializable]
+    public class AIRoleConfig
+    {
+        public float moveSpeed = 3.5f;
+        public float walkSR = 0.35f; //SR = SpeedRate
+        public float walkAnimSR = 0.5f;
+    }
+
+    [Serializable]
     public class AiActPool
     {
         public List<AiAct> actPool { get; set; }
@@ -67,6 +78,7 @@ namespace XiaoCao
 
             //随机取出一个
             curRuntimeData = RuntimeDatas.GetRandom(out index);
+            //DebugGUI.Log("GetRandom", RuntimeDatas.Count , curRuntimeData.);
             var info = actPool[curRuntimeData.index];
             curRuntimeData.useTimer++;
 
@@ -98,22 +110,26 @@ namespace XiaoCao
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class AiAct : PowerModel
     {
         public ActMsgType actType;//事件      
-        public string actMsg = "NorAck"; //信息  当
+        public string actMsg = "0"; //信息
         public float distance = 3; //执行距离
 
         public float moveTime = 1.5f; //追踪时间
+        public float minMoveTime = 0.3f; //追踪时间
         public float endWaitTime = 0; //攻击结束的后摇
         public float hideTime = 0.5f; //结束后躲避时间,默认是后退
 
+        [XCLabel("躲避时是否盯着目标")]
         public bool isLookAtTargetOnHide = false; // 躲避时是否盯着目标
 
-
+        [Label("111")]
         public int maxUseTime = 2; //一个组内最多使用次数
-        public string actName; //id
+        [XCLabel("行为名")]
+        public string actName = "ack1"; //id
+        [XCLabel("下一个行为")]
         public string nextActName;
 
         public bool HasNextAct

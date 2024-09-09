@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using XiaoCao;
@@ -35,17 +35,17 @@ public static class XCExtend
         return ret;
     }
 
-    // µİ¹é·½·¨À´²éÕÒ×ÓÎïÌå
+    // é€’å½’æ–¹æ³•æ¥æŸ¥æ‰¾å­ç‰©ä½“
     public static Transform FindChildEx(this Transform parent, string name)
     {
 
-        // ±éÀúËùÓĞ×ÓÎïÌå
+        // éå†æ‰€æœ‰å­ç‰©ä½“
         int len = parent.childCount;
         for (int i = 0; i < len; i++)
         {
             Transform child = parent.GetChild(i);
 
-            // ºöÂÔ´óĞ¡Ğ´
+            // å¿½ç•¥å¤§å°å†™
             if (string.Equals(child.name, name, StringComparison.OrdinalIgnoreCase))
             {
                 return child;
@@ -62,7 +62,7 @@ public static class XCExtend
 
 
     /// <summary>
-    /// »ºÂıĞı×ªµ½Ä¿±êÎ»ÖÃ·½Ïò , ²¢ÇÒ·µ»ØÊÇ·ñµ½´ï
+    /// ç¼“æ…¢æ—‹è½¬åˆ°ç›®æ ‡ä½ç½®æ–¹å‘ , å¹¶ä¸”è¿”å›æ˜¯å¦åˆ°è¾¾
     /// </summary>
     /// <param name="transform"></param>
     /// <param name="targetPos"></param>
@@ -81,8 +81,8 @@ public static class XCExtend
 
         if (Mathf.Abs(angle) <= minDetal)
         {
-            //µ½´ï
-            //¿ÉÑ¡ÔñÇ¿ÖÆ¶Ô×¼ transform.RotaToPos(targetPos);
+            //åˆ°è¾¾
+            //å¯é€‰æ‹©å¼ºåˆ¶å¯¹å‡† transform.RotaToPos(targetPos);
             return true;
         }
         else

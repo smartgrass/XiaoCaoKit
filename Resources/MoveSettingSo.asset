@@ -14,7 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
-    baseMoveSpeed: 4
+    baseMoveSpeed: 3.8
+    moveSmooth: 0.05
+    rotationLerp: 0.2
+    angleSpeed: 10
+    g: -73.04
+    GOnGroundMult: 0.8
+    MaxGOnGroundMult: 4
+  - id: 1
+    baseMoveSpeed: 3.8
     moveSmooth: 0.05
     rotationLerp: 0.2
     angleSpeed: 10

@@ -10,6 +10,9 @@ namespace XiaoCao
         public AIControl(Role _owner) : base(_owner) { }
 
         public AiInfo info;
+
+        public AIRoleConfig config => info.config;
+
         //当前动作
         private AiAct curAct;
         //当前
@@ -49,7 +52,7 @@ namespace XiaoCao
 
         public override void Update()
         {
-            if (owner.IsOnAi)
+            if (owner.IsAiOn)
             {
                 //查找目标
                 CheckTargetAndAct();
@@ -180,7 +183,7 @@ namespace XiaoCao
 
             bool isMoveEnd = moveTimer >= CurAction.moveTime;
 
-            if (!isFar)
+            if (!isFar && moveTimer > CurAction.minMoveTime)
             {
                 isMoveEnd = true;
             }
@@ -195,7 +198,7 @@ namespace XiaoCao
                 bool isWaitEnd = aimTimer >= aimTime;
                 aimTimer += Time.deltaTime;
 
-                var isAimEnd = RoateTo_Slow(curTarget, Data_R.moveSetting.angleSpeed);
+                var isAimEnd = RoateToRole_Slow(curTarget, Data_R.moveSetting.angleSpeed);
 
                 if (isWaitEnd || isAimEnd)
                 {
@@ -237,12 +240,17 @@ namespace XiaoCao
             else
             {
                 //躲避
-                float HideSpeedRate = 0.4f;
-                HideMove(HideSpeedRate);
+                HideMove(config.walkSR, config.walkAnimSR);
             }
         }
         private void OnEnd()
         {
+            if (owner.roleData.IsBusy)
+            {
+                //等待技能事件结束
+                return;
+            }
+
             if (CurAction.HasNextAct)
             {
                 CurAction = curPoolData.actPool.Find(a => a.actName == CurAction.nextActName);
@@ -256,42 +264,50 @@ namespace XiaoCao
         #region Move and Rotate
         private void Move(float speedRate = 1)
         {
-            if (curTarget != null)
+            Vector3 dir = curTarget == null ? transform.forward :
+                  (curTarget.transform.position - transform.position).normalized;
+
+            owner.AIMoveDir(dir, speedRate);
+        }
+
+        Vector3 tempTargetPos;
+
+        private void HideMove(float speedRate , float animSpeedRate)
+        {
+            
+            if (curTarget == null)
             {
-                Vector3 dir = (curTarget.transform.position - transform.position).normalized;
-                owner.AIMoveTo(dir, speedRate);
+                tempTargetPos = transform.forward * 2f;
+                tempTargetPos.y = 0;
             }
             else
             {
-                Vector3 dir = transform.forward;
-                owner.AIMoveTo(dir, speedRate);
+                tempTargetPos = curTarget.transform.position;
             }
-        }
+            //curTarget 假目标位置处理
 
-
-        private void HideMove(float speedRate = 0.5f)
-        {
-            if (curTarget == null)
-                return;
 
             float targetAngle = isHideToFar ? 90 : 110;
 
             targetAngle = curHideDir == HideDir.MoveLeft ? targetAngle : -targetAngle;
 
-            var dir = curTarget.transform.position - owner.transform.position;
+            Vector3 dir = tempTargetPos - owner.transform.position;
+            dir.y = 0;
 
-            var targetDir = MathTool.Rotate(dir, targetAngle);
+            var targetDir = MathTool.RotateY(dir, targetAngle);
 
-            owner.AIMoveTo(targetDir, speedRate, !CurAction.isLookAtTargetOnHide);
+            DebugGUI.Log("targetDir", targetDir, targetAngle);
+
+            owner.AIMoveDir(targetDir.normalized * speedRate, animSpeedRate, !CurAction.isLookAtTargetOnHide);
 
             if (CurAction.isLookAtTargetOnHide)
             {
-                RoateTo_Slow(curTarget, Data_R.moveSetting.angleSpeed);
+                transform.RoateY_Slow(tempTargetPos, Data_R.moveSetting.angleSpeed);
             }
 
         }
 
-        private bool RoateTo_Slow(Role target, float angleSpeed)
+        private bool RoateToRole_Slow(Role target, float angleSpeed)
         {
             //owner.SetSlowRoteAnim(true); 转向动画可跳过
             return transform.RoateY_Slow(target.transform.position, angleSpeed);

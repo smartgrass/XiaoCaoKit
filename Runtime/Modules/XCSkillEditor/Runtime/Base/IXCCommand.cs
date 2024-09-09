@@ -16,6 +16,8 @@ namespace XiaoCao
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
 
+        public RoleType roleType { get; }
+
         public void OnTrigger();
 
         public void OnUpdate(int frame, float timeSinceTrigger);

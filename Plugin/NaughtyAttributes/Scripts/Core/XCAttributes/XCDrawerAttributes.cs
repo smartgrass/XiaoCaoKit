@@ -10,6 +10,37 @@ using UnityEditor;
 namespace XiaoCao
 {
 
+    /// <summary>
+    /// 字段注释
+    /// </summary>
+    public class XCLabelAttribute : PropertyAttribute
+    {
+        public string name;
+
+        public XCLabelAttribute(string name)
+        {
+            this.name = name;
+        }
+    }
+
+#if UNITY_EDITOR
+    [CustomPropertyDrawer(typeof(XCLabelAttribute))]
+    public class XCLabelDrawer : PropertyDrawer
+    {
+        private GUIContent _label = null;
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            if (_label == null)
+            {
+                string name = (attribute as XCLabelAttribute).name;
+                _label = new GUIContent(name);
+            }
+            EditorGUI.PropertyField(position, property, _label);
+        }
+    }
+
+#endif
+
     [AttributeUsage(AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Class)]
     public class TypeLabelAttribute : PropertyAttribute
     {

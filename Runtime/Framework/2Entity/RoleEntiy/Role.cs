@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.TextCore;
 using UnityEngine.UIElements;
 using static Cinemachine.CinemachineOrbitalTransposer;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
@@ -63,52 +64,49 @@ namespace XiaoCao
         #endregion
 
         //AI控制
-        public bool IsOnAi { get; set; }
+        public bool IsAiOn;
 
-        public virtual void CreateGameObject(bool isGen = false)
+        public virtual void CreateIdRole(int prefabId)
         {
-            GenRoleBody(prefabId);
-        }
-
-        protected void GenRoleBody(int prefabId)
-        {
+            this.prefabId = prefabId;
             string baseRole = XCPathConfig.GetIdRolePath(RoleType, prefabId);
             GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
             idRole = idRoleGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;
-            bodyId = idRole.bodyId < 0 ? prefabId : idRole.bodyId;
-            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
-
-            string bodyPath = XCPathConfig.GetRoleBodyPath(RoleType, bodyId);
-            GameObject body = ResMgr.LoadInstan(bodyPath);
-            this.body = body;
-            body.transform.SetParent(idRoleGo.transform, false);
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
-            BindGameObject(idRoleGo);
-        }
-
-        //一般用不上
-        private void OtherGen(GameObject go)
-        {
-            if (go.transform.TryGetComponent<IdRole>(out IdRole getRole))
+            BindGameObject(idRole.gameObject);
+            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
+#if UNITY_EDITOR
+            var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
+            if (RoleType == RoleType.Enemy)
             {
-                idRole = getRole;
-                idRole.id = id;
-                body = go.transform.Find("body").gameObject;
-                BindGameObject(go);
+                idRoleGo.AddComponent<Test_EnemyCmd>();
             }
+#endif
         }
 
-        private void RoleProcess()
+        protected void CreateRoleBody(string bodyName)
         {
-            //加载动画机
-            //刚体, 碰撞体
-            //加载body, 赋予动画机
-
-
+            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName);
+            body = ResMgr.LoadInstan(bodyPath);
+            body.transform.SetParent(idRole.transform, false);
+            BaseInit();
         }
 
+        protected void BaseInit()
+        {
+            idRole.animator = body.GetComponent<Animator>();
+            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
+            int settingId = RaceIdSetting.GetConfigId(raceId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
+        }
+
+        protected void SetTeam(int team)
+        {
+            this.team = team;
+            gameObject.layer = GameSetting.GetTeamLayer(team);
+        }
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
         {
@@ -207,17 +205,6 @@ namespace XiaoCao
             Anim.TryPlayAnim(AnimHash.Dead);
         }
 
-        protected void BaseInit()
-        {
-            idRole.animator = body.GetComponent<Animator>();
-            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
-
-            gameObject.layer = GameSetting.GetTeamLayer(team);
-
-
-        }
 
         public void RoleIn()
         {
@@ -234,7 +221,7 @@ namespace XiaoCao
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
-            Debug.Log($"--- Receive {type} fromId: {fromId}");
+            Debuger.Log($"--- Receive {type} fromId: {fromId}");
             if (type is EntityMsgType.SetUnMoveTime)
             {
                 float t = ((BaseMsg)msg).numMsg;
@@ -259,9 +246,15 @@ namespace XiaoCao
             }
         }
 
-        public virtual void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookForward = false)
+        public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
         {
+            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
+        }
 
+        public virtual void AIMoveTo(Vector3 pos, float speedFactor, bool isLookDir = false)
+        {
+            var dir = (pos - gameObject.transform.position).normalized;
+            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -291,7 +284,7 @@ namespace XiaoCao
             camForword.y = 0;
             Vector3 dropPos = pos + camForword.normalized * 2;
             weapon.transform.position = pos;
-            WeaponObject = null;    
+            WeaponObject = null;
         }
     }
 
@@ -342,7 +335,7 @@ namespace XiaoCao
     {
         public RoleControl(T _owner) : base(_owner) { AddListener(); }
 
-        public List<XCTaskRunner> curTaskData = new List<XCTaskRunner>();
+        public List<XCTaskRunner> runnerList = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
 
         private void AddListener()
@@ -352,7 +345,7 @@ namespace XiaoCao
 
         public bool IsBusy(int level = 0)
         {
-            foreach (var item in curTaskData)
+            foreach (var item in runnerList)
             {
                 if (item.IsBusy)
                 {
@@ -367,14 +360,17 @@ namespace XiaoCao
             return false;
         }
 
-        //TaskEnd与角色恢复自主移动不同, 如飞行剑气释放完后, 角色恢复控制, 但剑气可以一直运动
-        public void OnTaskEnd(XCTaskRunner runner)
+        //OnMainTaskEnd 角色恢复控制
+        //OnAllTaskEnd 所有序列任务结束
+        //如飞行剑气释放完后, 角色恢复控制, 但剑气还在运动
+        public virtual void OnAllTaskEnd(XCTaskRunner runner)
         {
+            //
             //curTaskData.Remove(runner);
         }
         public void OnBreak()
         {
-            foreach (var task in curTaskData)
+            foreach (var task in runnerList)
             {
                 task.SetBreak();
             }
@@ -387,12 +383,12 @@ namespace XiaoCao
         public void OnTaskUpdate()
         {
             bool hasStop = false;
-            int firstLen = curTaskData.Count;
+            int firstLen = runnerList.Count;
             for (int i = 0; i < firstLen; i++)
             {
-                if (!curTaskData[i].IsAllStop)
+                if (!runnerList[i].IsAllStop)
                 {
-                    curTaskData[i].OnUpdate();
+                    runnerList[i].OnUpdate();
                 }
                 else
                 {
@@ -401,15 +397,18 @@ namespace XiaoCao
             }
 
 
-            //移除结束任务
+            //遍历结束后, 才移除结束任务
             if (hasStop)
             {
-                int len = curTaskData.Count;
+                int len = runnerList.Count;
                 for (int i = len - 1; i > 0; i--)
                 {
-                    if (curTaskData[i].IsAllStop)
+                    var runner = runnerList[i];
+                    if (runner.IsAllStop)
                     {
-                        curTaskData.RemoveAt(i);
+                        //资源回收
+                        XCTaskRunner.AllEnd2(runner);
+                        runnerList.RemoveAt(i);
                     }
                 }
             }
@@ -462,12 +461,22 @@ namespace XiaoCao
 
         public virtual void TryPlaySkill(int skillId)
         {
+            if (owner.RoleType == RoleType.Enemy)
+            {
+                if (IsBusy())
+                {
+                    Debug.LogError($"--- curTaskData {runnerList.Count} skill {skillId} {runnerList[0].Task.Runner}");
+                }
+                Debug.Log($"--- e skillId {skillId} IsBusy {IsBusy()}");
+            }
+
             //条件判断, 耗蓝等等
             if (!Data_R.IsFree)
                 return;
             //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
             if (IsBusy() && !IsHighLevelSkill(skillId))
                 return;
+
 
             RcpPlaySkill(skillId);
         }
@@ -489,17 +498,24 @@ namespace XiaoCao
                 castPos = selfTf.position,
                 playerAnimator = owner.Anim,
             };
-            var task = XCTaskRunner.CreatNew(skillId, owner.raceId, taskInfo);
+            //指定技能目录,
+            int skillDirId = owner.raceId;
+
+            var task = XCTaskRunner.CreatNew(skillId, skillDirId, taskInfo);
             if (task == null)
             {
+                Debug.LogError($"--- task null {skillId} ");
                 return;
             }
             SetAnimSpeed(taskInfo.speed);
-            curTaskData.Add(task);
+            runnerList.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
-            task.onAllTaskEndEvent.AddListener(OnTaskEnd);
+            task.onAllTaskEndEvent.AddListener(OnAllTaskEnd);
             Data_R.skillState.SetValue(ESkillState.Skill);
         }
+
+
+
         //技能开始前根据输入调整方向 等数据
         protected virtual void PreSkillStart()
         {

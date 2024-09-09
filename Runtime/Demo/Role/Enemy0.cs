@@ -21,14 +21,16 @@ namespace XiaoCao
         //prefabId = enemyId
         public void Init(int prefabId, int level = 1)
         {
-            this.prefabId = prefabId;
-            this.CreateGameObject();
-            BaseInit();
+            CreateIdRole(prefabId);
+            CreateRoleBody(idRole.bodyName);
+            SetTeam(0);
+
             component.aiControl = new AIControl(this);
             component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
+
             roleData.playerAttr.Init(level);
             roleData.roleControl = component.aiControl;
             RoleIn();
@@ -44,8 +46,8 @@ namespace XiaoCao
         protected override void OnUpdate()
         {
             component.aiControl.Update();
+            component.aiControl.OnTaskUpdate();
             component.movement.Update();
-
 
         }
 
@@ -71,14 +73,10 @@ namespace XiaoCao
         }
 
 
-        public override void AIMoveTo(Vector3 pos, float speedFactor = 1, bool isLookDir = false)
-        {
-            var dir = (pos - gameObject.transform.position).normalized;
-            roleData.movement.SetMoveDir(dir, isLookDir);
-        }
 
         public override void AIMsg(ActMsgType actType, string actMsg)
         {
+            Debuger.Log($"--- {actType} {actMsg}");
             switch (actType)
             {
                 case ActMsgType.Skill:

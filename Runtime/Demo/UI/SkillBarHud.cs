@@ -48,7 +48,7 @@ namespace XiaoCao
                 bool isCd = process < 1;
                 if (solt.isCold && !isCd)
                 {
-                    Debug.Log($"cd finish! {i}");
+                    //Debug.Log($"cd finish! {i}");
                     //播放发光特效
                 }
                 solt.isCold = isCd;

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
@@ -33,7 +36,30 @@ public class DebugPanel : ViewBase
     private void Awake()
     {
         openBtn.onClick.AddListener(OnOpenBtn);
+#if UNITY_EDITOR
+        EditorApplication.pauseStateChanged += PauseStateChanged;
+#endif
     }
+
+    private void OnDestroy()
+    {
+#if UNITY_EDITOR
+        EditorApplication.pauseStateChanged -= PauseStateChanged;
+#endif
+    }
+#if UNITY_EDITOR
+    private void PauseStateChanged(PauseState state)
+    {
+        if (state == PauseState.Paused)
+        {
+            Debug.Log("--- Pause all movement");
+            foreach (var item in RoleMgr.Inst.roleDic)
+            {
+                item.Value.roleData.movement.isMovingThisFrame = false;
+            } 
+        }
+    }
+#endif
 
     void OnOpenBtn()
     {

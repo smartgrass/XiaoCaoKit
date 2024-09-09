@@ -17,20 +17,22 @@ namespace XiaoCao
             enemyTypeDic[enemyId] = type;
         }
 
-        public void CreatEnemy(int enemyId)
+        public Enemy0 CreatEnemy(int enemyId)
         {
+            Enemy0 enemy = null;
             if (enemyTypeDic.ContainsKey(enemyId))
             {
                 Type enemyType = enemyTypeDic[enemyId];
-                Enemy0 enemy = EntityMgr.Inst.CreatEntity(enemyType) as Enemy0;
-                enemy.Init(enemyId);
-                return;
+                enemy = EntityMgr.Inst.CreatEntity(enemyType) as Enemy0;
             }
             else
             {
-                Enemy0 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
-                enemy.Init(enemyId);
+                enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
             }
+            enemy.Init(enemyId);
+            enemy.IsAiOn = true;
+            return enemy;
         }
+
     }
 }

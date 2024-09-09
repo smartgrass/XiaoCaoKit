@@ -1,32 +1,28 @@
-# XiaoCaoKit(已摆烂)
+# XiaoCaoKit(非完整项目)
 
-工具集子项目,按需提取吧
+某个开发中的项目的代码部分, 缺少资源无法直接运行。
 
-此框架是做项目顺手做的, 方便下个项目快速启动开发，特地拆出子项目。
+为方便下个项目快速启动开发，特地拆出子项目。
 
-无法直接使用，需要补全很多库引用。
+收集GamePlay中常用的工具函数，配置加载等等，对XiaocaoTool和技能编辑器的进一步整理
 
-推荐直接提取一部分功能使用。
-
-此项目将收集GamePlay中会经常用到的工具函数，以及常用的配置加载等等，是对XiaocaoTool和技能编辑器的进一步整理。
-
-主要目标是GamePlay部分，对于热更代码，服务器等不侧重。
 
 ## 开发目标
 
 
 * 1.XiaoCao框架专属
-	* 1.1 XiaoCaoWindow 编辑器扩展 √ XiaoCaoWindow.cs
-	* 1.2 XiaoCao的Entity (借鉴Ecs的id-容器思路,管理核心动态对象) √
-		* Entity.cs
-		* BehaviorEntity.cs
+	* 1.1 XiaoCaoWindow 编辑器扩展 √
+	* 1.2 XiaoCao的Entity  √ (借鉴Ecs的id-容器思路)
+		* Entity.cs  √
+		* BehaviorEntity.cs √
+		* Role.cs  √
 	* 1.3 XCSkillEditor 技能编辑器
 		* 位移&动画 √
 		* 伤害触发器 √
 		* 消息 √
 		* 特殊处理 
 			* 自定义脚本轨道 IXCCommand √ 
-			* 预设Tag (如自动索敌)
+			* 预设Tag (如自动索敌) TODO
 
 * 2.基本框架/工具
 	* YooAsset资源加载模块 √ ResMgr.cs
@@ -42,15 +38,16 @@
 	* 编辑器工具
 		* 组件绑定扩展  XCComponentMenu.AutoBind()
 
-* 3.GamePlayModule GamePlay模块
-	* 3.1 相机控制 √ CameraMgr.cs
+
+* 3.1 GamePlayModule GamePlay模块
+	* 3.1.1 相机控制 √ CameraMgr.cs
 		* TopDown √
 		* 第三人称 √
 		* 索敌视角 ------- TODO
-	* luban表格配置 √ LubanTables.cs
-	* 游戏启动流程 RunDemo.cs
+	* 3.1.2 luban表格配置 √ LubanTables.cs
+	* 3.1.3 游戏启动流程 RunDemo.cs
 		* 等待配置,资源加载完毕-> √
-		* 加载玩家-> √
+		* 加载玩家 √
 		* 场景进度 ------- TODO
 
 	* 游戏数据 √ GameData.cs
@@ -58,14 +55,21 @@
 		* 加载, 开始, 运行, 完成, 退出  GameState
 		* 配合消息系统状态切换时,发送消息  GameMgr.cs
 	
+* 3.2 GamePlayModule.Role 角色
+	* Role
+		* 皮肤-角色技能解耦 √ 
+		种族Id->技能,皮肤Id->外表
+		* 组件模式 √ (主要是代码分区)
+		
+	* 玩家 Player0.cs
+		* 移动 √
+		* 平a&翻滚 √
+		* 死亡&受击 √
+		* 1个技能 ------- TODO
+	* 敌人
+		* AI -ing (AiId选择配置)
 
- * 玩家 Player0.cs
-	* 移动 √
-	* 平a&翻滚 ------- TODO
-	* 死亡&受击 ------- TODO
-	* 1个技能 ------- TODO
- * 敌人 ------- TODO
-
+* 3.3 GamePlayModule 其他
  * 关卡 GamePlayModule
 	* 场景切换
 	* 门 : 进入后切换关卡
@@ -77,6 +81,8 @@
 	* 物品格子容器/详情 ------- TODO 
 		* InventoryUI.cs
 
+* Debug工具相关
+			
 
 
 
@@ -117,6 +123,12 @@ yooAsset -> PackageManager
 
 开源规模从小到大, 脚本->工具->框架->示例项目
 
-示例项目就不建议开源了, 带来的后果是技术贬值, 开源的作者干活累了自己。
+示例项目就不建议开源了
 
-Act_Example属于示例项目阶段，不会开源了, 摆烂了。
+## 吐槽
+
+做游戏是快乐的, 改bug是痛苦...
+
+Entity的开发模式有点难度,需要做很多调试工具配合
+
+

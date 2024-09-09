@@ -3,6 +3,7 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -14,6 +15,9 @@ namespace XiaoCao
     /// </summary>
     public class XCTaskRunner : MonoBehaviour
     {
+
+        public TaskInfo debugInfo;
+
         public XCTask Task { get; set; }
 
         public bool IsBusy => CheckIsBusy(); //主Task占用中
@@ -49,7 +53,7 @@ namespace XiaoCao
         {
             if (runnerPool == null)
             {
-                GameObject go = new GameObject($"Runner_{info.skillId}");
+                GameObject go = new GameObject($"Runner_{info.entityId}");
                 go.AddComponent<XCTaskRunner>();
                 runnerPool = new AssetPool(go);
             }
@@ -70,6 +74,8 @@ namespace XiaoCao
             Task.Runner = this;
             IsAllStop = false;
             Task.StartRun();
+
+            this.debugInfo = info;
         }
 
         public void OnUpdate()
@@ -86,19 +92,27 @@ namespace XiaoCao
             Task = null;
             gameObject.SetActive(false);
             Debug.Log($"--- AllEnd {gameObject} ");
-            runnerPool.Release(gameObject);
         }
+
+        public static void AllEnd2(XCTaskRunner runner)
+        {
+            runnerPool.Release(runner.gameObject);
+        }
+
+
         //角色恢复自由控制时触发
         public void OnNoBusy()
         {
-            if (!Task.IsNoBusyFlag)
+            if (Task.IsNoBusyFlag)
             {
-                Task.IsNoBusyFlag = true;
-                if (onMainEndEvent != null)
-                {
-                    onMainEndEvent.Invoke(this);
-                    onMainEndEvent.RemoveAllListeners();
-                }
+                return;
+            }
+
+            Task.IsNoBusyFlag = true;
+            if (onMainEndEvent != null)
+            {
+                onMainEndEvent.Invoke(this);
+                onMainEndEvent.RemoveAllListeners();
             }
         }
 

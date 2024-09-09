@@ -15,7 +15,7 @@
         {
             base.OnTrigger(startOffsetTime);
             Cmd = CommandFinder.Inst.GetCommand(eName);
-            if (Cmd != null)
+            if (Cmd != null && Cmd.roleType == Info.role.RoleType)
             {
                 HasCmd = true;
                 Cmd.task = this.task;

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace NaughtyAttributes.Editor
 {
-    public class XCLabelDrawer 
+    public class LabelHelper       
     {
         public static string GetShowText(SerializedProperty property,LabelAttribute att ){
             

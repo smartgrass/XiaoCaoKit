@@ -125,7 +125,7 @@ namespace XiaoCao
             if (CurCol)
             {
                 TriggerCache.Release(MeshType, CurCol.gameObject);
-                Debug.Log($"--- Release col {MeshType}");
+                //Debug.Log($"--- Release col {MeshType}");
             }
             else
             {
