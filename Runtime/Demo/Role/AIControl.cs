@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -7,29 +9,30 @@ namespace XiaoCao
     /// </summary>
     public class AIControl : RoleControl<Role>
     {
-        public AIControl(Role _owner) : base(_owner) { }
-
+        public AIControl(Role _owner) : base(_owner)
+        {
+            Init();
+        }
+        
         public AiInfo info;
 
-        public AIRoleConfig config => info.config;
-
+        //当前行为池
+        private AIActPool _actPool;
+        //当前动作记录数据
+        private AIActData CurActData{ get; set; }
         //当前动作
-        private AiAct curAct;
-        //当前
-        private AiActPool curPoolData;
+        private AiAct CurAct{ get; set; }
+        
+        private Role _targetRole;
+        
+        public AIRoleConfig Config => info.config;
 
-        private Role curTarget;
         public Transform transform => owner.transform;
-        private AiAct CurAction
-        {
-            get => curAct;
-            set => curAct = value;
-        }
+
 
         //Cur
         private HideDir curHideDir;
         private float curDistance;
-        private bool IsAcking => CurAction != null;//TODO
 
         //每隔1s检查 敌人和cd
         private float searchTargetTime = 1; //无目标 每隔1s检查
@@ -49,27 +52,30 @@ namespace XiaoCao
         public float aimTime = 0.8f; //攻击前的停顿
 
 
+        private void Init(){
+            _actPool = new AIActPool(info.actPool);
+        }
 
         public override void Update()
         {
             if (owner.IsAiOn)
             {
                 //查找目标
-                CheckTargetAndAct();
+                CheckTarget();
                 //执行动作
                 OnActionUpdate();
             }
         }
 
-        private void CheckTargetAndAct()
+        private void CheckTarget()
         {
             searchTimer += Time.deltaTime;
-            if (curTarget != null && curTarget.IsDie)
+            if (_targetRole != null && !_targetRole.IsDie)
             {
-                //有目标 每隔5s检查
+                //有存活目标 每隔5s检查
                 if (searchTimer > searchTime_hasTarget)
                 {
-                    OnSearchTarget(curTarget);
+                    OnSearchTarget(_targetRole);
                 }
             }
             else
@@ -85,49 +91,48 @@ namespace XiaoCao
         //执行动作
         private void OnActionUpdate()
         {
-            if (CurAction == null && curTarget == null)
+            if (CurAct == null && _targetRole == null)
             {
                 //处于Idle状态 啥都不干
                 return;
             }
 
-            if (CurAction == null)
+            if (CurAct == null)
             {
                 //如果无动作,但有目标则 =>获取动作
                 GetAct();
             }
 
-            if (CurAction == null)
-            {
-                Debug.Log("No Act");
-                return;
+            if (CurAct.actType == ActMsgType.Move){
+                
             }
 
+            if (CurAct.actType == ActMsgType.OtherSkill){
+                
+            }
 
-            AIActState _curActState = curPoolData.curRuntimeData.state;
-
-            if (_curActState == AIActState.Start)
+            ActStateType stateType = CurActData.stateType;
+            if (stateType == ActStateType.Start)
             {
                 ToMoveState();
             }
 
-            if (_curActState == AIActState.MoveTo)
+            if (stateType == ActStateType.MoveTo)
             {
                 //靠近 瞄准
                 OnMoveTo();
             }
-            else if (_curActState == AIActState.Acking)
+            else if (stateType == ActStateType.Acking)
             {
                 OnAcking();
             }
 
-            if (_curActState == AIActState.Hide)
+            if (stateType == ActStateType.Hide)
             {
                 OnHide();
             }
-
-            //逃离逻辑要做修正
-            else if (_curActState == AIActState.End)
+            
+            else if (stateType == ActStateType.End)
             {
                 OnEnd();
             }
@@ -143,23 +148,26 @@ namespace XiaoCao
 
             var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, seeR, seeAngle, out float maxS, owner.team);
 
-            if (last != null && findRole == null)
-            {
-                Debug.Log($"--- Claer target");
+            if (findRole == null){
+                //如果没找到, 则保持原来
+                findRole = last;
             }
 
-            curTarget = findRole;
+            _targetRole = findRole;
         }
 
         private void GetAct()
         {
-            curDistance = GetDistance(curTarget.gameObject.transform);
+            curDistance = GetDistance(_targetRole.gameObject.transform);
 
-            if (curPoolData == null)
+            CurActData = _actPool.GetOne();
+            CurAct = CurActData.act;
+            CurActData.stateType = ActStateType.Start;
+            
+            if (CurAct == null)
             {
-                curPoolData = new AiActPool(info.actPool);
+                Debug.LogError("No Act");
             }
-            CurAction = curPoolData.GetOne();
         }
 
         private void ToMoveState()
@@ -167,23 +175,23 @@ namespace XiaoCao
             searchTimer = 0;
             moveTimer = 0;
             aimTimer = 0;
-            ChangeState(AIActState.MoveTo);
+            ChangeState(ActStateType.MoveTo);
         }
         private void OnMoveTo()
         {
-            if (curTarget == null)
+            if (_targetRole == null)
             {
                 ToAcking();
                 return;
             }
 
-            curDistance = GetDistance(curTarget.transform);
+            curDistance = GetDistance(_targetRole.transform);
 
-            bool isFar = curDistance > CurAction.distance;
+            bool isFar = curDistance > CurAct.distance;
 
-            bool isMoveEnd = moveTimer >= CurAction.moveTime;
+            bool isMoveEnd = moveTimer >= CurAct.moveTime;
 
-            if (!isFar && moveTimer > CurAction.minMoveTime)
+            if (!isFar && moveTimer > CurAct.minMoveTime)
             {
                 isMoveEnd = true;
             }
@@ -198,7 +206,7 @@ namespace XiaoCao
                 bool isWaitEnd = aimTimer >= aimTime;
                 aimTimer += Time.deltaTime;
 
-                var isAimEnd = RoateToRole_Slow(curTarget, Data_R.moveSetting.angleSpeed);
+                var isAimEnd = RoateToRole_Slow(_targetRole, Data_R.moveSetting.angleSpeed);
 
                 if (isWaitEnd || isAimEnd)
                 {
@@ -209,38 +217,38 @@ namespace XiaoCao
 
         private void ToAcking()
         {
-            owner.AIMsg(CurAction.actType, CurAction.actMsg);
+            owner.AIMsg(CurAct.actType, CurAct.actMsg);
             ackTimer = 0;
             ackEndWaitTimer = 0;
-            ChangeState(AIActState.Acking);
+            ChangeState(ActStateType.Acking);
         }
 
         private void OnAcking()
         {
             ackEndWaitTimer += Time.deltaTime;
-            if (ackEndWaitTimer > CurAction.endWaitTime)
+            if (ackEndWaitTimer > CurAct.endWaitTime)
             {
                 ackTimer += Time.deltaTime;
                 if (ackTimer > ackTime && Data_R.IsFree)
                 {
                     GetHideDir();
-                    ChangeState(AIActState.Hide); //结束执行下一个动作
+                    ChangeState(ActStateType.Hide); //结束执行下一个动作
                 }
             }
         }
 
-
+        //TODO 更自然的效果
         private void OnHide()
         {
             hideTimer += Time.deltaTime;
-            if (hideTimer > CurAction.hideTime)
+            if (hideTimer > CurAct.hideTime)
             {
-                ChangeState(AIActState.End);
+                ChangeState(ActStateType.End);
             }
             else
             {
                 //躲避
-                HideMove(config.walkSR, config.walkAnimSR);
+                HideMove(Config.walkSR, Config.walkAnimSR);
             }
         }
         private void OnEnd()
@@ -251,21 +259,22 @@ namespace XiaoCao
                 return;
             }
 
-            if (CurAction.HasNextAct)
+            if (CurAct.HasNextAct)
             {
-                CurAction = curPoolData.actPool.Find(a => a.actName == CurAction.nextActName);
+                CurAct = _actPool.FindAct(CurAct.nextActName);
+                CurActData.stateType = ActStateType.Start;
             }
             else
             {
-                CurAction = null;
+                CurAct = null;
             }
         }
 
         #region Move and Rotate
         private void Move(float speedRate = 1)
         {
-            Vector3 dir = curTarget == null ? transform.forward :
-                  (curTarget.transform.position - transform.position).normalized;
+            Vector3 dir = _targetRole == null ? transform.forward :
+                  (_targetRole.transform.position - transform.position).normalized;
 
             owner.AIMoveDir(dir, speedRate);
         }
@@ -275,14 +284,14 @@ namespace XiaoCao
         private void HideMove(float speedRate , float animSpeedRate)
         {
             
-            if (curTarget == null)
+            if (_targetRole == null)
             {
                 tempTargetPos = transform.forward * 2f;
                 tempTargetPos.y = 0;
             }
             else
             {
-                tempTargetPos = curTarget.transform.position;
+                tempTargetPos = _targetRole.transform.position;
             }
             //curTarget 假目标位置处理
 
@@ -298,9 +307,9 @@ namespace XiaoCao
 
             DebugGUI.Log("targetDir", targetDir, targetAngle);
 
-            owner.AIMoveDir(targetDir.normalized * speedRate, animSpeedRate, !CurAction.isLookAtTargetOnHide);
+            owner.AIMoveDir(targetDir.normalized * speedRate, animSpeedRate, !CurAct.isLookAtTargetOnHide);
 
-            if (CurAction.isLookAtTargetOnHide)
+            if (CurAct.isLookAtTargetOnHide)
             {
                 transform.RoateY_Slow(tempTargetPos, Data_R.moveSetting.angleSpeed);
             }
@@ -322,25 +331,112 @@ namespace XiaoCao
         private void GetHideDir()
         {
             hideTimer = 0;
-            if (curTarget == null)
+            if (_targetRole == null)
                 return;
-            curDistance = GetDistance(curTarget.transform);
+            curDistance = GetDistance(_targetRole.transform);
             //处于玩家 偏左边 就左转, 但要look
             //远-> 靠近 内心圆   近->远离 外心圆
-            isHideToFar = curDistance > CurAction.distance / 0.75f;
+            isHideToFar = curDistance > CurAct.distance / 0.75f;
             curHideDir = (HideDir)(UnityEngine.Random.Range(0, 2)); //随机取一个方向
             //Debug.Log($"yns Get HideAct {curHideAct}");
         }
         #endregion
 
-        private void ChangeState(AIActState newState)
+        private void ChangeState(ActStateType newStateType)
         {
-            curPoolData.curRuntimeData.state = newState;
+            CurActData.stateType = newStateType;
         }
     }
 
 
+    [Serializable]
+    public class AIActPool{
+        //配置数据
+        public List<AiAct> aiActList { get; set; }
+        
+        // public Dictionary<string, AiAct> aiActDict { get; set; }
+        
+        //行为池中数据
+        public List<AIActData> ActDataPool { get; set; }
+        //全部使用完
+        public bool IsAllUsed { get; set; }
 
+        public AIActPool(List<AiAct> aiActList)
+        {
+            this.aiActList = aiActList;
+            ActDataPool = new List<AIActData>();
+            CreatRuntimeData();
+        }
+
+
+        public AIActData GetOne()
+        {
+            if (ActDataPool.Count == 0)
+            {
+                ReInitAll();
+            }
+
+            //随机取出一个
+            var actData = ActDataPool.GetRandom(out int index);
+            actData.hasUseTime++;
+
+            if (actData.hasUseTime >= actData.act.maxUseTime)
+            {
+                ActDataPool.RemoveAt(index);
+            }
+            //全用完,切换下一组
+            if (ActDataPool.Count == 0)
+            {
+                IsAllUsed = true;
+            }
+            return actData;
+        }
+
+
+        public AiAct FindAct(string actName){
+            return aiActList.Find(a => a.actName == actName);
+        }
+        
+        //当行为池抽完时执行重置
+        public void ReInitAll()
+        {
+            IsAllUsed = false;
+            ActDataPool.Clear();
+            CreatRuntimeData();
+        }
+
+        private void CreatRuntimeData()
+        {
+            foreach (AiAct act in this.aiActList)
+            {
+                AIActData data = new AIActData()
+                {
+                    power = act.power,
+                    act = act,
+                    hasUseTime = 0,
+                    stateType = ActStateType.Start
+                };
+                ActDataPool.Add(data);
+            }
+        }
+    }  
+    
+    
+    public class AIActData : PowerModel
+    {
+        public AiAct act;
+        public int hasUseTime;
+        public ActStateType stateType;
+    }
+    
+    public enum ActStateType
+    {
+        Start,
+        MoveTo, //靠近或者瞄准时间
+        Acking, //等待技能结束时间
+        Hide, //躲避时间
+        End, //切换下一技能
+    }
     public enum HideDir
     {
         MoveLeft, //左移

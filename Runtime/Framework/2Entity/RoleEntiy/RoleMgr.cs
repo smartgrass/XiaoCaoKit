@@ -11,38 +11,38 @@ namespace XiaoCao
         //首先获取所有范围内敌人
         //获取最高分数
         //视觉范围为angle
-        //超过视觉范围 做插值剔除  maxDis = Mathf.Lerp(hearR, seeR, angleP);
+        //超过视觉范围 做插值剔除  maxDis = (angle,180) => (seeR,hearR); 角度越偏,等效距离越远
         //距离越小分数越高 ds = 1/d  (d >0.1)
         //夹角越小分数越高 as = cos(x)
         //旧目标加分计算 暂无
         public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS, int team = TeamTag.Enemy)
         {
             float hearR = seeR * 0.4f;
-            float angleP = 1;
             Role role = null;
             maxS = 0;
             foreach (var item in roleDic.Values)
             {
                 if (item.team != team && !item.IsDie)
                 {
-                    GetAngleAndDistance(self, item.transform, out float curAngle, out float dis);
-                    if (curAngle > seeAngle)
-                    {
-                        MathTool.ValueMapping(curAngle, seeAngle, 180, 1, 0);
+                    GetAngleAndDistance(self, item.transform, out float curAngle, out float curDis);
+                    
+                    //动态边界, 角度越偏, 边界越短
+                    float limitDis = MathTool.ValueMapping(curAngle, seeAngle, 180, seeR, hearR);
+                    if (curDis > limitDis){
+                        //超出距离的排除
+                        continue;
                     }
-                    float maxDis = Mathf.Lerp(hearR, seeR, angleP);
-                    if (dis < maxDis)
+                    
+                    //距离越小 分数越高
+                    float _ds = 1 / curDis;
+                    //角度越小 分数越高
+                    float _as = Mathf.Cos(curAngle / 2f * Mathf.Deg2Rad);
+                    float score = _ds * _as;
+                    
+                    if (score > maxS)
                     {
-                        float _ds = 1 / dis;
-                        float _as = Mathf.Cos(curAngle / 2f * Mathf.Deg2Rad);
-                        float end = _ds * _as;
-
-                        //查找分数最高
-                        if (end > maxS)
-                        {
-                            maxS = end;
-                            role = item;
-                        }
+                        maxS = score;
+                        role = item;
                     }
                 }
             }
