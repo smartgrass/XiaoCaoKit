@@ -14,25 +14,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
+    config:
+      moveSpeed: 3.5
+      walkSR: 0.35
+      walkAnimSR: 0.5
     actPool:
     - power: 1
       actType: 0
       actMsg: 0
-      distance: 3
+      distance: 2.5
       moveTime: 1.5
       minMoveTime: 0.3
-      endWaitTime: 0.5
-      hideTime: 3
+      endWaitTime: 0
+      hideTime: 0
       isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: 1
       nextActName: 2
-    - power: 1
+    - power: 0
       actType: 0
       actMsg: 1
       distance: 3
-      moveTime: 1.5
-      minMoveTime: 0.3
+      moveTime: 0
+      minMoveTime: 0
       endWaitTime: 0.5
       hideTime: 3
       isLookAtTargetOnHide: 0

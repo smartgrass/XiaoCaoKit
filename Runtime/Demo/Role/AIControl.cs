@@ -11,7 +11,6 @@ namespace XiaoCao
     {
         public AIControl(Role _owner) : base(_owner)
         {
-            Init();
         }
         
         public AiInfo info;
@@ -52,8 +51,10 @@ namespace XiaoCao
         public float aimTime = 0.8f; //攻击前的停顿
 
 
-        private void Init(){
+        public void Init(AiInfo info){
+            this.info = info;
             _actPool = new AIActPool(info.actPool);
+            owner.roleData.movement.newBaseMoveSpeed = info.config.moveSpeed;
         }
 
         public override void Update()
@@ -163,11 +164,13 @@ namespace XiaoCao
             CurActData = _actPool.GetOne();
             CurAct = CurActData.act;
             CurActData.stateType = ActStateType.Start;
-            
+
             if (CurAct == null)
             {
                 Debug.LogError("No Act");
             }
+
+            DebugGUI.Log("actMsg", CurAct.actMsg);
         }
 
         private void ToMoveState()
@@ -232,7 +235,7 @@ namespace XiaoCao
                 if (ackTimer > ackTime && Data_R.IsFree)
                 {
                     GetHideDir();
-                    ChangeState(ActStateType.Hide); //结束执行下一个动作
+                    ChangeState(ActStateType.Hide);   
                 }
             }
         }
@@ -304,8 +307,6 @@ namespace XiaoCao
             dir.y = 0;
 
             var targetDir = MathTool.RotateY(dir, targetAngle);
-
-            DebugGUI.Log("targetDir", targetDir, targetAngle);
 
             owner.AIMoveDir(targetDir.normalized * speedRate, animSpeedRate, !CurAct.isLookAtTargetOnHide);
 

@@ -25,8 +25,9 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(0);
 
+            var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
             component.aiControl = new AIControl(this);
-            component.aiControl.info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
+            component.aiControl.Init(info);
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;

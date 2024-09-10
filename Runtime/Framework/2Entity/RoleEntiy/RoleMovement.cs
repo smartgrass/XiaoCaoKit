@@ -22,6 +22,8 @@ namespace XiaoCao
 
         public float maxAnimMoveSpeed = 1;
 
+        public float newBaseMoveSpeed = 0;
+
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
 
@@ -90,7 +92,10 @@ namespace XiaoCao
                 RotateByMoveDir(moveDir);
             }
 
-            float speed = Data_R.moveSetting.baseMoveSpeed * Data_R.roleState.MoveMultFinal;
+            float baseSpeed = newBaseMoveSpeed > 0 ? newBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
+
+            float speed = baseSpeed * Data_R.roleState.MoveMultFinal;
+
             Vector3 moveDelta = moveDir * speed * XCTime.fixedDeltaTime;
 
             //速度 v = v + gt
