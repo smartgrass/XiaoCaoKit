@@ -41,10 +41,15 @@ namespace XiaoCao
 
         public override void FixedUpdate()
         {
-            if (owner.IsDie)
+            //if (owner.IsDie)
+            //{
+            //    return;
+            //}
+            if (!owner.roleData.IsFree)
             {
                 return;
             }
+
             MoveFixUpdate();
         }
 

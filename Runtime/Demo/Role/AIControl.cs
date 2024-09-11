@@ -104,13 +104,12 @@ namespace XiaoCao
                 GetAct();
             }
 
-            if (CurAct.actType == ActMsgType.Move){
-                
-            }
+
 
             if (CurAct.actType == ActMsgType.OtherSkill){
-                
+                return;
             }
+
 
             ActStateType stateType = CurActData.stateType;
             if (stateType == ActStateType.Start)
@@ -187,6 +186,11 @@ namespace XiaoCao
                 ToAcking();
                 return;
             }
+            if (!owner.IsFree)
+            {
+                return;
+            }
+
 
             curDistance = GetDistance(_targetRole.transform);
 
@@ -232,7 +236,7 @@ namespace XiaoCao
             if (ackEndWaitTimer > CurAct.endWaitTime)
             {
                 ackTimer += Time.deltaTime;
-                if (ackTimer > ackTime && Data_R.IsFree)
+                if (ackTimer > ackTime && owner.IsFree)
                 {
                     GetHideDir();
                     ChangeState(ActStateType.Hide);   
@@ -256,11 +260,16 @@ namespace XiaoCao
         }
         private void OnEnd()
         {
-            if (owner.roleData.IsBusy)
+            if (Data_R.IsBusy)
             {
                 //等待技能事件结束
                 return;
             }
+            if (!owner.IsFree)
+            {
+                return;
+            }
+
 
             if (CurAct.HasNextAct)
             {

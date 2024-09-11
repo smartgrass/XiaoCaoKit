@@ -78,6 +78,10 @@ namespace XiaoCao
         public override void AIMsg(ActMsgType actType, string actMsg)
         {
             Debuger.Log($"--- {actType} {actMsg}");
+            if (string.IsNullOrEmpty(actMsg))
+            {
+                return;
+            }
             switch (actType)
             {
                 case ActMsgType.Skill:
