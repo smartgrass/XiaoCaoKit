@@ -45,7 +45,7 @@ namespace XiaoCao
             //{
             //    return;
             //}
-            if (!owner.roleData.IsFree)
+            if (!owner.IsFree)
             {
                 return;
             }

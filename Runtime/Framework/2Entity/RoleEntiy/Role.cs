@@ -37,6 +37,7 @@ namespace XiaoCao
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
         [ShowNativeProperty]
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
+        public bool IsFree => roleData.IsFree;
 
 
         ///职业,种族: 每一个角色和敌人都有对应的 raceId

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OdinSerializer.Utilities;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -120,10 +121,11 @@ namespace XiaoCao
             if (stateType == ActStateType.MoveTo)
             {
                 //靠近 瞄准
-                OnMoveTo();
+                OnMoveTo(); 
             }
             else if (stateType == ActStateType.Acking)
             {
+                ///<see cref="ToAcking"/>
                 OnAcking();
             }
 
