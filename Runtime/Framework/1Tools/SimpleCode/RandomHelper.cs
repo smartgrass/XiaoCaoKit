@@ -24,6 +24,10 @@ namespace XiaoCao
             }
             if (powerModel.Count == 1 || total == 0)
             {
+                if (total == 0)
+                {
+                    Debug.LogWarning("total power = 0");
+                }
                 return powerModel[0];
             }
 
@@ -44,6 +48,23 @@ namespace XiaoCao
             Debug.LogError("??? power = 0");
             return null;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="p">0~1</param>
+        /// <returns></returns>
+        public static bool GetRandom(float p = 0.5f)
+        {
+            if (p == 1f)
+            {
+                return true;
+            }
+
+            float random = UnityEngine.Random.Range(0f, 1f);
+            return random < p;
+        }
+
     }
 
     /// <summary>

@@ -13,18 +13,18 @@ namespace XiaoCao
         public AIControl(Role _owner) : base(_owner)
         {
         }
-        
+
         public AiInfo info;
 
         //当前行为池
         private AIActPool _actPool;
         //当前动作记录数据
-        private AIActData CurActData{ get; set; }
+        private AIActData CurActData { get; set; }
         //当前动作
-        private AiAct CurAct{ get; set; }
-        
+        private AiAct CurAct { get; set; }
+
         private Role _targetRole;
-        
+
         public AIRoleConfig Config => info.config;
 
         public Transform transform => owner.transform;
@@ -52,9 +52,10 @@ namespace XiaoCao
         public float aimTime = 0.8f; //攻击前的停顿
 
 
-        public void Init(AiInfo info){
+        public void Init(AiInfo info)
+        {
             this.info = info;
-            _actPool = new AIActPool(info.actPool);
+            _actPool = new AIActPool(info.actPool, info.idleAct);
             owner.roleData.movement.newBaseMoveSpeed = info.config.moveSpeed;
         }
 
@@ -107,7 +108,8 @@ namespace XiaoCao
 
 
 
-            if (CurAct.actType == ActMsgType.OtherSkill){
+            if (CurAct.actType == ActMsgType.OtherSkill)
+            {
                 return;
             }
 
@@ -121,19 +123,19 @@ namespace XiaoCao
             if (stateType == ActStateType.MoveTo)
             {
                 //靠近 瞄准
-                OnMoveTo(); 
+                OnMoveTo();
             }
-            else if (stateType == ActStateType.Acking)
+            else if (stateType == ActStateType.WaitAckEnd)
             {
-                ///<see cref="ToAcking"/>
-                OnAcking();
+                ///<see cref="AtkStart"/>
+                OnWaitAckEnd();
             }
 
             if (stateType == ActStateType.Hide)
             {
                 OnHide();
             }
-            
+
             else if (stateType == ActStateType.End)
             {
                 OnEnd();
@@ -150,7 +152,8 @@ namespace XiaoCao
 
             var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, seeR, seeAngle, out float maxS, owner.team);
 
-            if (findRole == null){
+            if (findRole == null)
+            {
                 //如果没找到, 则保持原来
                 findRole = last;
             }
@@ -160,17 +163,29 @@ namespace XiaoCao
 
         private void GetAct()
         {
+            bool isAtk = RandomHelper.GetRandom(Config.atkDesire);
+            //非攻击行为:1.盯着 不动2.慢走
+
             curDistance = GetDistance(_targetRole.gameObject.transform);
 
-            CurActData = _actPool.GetOne();
-            CurAct = CurActData.act;
-            CurActData.stateType = ActStateType.Start;
+            if (isAtk)
+            {
+                CurActData = _actPool.GetOne();
+                CurAct = CurActData.act;
+                CurActData.stateType = ActStateType.Start;
+            }
+            else
+            {
+                CurActData = _actPool.IdleActData;
+                CurAct = CurActData.act;
+                GetHideDir();
+                ChangeState(ActStateType.Hide);
+            }
 
             if (CurAct == null)
             {
                 Debug.LogError("No Act");
             }
-
             DebugGUI.Log("actMsg", CurAct.actMsg);
         }
 
@@ -185,7 +200,7 @@ namespace XiaoCao
         {
             if (_targetRole == null)
             {
-                ToAcking();
+                AtkStart();
                 return;
             }
             if (!owner.IsFree)
@@ -219,20 +234,20 @@ namespace XiaoCao
 
                 if (isWaitEnd || isAimEnd)
                 {
-                    ToAcking();
+                    AtkStart();
                 }
             }
         }
 
-        private void ToAcking()
+        private void AtkStart()
         {
             owner.AIMsg(CurAct.actType, CurAct.actMsg);
             ackTimer = 0;
             ackEndWaitTimer = 0;
-            ChangeState(ActStateType.Acking);
+            ChangeState(ActStateType.WaitAckEnd);
         }
 
-        private void OnAcking()
+        private void OnWaitAckEnd()
         {
             ackEndWaitTimer += Time.deltaTime;
             if (ackEndWaitTimer > CurAct.endWaitTime)
@@ -241,7 +256,7 @@ namespace XiaoCao
                 if (ackTimer > ackTime && owner.IsFree)
                 {
                     GetHideDir();
-                    ChangeState(ActStateType.Hide);   
+                    ChangeState(ActStateType.Hide);
                 }
             }
         }
@@ -295,9 +310,9 @@ namespace XiaoCao
 
         Vector3 tempTargetPos;
 
-        private void HideMove(float speedRate , float animSpeedRate)
+        private void HideMove(float speedRate, float animSpeedRate)
         {
-            
+
             if (_targetRole == null)
             {
                 tempTargetPos = transform.forward * 2f;
@@ -362,21 +377,25 @@ namespace XiaoCao
 
 
     [Serializable]
-    public class AIActPool{
+    public class AIActPool
+    {
         //配置数据
         public List<AiAct> aiActList { get; set; }
-        
+
         // public Dictionary<string, AiAct> aiActDict { get; set; }
-        
-        //行为池中数据
+
+        //行为池中数据,只保存Power大于0的行为
         public List<AIActData> ActDataPool { get; set; }
+        public AIActData IdleActData { get; set; }
+
         //全部使用完
         public bool IsAllUsed { get; set; }
 
-        public AIActPool(List<AiAct> aiActList)
+        public AIActPool(List<AiAct> aiActList, AiAct idleAct)
         {
             this.aiActList = aiActList;
             ActDataPool = new List<AIActData>();
+            IdleActData = new AIActData(idleAct);
             CreatRuntimeData();
         }
 
@@ -405,10 +424,11 @@ namespace XiaoCao
         }
 
 
-        public AiAct FindAct(string actName){
+        public AiAct FindAct(string actName)
+        {
             return aiActList.Find(a => a.actName == actName);
         }
-        
+
         //当行为池抽完时执行重置
         public void ReInitAll()
         {
@@ -421,31 +441,38 @@ namespace XiaoCao
         {
             foreach (AiAct act in this.aiActList)
             {
-                AIActData data = new AIActData()
+                if (act.power <= 0)
                 {
-                    power = act.power,
-                    act = act,
-                    hasUseTime = 0,
-                    stateType = ActStateType.Start
-                };
+                    continue;
+                }
+                AIActData data = new AIActData(act);
                 ActDataPool.Add(data);
             }
         }
-    }  
-    
-    
+    }
+
+
     public class AIActData : PowerModel
     {
+        public AIActData() { }
+        public AIActData(AiAct act)
+        {
+            this.act = act;
+            power = act.power;
+            hasUseTime = 0;
+            stateType = ActStateType.Start;
+        }
+
         public AiAct act;
         public int hasUseTime;
         public ActStateType stateType;
     }
-    
+
     public enum ActStateType
     {
         Start,
         MoveTo, //靠近或者瞄准时间
-        Acking, //等待技能结束时间
+        WaitAckEnd, //等待技能结束时间
         Hide, //躲避时间
         End, //切换下一技能
     }

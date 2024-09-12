@@ -23,7 +23,8 @@ namespace XiaoCao
         public AIRoleConfig config;
 
         public List<AiAct> actPool = new List<AiAct>() { new AiAct() };
-        
+
+        public AiAct idleAct;
     }
 
     [Serializable]
@@ -32,6 +33,8 @@ namespace XiaoCao
         public float moveSpeed = 3.5f;
         public float walkSR = 0.35f; //SR = SpeedRate
         public float walkAnimSR = 0.5f;
+        [XCLabel("攻击欲望")]
+        public float atkDesire = 0.5f;
     }
     
 
@@ -39,7 +42,7 @@ namespace XiaoCao
     public class AiAct : PowerModel
     {
         public ActMsgType actType;//事件      
-        public string actMsg = "0"; //信息
+        public string actMsg; //信息
         public float distance = 3; //执行距离
 
         public float moveTime = 1.5f; //追踪时间
@@ -66,8 +69,9 @@ namespace XiaoCao
     public enum ActMsgType
     {
         Skill,
+        Idle, //不使用技能
         OtherSkill,
-        Move, //不使用技能
+
     }
 
 }
