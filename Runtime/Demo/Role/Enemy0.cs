@@ -25,12 +25,13 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(0);
 
-            var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
-            component.aiControl = new AIControl(this);
-            component.aiControl.Init(info);
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
+
+            var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOnArray(idRole.aiId);
+            component.aiControl = new AIControl(this);
+            component.aiControl.Init(info);
 
             roleData.playerAttr.Init(level);
             roleData.roleControl = component.aiControl;
@@ -94,7 +95,7 @@ namespace XiaoCao
                     int otherSkilId = int.Parse(actMsg);
                     component.aiControl.TryPlaySkill(otherSkilId);
                     break;
-                case ActMsgType.Move:
+                case ActMsgType.Idle:
                     break;
                 default:
                     break;

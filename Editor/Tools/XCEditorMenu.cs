@@ -30,7 +30,7 @@ namespace XiaoCaoEditor
         }
         [MenuItem(XCEditorTools.OpenPath_LuabnExcel)]
         [MenuItem(XCEditorTools.XiaoCaoLuban+ "打开Luban文件夹")]
-        static void OpenPath_Excel()
+        public static void OpenPath_Excel()
         {
             string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/Datas/SkillSetting.xlsx";
             Debug.Log($"--- OpenPath_Excel {path}");

@@ -19,6 +19,7 @@ namespace AssetEditor.Editor
         }
 
         public const int Line1 = 1;
+        public const int Line2 = 2;
 
 
         [Button("选中角色",Line1)]
@@ -39,6 +40,20 @@ namespace AssetEditor.Editor
         void OpenRepalceTool()
         {
             XCRepalceToolWin.Open();
+        }
+
+
+        [Button("打开配表位置", Line2)]
+        void OpenExcelPath()
+        {
+            XCToolBarMenu.OpenPath_Excel();
+        }        
+        
+        [Button("导入配置+代码", Line2)]
+        void GenConfig()
+        {
+            //XCToolBarMenu.OpenPath_Excel();
+            SaveXCTask.LoadLubanExcelWithCode();
         }
     }
 }

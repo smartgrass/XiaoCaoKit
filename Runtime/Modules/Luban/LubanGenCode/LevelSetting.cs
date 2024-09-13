@@ -19,7 +19,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         Id = _buf.ReadInt();
         Title = _buf.ReadString();
         ImgName = _buf.ReadString();
-        Reward = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf));
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Reward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); Reward.Add(_e0);}}
     }
 
     public static LevelSetting DeserializeLevelSetting(ByteBuf _buf)
@@ -42,7 +42,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// <summary>
     /// 奖励
     /// </summary>
-    public readonly XiaoCao.Item Reward;
+    public readonly System.Collections.Generic.List<XiaoCao.Item> Reward;
    
     public const int __ID__ = -865590708;
     public override int GetTypeId() => __ID__;
@@ -61,7 +61,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         + "id:" + Id + ","
         + "title:" + Title + ","
         + "imgName:" + ImgName + ","
-        + "reward:" + Reward + ","
+        + "reward:" + Luban.StringUtil.CollectionToString(Reward) + ","
         + "}";
     }
 }

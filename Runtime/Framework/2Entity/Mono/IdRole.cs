@@ -28,6 +28,12 @@ public class IdRole : IdComponent
         tf = transform;
     }
 
+    private void OnDestroy()
+    {
+        EntityMgr.Inst.RemoveEntity(this.GetEntity());
+    }
+
+
     private void OnValidate()
     {
         CheckData();
