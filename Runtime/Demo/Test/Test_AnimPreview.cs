@@ -5,6 +5,7 @@ using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.VersionControl;
 #endif
 using UnityEngine;
 using XiaoCao;
@@ -29,7 +30,7 @@ public class Test_AnimPreview : MonoBehaviour
 
     private List<string> animationFiles = new List<string>();
     private List<GameObject> characters = new List<GameObject>();
-    private int currentAnimationIndex = 0;
+    public int currentAnimationIndex = 0;
 
     void LoadAnimations()
     {
@@ -63,6 +64,10 @@ public class Test_AnimPreview : MonoBehaviour
                 Animator animator = characters[i].GetComponent<Animator>();
                 SetAnim(i, animator);
             }
+        }
+        else
+        {
+            Test_EditorNotifyHelper.ShowNotification($"anim end {currentAnimationIndex}");
         }
     }
 

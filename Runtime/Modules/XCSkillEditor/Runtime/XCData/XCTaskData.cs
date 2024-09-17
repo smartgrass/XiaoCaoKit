@@ -57,10 +57,11 @@ namespace XiaoCao
             {
                 return 1;
             }
-            else
+            else if (e1.Start < e2.Start)
             {
-                return 0;
+                return -1;
             }
+            return 0;
         }
     }
 
@@ -95,8 +96,7 @@ namespace XiaoCao
             var instance = PoolMgr.Inst.Get(ObjectPath);
             Tran = instance.transform;
             PlayerTF = info.playerTF;
-            info.curGO = instance;
-            info.curTF = instance.transform;
+
             if (isPs && instance.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
             {
                 InitPs(ps);

@@ -32,13 +32,15 @@ namespace XiaoCao
         #endregion
         public override void OnTrigger(float startOffsetTime)
         {
+            Debug.Log($"--- move OnTrigger");
             m4 = Tran.localToWorldMatrix;
-            cc = Tran.GetComponent<CharacterController>();
+            cc = Info.role.idRole.cc;
             base.OnTrigger(startOffsetTime);
         }
 
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
+            DebugGUI.Log($"move frame",frame,task._events.Count);
             float t = timeSinceTrigger / LengthTime;
 
 

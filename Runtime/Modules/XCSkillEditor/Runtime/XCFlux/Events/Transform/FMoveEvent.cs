@@ -46,7 +46,7 @@ namespace Flux
             if (controlPoints.Count < 2)
             {
                 controlPoints.Add(Vector3.zero);
-                controlPoints.Add(Vector3.one);
+                controlPoints.Add(Vector3.forward);
             }
             int len = controlPoints.Count;
 
@@ -324,13 +324,13 @@ namespace Flux
 
     public enum FEase
     {
-        [EnumLabel("Linear")]
+        [InspectorName("Linear")]
         Linear,
-        [EnumLabel("加速")]
+        [InspectorName("加速")]
         InQuad,
-        [EnumLabel("减速")]
+        [InspectorName("减速")]
         OutQuad,
-        [EnumLabel("淡入淡出")]
+        [InspectorName("淡入淡出")]
         InOutQuad
     }
 

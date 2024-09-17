@@ -26,9 +26,17 @@ namespace XiaoCao
         public XCTask task;
         public XCState State { get; set; }
         public TaskInfo Info => task.Info;
-        public Transform Tran { get => Info.curTF; set => Info.curTF = value; }
-        public GameObject Go { get => Info.curGO; set => Info.curGO = value; }
-
+        public Transform Tran
+        {
+            get
+            {
+                if (task.IsMainTask)
+                {
+                    return Info.playerTF;
+                }
+                return task.ObjectData.Tran;
+            }
+        }
 
 
         #region TODO
@@ -96,7 +104,6 @@ namespace XiaoCao
         {
             OnUpdateEvent(frame, timeSinceTrigger);
         }
-
     }
 
     public enum XCState

@@ -18,7 +18,9 @@ namespace XiaoCao
 
         public float enableGravityTime;
 
-        public float disableGravityTimer;
+        public float noGravityTimer;
+
+        public float skillNoGravityTimer;
 
         public float maxAnimMoveSpeed = 1;
 
@@ -253,23 +255,31 @@ namespace XiaoCao
 
         private void CheckEnableGravity()
         {
-            if (disableGravityTimer > 0)
+            enableGravity = true;
+            if (noGravityTimer > 0)
             {
                 enableGravity = false;
-                disableGravityTimer -= Time.fixedDeltaTime;
+                noGravityTimer -= Time.fixedDeltaTime;
             }
-            else
+
+            if (skillNoGravityTimer > 0)
             {
-                enableGravity = true;
+                enableGravity = false;
+                skillNoGravityTimer -= Time.fixedDeltaTime;
             }
         }
+        public void SetSkillNoGravityT(float time)
+        {
+            skillNoGravityTimer = time;     
+        }        
         public void SetNoGravityT(float time)
         {
-            if (time > disableGravityTimer)
+            if (time > noGravityTimer)
             {
-                disableGravityTimer = time;
+                noGravityTimer = time;
             }
         }
+
     }
 
 }

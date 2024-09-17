@@ -154,9 +154,6 @@ namespace XiaoCao
         public Role role;
         public Transform playerTF;
         internal Animator playerAnimator;
-        //针对当前对象, 可以是玩家或技能物体
-        public GameObject curGO;
-        public Transform curTF;
 
         public int entityId;
         public int skillId;  //如100

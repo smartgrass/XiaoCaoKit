@@ -135,6 +135,7 @@ namespace XiaoCao
                     //无重力时间
                     roleData.movement.SetNoGravityT(setting.HitTime * setting.NoGTimeMulti);
 
+
                     HitStop.Do(setting.HitStop);
                     // 打断当前技能
                     OnBreak();
@@ -223,28 +224,60 @@ namespace XiaoCao
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             Debuger.Log($"--- Receive {type} fromId: {fromId}");
-            if (type is EntityMsgType.SetUnMoveTime)
+            switch (type)
             {
-                float t = ((BaseMsg)msg).numMsg;
-                roleData.movement.SetUnMoveTime(t);
+                case EntityMsgType.PlayNextSkill:
+                    int skillId = (int)msg;
+                    roleData.roleControl.TryPlaySkill(skillId);
+                    break;
+                case EntityMsgType.SetNoBusy:
+                    break;
+                case EntityMsgType.SetUnMoveTime:
+                    SetUnMoveTime(msg);
+                    break;
+                case EntityMsgType.AddTag:
+                    AddTag(msg);
+                    break;
+                case EntityMsgType.SetNoGravityTime:
+                    SetNoGravityTime(msg);
+                    break;
+                default:
+                    break;
             }
-            else if (type is EntityMsgType.PlayNextSkill)
+        }
+
+        private void SetUnMoveTime(object msg)
+        {
+            float t = ((BaseMsg)msg).numMsg;
+            roleData.movement.SetUnMoveTime(t);
+        }
+
+        private void AddTag(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (baseMsg.state == 0)
             {
-                int skillId = (int)msg;
-                roleData.roleControl.TryPlaySkill(skillId);
+                base.AddTag((int)baseMsg.numMsg);
             }
-            else if (type is EntityMsgType.AddTag)
+            else
             {
-                BaseMsg baseMsg = (BaseMsg)msg;
-                if (baseMsg.state == 0)
-                {
-                    AddTag((int)baseMsg.numMsg);
-                }
-                else
-                {
-                    RemoveTag((int)baseMsg.numMsg);
-                }
+                RemoveTag((int)baseMsg.numMsg);
             }
+        }
+
+        private void SetNoGravityTime(object msg)
+        {
+            BaseMsg baseMsg =( BaseMsg)msg;
+            float t1 = baseMsg.numMsg;
+            if (baseMsg.state == 0)
+            {
+                roleData.movement.SetSkillNoGravityT(t1);
+            }
+            else
+            {
+                roleData.movement.SetSkillNoGravityT(0);
+            }
+
         }
 
         public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
@@ -492,8 +525,6 @@ namespace XiaoCao
                 role = owner,
                 skillId = skillId,
                 entityId = owner.id,
-                curGO = owner.gameObject,
-                curTF = selfTf,
                 playerTF = selfTf,
                 castEuler = selfTf.eulerAngles,
                 castPos = selfTf.position,

@@ -31,6 +31,7 @@ namespace XiaoCao
         SetNoBusy = 10,
         SetUnMoveTime = 11,
         AddTag = 12,
+        SetNoGravityTime = 13,
 
 
     }

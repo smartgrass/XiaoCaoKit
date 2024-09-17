@@ -36,7 +36,7 @@ namespace XiaoCao
 
                 if (_animator == null)
                 {
-                    _animator = Info.curTF.GetComponentInChildren<Animator>();
+                    _animator = Tran.GetComponentInChildren<Animator>();
                 }
             }
 

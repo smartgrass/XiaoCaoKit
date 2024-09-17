@@ -155,11 +155,29 @@ public class SaveXCTask
         }
 
 
+        SortData(mainData);
+
         string savaPath = XCPathConfig.GetSkillDataPath(fSeqSetting.raceId, Sequence._skillId);
 
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
 
         FileTool.SerializeWrite(savaPath, mainData);
+    }
+
+    private static void SortData(XCTaskData mainData)
+    {
+        if (mainData != null)
+        {
+            mainData.SortEvents();
+
+            if (mainData.subDatas != null)
+            {
+                foreach (var item in mainData.subDatas)
+                {
+                    SortData(item);
+                }
+            }
+        }
     }
 
     private static XCTaskData GetTaskData(ref XCTaskData mainData, int timelineId)
@@ -247,7 +265,7 @@ public class SaveXCTask
         //else if (eventType == typeof(FTriggerRangeEvent)){}
 
         //排序 _events
-        taskData.SortEvents();
+        //taskData.SortEvents();  
 
     }
 
