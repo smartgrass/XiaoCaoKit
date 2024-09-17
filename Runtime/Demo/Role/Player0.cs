@@ -3,6 +3,7 @@ using NaughtyAttributes;
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
+using System.ComponentModel;
 using TEngine;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -162,7 +163,7 @@ namespace XiaoCao
             movement.SetMoveDir(GetInputMoveDir());
         }
 
-        protected Vector3 GetInputMoveDir()
+        private Vector3 GetInputMoveDir()
         {
             Vector3 forward = movement.camForward;
             forward.y = 0;
@@ -210,9 +211,20 @@ namespace XiaoCao
             }
         }
 
-        protected override void PreSkillStart()
+        protected override void PreSkillStart(int skillId)
         {
 
+
+            if (InputData.x != 0 || InputData.y != 0)
+            {
+                var dir = owner.component.movement.inputDir;
+                this.Data_P.movement.RotateByMoveDir(dir, 1);
+            }
+            int rollId = owner.raceInfo.RollId;
+            if (rollId != skillId)
+            {
+                DefaultAutoDirect();
+            }    
         }
 
         public void TryRoll()
@@ -238,7 +250,7 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
-            if (!Data_R.IsFree || IsBusy())
+            if (!Data_R.IsStateFree || IsBusy())
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());
@@ -246,33 +258,23 @@ namespace XiaoCao
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
-            
-            DefaultAutoDirect();
-            
+
             RcpPlaySkill(RaceIdSetting.GetNorAckIdFull(nextNorAckIndex));
         }
 
-        private void DefaultAutoDirect()
+        public override void DefaultAutoDirect()
         {
-            if (InputData.x != 0)
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3.5f, 30, out float maxScore, owner.team);
+            if (findRole != null)
             {
-                Debug.Log($"--- RotateY {30 * InputData.x} ");
-                owner.transform.RotateY(30 * InputData.x);
+                owner.transform.RotaToPos(findRole.transform.position,0.4f);
+                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
             }
             else
             {
-                //索敌: 当无左右方向输入时开启索敌
-                var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3, 30, out float maxScore, owner.team);
-                if (findRole != null)
-                {
-                    owner.transform.RotaToPos(findRole.transform.position);
-                    Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
-                }
-                else
-                {
-                    Debug.Log($"--- findRole no");
-                }
+                Debug.Log($"--- findRole no");
             }
+            
         }
 
 

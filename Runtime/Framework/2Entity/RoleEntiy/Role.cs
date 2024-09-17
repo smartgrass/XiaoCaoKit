@@ -2,6 +2,7 @@
 using cfg;
 using Cysharp.Threading.Tasks;
 using NaughtyAttributes;
+using OdinSerializer.Utilities.Editor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,6 +31,8 @@ namespace XiaoCao
 
         public abstract RoleType RoleType { get; }
 
+        public bool IsPlayer { get =>  RoleType == RoleType.Player; }
+
         //roleData
         public RoleData roleData;
 
@@ -37,8 +40,9 @@ namespace XiaoCao
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
         [ShowNativeProperty]
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
-        public bool IsFree => roleData.IsFree;
+        public bool IsFree => roleData.IsStateFree;
 
+        public bool IsAnimBreak => Anim.GetCurrentAnimatorStateInfo(0).IsTag("Break");
 
         ///职业,种族: 每一个角色和敌人都有对应的 raceId
         ///<see cref="RaceIdSetting"/>
@@ -106,7 +110,12 @@ namespace XiaoCao
         protected void SetTeam(int team)
         {
             this.team = team;
-            gameObject.layer = GameSetting.GetTeamLayer(team);
+            var layer = GameSetting.GetTeamLayer(team);
+            foreach (var item in idRole.triggerCols)
+            {
+                item.gameObject.layer = layer;
+            }
+            gameObject.layer = Layers.BODY;
         }
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
@@ -148,6 +157,7 @@ namespace XiaoCao
                     //Hit Index
                     Debug.Log($"--- AnimHash.Hit");
                     Anim.TryPlayAnim(AnimHash.Hit);
+                    roleData.movement.SetUnMoveTime(0.35f);
                 }
 
                 //playerMover.SetNoGravityT(setting.NoGravityT);
@@ -241,11 +251,33 @@ namespace XiaoCao
                 case EntityMsgType.SetNoGravityTime:
                     SetNoGravityTime(msg);
                     break;
+                case EntityMsgType.AutoDirect:
+                    AutoDirect(msg);
+                    break;                
+                case EntityMsgType.NoBodyCollision:
+                    NoBodyCollision(msg);
+                    break;
                 default:
                     break;
             }
         }
+        private void NoBodyCollision(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (baseMsg.state == 0)
+            {
+                gameObject.layer = Layers.WITHOUT_BODY;
+            }
+            else
+            {
+                gameObject.layer = Layers.BODY;
+            }
+        }
 
+        private void AutoDirect(object msg)
+        {
+            roleData.roleControl.DefaultAutoDirect();
+        }
         private void SetUnMoveTime(object msg)
         {
             float t = ((BaseMsg)msg).numMsg;
@@ -362,6 +394,8 @@ namespace XiaoCao
 
         public bool IsBusy(int level = 0);
         public void SetNoBusy();
+
+        public void DefaultAutoDirect();
     }
 
     //技能通用体
@@ -495,29 +529,20 @@ namespace XiaoCao
 
         public virtual void TryPlaySkill(int skillId)
         {
-            if (owner.RoleType == RoleType.Enemy)
-            {
-                if (IsBusy())
-                {
-                    Debug.LogError($"--- curTaskData {runnerList.Count} skill {skillId} {runnerList[0].Task.Runner}");
-                }
-                Debug.Log($"--- e skillId {skillId} IsBusy {IsBusy()}");
-            }
 
             //条件判断, 耗蓝等等
-            if (!Data_R.IsFree)
+            if (!Data_R.IsStateFree)
                 return;
             //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
             if (IsBusy() && !IsHighLevelSkill(skillId))
                 return;
-
 
             RcpPlaySkill(skillId);
         }
 
         public virtual void RcpPlaySkill(int skillId)
         {
-            PreSkillStart();
+            PreSkillStart(skillId);
             Data_R.curSkillId = skillId;
             Transform selfTf = owner.transform;
             TaskInfo taskInfo = new TaskInfo()
@@ -549,8 +574,14 @@ namespace XiaoCao
 
 
         //技能开始前根据输入调整方向 等数据
-        protected virtual void PreSkillStart()
+        protected virtual void PreSkillStart(int skillId)
         {
+
+        }
+
+        public virtual void DefaultAutoDirect()
+        {
+
         }
 
     }
@@ -595,11 +626,9 @@ namespace XiaoCao
         public MoveSetting moveSetting;
 
         public RoleMovement movement;
-        public bool IsFree => bodyState is not EBodyState.Break or EBodyState.Dead;
+        public bool IsStateFree => bodyState is not EBodyState.Break or EBodyState.Dead;
 
         public bool IsBusy => roleControl.IsBusy();
-
-
 
         //优先级规则
         //0. 非死亡&非控制中 属于自由状态
@@ -624,7 +653,7 @@ namespace XiaoCao
 
         public float animMoveSpeed = 0;
 
-        public Vector3 inputDir = Vector3.zero;
+        public Vector3 inputDir = Vector3.zero;// 暂无用处
         public float MoveMultFinal => moveSpeedMult * moveAnimMult;
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
 
@@ -637,11 +666,11 @@ namespace XiaoCao
 
     public class BreakState
     {
-        public float armor;  //虽说有小数, 实际用整数
-        public float maxArmor;
-        public float recoverWait_t;  //进入破防后,多久启动恢复
+        public float armor = 10;  //虽说有小数, 实际用整数
+        public float maxArmor = 10;
+        public float recoverWait_t = 0.8f;  //进入破防后,多久启动恢复
         public float recoverFinish_t = 0.5f; //恢复满需要时间
-        public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用
+        public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用,小怪一般为0 
         public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
         public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
 
@@ -651,6 +680,8 @@ namespace XiaoCao
 
         public float enterBreakTime;
         public float breakTimer;
+
+
 
         public void OnHit(int hitArmor)
         {

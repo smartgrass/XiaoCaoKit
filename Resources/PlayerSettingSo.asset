@@ -15,7 +15,7 @@ MonoBehaviour:
   array:
   - array:
     - id: 0
-      cd: 3
+      cd: 0.8
       sprite: {fileID: 0}
     - id: 110
       cd: 0.5

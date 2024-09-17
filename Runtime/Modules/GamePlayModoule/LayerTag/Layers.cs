@@ -14,6 +14,10 @@
 public sealed class Layers
 {
     
+    public const int BODY = 10;
+    
+    public const int BODY_MASK = 1024;
+    
     public const int DEFAULT = 0;
     
     public const int DEFAULT_MASK = 1;
@@ -53,4 +57,8 @@ public sealed class Layers
     public const int WATER = 4;
     
     public const int WATER_MASK = 16;
+    
+    public const int WITHOUT_BODY = 11;
+    
+    public const int WITHOUT_BODY_MASK = 2048;
 }

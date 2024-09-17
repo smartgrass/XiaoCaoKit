@@ -37,7 +37,7 @@ public class TestRole : GameStartMono
             //enemy.gameObject.transform.position = transform.position;
             enemy.enemyData.movement.MoveToImmediate(transform.position);
 
-            enemy.IsAiOn = true;
+            enemy.IsAiOn = enableAI;
             //enemy.enemyData
 
             //enemy.idRole.rb.MovePosition(transform.position);

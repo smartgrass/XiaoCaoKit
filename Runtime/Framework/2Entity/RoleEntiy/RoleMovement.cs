@@ -57,11 +57,7 @@ namespace XiaoCao
 
         protected virtual void MoveFixUpdate()
         {
-            inputDir = GetInputMoveDir();
-
-            Vector3 moveDir = GetInputMoveDir();
-
-            OnMoveing(moveDir);
+            OnMoveing(inputDir);
         }
 
         public void SetMoveDir(Vector3 moveDir,float speedRate = 1, bool isLookDir = true)
@@ -71,19 +67,13 @@ namespace XiaoCao
             maxAnimMoveSpeed = speedRate;
         }
 
-        ///<see cref="PlayerMovement.GetInputMoveDir"/>
-        protected virtual Vector3 GetInputMoveDir()
-        {
-            return inputDir;
-        }
-
         public void OnMoveing(Vector3 moveDir, bool isLookDir = true)
         {
             if (RoleState.IsMoveLock)
             {
                 moveDir = Vector3.zero;
             }
-            if (Data_R.IsBusy || !Data_R.IsFree)
+            if (Data_R.IsBusy || !Data_R.IsStateFree || owner.IsAnimBreak)
             {
                 moveDir = Vector3.zero;
             }
@@ -96,7 +86,7 @@ namespace XiaoCao
 
             if (isLookDir)
             {
-                RotateByMoveDir(moveDir);
+                RotateByMoveDir(moveDir, moveSetting.rotationLerp);
             }
 
             float baseSpeed = newBaseMoveSpeed > 0 ? newBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
@@ -169,14 +159,14 @@ namespace XiaoCao
         }
 
 
-        void RotateByMoveDir(Vector3 worldMoveDir)
+        public void RotateByMoveDir(Vector3 worldMoveDir,float lerp = 1)
         {
             if (worldMoveDir.IsZore())
                 return;
 
             var targetRotation = MathTool.ForwardToRotation(worldMoveDir);
             var startRotation = tf.rotation;
-            var rotation = Quaternion.Lerp(startRotation, targetRotation, moveSetting.rotationLerp);
+            var rotation = Quaternion.Lerp(startRotation, targetRotation, lerp);
             tf.rotation = rotation;
         }
 

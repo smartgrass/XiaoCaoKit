@@ -12,10 +12,12 @@ public class IdRole : IdComponent
     public RuntimeAnimatorController runtimeAnim;
     public Rigidbody rb;
     public CharacterController cc;
+    public Collider[] triggerCols;
+
 
     public Transform Follow;
     public Transform LookAt;
-
+    public Vector3 hpBarOffset = Vector3.up;
 
     [HideInInspector]
     public Transform tf;

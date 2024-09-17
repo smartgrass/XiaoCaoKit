@@ -31,4 +31,6 @@ public sealed class Tags
     public const string RESPAWN = "Respawn";
     
     public const string UNTAGGED = "Untagged";
+    
+    public const string WEAPON = "Weapon";
 }

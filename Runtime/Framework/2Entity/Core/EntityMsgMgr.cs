@@ -32,6 +32,10 @@ namespace XiaoCao
         SetUnMoveTime = 11,
         AddTag = 12,
         SetNoGravityTime = 13,
+        [InspectorName("索敌")]
+        AutoDirect = 14,
+        [InspectorName("关闭身体间碰撞")]
+        NoBodyCollision = 15,
 
 
     }

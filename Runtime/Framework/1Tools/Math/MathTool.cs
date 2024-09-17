@@ -486,6 +486,38 @@ public static class MathTool
         transform.Rotate(Vector3.up, angle);
     }
 
+    public static void RotateYMax(this Transform transform,float targetAngleInDegrees, float maxAngle)
+    {
+        // 将目标角度从度转换为弧度  
+        float targetAngleInRadians = targetAngleInDegrees * Mathf.Deg2Rad;
+        // 获取当前物体的Y轴旋转角度（以弧度为单位）  
+        float currentAngleInRadians = transform.eulerAngles.y;
+        // 将当前角度也转换为0-360度范围内的等效角度（以度为单位），以便计算差值  
+        float currentAngleInDegrees = (currentAngleInRadians + 360f) % 360f;
+
+        // 计算从当前角度到目标角度的差值（以度为单位）  
+        float angleDifference = Mathf.Abs(targetAngleInDegrees - currentAngleInDegrees);
+
+        // 确定旋转方向（顺时针或逆时针）  
+        bool clockwise = targetAngleInDegrees > currentAngleInDegrees;
+
+        // 如果差值大于100度，则限制旋转量为100度或-100度（取决于旋转方向）  
+        float limitedAngleDifference = Mathf.Min(angleDifference, maxAngle);
+        if (!clockwise) limitedAngleDifference = -limitedAngleDifference; // 逆时针旋转  
+
+        // 计算旋转后的目标角度（以度为单位）  
+        float newTargetAngleInDegrees = currentAngleInDegrees + limitedAngleDifference;
+
+        // 将新的目标角度限制在0-360度范围内  
+        newTargetAngleInDegrees = (newTargetAngleInDegrees + 360f) % 360f;
+
+        // 将新的目标角度从度转换为弧度，并设置物体的Y轴旋转  
+        float newTargetAngleInRadians = newTargetAngleInDegrees * Mathf.Deg2Rad;
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, newTargetAngleInRadians, transform.eulerAngles.z);
+    }
+
+
+
     #endregion
 
     #region 曲线

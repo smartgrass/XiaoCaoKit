@@ -32,7 +32,6 @@ namespace XiaoCao
         #endregion
         public override void OnTrigger(float startOffsetTime)
         {
-            Debug.Log($"--- move OnTrigger");
             m4 = Tran.localToWorldMatrix;
             cc = Info.role.idRole.cc;
             base.OnTrigger(startOffsetTime);

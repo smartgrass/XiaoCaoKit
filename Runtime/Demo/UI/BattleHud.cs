@@ -8,15 +8,21 @@ namespace XiaoCao
     {
         public Dictionary<int, HpBar> barDic = new Dictionary<int, HpBar>();
 
-        public GameObject prefab;
+        public GameObject worldHpBarPrefab;
+
+        public Transform worldHpBarParent;
+
+        public Transform playerBar;
+
+        public Canvas worldCanvas;
 
         private AssetPool pool;
 
-
         public void Init()
         {
-            pool = new AssetPool(prefab);
+            pool = new AssetPool(worldHpBarPrefab);
             GameEvent.AddEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
+            worldCanvas.worldCamera = Camera.main;
         }
 
         private void OnDestroy()
@@ -26,6 +32,7 @@ namespace XiaoCao
 
         private void Update()
         {
+            DebugGUI.Log("gameState",GameDataCommon.Current.gameState);
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 NorHpBarUpdate();
@@ -39,22 +46,46 @@ namespace XiaoCao
                 Role role = item;
                 if (null != role)
                 {
-                    if (role.IsDie && !role.HasTag(RoleTagCommon.NoHpBar) && role.IsRuning)
+                    if (role.IsPlayer)
                     {
-                        barDic.TryGetValue(role.id, out var bar);
-                        if (bar != null)
-                        {
-                            GameObject newBarGo = pool.Get();
-                            bar = newBarGo.GetComponent<HpBar>();
-                            bar.Init(role.RoleType);
-                            barDic[role.id] = bar;
-                        }
-                        bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
-                        bar.UpdatePostion(role.gameObject);
+                        UpdataPlayerHpBar(role);
+                    }
+                    else
+                    {
+                        UpdataEnemyHpBar(role);
                     }
                 }
             }
         }
+        private void UpdataPlayerHpBar(Role role)
+        {
+            if (role.IsRuning)
+            {
+
+            }
+        }
+        private void UpdataEnemyHpBar(Role role)
+        {
+            if (!role.IsDie && !role.HasTag(RoleTagCommon.NoHpBar) && role.IsRuning)
+            {
+                barDic.TryGetValue(role.id, out var bar);
+                if (bar == null)
+                {
+                    GameObject newBarGo = pool.Get();
+                    bar = newBarGo.GetComponent<HpBar>();
+                    bar.Init(role.RoleType);
+                    barDic[role.id] = bar;
+                    bar.transform.SetParent(worldHpBarParent, false);
+                    bar.SetParent(role);
+                }
+                bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
+                bar.UpdatePostion();
+            }
+        }
+
+
+
+
         //只有变动时才执行, 隐藏多余
         void OnEntityChange(int id, RoleChangeType roleChangeType)
         {

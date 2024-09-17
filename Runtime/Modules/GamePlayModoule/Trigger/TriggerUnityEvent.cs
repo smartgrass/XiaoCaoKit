@@ -17,7 +17,7 @@ public class TriggerUnityEvent : MonoBehaviour
     {
         if (isOnce)
         {
-            if (!isFinish && other.tag == "Player")
+            if (!isFinish && other.tag == Tags.PLAYER)
             {
                 triggerEvent?.Invoke();
                 isFinish = true;
@@ -25,7 +25,7 @@ public class TriggerUnityEvent : MonoBehaviour
         }
         else
         {
-            if (other.tag == "Player")
+            if (other.tag == Tags.PLAYER)
             {
                 triggerEvent?.Invoke();
             }
