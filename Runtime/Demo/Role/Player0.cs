@@ -213,8 +213,6 @@ namespace XiaoCao
 
         protected override void PreSkillStart(int skillId)
         {
-
-
             if (InputData.x != 0 || InputData.y != 0)
             {
                 var dir = owner.component.movement.inputDir;

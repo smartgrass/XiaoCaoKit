@@ -112,7 +112,7 @@ namespace XiaoCao
             {
                 team = Info.role.team,
                 skillId = Info.skillId,
-                subSkillId = subSkillId,
+                subSkillId = task.ObjectData.index,
                 atk = atk,
                 isCrit = isCrit,
             };

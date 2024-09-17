@@ -142,7 +142,7 @@ namespace XiaoCao
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
 
                     //无重力时间
-                    roleData.movement.SetNoGravityT(setting.HitTime * setting.NoGTimeMulti);
+                    roleData.movement.SetNoGravityT(setting.NoGTime);
 
 
                     HitStop.Do(setting.HitStop);

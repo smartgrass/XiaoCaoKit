@@ -29,6 +29,8 @@ namespace XiaoCao
 
         public Transform transform => owner.transform;
 
+        public bool IsAIFree { get => owner.IsFree && !owner.IsAnimBreak; }
+
 
         //Cur
         private HideDir curHideDir;
@@ -203,11 +205,10 @@ namespace XiaoCao
                 AtkStart();
                 return;
             }
-            if (!owner.IsFree)
+            if (!IsAIFree)
             {
                 return;
             }
-
 
             curDistance = GetDistance(_targetRole.transform);
 
@@ -253,7 +254,7 @@ namespace XiaoCao
             if (ackEndWaitTimer > CurAct.endWaitTime)
             {
                 ackTimer += Time.deltaTime;
-                if (ackTimer > ackTime && owner.IsFree)
+                if (ackTimer > ackTime && IsAIFree)
                 {
                     GetHideDir();
                     ChangeState(ActStateType.Hide);

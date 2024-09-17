@@ -22,7 +22,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         AckRate = _buf.ReadFloat();
         AddY = _buf.ReadFloat();
         HitTime = _buf.ReadFloat();
-        NoGTimeMulti = _buf.ReadFloat();
+        NoGTime = _buf.ReadFloat();
         AddHor = _buf.ReadFloat();
         HorForward = _buf.ReadFloat();
         HitStop = _buf.ReadFloat();
@@ -61,9 +61,9 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly float HitTime;
     /// <summary>
-    /// 无重力时间率
+    /// 无重力时间
     /// </summary>
-    public readonly float NoGTimeMulti;
+    public readonly float NoGTime;
     /// <summary>
     /// 水平推力
     /// </summary>
@@ -118,7 +118,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "ackRate:" + AckRate + ","
         + "addY:" + AddY + ","
         + "HitTime:" + HitTime + ","
-        + "NoGTimeMulti:" + NoGTimeMulti + ","
+        + "NoGTime:" + NoGTime + ","
         + "addHor:" + AddHor + ","
         + "horForward:" + HorForward + ","
         + "hitStop:" + HitStop + ","
