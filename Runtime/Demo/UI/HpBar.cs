@@ -17,14 +17,6 @@ namespace XiaoCao
 
         public Image barImgSlow;
 
-        private RectTransform healthBarRectTransform;
-
-        public float referenceDistance = 15;
-
-        
-
-        private Camera mainCamera => CameraMgr.Main;
-
 
         //Color Setting
         public static Color PlayerColor = new Color(0, 0.3f, 1);
@@ -33,13 +25,6 @@ namespace XiaoCao
         private Transform _targetTF;
         private Vector3 _offset;
 
-
-        private void Start()
-        {
-            // 获取血条的RectTransform组件
-            healthBarRectTransform = transform as RectTransform;
-
-        }
 
 
         public void Init(RoleType roleType)
@@ -69,31 +54,37 @@ namespace XiaoCao
         public void UpdatePostion()
         {
             transform.position = _targetTF.TransformPoint(_offset);
-            //if (gameObject == null) return;
-            //// 获取目标的世界坐标
-            //Vector3 targetWorldPosition = gameObject.transform.position;
-
-            //// 将目标的世界坐标转换为屏幕坐标
-            //Vector3 targetScreenPosition = mainCamera.WorldToScreenPoint(targetWorldPosition);
-
-            //// 将血条的屏幕坐标设置为目标的屏幕坐标
-            //healthBarRectTransform.position = targetScreenPosition;
-
-            //// 计算缩放因子
-            //float scaleFactor = CalculateScaleFactor(mainCamera.fieldOfView, targetWorldPosition, mainCamera.transform.position);
-
-            //// 根据缩放因子调整血条的大小
-            //healthBarRectTransform.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
         }
 
         public void UpdateHealthBar(float healthPercentage)
         {
             fillImage.fillAmount = healthPercentage;
+            //barImgSlow.fillAmount = healthPercentage;
         }
 
-        // 根据视场角和目标到相机的距离计算缩放因子
+
+
+        /*
+        //根据视场角和目标到相机的距离计算缩放因子
         private float CalculateScaleFactor(float cameraFOV, Vector3 targetPosition, Vector3 camPos)
         {
+
+            if (gameObject == null) return;
+            // 获取目标的世界坐标
+            Vector3 targetWorldPosition = gameObject.transform.position;
+
+            // 将目标的世界坐标转换为屏幕坐标
+            Vector3 targetScreenPosition = mainCamera.WorldToScreenPoint(targetWorldPosition);
+
+            // 将血条的屏幕坐标设置为目标的屏幕坐标
+            healthBarRectTransform.position = targetScreenPosition;
+
+            // 计算缩放因子
+            float scaleFactor = CalculateScaleFactor(mainCamera.fieldOfView, targetWorldPosition, mainCamera.transform.position);
+
+            // 根据缩放因子调整血条的大小
+            healthBarRectTransform.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
+
             // 获取目标到相机的距离
             float distanceToCamera = Vector3.Distance(targetPosition, camPos);
 
@@ -105,6 +96,7 @@ namespace XiaoCao
 
             return scaleFactor;
         }
+        */
 
     }
 

@@ -200,6 +200,7 @@ namespace XiaoCao
             {
                 return false;
             }
+            Debug.Log($"--- atkInfo.atk {atkInfo.atk}");
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
             if (targetHp <= 0)
             {
@@ -214,7 +215,7 @@ namespace XiaoCao
         {
             base.OnDie();
             roleData.bodyState = EBodyState.Dead;
-            Anim.TryPlayAnim(AnimHash.Dead);
+            Anim.SetBool(AnimHash.IsDead,true);
         }
 
 

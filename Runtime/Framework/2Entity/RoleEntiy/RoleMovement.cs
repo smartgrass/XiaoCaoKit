@@ -216,7 +216,8 @@ namespace XiaoCao
             float GroundedRadius = 0.28f;
             // set sphere position, with offset
             Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
-            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK, QueryTriggerInteraction.Ignore);
+            
+            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK, QueryTriggerInteraction.Ignore);
 
             // update animator if using character
             if (owner.Anim)

@@ -29,7 +29,7 @@ public class AtkTrigger : IdComponent
 public class AtkInfo
 {
     public int team;
-    public int atk;
+    public int atk = 1;
     public bool isCrit; //暴击
 
     public int skillId = 0;

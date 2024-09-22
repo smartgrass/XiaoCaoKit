@@ -63,6 +63,10 @@ namespace XiaoCao
 
         public override void Update()
         {
+            if (owner.IsDie)
+            {
+                return;
+            }
             if (owner.IsAiOn)
             {
                 //查找目标

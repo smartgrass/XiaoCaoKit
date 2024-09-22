@@ -3,6 +3,8 @@ using Cinemachine.Utility;
 using NaughtyAttributes;
 using System;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
+
 namespace XiaoCao
 {
     ///<see cref="CameraMgr"/>
@@ -20,18 +22,32 @@ namespace XiaoCao
 
         public CameraMode Mode { get => _mode; set => _mode = value; }
 
-        //private Cinemachine3rdPersonFollow _vcomponent_3rd;
-        //public Cinemachine3rdPersonFollow Vcomponent_3rd
-        //{
-        //    get
-        //    {
-        //        if (_vcomponent_3rd == null)
-        //        {
-        //            _vcomponent_3rd = vcam_topDown.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
-        //        }
-        //        return _vcomponent_3rd;
-        //    }
-        //}
+        private Cinemachine3rdPersonFollow _3rd;
+        public Cinemachine3rdPersonFollow V3rdPF
+        {
+            get
+            {
+                if (_3rd == null)
+                {
+                    _3rd = vcam_topDown.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+                }
+                return _3rd;
+            }
+        }
+        public CinemachineFramingTransposer _cft;
+        public CinemachineFramingTransposer CFT
+        {
+            get
+            {
+                if (!_cft)
+                {
+                    _cft = vcam_topDown.GetCinemachineComponent<CinemachineFramingTransposer>();
+                }
+                return _cft;
+
+            }
+        }
+
 
         [OnValueChanged(nameof(TurnMode))]
         [SerializeField]
@@ -67,11 +83,13 @@ namespace XiaoCao
                 _inputLook.x = Input.GetAxis("Mouse X");
                 _inputLook.y = Input.GetAxis("Mouse Y");
             }
-            else
-            {       //拖拽的移动量 TODO
-                if (Input.GetMouseButton(0))
+            else if(Mode == CameraMode.TowDown)
+            {   
+                if (!Input.mouseScrollDelta.IsZore())
                 {
-
+                    var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y, 
+                        setting_topDown.camDistance - 3, setting_topDown.camDistance + 3);
+                    CFT.m_CameraDistance = distance;
                 }
             }
 
@@ -93,31 +111,32 @@ namespace XiaoCao
         //或者只需要将
 
         private Vector2 _inputLook;
-        private float _curAngleX;
-        private float _curAngleY;
+        public float curAngleX;
+        public float curAngleY;
 
         private void On3rdCamFixedUpdate()
         {
             if (_inputLook.IsZore())
             {
-                _curAngleY += _inputLook.x;
-                _curAngleX += _inputLook.y * -1f;
+                curAngleY += _inputLook.x;
+                curAngleX += _inputLook.y * -1f;
 
-                _curAngleY = ClampAngle(_curAngleY, float.MinValue, float.MaxValue);
-                _curAngleX = ClampAngle(_curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
+                curAngleY = ClampAngle(curAngleY, float.MinValue, float.MaxValue);
+                curAngleX = ClampAngle(curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
 
-                vcam_topDown.transform.rotation = Quaternion.Euler(_curAngleX, _curAngleY, 0);
+                vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0);
             }
         }
 
         void TopDownInit()
         {
-            _curAngleX = setting_topDown.defaultAngle.x;
-            _curAngleY = setting_topDown.defaultAngle.y;
+            curAngleX = setting_topDown.defaultAngle.x;
+            curAngleY = setting_topDown.defaultAngle.y;
+            CFT.m_CameraDistance = setting_topDown.camDistance;
         }
         void TopDownUpdate()
         {
-            vcam_topDown.transform.rotation = Quaternion.Euler(_curAngleX, _curAngleY, 0.0f);
+            vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
         }
 
 
@@ -162,6 +181,7 @@ namespace XiaoCao
     public class CamDataTopDown
     {
         public Vector2 defaultAngle = new Vector2(30, 0);
+        public float camDistance = 7.5f;
     }
 
 }

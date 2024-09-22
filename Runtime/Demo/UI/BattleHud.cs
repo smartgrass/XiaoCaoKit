@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 
 namespace XiaoCao
 {
@@ -78,6 +79,7 @@ namespace XiaoCao
                     bar.transform.SetParent(worldHpBarParent, false);
                     bar.SetParent(role);
                 }
+                DebugGUI.Log($"{role.id}", role.Hp, role.MaxHp);
                 bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
                 bar.UpdatePostion();
             }

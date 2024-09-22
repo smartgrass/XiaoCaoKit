@@ -89,7 +89,7 @@ namespace XiaoCao
         public static readonly int Break = AnimNames.Break.AnimHash();//break
         public static readonly int Hit = AnimNames.Hit.AnimHash();//轻受击
         public static readonly int HitIndex = AnimNames.HitIndex.AnimHash();//轻受击
-        public static readonly int Dead = AnimNames.Dead.AnimHash();
+        public static readonly int IsDead = AnimNames.IsDead.AnimHash();
         public static readonly int RollTree = AnimNames.RollTree.AnimHash();
         public static readonly int IsGround = AnimNames.IsGround.AnimHash();    
     }
@@ -99,7 +99,7 @@ namespace XiaoCao
         public const string Break = "Break";
         public const string Hit = "Hit"; //Trigger
         public const string HitIndex = "HitIndex";
-        public const string Dead = "Dead";
+        public const string IsDead = "IsDead";
         public const string RollTree = "RollTree";
 
         public const string MoveSpeed = "MoveSpeed";

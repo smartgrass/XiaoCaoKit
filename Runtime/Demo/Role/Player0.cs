@@ -510,7 +510,7 @@ namespace XiaoCao
             maxHp = hp = 100 + 10 * lv;
             maxMp = mp = 100 + 10 * lv;
             maxExp = 100 + 100 * (lv % 10);
-            atk = lv * 5;
+            atk = lv * 5 + 5;
             def = lv * 1;
         }
 
