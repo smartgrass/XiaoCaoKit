@@ -248,8 +248,7 @@ namespace XiaoCao
         {
             enableGravity = true;
             if (noGravityTimer > 0)
-            {
-                DebugGUI.Log("noGravityTimer",noGravityTimer);    
+            {   
                 enableGravity = false;
                 noGravityTimer -= Time.fixedDeltaTime;
             }

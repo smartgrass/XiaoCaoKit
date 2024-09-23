@@ -65,6 +65,7 @@ namespace XiaoCao
         {
             if (owner.IsDie)
             {
+                OnDeadUpdate();
                 return;
             }
             if (owner.IsAiOn)
@@ -226,14 +227,14 @@ namespace XiaoCao
             }
             if (!isMoveEnd)
             {
-                moveTimer += Time.deltaTime;
+                moveTimer += XCTime.deltaTime;
                 Move(1);
             }
 
             if (isMoveEnd)
             {
                 bool isWaitEnd = aimTimer >= aimTime;
-                aimTimer += Time.deltaTime;
+                aimTimer += XCTime.deltaTime;
 
                 var isAimEnd = RoateToRole_Slow(_targetRole, Data_R.moveSetting.angleSpeed);
 

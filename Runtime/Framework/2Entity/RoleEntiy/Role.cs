@@ -6,6 +6,7 @@ using OdinSerializer.Utilities.Editor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Numerics;
 using System.Threading;
 using System.Xml;
 using TEngine;
@@ -16,6 +17,7 @@ using UnityEngine.TextCore;
 using UnityEngine.UIElements;
 using static Cinemachine.CinemachineOrbitalTransposer;
 using static UnityEngine.UI.GridLayoutGroup;
+using Vector3 = UnityEngine.Vector3;
 
 namespace XiaoCao
 {
@@ -38,6 +40,9 @@ namespace XiaoCao
 
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
+
+        public float ShowArmorPercentage => roleData.breakData.ShowPercentage;
+
         [ShowNativeProperty]
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
         public bool IsFree => roleData.IsStateFree;
@@ -124,11 +129,11 @@ namespace XiaoCao
             if (BaseDamageCheck(ackInfo))
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
-                roleData.breakState.OnHit((int)setting.BreakPower);
+                roleData.breakData.OnHit((int)setting.BreakPower);
 
                 HitStop.Do(setting.HitStop);
 
-                if (roleData.breakState.isBreak)
+                if (roleData.breakData.isBreak)
                 {
                     //击飞处理
                     Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
@@ -185,8 +190,8 @@ namespace XiaoCao
 
         public void CheckBreakUpdate()
         {
-            roleData.breakState.OnUpdate(XCTime.deltaTime);
-            if (!roleData.breakState.isBreak)
+            roleData.breakData.OnUpdate(XCTime.deltaTime);
+            if (!roleData.breakData.isBreak)
             {
                 roleData.bodyState = EBodyState.Ready;
             }
@@ -208,6 +213,12 @@ namespace XiaoCao
                 return false;
             }
             Hp -= atkInfo.atk;
+
+
+            Vector3 textPos = transform.position;
+            textPos.y = atkInfo.ackObjectPos.y;
+            textPos = Vector3.Lerp(atkInfo.ackObjectPos, textPos, 0.8f);
+            UIMgr.Inst.PlayDamageText(atkInfo.atk, textPos);
             return true;
         }
 
@@ -216,6 +227,8 @@ namespace XiaoCao
             base.OnDie();
             roleData.bodyState = EBodyState.Dead;
             Anim.SetBool(AnimHash.IsDead,true);
+
+            //
         }
 
 
@@ -228,6 +241,7 @@ namespace XiaoCao
 
         public void RoleOut()
         {
+            Enable = false;
             GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Remove);
             RoleMgr.Inst.roleDic.Remove(id);
         }
@@ -449,6 +463,15 @@ namespace XiaoCao
         {
             OnBreak();
         }
+
+        public void OnDeadUpdate()
+        {
+            if (Data_R.breakData.UpdateDeadEnd())
+            {
+                owner.RoleOut();
+            };
+        }
+
         public void OnTaskUpdate()
         {
             bool hasStop = false;
@@ -615,7 +638,7 @@ namespace XiaoCao
 
         public DataListener<ESkillState> skillState = new DataListener<ESkillState>();
 
-        public BreakState breakState = new BreakState();
+        public BreakData breakData = new BreakData();
 
         public PlayerAttr playerAttr = new PlayerAttr();
 
@@ -658,6 +681,8 @@ namespace XiaoCao
         public float MoveMultFinal => moveSpeedMult * moveAnimMult;
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
 
+
+
         public void Used()
         {
             inputDir = Vector3.zero;
@@ -665,24 +690,42 @@ namespace XiaoCao
 
     }
 
-    public class BreakState
+    public class BreakData
     {
-        public float armor = 10;  //虽说有小数, 实际用整数
-        public float maxArmor = 10;
+        public float armor = 5;  //虽说有小数, 实际用整数
+        public float maxArmor = 5;
         public float recoverWait_t = 0.8f;  //进入破防后,多久启动恢复
         public float recoverFinish_t = 0.5f; //恢复满需要时间
         public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用,小怪一般为0 
         public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
+        //死亡处理
+        public float deadTimer = 0;
+        public float deadTime = 1.5f;//结束时回收
+
         public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
 
         public BreakSubState state { get; set; }
         public bool isHover { get; set; }//是否滞空
         public bool isBreak => state != BreakSubState.None;  //是否破防
 
+        public float ShowPercentage => armor / maxArmor;
+
         public float enterBreakTime;
+
         public float breakTimer;
 
-
+        public bool UpdateDeadEnd()
+        {
+            deadTimer += XCTime.deltaTime;
+            if (deadTimer > deadTime)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         public void OnHit(int hitArmor)
         {

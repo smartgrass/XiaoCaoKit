@@ -3,10 +3,12 @@
 
 // ReSharper disable once CheckNamespace
 using NaughtyAttributes;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using XiaoCaoEditor;
+using RangeAttribute = UnityEngine.RangeAttribute;
 
 namespace AssetEditor.Editor
 {
@@ -22,10 +24,10 @@ namespace AssetEditor.Editor
         public const int Line2 = 2;
 
 
-        [Button("选中角色",Line1)]
+        [Button("选中角色", Line1)]
         void SelectPlayer()
         {
-            if (GameDataCommon.Current.gameState ==  GameState.Running )
+            if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
             }
@@ -47,13 +49,24 @@ namespace AssetEditor.Editor
         void OpenExcelPath()
         {
             XCToolBarMenu.OpenPath_Excel();
-        }        
-        
+        }
+
         [Button("导入配置+代码", Line2)]
         void GenConfig()
         {
             //XCToolBarMenu.OpenPath_Excel();
             SaveXCTask.LoadLubanExcelWithCode();
+        }
+
+
+        [Range(0, 10)]
+        [OnValueChanged(nameof(OnTimeScale))]
+        public float timeScale = 1;
+
+        void OnTimeScale()
+        {
+            Debug.Log($"--- OnTimeScale {timeScale}");
+            XCTime.timeScale = timeScale;
         }
     }
 }

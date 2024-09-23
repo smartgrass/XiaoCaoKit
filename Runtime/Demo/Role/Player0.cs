@@ -64,7 +64,7 @@ namespace XiaoCao
             component.control.Update();
             component.control.OnTaskUpdate();
             component.movement.Update();
-
+            
             //考虑增加add模式
             ForDebug();
         }
@@ -73,8 +73,8 @@ namespace XiaoCao
         {
             DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             DebugGUI.Log("Anim", Anim.speed);
-            DebugGUI.Log("BreakState", playerData.breakState.state);
-            DebugGUI.Log("breakArmor", roleData.breakState.armor);
+            DebugGUI.Log("BreakState", playerData.breakData.state);
+            DebugGUI.Log("breakArmor", roleData.breakData.armor);
         }
 
 
@@ -190,6 +190,7 @@ namespace XiaoCao
         {
             if (owner.IsDie)
             {
+                OnDeadUpdate();
                 return;
             }
             owner.CheckBreakUpdate();
@@ -210,6 +211,7 @@ namespace XiaoCao
                 TryNorAck();
             }
         }
+
 
         protected override void PreSkillStart(int skillId)
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace XiaoCao
@@ -74,6 +75,10 @@ namespace XiaoCao
             return null;
         }
 
+        public void PlayDamageText(int atk, Vector3 textPos)
+        {
+            battleHud.ShowDamageText(atk, textPos);
+        }
     }
 }
 

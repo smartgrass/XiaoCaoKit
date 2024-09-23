@@ -13,10 +13,11 @@ public class XCTime
     /// <summary>
     /// 对时间都做一层封装,方便处理
     /// </summary>
-    internal static float deltaTime => Time.deltaTime;
-    internal static float fixedDeltaTime => Time.fixedDeltaTime;
+    internal static float deltaTime => Time.deltaTime * timeScale;
+    internal static float fixedDeltaTime => Time.fixedDeltaTime * timeScale;
     internal static float unscaledDeltaTime => Time.unscaledDeltaTime;
 
+    public static float timeScale = 1;
 
     //task.Start(); 启动
     //task.Dispose(); 停止
@@ -119,3 +120,10 @@ public class XCTime
         actEvent += UniTask.Action(async () => { await UniTask.Yield(); });
     }
 }
+
+//有需要的话
+//public class FluxTime
+//{
+//    internal static float deltaTime => Time.deltaTime;
+//    internal static float fixedDeltaTime => Time.fixedDeltaTime;
+//}

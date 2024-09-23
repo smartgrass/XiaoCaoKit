@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TEngine;
 using UnityEngine;
@@ -15,28 +16,34 @@ namespace XiaoCao
     {
         public Image fillImage;
 
+        public Image fillImage2;
+
         public Image barImgSlow;
 
 
         //Color Setting
-        public static Color PlayerColor = new Color(0, 0.3f, 1);
-        public static Color EnemyColor = new Color(1, 0, 0);
+        public static Color White = Color.white;
+        public static Color Red = Color.red;
+        public static Color Green = Color.green;
+        public static Color Orange = new Color(1, 128f / 255, 0);
+        //public static Color PlayerColor = new Color(0, 0.3f, 1);
+        //public static Color EnemyColor = new Color(1, 0, 0);
 
         private Transform _targetTF;
         private Vector3 _offset;
 
 
-
         public void Init(RoleType roleType)
         {
-            if (roleType == RoleType.Player)
-            {
-                fillImage.color = PlayerColor;
-            }
-            else
-            {
-                fillImage.color = EnemyColor;
-            }
+            fillImage.color = White;
+            //if (roleType == RoleType.Player)
+            //{
+
+            //}
+            //else
+            //{
+            //    fillImage.color = EnemyColor;
+            //}
 
         }
 
@@ -59,7 +66,24 @@ namespace XiaoCao
         public void UpdateHealthBar(float healthPercentage)
         {
             fillImage.fillAmount = healthPercentage;
-            //barImgSlow.fillAmount = healthPercentage;
+
+            if (healthPercentage > 2f/3f)
+            {
+                fillImage.color = Green;
+            }
+            else if (healthPercentage > 1/3f)
+            {
+                fillImage.color = Orange;
+            }
+            else
+            {
+                fillImage.color = Red;
+            }
+        }
+
+        public void UpdateArmorBar(float percentage)
+        {
+            fillImage2.fillAmount = percentage;
         }
 
 

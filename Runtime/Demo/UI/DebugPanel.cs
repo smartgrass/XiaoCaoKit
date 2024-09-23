@@ -111,6 +111,12 @@ public class DebugPanel : ViewBase
 
     }
 
+
+    public void AddSilder()
+    {
+        //new GameObject().AddComponent<UISilder>
+    }
+
     private void AddPage(Page p)
     {
         var pageTf = GetPage(p);

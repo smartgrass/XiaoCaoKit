@@ -1,7 +1,11 @@
-﻿using System;
+﻿using DG.Tweening.Core;
+using DG.Tweening.Plugins.Options;
+using DG.Tweening;
+using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using XiaoCao;
+using UnityEngine.UI;
 
 public static class XCExtend
 {
@@ -89,6 +93,13 @@ public static class XCExtend
         {
             return false;
         }
+    }
+
+    public static TweenerCore<Color, Color, ColorOptions> DOColor(this Text target, Color endValue, float duration)
+    {
+        TweenerCore<Color, Color, ColorOptions> t = DOTween.To(() => target.color, x => target.color = x, endValue, duration);
+        t.SetTarget(target);
+        return t;
     }
 
 }
