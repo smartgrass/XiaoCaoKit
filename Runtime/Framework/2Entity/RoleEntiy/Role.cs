@@ -17,6 +17,7 @@ using UnityEngine.TextCore;
 using UnityEngine.UIElements;
 using static Cinemachine.CinemachineOrbitalTransposer;
 using static UnityEngine.UI.GridLayoutGroup;
+using static XiaoCao.BehaviorEntity;
 using Vector3 = UnityEngine.Vector3;
 
 namespace XiaoCao
@@ -38,6 +39,7 @@ namespace XiaoCao
         //roleData
         public RoleData roleData;
 
+        public int Level{get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value;}
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
 
@@ -209,6 +211,7 @@ namespace XiaoCao
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
             if (targetHp <= 0)
             {
+                Hp = 0;
                 OnDie();
                 return false;
             }
@@ -227,7 +230,6 @@ namespace XiaoCao
             base.OnDie();
             roleData.bodyState = EBodyState.Dead;
             Anim.SetBool(AnimHash.IsDead,true);
-
             //
         }
 
@@ -241,7 +243,7 @@ namespace XiaoCao
 
         public void RoleOut()
         {
-            Enable = false;
+            Debug.Log($"--- RoleOut {id}");
             GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Remove);
             RoleMgr.Inst.roleDic.Remove(id);
         }
@@ -466,9 +468,12 @@ namespace XiaoCao
 
         public void OnDeadUpdate()
         {
-            if (Data_R.breakData.UpdateDeadEnd())
+            if (owner.lifeState != BehaviorLifeState.WillDestroy
+                && Data_R.breakData.UpdateDeadEnd())
             {
-                owner.RoleOut();
+                owner.lifeState = BehaviorLifeState.WillDestroy;
+                owner.Enable = false;
+                owner.DestroySelf();
             };
         }
 
@@ -588,7 +593,6 @@ namespace XiaoCao
                 Debug.LogError($"--- task null {skillId} ");
                 return;
             }
-            SetAnimSpeed(taskInfo.speed);
             runnerList.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnAllTaskEnd);

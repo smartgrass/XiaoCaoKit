@@ -7,7 +7,7 @@ namespace XiaoCao
     /// <summary>
     /// 存档
     /// </summary>
-    public class SavaMgr
+    public class SaveMgr
     {
         public static string GetSavaPath(Type t)
         {
@@ -29,7 +29,7 @@ namespace XiaoCao
             }
         }
 
-        public static void SavaData<T>(T data)
+        public static void SaveData<T>(T data)
         {
             Type type = typeof(T);
             string path = GetSavaPath(type);

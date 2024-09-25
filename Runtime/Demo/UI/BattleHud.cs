@@ -71,8 +71,9 @@ namespace XiaoCao
         }
         private void UpdataEnemyHpBar(Role role)
         {
-            if (!role.HasTag(RoleTagCommon.NoHpBar) && role.IsRuning)
+            if (role.IsRuning && !role.HasTag(RoleTagCommon.NoHpBar))
             {
+                Debug.Log($"--- UpdataEnemyHpBar {role.id} Hp = {role.Hp} ");
                 //!role.IsDie && 
                 barDic.TryGetValue(role.id, out var bar);
                 if (bar == null)
@@ -88,11 +89,6 @@ namespace XiaoCao
                 bar.UpdateArmorBar(role.ShowArmorPercentage);
                 bar.UpdatePostion();
 
-                if (role.IsDie)
-                {
-                    
-                }
-
             }
         }
 
@@ -106,14 +102,12 @@ namespace XiaoCao
                 return;
             }
 
-            foreach (var item in barDic)
+            if (barDic.ContainsKey(id))
             {
-                if (!RoleMgr.Inst.roleDic.ContainsKey(item.Key))
-                {
-                    var bar = item.Value;
-                    pool.Release(bar.gameObject);
-                    barDic.Remove(item.Key);
-                }
+                var bar = barDic[id];
+                bar.gameObject.SetActive(false);
+                pool.Release(bar.gameObject);
+                barDic.Remove(id);
             }
         }
 

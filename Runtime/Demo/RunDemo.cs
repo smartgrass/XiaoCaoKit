@@ -3,6 +3,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Threading.Tasks;
 using TEngine;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 
 
@@ -57,11 +58,16 @@ namespace XiaoCao
             Player0 player = EntityMgr.Inst.CreatEntity<Player0>();
 
             //读取存档数据
-            var data0 = SavaMgr.ReadData<PlayerSaveData>(out bool isSuc);
+            var data0 = SaveMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
             data0.CheckNull();
 
             data0.prefabId = 0;
+
+            if (Application.isEditor && "IsKaiLe".GetKeyBool())
+            {
+                data0.lv = PlayerPrefs.GetInt("playerLv");
+            }
 
             GameData.playerSaveData = data0;
 
@@ -70,7 +76,7 @@ namespace XiaoCao
             if (!isSuc)
             {
                 Debuger.Log($"--- creat newData");
-                SavaMgr.SavaData(data0);
+                SaveMgr.SaveData(data0);
             }
 
 

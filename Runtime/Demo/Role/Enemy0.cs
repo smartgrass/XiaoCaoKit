@@ -63,6 +63,7 @@ namespace XiaoCao
 
         protected override void OnDestroy()
         {
+            base.OnDestroy();
             RoleOut();
         }
 

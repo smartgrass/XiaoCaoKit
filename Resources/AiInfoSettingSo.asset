@@ -15,23 +15,23 @@ MonoBehaviour:
   array:
   - id: 0
     config:
-      moveSpeed: 3.5
+      moveSpeed: 3
       walkSR: 0.35
       walkAnimSR: 0.5
-      atkDesire: 0.5
+      atkDesire: 0.2
     actPool:
     - power: 1
       actType: 0
       actMsg: 0
       distance: 2.5
-      moveTime: 1.5
+      moveTime: 1
       minMoveTime: 0.3
       endWaitTime: 0
       hideTime: 0
       isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: 1
-      nextActName: 2
+      nextActName: 
     - power: 0
       actType: 0
       actMsg: 1
@@ -49,10 +49,10 @@ MonoBehaviour:
       actType: 1
       actMsg: 
       distance: 3
-      moveTime: 1.5
+      moveTime: 0
       minMoveTime: 0
       endWaitTime: 0
-      hideTime: 0.5
+      hideTime: 1.5
       isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: ack1

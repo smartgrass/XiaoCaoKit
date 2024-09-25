@@ -4,6 +4,7 @@
 // ReSharper disable once CheckNamespace
 using NaughtyAttributes;
 using NUnit.Framework;
+using System;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
@@ -23,6 +24,29 @@ namespace AssetEditor.Editor
         public const int Line1 = 1;
         public const int Line2 = 2;
 
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            EditorApplication.playModeStateChanged += PlayModeStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+        }
+
+        private void PlayModeStateChanged(PlayModeStateChange change)
+        {
+            if (change == PlayModeStateChange.EnteredPlayMode)
+            {
+                if (IsKaiLe)
+                {
+                    "IsKaiLe".SetKeyBool(true);
+                    OnTimeScale();
+                }
+            }
+        }
 
         [Button("选中角色", Line1)]
         void SelectPlayer()
@@ -58,6 +82,19 @@ namespace AssetEditor.Editor
             SaveXCTask.LoadLubanExcelWithCode();
         }
 
+        public bool IsKaiLe = false;
+        [OnValueChanged(nameof(OnLevelChange))]
+        public int playerLevel = 5;
+
+        private void OnLevelChange()
+        {
+            PlayerPrefs.SetInt("playerLv", playerLevel);
+            if (GameDataCommon.Current.gameState == GameState.Running)
+            {
+                GameMgr.Inst.Player.PlayerAttr.lv = playerLevel;
+            }
+
+        }
 
         [Range(0, 10)]
         [OnValueChanged(nameof(OnTimeScale))]

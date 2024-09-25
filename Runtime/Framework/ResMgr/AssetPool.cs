@@ -48,7 +48,12 @@ namespace XiaoCao
         }
         public void Release(GameObject gameObject)
         {
-            pool.Release(gameObject);
+            if (gameObject)
+            {
+                Transform transform = DontDestroyTransfrom.Get(PoolName);
+                gameObject.transform.SetParent(transform, false);
+                pool.Release(gameObject);
+            }
         }
 
         private GameObject Creat()

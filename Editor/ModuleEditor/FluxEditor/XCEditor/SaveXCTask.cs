@@ -21,6 +21,7 @@ using Debug = UnityEngine.Debug;
 using FUtility = FluxEditor.FUtility;
 using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
+public class SaveTask { }
 
 public class SaveXCTask
 {

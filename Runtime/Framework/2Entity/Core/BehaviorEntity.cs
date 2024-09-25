@@ -15,25 +15,26 @@ namespace XiaoCao
         public float DeltaTime => Time.deltaTime;
         public float FixedDeltaTime => Time.fixedDeltaTime;
 
-        public bool isCreated;
+        public BehaviorLifeState lifeState;
+
+        public bool IsExist => lifeState >= BehaviorLifeState.BehaviorInited;
+
 
         private bool enable;
         //是否有效
-        public bool IsRuning => isCreated && enable && gameObject;
+        public bool IsRuning => IsExist && enable && gameObject;
 
         public bool Enable
         {
             get { return enable; }
             set
             {
-                if (isCreated && enable != value)
+                bool isChange = enable != value;
+                enable = value;
+
+                if (isChange && lifeState > BehaviorLifeState.None)
                 {
-                    enable = value;
                     OnEnable(value);
-                }
-                else
-                {
-                    enable = value;
                 }
             }
         }
@@ -45,7 +46,7 @@ namespace XiaoCao
             FixedUpdateEvent += OnFixedUpdate;
             LaterUpdateEvent += OnLaterUpdate;
             DestroyEvent += OnDestroy;
-            isCreated = true;
+            lifeState = BehaviorLifeState.BehaviorInited;
             Awake();
         }
 
@@ -77,6 +78,24 @@ namespace XiaoCao
 
         protected virtual void OnDestroy()
         {
+            lifeState = BehaviorLifeState.Destroy;
+        }
+
+        public void DestroySelf()
+        {
+            GameObject.Destroy(gameObject);
+        }
+
+        
+
+        //权限范围
+        public enum BehaviorLifeState
+        {
+            None = 0,
+            Destroy = 1,
+            WillDestroy = 2,
+            BehaviorInited = 3,
+
 
         }
 

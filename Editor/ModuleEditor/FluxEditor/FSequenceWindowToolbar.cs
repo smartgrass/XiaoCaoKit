@@ -312,7 +312,7 @@ namespace FluxEditor
 					PlayBackwards();
 			}
 
-			if( _showSpeedSlider )
+			//if( _showSpeedSlider )
 			{
 				GUI.Label( _speedLabelRect, _speedLabel );
 
@@ -358,7 +358,7 @@ namespace FluxEditor
 				}
 			}
 
-			if( _showViewRange )
+			if( _showViewRange && _showSpeedSlider)
 			{
 				EditorGUI.PrefixLabel( _viewRangeLabelRect, _viewRangeLabel );
 

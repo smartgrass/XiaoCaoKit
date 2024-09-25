@@ -11,8 +11,6 @@ namespace XiaoCao
     {
         internal readonly List<T> m_List;
 
-        private readonly HashSet<int> map;
-
         private readonly Func<T> m_CreateFunc;
 
         private readonly Action<T> m_ActionOnGet;
@@ -31,7 +29,6 @@ namespace XiaoCao
             }
 
             m_List = new List<T>(defaultCapacity);
-            map = new HashSet<int>();
             m_CreateFunc = createFunc;
             m_ActionOnGet = actionOnGet;
             m_ActionOnRelease = actionOnRelease;
@@ -59,13 +56,11 @@ namespace XiaoCao
 
         public void Release(T element)
         {
-            if (m_ActtionId != null && map.Contains(m_ActtionId(element)))
+            if (!m_List.Contains(element))
             {
-                Debuger.Log("Trying to release more time");
+                m_List.Add(element);
+                m_ActionOnRelease?.Invoke(element);
             }
-            m_List.Add(element);
-            map.Add(m_ActtionId(element));
-            m_ActionOnRelease?.Invoke(element);
         }
 
         public void Clear()
@@ -77,6 +72,11 @@ namespace XiaoCao
         public void Dispose()
         {
             Clear();
+        }
+
+        internal void ClearNull()
+        {
+
         }
     }
 }

@@ -14,6 +14,8 @@ namespace XiaoCao
 {
     public class Player0 : PlayerBase, IMsgReceiver
     {
+        public PlayerAttr PlayerAttr => roleData.playerAttr;
+
         public override void DataCreat()
         {
             playerData = new PlayerData0();
@@ -91,6 +93,7 @@ namespace XiaoCao
 
         protected override void OnDestroy()
         {
+            base.OnDestroy();
             RoleOut();
         }
 

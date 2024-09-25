@@ -10,7 +10,7 @@ namespace XiaoCao
     public class GameMgr : MonoSingleton<GameMgr>, IMgr
     {
         #region AllMgr
-
+        public Player0 Player => GameDataCommon.Current.player0;
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
         public CameraMgr CameraMgr;
