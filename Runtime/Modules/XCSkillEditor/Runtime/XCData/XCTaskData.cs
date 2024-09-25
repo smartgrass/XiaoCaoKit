@@ -111,21 +111,34 @@ namespace XiaoCao
             Ps = ps;
             if (!Info.speed.IsFEqual(1))
             {
-                //var main = Ps.main;
-                //main.simulationSpeed = Info.speed;
-                //TODO 特效自定义速度
-                foreach (var p in ps.GetComponentsInChildren<ParticleSystem>())
-                {
-                    SetSimulationSpeed(p,Info.speed);
-                }
+                SetPsSpeed(ps, Info.speed);
             }
             Ps.Play();
         }
 
-        void SetSimulationSpeed(ParticleSystem ps,float speed)
+
+        public void SetPsSpeed(ParticleSystem ps, float speed)
         {
-            var main = ps.main;
-            main.simulationSpeed = Info.speed;
+            foreach (var p in ps.GetComponentsInChildren<ParticleSystem>())
+            {
+                var main = p.main;
+                main.simulationSpeed = Info.speed;
+            }
+        }
+        public void StopTimeSpeed(bool isOn)
+        {
+            if (!Ps)
+            {
+                return;
+            }
+            if (isOn)
+            {
+                Ps.Pause(true);
+            }
+            else
+            {
+                Ps.Play(true);
+            }
         }
 
         //设置起始位置
@@ -147,7 +160,8 @@ namespace XiaoCao
             {
                 Tran.SetParent(PlayerTF, true);
             }
-            else{
+            else
+            {
                 Tran.SetParent(null, true);
             }
             Tran.localScale = scale;

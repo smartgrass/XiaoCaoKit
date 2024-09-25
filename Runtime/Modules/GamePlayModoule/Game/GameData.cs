@@ -47,6 +47,8 @@ namespace XiaoCao
 
         public static BattleData Current => GameData.battleData;
 
+        public bool IsTimeStop { get; set; }
+
         public HashSet<string> map = new HashSet<string>();
 
         public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();
@@ -55,6 +57,12 @@ namespace XiaoCao
 
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
+
+        ///<see cref="BattleFlagNames"/>
+        public bool HasFlag(string flag)
+        {
+            return map.Contains(flag);
+        }
 
         public void OnControlChange(bool v)
         {
@@ -124,8 +132,15 @@ namespace XiaoCao
 
         PlayerEvent = 100, //分界线
         AckingNorAck = 101,
+        TimeSpeedStop =102
 
     }
+
+    public static class BattleFlagNames
+    {
+
+    }
+
 
     public static class TeamTag
     {

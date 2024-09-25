@@ -213,6 +213,17 @@ namespace XiaoCao
             {
                 TryNorAck();
             }
+
+            if (InputData.inputs[InputKey.Space])
+            {
+                if (BattleData.Current.IsTimeStop)
+                {
+                    TimeStopMgr.Inst.RecoverTimeSpeed();
+                }
+                else {
+                    TimeStopMgr.Inst.StopTimeSpeed(5);
+                }
+            }
         }
 
 
@@ -541,7 +552,7 @@ namespace XiaoCao
     {
         public const int NorAck = 0;
         public const int LeftShift = 1;
-        public const int Space = 2;
+        public const int Space = 2; //Jump
     }
     #endregion
 

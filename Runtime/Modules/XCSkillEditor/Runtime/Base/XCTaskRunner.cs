@@ -26,6 +26,8 @@ namespace XiaoCao
 
         public bool IsAllStop { get; set; } //全部task结束
 
+        public bool IsTimeStop {  get; set; }
+
         ///<see cref="Role.OnSkillFinish"/>  主Task结束时执行
         public UnityEvent<XCTaskRunner> onMainEndEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
 
@@ -82,6 +84,9 @@ namespace XiaoCao
         {
             if (Task == null)
                 return;
+            if (IsTimeStop)
+                return;
+ 
             Task.OnEventUpdate();
         }
 
@@ -146,6 +151,16 @@ namespace XiaoCao
                 return false;
             }
             return Task.IsBusy;
+        }
+
+        public void StopTimeSpeed(bool isOn)
+        {
+            if (!IsAllStop)
+            {
+                IsTimeStop = isOn;
+                //停止特效
+                Task.StopTimeSpeed(isOn);
+            }
         }
     }
 

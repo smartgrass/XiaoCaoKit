@@ -10,11 +10,13 @@ namespace XiaoCao
     public class GameMgr : MonoSingleton<GameMgr>, IMgr
     {
         #region AllMgr
-        public Player0 Player => GameDataCommon.Current.player0;
+        public GameDataCommon GameData => GameDataCommon.Current;
+        public BattleData BattleData => BattleData.Current;
+        public Player0 Player => GameData.player0;
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
         public CameraMgr CameraMgr;
-
+        public TimeStopMgr timeStopMgr;
 
         #endregion
         public override void Init()

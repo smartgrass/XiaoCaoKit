@@ -105,6 +105,13 @@ namespace AssetEditor.Editor
             Debug.Log($"--- OnTimeScale {timeScale}");
             XCTime.timeScale = timeScale;
         }
+
+        [Button("Stop Time 5s", Line2)]
+        void StopTime()
+        {
+            Debug.Log($"--- Stop");
+            TimeStopMgr.Inst.StopTimeSpeed(5);
+        }
     }
 }
 #endif

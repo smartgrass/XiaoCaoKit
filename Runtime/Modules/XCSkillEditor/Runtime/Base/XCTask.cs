@@ -246,6 +246,20 @@ namespace XiaoCao
         {
 
         }
+
+        public void StopTimeSpeed(bool isOn)
+        {
+            if (State != XCState.Running)
+            {
+                return;
+            }
+            ObjectData?.StopTimeSpeed(isOn);
+            
+            foreach (var e in subTasks)
+            {
+                e.StopTimeSpeed(isOn);
+            }
+        }
     }
 
 }

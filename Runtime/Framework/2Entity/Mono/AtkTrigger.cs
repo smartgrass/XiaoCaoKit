@@ -7,12 +7,18 @@ public class AtkTrigger : IdComponent
     public AtkInfo info;
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<IdRole>(out IdRole role))
+        if (other.TryGetComponent<IdRole>(out IdRole IdRole))
         {
-            if (EntityMgr.Inst.FindEntity<Role>(role.id, out Role entity))
+            if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
             {
                 if (entity.team != info.team)
                 {
+                    if (BattleData.Current.IsTimeStop && entity.IsPlayer)
+                    {
+                        //时停时玩家不受伤害
+                        return;
+                    }
+
                     //阵营判断
                     info.ackObjectPos = transform.position;
                     info.hitPos = other.ClosestPointOnBounds(transform.position);

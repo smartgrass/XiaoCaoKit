@@ -25,7 +25,6 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(0);
 
-
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
 
@@ -47,6 +46,9 @@ namespace XiaoCao
 
         protected override void OnUpdate()
         {
+            if (BattleData.Current.IsTimeStop)
+                return;
+
             component.aiControl.Update();
             component.aiControl.OnTaskUpdate();
             component.movement.Update();
@@ -55,6 +57,9 @@ namespace XiaoCao
 
         protected override void OnFixedUpdate()
         {
+            if (BattleData.Current.IsTimeStop)
+                return;
+
             component.aiControl.FixedUpdate();
             component.movement.FixedUpdate();
 
