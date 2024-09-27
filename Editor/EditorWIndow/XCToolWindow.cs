@@ -106,11 +106,11 @@ namespace AssetEditor.Editor
             XCTime.timeScale = timeScale;
         }
 
-        [Button("Stop Time 5s", Line2)]
+        //[Button("Stop Time 5s", Line2)]
         void StopTime()
         {
-            Debug.Log($"--- Stop");
-            TimeStopMgr.Inst.StopTimeSpeed(5);
+            //TestRole testRole  = GameObject.FindObjectOfType<TestRole>();
+            
         }
     }
 }

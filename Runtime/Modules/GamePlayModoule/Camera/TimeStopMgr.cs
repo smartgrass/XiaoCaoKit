@@ -13,34 +13,39 @@ namespace XiaoCao
 
         public void StopTimeSpeed(float time)
         {
-            if (BattleData.Current.IsTimeStop)
+            if (BattleData.IsTimeStop)
             {
                 return;
             }
-            BattleData.Current.IsTimeStop = true;
+            BattleData.IsTimeStop = true;
             this.time = time;
             //1.敌人停止动画
             //2.修改runner的speed [每个敌人都执行]
 
             GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(),true);
             coroutine = StartCoroutine(IEWaitRecover());
+            CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.TimeStop);
         }
 
         public void RecoverTimeSpeed() {
-            if (BattleData.Current.IsTimeStop)
+            if (BattleData.IsTimeStop)
             {
                 StopCoroutine(coroutine);
-                GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
-                BattleData.Current.IsTimeStop = false;
+                Recover();
             }
         }
 
         IEnumerator IEWaitRecover()
         {
             yield return new WaitForSeconds(time);
-            GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
-            BattleData.Current.IsTimeStop = false;
+            Recover();
             Debug.Log($"--- 恢复");
+        }
+        private static void Recover()
+        {
+            GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
+            BattleData.IsTimeStop = false;
+            CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.None);
         }
 
     }

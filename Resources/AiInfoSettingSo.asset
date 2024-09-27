@@ -18,7 +18,7 @@ MonoBehaviour:
       moveSpeed: 3
       walkSR: 0.35
       walkAnimSR: 0.5
-      atkDesire: 0.2
+      atkDesire: 0.5
     actPool:
     - power: 1
       actType: 0

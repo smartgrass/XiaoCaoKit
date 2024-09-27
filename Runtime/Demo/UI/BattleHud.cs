@@ -73,8 +73,6 @@ namespace XiaoCao
         {
             if (role.IsRuning && !role.HasTag(RoleTagCommon.NoHpBar))
             {
-                Debug.Log($"--- UpdataEnemyHpBar {role.id} Hp = {role.Hp} ");
-                //!role.IsDie && 
                 barDic.TryGetValue(role.id, out var bar);
                 if (bar == null)
                 {

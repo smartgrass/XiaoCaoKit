@@ -46,7 +46,7 @@ namespace XiaoCao
 
         protected override void OnUpdate()
         {
-            if (BattleData.Current.IsTimeStop)
+            if (BattleData.IsTimeStop)
                 return;
 
             component.aiControl.Update();
@@ -57,7 +57,7 @@ namespace XiaoCao
 
         protected override void OnFixedUpdate()
         {
-            if (BattleData.Current.IsTimeStop)
+            if (BattleData.IsTimeStop)
                 return;
 
             component.aiControl.FixedUpdate();

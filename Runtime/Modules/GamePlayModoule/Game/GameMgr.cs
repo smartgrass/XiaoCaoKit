@@ -15,7 +15,7 @@ namespace XiaoCao
         public Player0 Player => GameData.player0;
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
-        public CameraMgr CameraMgr;
+        public CameraMgr cameraMgr;
         public TimeStopMgr timeStopMgr;
 
         #endregion

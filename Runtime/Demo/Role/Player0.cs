@@ -1,13 +1,6 @@
-﻿using Cinemachine.Utility;
-using NaughtyAttributes;
-using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
-using UnityEngine.Tilemaps;
-using static UnityEngine.UI.GridLayoutGroup;
 using Input = UnityEngine.Input;
 
 namespace XiaoCao
@@ -66,7 +59,7 @@ namespace XiaoCao
             component.control.Update();
             component.control.OnTaskUpdate();
             component.movement.Update();
-            
+
             //考虑增加add模式
             ForDebug();
         }
@@ -197,7 +190,11 @@ namespace XiaoCao
                 return;
             }
             owner.CheckBreakUpdate();
+        }
 
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
             if (InputData.inputs[InputKey.LeftShift])
             {
                 TryRoll();
@@ -216,11 +213,12 @@ namespace XiaoCao
 
             if (InputData.inputs[InputKey.Space])
             {
-                if (BattleData.Current.IsTimeStop)
+                if (BattleData.IsTimeStop)
                 {
                     TimeStopMgr.Inst.RecoverTimeSpeed();
                 }
-                else {
+                else
+                {
                     TimeStopMgr.Inst.StopTimeSpeed(5);
                 }
             }
@@ -238,7 +236,7 @@ namespace XiaoCao
             if (rollId != skillId)
             {
                 DefaultAutoDirect();
-            }    
+            }
         }
 
         public void TryRoll()
@@ -281,14 +279,14 @@ namespace XiaoCao
             var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3.5f, 30, out float maxScore, owner.team);
             if (findRole != null)
             {
-                owner.transform.RotaToPos(findRole.transform.position,0.4f);
+                owner.transform.RotaToPos(findRole.transform.position, 0.4f);
                 Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
             }
             else
             {
                 Debug.Log($"--- findRole no");
             }
-            
+
         }
 
 

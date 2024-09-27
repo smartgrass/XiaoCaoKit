@@ -129,8 +129,6 @@ namespace XiaoCao
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakData.OnHit((int)setting.BreakPower);
 
-                HitStop.Do(setting.HitStop);
-
                 if (roleData.breakData.isBreak)
                 {
                     //击飞处理
@@ -140,7 +138,7 @@ namespace XiaoCao
 
                     float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
 
-                    if (!BattleData.Current.IsTimeStop)
+                    if (!BattleData.IsTimeStop)
                     {
                         idRole.cc.DOHit(setting.AddY, horDir * horDistance, setting.HitTime);
                     }
@@ -150,19 +148,21 @@ namespace XiaoCao
                     //无重力时间
                     roleData.movement.SetNoGravityT(setting.NoGTime);
 
-
-                    HitStop.Do(setting.HitStop);
                     // 打断当前技能
                     OnBreak();
-
-                    Anim.TryPlayAnim(AnimHash.Break);
+                    if (!BattleData.IsTimeStop)
+                    {
+                        Anim.TryPlayAnim(AnimHash.Break);
+                        HitStop.Do(setting.HitStop);
+                    }
                     Debug.Log($"--- AnimHash.Break");
                 }
                 else
                 {
-                    //Hit Index
-                    Debug.Log($"--- AnimHash.Hit");
-                    Anim.TryPlayAnim(AnimHash.Hit);
+                    if (!BattleData.IsTimeStop)
+                    {
+                        Anim.TryPlayAnim(AnimHash.Hit);
+                    }
                     roleData.movement.SetUnMoveTime(0.35f);
                 }
 
@@ -171,10 +171,12 @@ namespace XiaoCao
                 var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
                 effect.SetActive(true);
                 effect.transform.SetParent(transform, true);
-                //Vector3 vector3 = transform.position;
-                //vector3.y = ackInfo.hitPos.y;
-                //vector3 = Vector3.Lerp(ackInfo.ackObjectPos, vector3, 0.8f);
-                effect.transform.position = ackInfo.hitPos;
+
+                Vector3 tempAckObjectPos = ackInfo.ackObjectPos;
+                tempAckObjectPos.y = ackInfo.hitPos.y;
+                tempAckObjectPos = Vector3.Lerp(ackInfo.ackObjectPos, ackInfo.hitPos, 0.8f);
+                effect.transform.position = tempAckObjectPos; //ackInfo.hitPos;
+
                 effect.transform.forward = ackInfo.ackObjectPos - transform.position;
             }
         }
@@ -228,7 +230,10 @@ namespace XiaoCao
         {
             base.OnDie();
             roleData.bodyState = EBodyState.Dead;
-            Anim.SetBool(AnimHash.IsDead,true);
+            if (!BattleData.IsTimeStop)
+            {
+                Anim.SetBool(AnimHash.IsDead, true);
+            }
             //
         }
 
@@ -251,10 +256,30 @@ namespace XiaoCao
 
         private void StopTimeSpeed(bool isOn)
         {
-            if (!IsPlayer)
+            if (IsPlayer)
             {
-                roleData.roleControl.StopTimeSpeed(isOn);
+                return;
             }
+            //处理击飞
+            if (!isOn)
+            {
+                if (roleData.breakData.isBreak)
+                {
+                    Anim.TryPlayAnim(AnimHash.Break);
+                }
+                else if (roleData.breakData.HasHit)
+                {
+                    Anim.TryPlayAnim(AnimHash.Hit);
+                }
+
+                if (roleData.bodyState == EBodyState.Dead)
+                {
+                    Anim.SetBool(AnimHash.IsDead,true);
+                }
+
+            }
+
+            roleData.roleControl.StopTimeSpeed(isOn);
         }
 
 
@@ -514,6 +539,8 @@ namespace XiaoCao
         public bool isHover { get; set; }//是否滞空
         public bool isBreak => state != BreakSubState.None;  //是否破防
 
+        public bool HasHit { get; set; }
+
         public float ShowPercentage => armor / maxArmor;
 
         public float enterBreakTime;
@@ -543,6 +570,7 @@ namespace XiaoCao
                     state = BreakSubState.BreakStart;
                 }
             }
+            HasHit = true;
         }
 
         public void OnUpdate(float deltaTime)
@@ -570,6 +598,7 @@ namespace XiaoCao
                 armor = maxArmor;
                 state = BreakSubState.None;
             }
+            HasHit = false;
         }
 
         public enum BreakSubState

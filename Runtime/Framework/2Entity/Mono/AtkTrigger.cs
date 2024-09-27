@@ -13,7 +13,7 @@ public class AtkTrigger : IdComponent
             {
                 if (entity.team != info.team)
                 {
-                    if (BattleData.Current.IsTimeStop && entity.IsPlayer)
+                    if (BattleData.IsTimeStop && entity.IsPlayer)
                     {
                         //时停时玩家不受伤害
                         return;

@@ -46,8 +46,9 @@ namespace XiaoCao
         }
 
         public static BattleData Current => GameData.battleData;
+        public static bool IsTimeStop { get => Current._isTimeStop; set => Current._isTimeStop = value; }
 
-        public bool IsTimeStop { get; set; }
+        private bool _isTimeStop;
 
         public HashSet<string> map = new HashSet<string>();
 
@@ -132,7 +133,7 @@ namespace XiaoCao
 
         PlayerEvent = 100, //分界线
         AckingNorAck = 101,
-        TimeSpeedStop =102
+        TimeSpeedStop = 102
 
     }
 
@@ -218,7 +219,7 @@ namespace XiaoCao
         public static implicit operator T(DataListener<T> wrapper)
         {
             return wrapper._data;
-        }        
+        }
 
         //// 隐式转换到T  
         //public static implicit operator DataListener<T> (T wrapper)
