@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 using XiaoCao.FancyScrollRect;
+using Button = UnityEngine.UI.Button;
 using Image = UnityEngine.UI.Image;
 
 namespace XiaoCao
@@ -16,6 +17,8 @@ namespace XiaoCao
         public override UIPanelType panelType => UIPanelType.LevelPanel;
 
         public int num = 5;
+
+        public Button sureBtn;
 
         [SerializeField] XCScrollView scrollView = default;
 
@@ -38,6 +41,7 @@ namespace XiaoCao
 
             base.Init();
 
+            sureBtn.onClick.AddListener(OnSureBtnClick);
             scrollView.OnCellClicked(OnSelectButton);
 
             var items = Enumerable.Range(0, num).Select(i => new ItemData($"Cell {i}")).ToArray();
@@ -61,7 +65,7 @@ namespace XiaoCao
             Hide();
         }
 
-        public override void OnSureBtnClick()
+        public void OnSureBtnClick()
         {
 
         }

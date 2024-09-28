@@ -116,18 +116,15 @@ namespace cfg
             string path;
             if (Application.isEditor)
             {
-                var upperPath = Directory.GetParent(Application.dataPath).FullName;
-                path = $"{upperPath}/GameConfig/Luban/{file}.bytes";
-
+                path = $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
                 if (!File.Exists(path))
                 {
                     Debug.LogError($"--- 找不到数据,先生成luban");
                 }
-
             }
             else
             {
-                path = $"{Application.dataPath}/GameConfig/Luban/bytes/{file}.bytes";
+                path = $"{XCPathConfig.GetGameConfigDir()}/Luban/bytes/{file}.bytes";
             }
             return path;
         }

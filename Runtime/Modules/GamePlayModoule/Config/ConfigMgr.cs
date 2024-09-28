@@ -22,6 +22,10 @@ namespace XiaoCao
     ///<see cref="PlayerSettingSo"/>
     public class ConfigMgr
     {
+        private static IniFile mainConfig;
+
+        private static LocalSetting localSetting;
+
         public static string GetConfigPath(Type t)
         {
             return $"{ResMgr.RESDIR}/Config/{t.Name}";
@@ -52,31 +56,63 @@ namespace XiaoCao
             return ret;
         }
 
-        public static PackageConfig GetPackageConfig()
+
+        public static IniFile GetInitConfig
         {
-            TestFile();
-            string path = Application.dataPath + "PackageConfig/Main.text";
-            byte[] bytes = File.ReadAllBytes(path);
-            return SerializationUtility.DeserializeValue<PackageConfig>(bytes, DataFormat.JSON);
-
-
+            get
+            {
+                if (mainConfig == null)
+                {
+                    IniFile ini = new IniFile();
+                    ini.LoadFromFile("main.ini");
+                    mainConfig = ini;
+                }
+                return mainConfig;
+            }
         }
 
-        private static void TestFile()
+        public static LocalSetting LocalSetting
         {
-            string path = Application.dataPath + "Config/TestConfig.text";
-            SerializationNode node = new SerializationNode();
-            node.Data = "1";
-            node.Name = "index";
-            byte[] bytes1 = SerializationUtility.SerializeValue(node, DataFormat.JSON);
-            File.WriteAllBytes(path, bytes1);
+            get
+            {
+                if (localSetting == null)
+                {
+                    localSetting = LocalSetting.Load(); 
+                }            
+                return localSetting;           
+            }
         }
+
     }
 
-
-    public class PackageConfig
+    public class LocalSetting
     {
-        public Dictionary<string, string> config;
+        [OdinSerialize]
+        public Dictionary<string,float> floatDic = new Dictionary<string, float>();
+
+        public float GetValue(string key ,float defaultValue)
+        {
+            if (floatDic.TryGetValue(key,out float value))
+            {
+                return value;
+            }
+            return defaultValue;
+        }
+
+        public void SetValue(string key, float value)
+        {
+            floatDic[key] = value;
+        }
+
+        public static LocalSetting Load()
+        {
+            return SaveMgr.ReadData<LocalSetting>(out bool isSuc);
+        }
+
+        public static void SaveSetting()
+        {
+            SaveMgr.SaveData<LocalSetting>(ConfigMgr.LocalSetting);
+        }
     }
 }
 

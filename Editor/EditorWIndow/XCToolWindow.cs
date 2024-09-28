@@ -23,6 +23,7 @@ namespace AssetEditor.Editor
 
         public const int Line1 = 1;
         public const int Line2 = 2;
+        public const int Line99 = 99;
 
 
         public override void OnEnable()
@@ -74,6 +75,12 @@ namespace AssetEditor.Editor
         {
             XCToolBarMenu.OpenPath_Excel();
         }
+        
+        [Button("打开生成配置位置", Line2)]
+        void OpenGenConfigPath()
+        {
+            XCToolBarMenu.OpenGenConfigPath();
+        }
 
         [Button("导入配置+代码", Line2)]
         void GenConfig()
@@ -112,6 +119,14 @@ namespace AssetEditor.Editor
             //TestRole testRole  = GameObject.FindObjectOfType<TestRole>();
             
         }
+
+
+        [Button("Test Config", Line99)]
+        void TestConfig()
+        {
+            var t = ConfigMgr.GetInitConfig;
+        }
+
     }
 }
 #endif

@@ -12,11 +12,18 @@ namespace XiaoCao
         public T data { get; set; }
 
         /* 示例代码
+         
         public override void Init()
         {
             base.Init();
 
         }
+        #region 常规
+        public override void OnCloseBtnClick()
+        {
+            Hide();
+        }
+
         public override void Hide()
         {
             gameObject.SetActive(false);
@@ -33,7 +40,7 @@ namespace XiaoCao
             IsShowing = true;
             gameObject.SetActive(true);
         }
-
+        #endregion
         */
     }
 

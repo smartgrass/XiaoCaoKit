@@ -30,6 +30,7 @@ namespace XiaoCaoEditor
         //ToolBar
         public const string OpenPath_Sava = XiaoCaoPath + "存档位置";
         public const string OpenPath_LuabnExcel = XiaoCaoPath + "配置表格文件夹";
+        public const string OpenPath_GenConfigPath = XiaoCaoPath + "打开生成配置位置";
 
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string XCToolWindow = "XiaoCao/XCToolWindow";

@@ -18,6 +18,9 @@ namespace XiaoCao
         public CameraMgr cameraMgr;
         public TimeStopMgr timeStopMgr;
 
+        //¾²Ì¬
+        public SaveMgr saveMgr;
+
         #endregion
         public override void Init()
         {

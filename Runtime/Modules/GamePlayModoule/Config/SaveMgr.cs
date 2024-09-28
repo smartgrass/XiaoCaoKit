@@ -39,4 +39,26 @@ namespace XiaoCao
 
     }
 
+
+
+
+    public interface ISaveUtility
+    {
+        void SaveInt(string key, int value);
+        void SaveFloat(string key, float value);
+        void SaveString(string key, string value);
+        void SaveBool(string key, bool value);
+
+        int LoadInt(string key, int defaultValue = 0);
+        float LoadFloat(string key, float defaultValue = 0f);
+        string LoadString(string key, string defaultValue = default);
+        bool LoadBool(string key, bool defaultValue = false);
+
+        void Delete();
+    }
+
+
+
+
+
 }

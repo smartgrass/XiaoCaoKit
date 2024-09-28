@@ -1,5 +1,7 @@
 ﻿using NaughtyAttributes;
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace XiaoCao
 {
@@ -39,6 +41,6 @@ namespace XiaoCao
     {
         Null = -1,
         LevelPanel,
+        SettingPanel
     }
-
 }

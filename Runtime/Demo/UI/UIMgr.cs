@@ -9,6 +9,9 @@ namespace XiaoCao
         //UI分类:
         //静态ui ->游戏开始就加载    hud
         //面板,窗口 ->动态加载,需要触发才加载   panel
+        public Canvas topCanvas;
+        public Canvas midCanvas;
+
 
         public BattleHud battleHud;
 
@@ -17,6 +20,8 @@ namespace XiaoCao
         public LevelPanel levelPanel;
 
         public DebugPanel debugPanel;
+
+        public SettingPanel settingPanel;
 
         public HashSet<PanelBase> panels = new HashSet<PanelBase>();
 
@@ -28,6 +33,7 @@ namespace XiaoCao
             battleHud?.Init();
             skillBarHud?.Init();
             debugPanel?.Init();
+            settingPanel?.Init();
 
         }
 
@@ -35,6 +41,10 @@ namespace XiaoCao
         {
             PanelBase panel = GetPanel(type);
             panel.Show();
+            if (IsHideMid(type))
+            {
+                midCanvas.enabled = false;
+            }
             panels.Add(panel);
             CheckPlayInputAble();
         }
@@ -48,8 +58,14 @@ namespace XiaoCao
                 panel.Hide();
                 panels.Remove(levelPanel);
             }
+            if (IsHideMid(type))
+            {
+                midCanvas.enabled = true;
+            }
             CheckPlayInputAble();
         }
+
+
 
         //屏蔽输入
         void CheckPlayInputAble()
@@ -71,10 +87,25 @@ namespace XiaoCao
             {
                 return levelPanel;
             }
+            else if (type == UIPanelType.SettingPanel)
+            {
+                return settingPanel;
+            }
             Debuger.LogError($"--- no panel {type}");
             return null;
         }
 
+        public bool IsHideMid(UIPanelType type)
+        {
+            if (type == UIPanelType.SettingPanel)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
         public void PlayDamageText(int atk, Vector3 textPos)
         {
             battleHud.ShowDamageText(atk, textPos);

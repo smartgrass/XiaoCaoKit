@@ -3,10 +3,11 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
+using XiaoCao;
 
 namespace XiaoCaoEditor
 {
-    public  static class BuildTool
+    public static class BuildTool
     {
         public static string buildPath = null;
 
@@ -17,14 +18,14 @@ namespace XiaoCaoEditor
             buildPath = pathToBuiltProject.Substring(0, pathToBuiltProject.LastIndexOf("/"));
             Debug.Log(buildPath);
 
-            CopyDir("PackageConfig");
+            CopyDir();
             Debug.Log("复制完成！");
         }
 
 
-        static private void CopyDir(string from)
+        static private void CopyDir()
         {
-            string copyDir = Path.Combine(Application.dataPath, from);
+            string copyDir = XCPathConfig.GetGameConfigDir();
             string newDirName = Path.GetDirectoryName(copyDir);
 
             string tgtDir = Path.Combine(buildPath, newDirName);

@@ -1,12 +1,12 @@
 ﻿#define EnableLog	
 using Cysharp.Threading.Tasks;
+using NaughtyAttributes;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TEngine;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
-
-
 
 namespace XiaoCao
 {
@@ -34,6 +34,8 @@ namespace XiaoCao
             //玩家数据
             LoadPlayerData();
 
+            LoadTextConfig();
+
             GameMgr.Inst.SetGameState(GameState.Running);
 
             GameEvent.Send(EventType.GameStartFinsh.Int());
@@ -48,6 +50,12 @@ namespace XiaoCao
                 Debug.LogError($"--- uiMgr {e}");
             }
 
+
+        }
+
+        private void LoadTextConfig()
+        {
+            var init = ConfigMgr.GetInitConfig;
 
         }
 
@@ -107,3 +115,4 @@ namespace XiaoCao
     }
 
 }
+

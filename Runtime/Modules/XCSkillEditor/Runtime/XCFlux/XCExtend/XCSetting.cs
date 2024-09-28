@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using DG.Tweening.Plugins.Core.PathCore;
+using System.IO;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -18,6 +20,25 @@ namespace XiaoCao
         public static readonly string AudioClipDir = "Assets/_Res/Audio";
         public static readonly string SpriteDir = "Assets/_Res/SpriteDir";
 
+        public static string GetGameConfigFile(string filePath)
+        {
+            return $"{GetGameConfigDir()}/{filePath}";
+        }
+
+        //BuildTool.AfterBuild 在打包后将复制配置
+        public static string GetGameConfigDir()
+        {
+            if (Application.isEditor)
+            {
+                var upperPath = Directory.GetParent(Application.dataPath).FullName;
+                return $"{upperPath}/GameConfig";
+            }
+            else
+            {
+                return $"{Application.dataPath}/GameConfig";
+            }
+        }
+
         public static string GetSkillPrefabDir(string raceId)
         {
             return $"{PerfabDir}/{raceId.ToString()}";
@@ -34,6 +55,11 @@ namespace XiaoCao
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)
         {
+            string key = $"{roleType}{prefabId}";
+            if (ConfigMgr.GetInitConfig.TryGetValue($"{roleType}", key, out string value))
+            {
+                return value;
+            }
             return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_{prefabId}.prefab";
         }
 

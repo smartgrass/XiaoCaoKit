@@ -35,6 +35,15 @@ namespace XiaoCaoEditor
             string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/Datas/SkillSetting.xlsx";
             Debug.Log($"--- OpenPath_Excel {path}");
             EditorUtility.RevealInFinder(path);
+        }        
+        
+        [MenuItem(XCEditorTools.OpenPath_GenConfigPath)]
+        [MenuItem(XCEditorTools.XiaoCaoLuban+ "打开生成配置位置")]
+        public static void OpenGenConfigPath()
+        {
+            string path = $"{XCPathConfig.GetGameConfigDir()}/main.ini";
+            Debug.Log($"--- OpenPath_Excel {path}");
+            EditorUtility.RevealInFinder(path);
         }
 
         //[MenuItem(XCEditorTools.CheckPackage)]
