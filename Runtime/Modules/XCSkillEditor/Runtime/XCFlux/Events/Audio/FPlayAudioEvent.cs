@@ -45,10 +45,12 @@ namespace Flux
             }
             if (PlayPreviewClipMethod == null)
             {
+#if UNITY_EDITOR
                 var unityEditorAssembly = typeof(AudioImporter).Assembly;
                 var audioUtil = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
                 BindingFlags all = (BindingFlags)~BindingFlags.Default;
                 PlayPreviewClipMethod = audioUtil.GetMethod("PlayPreviewClip", all);
+#endif
             }
             PlayPreviewClipMethod.Invoke(null, new object[] { audioClip,0,false});
         }
@@ -137,10 +139,14 @@ namespace Flux
 
         public override XCEvent ToXCEvent()
         {
+#if UNITY_EDITOR
             XCAudioEvent audioEvent = new XCAudioEvent();
             audioEvent.eName = Path.GetFileName(AssetDatabase.GetAssetPath(_audioClip));
             Debug.Log($"--- {audioEvent.eName}");
             return audioEvent;
+#else
+            return base.ToXCEvent();
+#endif
         }
     }
 

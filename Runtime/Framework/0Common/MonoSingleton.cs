@@ -7,6 +7,8 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
 
     protected static T _instance = null;
 
+    public static bool IsOn => _instance;
+
     public static T Inst
     {
         get

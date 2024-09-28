@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
-
-namespace XiaoCao
+﻿namespace XiaoCao
 {
     internal class XCCommand_NorAck : IXCCommand
     {

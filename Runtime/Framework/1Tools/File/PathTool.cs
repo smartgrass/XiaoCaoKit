@@ -61,15 +61,18 @@ public static class PathTool
         string projectPath = GetProjectPath();
         return $"{projectPath}/{assetPath}";
     }
-    /// <summary>
-    /// 获取项目工程路径
-    /// </summary>
+
     public static string GetProjectPath()
+    {
+        return Directory.GetParent(Application.dataPath).FullName;
+    }
+
+    //第二种写法
+    public static string GetProjectPath2()
     {
         string projectPath = Path.GetDirectoryName(Application.dataPath);
         return GetRegularPath(projectPath);
     }
-
 
 #if UNITY_EDITOR
     //获取Asset的ResourcePath

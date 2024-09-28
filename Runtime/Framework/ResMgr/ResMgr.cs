@@ -21,9 +21,11 @@ public class ResMgr
         */
     }
 
-    public const string PACKAGENAME_DEFAULT = "DefaultPackage";
-    public const string PACKAGENAME_RAW = "RawPackage";
-    public const string PACKAGENAME_EXTRA = "ExtraPackage"; //用于Mod
+    public const string DefaultPackage = "DefaultPackage";
+    public const string RawPackage = "RawPackage";
+
+    ///<see cref="GetExtraPackageUrl"/>
+    public const string ExtraPackage = "ExtraPackage"; //用于Mod
 
     public const string RESDIR = "Assets/_Res";
 
@@ -56,7 +58,7 @@ public class ResMgr
             else
             {
                 Debug.LogWarning($"--- no Extra FailBack to Default {path}");
-                return LoadPrefab(path, PackageType.DefaultPackage);
+            return LoadPrefab(path, PackageType.DefaultPackage);
             }
         }
     }
@@ -69,9 +71,10 @@ public class ResMgr
             var task = Loader.LoadAssetSync(path);
             return task.AssetObject;
         }
-        else {
+        else
+        {
             Debug.LogWarning($"--- no Asset {path}");
-            return null; 
+            return null;
         }
     }
 
@@ -91,7 +94,7 @@ public class ResMgr
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包
-        Loader = YooAssets.CreatePackage(PACKAGENAME_DEFAULT);
+        Loader = YooAssets.CreatePackage(DefaultPackage);
         // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
         YooAssets.SetDefaultPackage(Loader);
     }
@@ -102,70 +105,103 @@ public class ResMgr
         //编辑器模拟: 不使用,没意义
         //离线编辑器: 加载 streamingAssetsPath 判断文件是否存在
         //离线Exe: 加载指定位置资源,并且需要判断文件是否存在
-        string packageName = PACKAGENAME_EXTRA;
-        ResourcePackage tempPack = GetOrCreatPackage(packageName);
-        InitializationOperation initializationOperation = null;
+        string packageName = ExtraPackage;
+        ResourcePackage package = GetOrCreatPackage(packageName);
+        InitializationOperation initOperation = null;
         EPlayMode playMode = GetEPlayMode();
-        ExtraLoader = tempPack;
+        ExtraLoader = package;
 
-        string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
+        string defaultHostServer = GetExtraPackageUrl(out bool hasManifest);
         string fallbackHostServer = defaultHostServer;
         hasExtraPackage = hasManifest;
 
-        if (playMode == EPlayMode.OfflinePlayMode)
-        {
-            var initParameters = new HostPlayModeParameters();
-            initParameters.BuildinQueryServices = new GameQueryServices();
-            initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-            initializationOperation = tempPack.InitializeAsync(initParameters);
-            await initializationOperation.Task;
-        }
+        playMode = EPlayMode.HostPlayMode;
+        //var initParameters = new HostPlayModeParameters();
+        //FileSystemParameters.CreateDefaultWebFileSystemParameters()
+        //initParameters.DeliveryFileSystemParameters = new GameQueryServices();
+        //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+
+        IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+        var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+        //var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+        var initParameters = new HostPlayModeParameters();
+        initParameters.BuildinFileSystemParameters = cacheFileSystem;
+        initParameters.CacheFileSystemParameters = cacheFileSystem;
+
+
+        initOperation = package.InitializeAsync(initParameters);
+
+        Debug.Log($"--- initializationOperation task");
+        await initOperation.Task;
+
+        if (initOperation.Status == EOperationStatus.Succeed)
+            Debug.Log("资源包初始化成功！");
+        else
+            Debug.LogError($"资源包初始化失败：{initOperation.Error}");
         await Task.Yield();
+
+
+
+        var operation1 = package.RequestPackageVersionAsync();
+        await operation1;
+        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+        await operation2;
+
+        ExtraLoader.GetAssetInfos("").LogListStr("--");
     }
 
 
 
-    public static Task InitRawPackage()
+    public static async Task InitRawPackage()
     {
         EPlayMode playMode = GetEPlayMode();
 
-        string packageName = PACKAGENAME_RAW;
+        string packageName = RawPackage;
 
-        ResourcePackage tempPack = GetOrCreatPackage(packageName);
+        ResourcePackage package = GetOrCreatPackage(packageName);
 
-        RawLoader = tempPack;
+        RawLoader = package;
 
         InitializationOperation initializationOperation = null;
 
 #if UNITY_EDITOR
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            var rawPar = new EditorSimulateModeParameters();
-            rawPar.SimulateManifestFilePath =
-                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.RawFileBuildPipeline, PACKAGENAME_RAW);
-            initializationOperation = tempPack.InitializeAsync(rawPar);
+            //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
+            var buildPipeline = EDefaultBuildPipeline.RawFileBuildPipeline;
+            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, RawPackage);
+            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+            var initParameters = new EditorSimulateModeParameters();
+            initParameters.EditorFileSystemParameters = editorFileSystem;
+            initializationOperation = package.InitializeAsync(initParameters);
         }
 #endif
 
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var par = new OfflinePlayModeParameters();
-            initializationOperation = tempPack.InitializeAsync(par);
+            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var initParameters = new OfflinePlayModeParameters();
+            initParameters.BuildinFileSystemParameters = buildinFileSystem;
+            initializationOperation = package.InitializeAsync(initParameters);
         }
+        await initializationOperation.Task;
 
+        var operation1 = package.RequestPackageVersionAsync();
+        await operation1;
+        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+        await operation2;
 
-        return initializationOperation.Task;
     }
 
     //需要等待
-    public static Task InitDefaultPackage()
+    public static async Task InitDefaultPackage()
     {
-        string packageName = PACKAGENAME_DEFAULT;
-        ResourcePackage tempPack = GetOrCreatPackage(packageName);
+        string packageName = DefaultPackage;
+        ResourcePackage package = GetOrCreatPackage(packageName);
         InitializationOperation initializationOperation = null;
         EPlayMode playMode = GetEPlayMode();
-        Loader = tempPack;
+        Loader = package;
 
 #if UNITY_EDITOR
         //编辑器模式使用。
@@ -173,33 +209,40 @@ public class ResMgr
         // 编辑器下的模拟模式
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            var par = new EditorSimulateModeParameters();
-            par.SimulateManifestFilePath =
-                EditorSimulateModeHelper.SimulateBuild(EDefaultBuildPipeline.BuiltinBuildPipeline, packageName);
-            initializationOperation = tempPack.InitializeAsync(par);
+            var buildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
+            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, DefaultPackage);
+            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+            var initParameters = new EditorSimulateModeParameters();
+            initParameters.EditorFileSystemParameters = editorFileSystem;
+            initializationOperation = package.InitializeAsync(initParameters);
+            Debug.Log($"--- EditorSimulateMode");
         }
 #endif
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
             var par = new OfflinePlayModeParameters();
-            initializationOperation = tempPack.InitializeAsync(par);
+            initializationOperation = package.InitializeAsync(par);
         }
 
         // 联机运行模式
         if (playMode == EPlayMode.HostPlayMode)
         {
-            string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
-            string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
-            var initParameters = new HostPlayModeParameters();
+            //string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+            //string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
+            //var initParameters = new HostPlayModeParameters();
             //initParameters.BuildinQueryServices = new GameQueryServices();
             //initParameters.DecryptionServices = new FileOffsetDecryption();
             //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer
             //initializationOperation =package.InitializeAsync(initParameters);
             Debuger.LogWarning($"HostPlayMode 无");
         }
+        await initializationOperation;
 
-        return initializationOperation.Task;
+        var operation1 = package.RequestPackageVersionAsync();
+        await operation1;
+        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+        await operation2;
     }
 
     private static ResourcePackage GetOrCreatPackage(string packageName)
@@ -213,13 +256,16 @@ public class ResMgr
         return tempPack;
     }
 
-    private static string GetExtraPackageUrl(string packName, out bool hasManifest)
+    private static string GetExtraPackageUrl(out bool hasManifest)
     {
+        string packName = ExtraPackage;
         if (Application.isEditor)
         {
-            string path = $" {Application.streamingAssetsPath}/yoo/{packName}/";
+            string path = $"{PathTool.GetProjectPath()}/Build/Res/{packName}/";
 
             hasManifest = HasManifest(path, packName);
+
+            Debug.Log($"--- hasManifest {hasManifest}");
 
             return $"file://{path}";
         }
@@ -239,6 +285,7 @@ public class ResMgr
         string filePath = Path.Combine(dir, fileName);
 
         bool ret = FileTool.IsFileExist(filePath);
+
         Debug.Log($"has {ret} {filePath}");
         return ret;
     }

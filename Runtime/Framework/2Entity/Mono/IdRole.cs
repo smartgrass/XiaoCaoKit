@@ -32,7 +32,11 @@ public class IdRole : IdComponent
 
     private void OnDestroy()
     {
-        EntityMgr.Inst.RemoveEntity(this.GetEntity());
+        //防止EntityMgr自身已被销毁
+        if (EntityMgr.IsOn)
+        {
+            EntityMgr.Inst.RemoveEntity(this.GetEntity());
+        }
     }
 
 

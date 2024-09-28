@@ -1,9 +1,7 @@
 ﻿using Cinemachine;
-using Cinemachine.Utility;
 using NaughtyAttributes;
 using System;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 namespace XiaoCao
 {

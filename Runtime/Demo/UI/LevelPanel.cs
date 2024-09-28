@@ -1,11 +1,6 @@
 ﻿using cfg;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 using XiaoCao.FancyScrollRect;
 using Button = UnityEngine.UI.Button;
 using Image = UnityEngine.UI.Image;

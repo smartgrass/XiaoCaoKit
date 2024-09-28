@@ -1,11 +1,7 @@
 ﻿#define EnableLog	
-using Cysharp.Threading.Tasks;
-using NaughtyAttributes;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TEngine;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 
 namespace XiaoCao
@@ -99,6 +95,7 @@ namespace XiaoCao
             await ResMgr.InitDefaultPackage();
             await ResMgr.InitRawPackage();
             await ResMgr.InitExtraPackage();
+
         }
     }
 

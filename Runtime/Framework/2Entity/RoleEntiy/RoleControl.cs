@@ -46,9 +46,10 @@ namespace XiaoCao
         }
         public void OnBreak()
         {
-            foreach (var task in runnerList)
+            int len = runnerList.Count;
+            for (int i = len - 1; i > 0; i--)
             {
-                task.SetBreak();
+                runnerList[i].SetBreak();              
             }
         }
 
@@ -96,6 +97,7 @@ namespace XiaoCao
                     {
                         //资源回收
                         XCTaskRunner.AllEnd2(runner);
+                        Debug.Log($"--- RemoveAt {i}");
                         runnerList.RemoveAt(i);
                     }
                 }

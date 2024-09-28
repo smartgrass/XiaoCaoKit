@@ -11,6 +11,7 @@ namespace XiaoCao
         public static readonly float FramePerSec = 1f / FrameRate;
     }
 
+    ///<see cref="PathTool"/>
     public static class XCPathConfig
     {
         public static readonly string DataDir = "Assets/_RawFile/SkillData";
@@ -25,13 +26,14 @@ namespace XiaoCao
             return $"{GetGameConfigDir()}/{filePath}";
         }
 
+        
+
         //BuildTool.AfterBuild 在打包后将复制配置
         public static string GetGameConfigDir()
         {
             if (Application.isEditor)
             {
-                var upperPath = Directory.GetParent(Application.dataPath).FullName;
-                return $"{upperPath}/GameConfig";
+                return $"{PathTool.GetProjectPath()}/GameConfig";
             }
             else
             {
@@ -50,16 +52,17 @@ namespace XiaoCao
 
         public static string GetRoleBodyPath(string prefabId)
         {
+            if (ConfigMgr.GetInitConfig.TryGetValue("Body", $"Body0", out string value))
+            {
+
+                return value;
+            }
+            Debug.LogError($"--- {value} {prefabId}");
             return $"{ResMgr.RESDIR}/Role/Body/{prefabId}.prefab";
         }
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)
         {
-            string key = $"{roleType}{prefabId}";
-            if (ConfigMgr.GetInitConfig.TryGetValue($"{roleType}", key, out string value))
-            {
-                return value;
-            }
             return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_{prefabId}.prefab";
         }
 

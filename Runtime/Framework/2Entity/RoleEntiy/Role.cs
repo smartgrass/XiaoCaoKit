@@ -1,19 +1,9 @@
 ﻿
 using cfg;
 using NaughtyAttributes;
-using OdinSerializer.Utilities.Editor;
 using System;
-using System.ComponentModel;
-using System.Numerics;
-using System.Xml;
 using TEngine;
-using UnityEditor;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.TextCore;
-using UnityEngine.UIElements;
-using static Cinemachine.CinemachineOrbitalTransposer;
-using static UnityEngine.UI.GridLayoutGroup;
 using Vector3 = UnityEngine.Vector3;
 
 namespace XiaoCao
@@ -97,7 +87,7 @@ namespace XiaoCao
         protected void CreateRoleBody(string bodyName)
         {
             string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName);
-            body = ResMgr.LoadInstan(bodyPath);
+            body = ResMgr.LoadInstan(bodyPath,PackageType.ExtraPackage);
             body.transform.SetParent(idRole.transform, false);
             BaseInit();
         }
@@ -106,6 +96,7 @@ namespace XiaoCao
         {
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
+            idRole.animator.applyRootMotion = false;
             int settingId = RaceIdSetting.GetConfigId(raceId);
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
         }

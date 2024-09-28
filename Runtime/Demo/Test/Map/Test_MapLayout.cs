@@ -1,8 +1,10 @@
-﻿using NaughtyAttributes;
+﻿
+#if UNITY_EDITOR
+using NaughtyAttributes;
 using System.Collections.Generic;
+using XiaoCao;
 using UnityEditor;
 using UnityEngine;
-using XiaoCao;
 
 public class Test_MapLayout : MonoBehaviour
 {
@@ -127,9 +129,6 @@ private int GetIndex(int x, int y, int z)
 
 }
 
-
-
-
 public class PrefabUtils
 {
     // 封装成方法，返回Prefab实例化后所有子物体边界盒的包围盒  
@@ -223,3 +222,7 @@ public class RoomGenerator
         // 类似地实例化，但调整x坐标  
     }
 }
+
+#else
+
+#endif
