@@ -11,63 +11,69 @@
 
 
 * 1.XiaoCao框架专属
-	* 1.1 XiaoCaoWindow 编辑器扩展 √
-	* 1.2 XiaoCao的Entity  √ (借鉴Ecs的id-容器思路)
-		* Entity.cs  √
-		* BehaviorEntity.cs √
-		* Role.cs  √
+	* 1.1 XiaoCaoWindow 编辑器扩展 
+	* 1.2 XiaoCao的Entity  (借鉴Ecs的id-容器思路)
+		* Entity.cs  
+		* BehaviorEntity.cs 
+		* Role.cs  
 	* 1.3 XCSkillEditor 技能编辑器
-		* 位移&动画 √
-		* 伤害触发器 √
-		* 消息 √
+ 		* 保存数据 & 运行时 -> XCTask & XCTaskRunner 
+		* 位移 & 动画 
+		* 伤害触发器 
+		* 消息 
 		* 特殊处理 
-			* 自定义脚本轨道 IXCCommand √ 
-			* 预设Tag (如自动索敌) TODO
+			* 自定义脚本轨道 IXCCommand 
+			* 预设Tag (如自动索敌) [TODO]
 
 * 2.基本框架/工具
-	* YooAsset资源加载模块 √ ResMgr.cs
-	* 对象池 √ AssetPool.cs
+	* YooAsset资源加载模块  ResMgr.cs
+	* 对象池 AssetPool.cs
 
-	* UniTask&计时器 √ XCTime.cs
-	* 消息系统 √  GameEvent.cs
-	* Log封装 √ Debuger.cs
-	* 调试信息GUI √ DebugGUI.cs 
+	* UniTask&计时器 XCTime.cs
+	* 消息系统  GameEvent.cs
+	* Log封装  Debuger.cs
+	* 调试信息GUI DebugGUI.cs 
 
-	* 配置加载 √ LoadSoConfig.cs (自动new)
-	* 存档加载 √ SavaMgr.cs
+	* So配置加载  LoadSoConfig.cs 
+	* 存档加载 SavaMgr.cs
 	* 编辑器工具
 		* 组件绑定扩展  XCComponentMenu.AutoBind()
+  		* 监视器扩展
+    		* 替换资源工具
 
 
 * 3.1 GamePlayModule GamePlay模块
-	* 3.1.1 相机控制 √ CameraMgr.cs
-		* TopDown √
-		* 第三人称 √
-		* 索敌视角 ------- TODO
-	* 3.1.2 luban表格配置 √ LubanTables.cs
+	* 3.1.1 相机控制  CameraMgr.cs
+		* TopDown 
+		* 第三人称 
+		* 索敌视角 [TODO]
+	* 3.1.2 luban表格配置  LubanTables.cs
 	* 3.1.3 游戏启动流程 RunDemo.cs
-		* 等待配置,资源加载完毕-> √
-		* 加载玩家 √
-		* 场景进度 ------- TODO
+		* 等待配置,资源加载完毕-> 
+		* 加载玩家 
+		* 场景进度 [TODO]
 
-	* 游戏数据 √ GameData.cs
-	* 游戏周期 √
-		* 加载, 开始, 运行, 完成, 退出  GameState
+	* 游戏数据  GameData.cs
+	* 游戏周期 
+		* 加载, 开始, 运行, 完成, 退出  GameState 
 		* 配合消息系统状态切换时,发送消息  GameMgr.cs
 	
 * 3.2 GamePlayModule.Role 角色
 	* Role
-		* 皮肤-角色技能解耦 √ 
-		种族Id->技能,皮肤Id->外表
-		* 组件模式 √ (主要是代码分区)
+		* 皮肤-角色技能解耦 
+		皮肤Id->外表, mod支持 
+		种族Id->技能 
+		* 组件模式  (主要是代码分区)
+  		* 时停处理 
+    		* 属性修改器封装 [TODO]
 		
 	* 玩家 Player0.cs
-		* 移动 √
-		* 平a&翻滚 √
-		* 死亡&受击 √
-		* 1个技能 ------- TODO
+		* 移动 
+		* 平a&翻滚 
+		* 死亡&受击 
+		* 1个技能 
 	* 敌人
-		* AI -ing (AiId选择配置)
+		* AI
 
 * 3.3 GamePlayModule 其他
  * 关卡 GamePlayModule
@@ -76,12 +82,13 @@
 
 
  * 常用UI GamePlayModule (低优先)
-	* 血条ui ------- TODO
-	* 物体/NPC交互组件 ------- TODO
-	* 物品格子容器/详情 ------- TODO 
-		* InventoryUI.cs
+	* 血条ui 
+ 	* 设置面板 
+	* 物体/NPC交互组件  [TODO]
+	* 物品格子容器/详情 [TODO]
+		* InventoryUI.cs 
 
-* Debug工具相关
+* Test工具相关
 			
 
 
@@ -127,11 +134,7 @@ yooAsset -> PackageManager
 
 ## 吐槽
 
-做游戏是快乐的, 改bug是痛苦...
-
-一直在造系统的轮子,游戏内容进展太少了
-
-Entity的模式有点难度,需要做很多调试工具配合
+Entity的模式有点难度,需要做很多轮子配合, 但越到后期优势越大
 
 
 
