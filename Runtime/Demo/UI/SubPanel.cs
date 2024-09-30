@@ -39,6 +39,30 @@ public abstract class SubPanel
     }
 
     public abstract void Init();
+    
+    
+    public void AddSlider(string title, Func<float> volumeGetter, UnityAction<float> onValueChange, Vector2 range)
+    {
+        GameObject sliderText = GameObject.Instantiate(Prefabs.sliderText, gameObject.transform);
+        TextMeshProUGUI textMesh = sliderText.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        textMesh.text = title;
+        Slider slider = sliderText.transform.GetChild(1).GetComponent<Slider>();
+
+        slider.maxValue = range.y;
+        slider.minValue = range.x;
+        slider.value = volumeGetter();
+
+        slider.onValueChanged.AddListener(onValueChange);
+    }
+
+    public void AddToggle(string title, UnityAction<bool> onValueChange){
+        
+    }
+    
+    public void AddBtn(){
+        
+    }
+    
 }
 
 public class SoundPanel : SubPanel
@@ -72,17 +96,4 @@ public class SoundPanel : SubPanel
         return ConfigMgr.LocalSetting.GetValue(MainVolumeKey, 1);
     }
 
-    private void AddSlider(string title, Func<float> mainVolumeGetter, UnityAction<float> onMainChange, Vector2 range)
-    {
-        GameObject sliderText = GameObject.Instantiate(Prefabs.sliderText, gameObject.transform);
-        TextMeshProUGUI textMesh = sliderText.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
-        textMesh.text = title;
-        Slider slider = sliderText.transform.GetChild(1).GetComponent<Slider>();
-
-        slider.maxValue = range.y;
-        slider.minValue = range.x;
-        slider.value = mainVolumeGetter();
-
-        slider.onValueChanged.AddListener(onMainChange);
-    }
 }
