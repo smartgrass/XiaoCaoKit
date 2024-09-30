@@ -30,7 +30,7 @@ public class SettingPanel : PanelBase
     }
 
 
-    private T AddPanel<T>(string panelName) where T : SubPanel, new()
+    protected T AddPanel<T>(string panelName) where T : SubPanel, new()
     {
         T subPanel = new T();
 

@@ -40,7 +40,8 @@ namespace XiaoCao
     public enum UIPanelType
     {
         Null = -1,
-        LevelPanel,
-        SettingPanel
+        LevelPanel = 0,
+        SettingPanel = 1,
+        DebugPanel = 99,
     }
 }
