@@ -86,7 +86,7 @@ namespace XiaoCao
 
         protected void CreateRoleBody(string bodyName)
         {
-            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName);
+            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName,RoleType);
             body = ResMgr.LoadInstan(bodyPath,PackageType.ExtraPackage);
             body.transform.SetParent(idRole.transform, false);
             BaseInit();

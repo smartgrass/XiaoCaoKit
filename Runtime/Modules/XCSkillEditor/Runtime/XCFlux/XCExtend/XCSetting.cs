@@ -50,15 +50,13 @@ namespace XiaoCao
             return $"{DataDir}/{dir.ToString()}/{skillId}.bytes";
         }
 
-        public static string GetRoleBodyPath(string prefabId)
+        public static string GetRoleBodyPath(string prefabName,RoleType roleType)
         {
-            if (ConfigMgr.GetInitConfig.TryGetValue("Body", $"Body0", out string value))
+            if (ConfigMgr.GetInitConfig.TryGetValue(roleType.ToString(), prefabName, out string value))
             {
-
                 return value;
             }
-            Debug.LogError($"--- {value} {prefabId}");
-            return $"{ResMgr.RESDIR}/Role/Body/{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)
