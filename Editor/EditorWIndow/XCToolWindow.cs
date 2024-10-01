@@ -52,16 +52,42 @@ namespace AssetEditor.Editor
         [Button("选中角色", Line1)]
         void SelectPlayer()
         {
-            if (GameDataCommon.Current.gameState == GameState.Running)
-            {
-                Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
-            }
 
             if (!Application.isPlaying)
             {
                 Selection.activeObject = GameObject.Find("Editor/Player").transform.GetChild(0);
+                return;
+            }
+
+            if (GameDataCommon.Current.gameState == GameState.Running)
+            {
+                Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
             }
         }
+
+        [Button("选中敌人", Line1)]
+        void SelectEnemy()
+        {
+
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            if (GameDataCommon.Current.gameState == GameState.Running)
+            {
+                foreach (var player in RoleMgr.Inst.roleDic.Values)
+                {
+                    if (!player.IsPlayer)
+                    {
+                        Selection.activeObject = player.gameObject;
+                        return;
+                    }
+                }
+
+            }
+        }
+
 
         [Button("打开替换面板", Line1)]
         void OpenRepalceTool()
@@ -96,6 +122,11 @@ namespace AssetEditor.Editor
         private void OnLevelChange()
         {
             PlayerPrefs.SetInt("playerLv", playerLevel);
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 GameMgr.Inst.Player.PlayerAttr.lv = playerLevel;

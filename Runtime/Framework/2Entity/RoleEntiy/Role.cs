@@ -126,7 +126,7 @@ namespace XiaoCao
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
                 roleData.breakData.OnHit((int)setting.BreakPower);
-
+                roleData.movement.OnDamage(roleData.breakData.isBreak);
                 if (roleData.breakData.isBreak)
                 {
                     //击飞处理
@@ -503,6 +503,8 @@ namespace XiaoCao
         public float moveSpeedMult = 1;
 
         public float moveAnimMult = 1;
+
+        public float angleSpeedMult = 1;
 
         public float animMoveSpeed = 0;
 

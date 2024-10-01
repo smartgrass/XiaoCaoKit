@@ -86,7 +86,7 @@ namespace XiaoCao
 
             if (isLookDir)
             {
-                RotateByMoveDir(moveDir, moveSetting.rotationLerp);
+                RotateByMoveDir(moveDir, moveSetting.rotationLerp * RoleState.angleSpeedMult);
             }
 
             float baseSpeed = newBaseMoveSpeed > 0 ? newBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
@@ -154,7 +154,8 @@ namespace XiaoCao
             if (Data_R.skillState.Data is ESkillState.SkillEnd && isInput)
             {
                 Data_R.skillState.SetValue(ESkillState.Idle);
-                owner.Anim?.CrossFade(AnimHash.Idle, 0.05f);
+                Debug.Log($"--- 过渡效果 TODO");
+                //owner.Anim?.CrossFade(AnimHash.Idle, 0.1f);
             }
         }
 
@@ -194,6 +195,15 @@ namespace XiaoCao
 
             //影响移速倍率
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
+
+            //起始转速偏慢
+            RoleState.angleSpeedMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 0f, 2);
+            RoleState.angleSpeedMult = Mathf.Min(1, RoleState.angleSpeedMult);
+        }
+
+        public void OnDamage(bool isBreak)
+        {
+            _tempAnimMoveSpeed = 0;
         }
 
         internal void SetUnMoveTime(float t)

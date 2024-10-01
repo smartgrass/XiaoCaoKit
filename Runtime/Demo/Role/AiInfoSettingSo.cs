@@ -50,6 +50,8 @@ namespace XiaoCao
 
         public float moveTime = 1.5f; //追踪时间
         public float minMoveTime = 0.3f; //追踪时间
+        [XCLabel("攻击前摇")]
+        public float aimTime = 0f;
         [XCLabel("攻击结束的后摇")]
         public float endWaitTime = 0; //攻击结束的后摇
         [XCLabel("躲避时长")]

@@ -27,7 +27,16 @@ MonoBehaviour:
     baseMoveSpeed: 3.8
     moveSmooth: 0.05
     rotationLerp: 0.2
-    angleSpeed: 10
+    angleSpeed: 5
+    g: -73.04
+    GOnGroundMult: 0.8
+    MaxGOnGroundMult: 4
+  - id: 2
+    des: "\u654C\u4EBA-\u5C04\u624B"
+    baseMoveSpeed: 3.8
+    moveSmooth: 0.05
+    rotationLerp: 0.2
+    angleSpeed: 1
     g: -73.04
     GOnGroundMult: 0.8
     MaxGOnGroundMult: 4

@@ -14,7 +14,7 @@ public class TestRole : GameStartMono
 {
     public RoleType roleType = RoleType.Enemy;
 
-    public int enemyId = -1;
+    public string enemyIdList = "1,1";
 
     public int genCount = 1;
 
@@ -24,10 +24,22 @@ public class TestRole : GameStartMono
 
     public override void OnGameStart()
     {
-        if (enemyId >= 0)
+        XCTime.DelayRun(delayGen, Gen).ToObservable();
+    }
+
+    private int[] GetEnemyList()
+    {
+        List<int> list = new List<int>();
+        if (string.IsNullOrEmpty(enemyIdList))
         {
-            XCTime.DelayRun(delayGen, Gen).ToObservable();
+            return list.ToArray();
         }
+        string[] ids = enemyIdList.Split(',');
+        foreach (string id in ids)
+        {
+            list.Add(int.Parse(id));
+        }
+        return list.ToArray();
     }
 
     //需要一个生成敌人预制体
@@ -36,25 +48,40 @@ public class TestRole : GameStartMono
     {
         if (roleType == RoleType.Enemy)
         {
+            int[] enemyList = GetEnemyList();
+
+            int pos = 0;
+            int posCount = genCount * enemyList.Length;
             for (int i = 0; i < genCount; i++)
             {
-                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(enemyId);
+                foreach (int id in enemyList)
+                {
+                    if (id  < 0)
+                    {
+                        Debug.LogError("--- id < 0 ");
+                        continue;
+                    }
 
-                enemy.enemyData.movement.MoveToImmediate(GetGenPosition(i));
+                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id);
 
-                enemy.IsAiOn = enableAI;
+                    enemy.enemyData.movement.MoveToImmediate(GetGenPosition(pos, posCount));
+
+                    enemy.IsAiOn = enableAI;
+
+                    pos++;
+                }
             }
         }
 
     }
 
-    private Vector3 GetGenPosition(int index)
+    private Vector3 GetGenPosition(int index,int count)
     {
-        if (genCount > 0)
+        if (count > 0)
         {
-            float radius = (genCount - 2) *0.5f + 2;
+            float radius = (count - 2) *0.5f + 2;
             Mathf.Clamp(radius, 2, 5);
-            var addVec = MathTool.AngleToVector(index * 360 / genCount).To3D(); ;
+            var addVec = MathTool.AngleToVector(index * 360 / count).To3D(); ;
             return transform.position + addVec * radius;
         }
         else

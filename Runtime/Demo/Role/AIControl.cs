@@ -51,7 +51,6 @@ namespace XiaoCao
 
         //setting
         public float ackTime = 0.8f; //act切换间隔,防止瞬间多次触发
-        public float aimTime = 0.8f; //攻击前的停顿
 
 
         public void Init(AiInfo info)
@@ -233,12 +232,14 @@ namespace XiaoCao
 
             if (isMoveEnd)
             {
-                bool isWaitEnd = aimTimer >= aimTime;
+                float maxAnimTime = 0.8f;
+                bool isWaitEnd = aimTimer >= CurAct.aimTime;
+                bool isMaxAim = aimTimer > maxAnimTime;
                 aimTimer += XCTime.deltaTime;
 
                 var isAimEnd = RoateToRole_Slow(_targetRole, Data_R.moveSetting.angleSpeed);
 
-                if (isWaitEnd || isAimEnd)
+                if (isWaitEnd && (isMaxAim || isAimEnd))
                 {
                     AtkStart();
                 }

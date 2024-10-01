@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
+    des: 
     config:
       moveSpeed: 3
       walkSR: 0.35
@@ -26,6 +27,7 @@ MonoBehaviour:
       distance: 2.5
       moveTime: 1
       minMoveTime: 0.3
+      aimTime: 0.5
       endWaitTime: 0
       hideTime: 0
       isLookAtTargetOnHide: 0
@@ -38,6 +40,7 @@ MonoBehaviour:
       distance: 3
       moveTime: 0
       minMoveTime: 0
+      aimTime: 0.8
       endWaitTime: 0.5
       hideTime: 3
       isLookAtTargetOnHide: 0
@@ -51,9 +54,45 @@ MonoBehaviour:
       distance: 3
       moveTime: 0
       minMoveTime: 0
+      aimTime: 0.8
       endWaitTime: 0
       hideTime: 1.5
       isLookAtTargetOnHide: 0
+      maxUseTime: 2
+      actName: ack1
+      nextActName: 
+  - id: 2
+    des: "\u5C04\u624B"
+    config:
+      moveSpeed: 1
+      walkSR: 1
+      walkAnimSR: 0.5
+      atkDesire: 0.5
+    actPool:
+    - power: 1
+      actType: 0
+      actMsg: 0
+      distance: 10
+      moveTime: 0
+      minMoveTime: 0
+      aimTime: 1
+      endWaitTime: 1
+      hideTime: 2
+      isLookAtTargetOnHide: 0
+      maxUseTime: 2
+      actName: 2
+      nextActName: 
+    idleAct:
+      power: 1
+      actType: 1
+      actMsg: 
+      distance: 3
+      moveTime: 0
+      minMoveTime: 0.1
+      aimTime: 0.6
+      endWaitTime: 0
+      hideTime: 1.5
+      isLookAtTargetOnHide: 1
       maxUseTime: 2
       actName: ack1
       nextActName: 

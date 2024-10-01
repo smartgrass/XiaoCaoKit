@@ -52,7 +52,8 @@ namespace XiaoCao
 
     public static class RaceIdSetting
     {
-        public const string README = "平a 100,101,102\r\nRollId 0;\r\nJumpId 50\r\n普通技能 1,2,3,4";
+        public const string README = "平a 100,101,102\r\nRollId 0;\r\nJumpId 50\r\n普通技能 1,2,3,4\n" +
+            "为防止重名,每个RaceId增加1000,如RaceId=2,技能则为2001,2002";
 
         public static int GetNorAckIdFull(int index)
         {
