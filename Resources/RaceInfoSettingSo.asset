@@ -14,8 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - raceId: 1
+    des: "\u73A9\u5BB6\u9ED8\u8BA4"
     cmdSkillList: 0000000001000000
     otherSkillList: 
-  - raceId: 10
+  - raceId: 1
+    des: "\u654C\u4EBA\u9ED8\u8BA4"
+    cmdSkillList: 640000006500000066000000
+    otherSkillList: 
+  - raceId: 2
+    des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
     cmdSkillList: 640000006500000066000000
     otherSkillList: 

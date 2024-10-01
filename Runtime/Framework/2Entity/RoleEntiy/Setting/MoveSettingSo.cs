@@ -15,6 +15,8 @@ namespace XiaoCao
     public class MoveSetting : IIndex
     {
         public int id = 0;
+
+        public string des;
         public int Id => id;
 
         public float baseMoveSpeed = 4;

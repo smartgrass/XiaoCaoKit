@@ -18,6 +18,9 @@ namespace XiaoCao
     public class AiInfo : IIndex
     {
         public int id = 0;
+
+        public string des;
+
         public int Id => id;
 
         public AIRoleConfig config;

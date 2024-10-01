@@ -1,6 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
+using DG.Tweening.Plugins.Core.PathCore;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using YooAsset;
@@ -30,37 +33,63 @@ public class ResMgr
     public const string RESDIR = "Assets/_Res";
 
     public static ResourcePackage Loader;
-    public static ResourcePackage ExtraLoader;
     public static ResourcePackage RawLoader;
 
     public static bool hasExtraPackage;
+
+    public static Dictionary<string, ShortKeyCache> ShortKeyDic = new Dictionary<string, ShortKeyCache>();
 
     public static GameObject LoadInstan(string path, PackageType type = PackageType.DefaultPackage)
     {
         return GameObject.Instantiate(LoadPrefab(path, type));
     }
 
-    //只加载, 没有实例化
-    public static GameObject LoadPrefab(string path, PackageType type = PackageType.DefaultPackage)
+    public static GameObject TryShorKeyInst(string shortKey,string failBackPath)
     {
-        if (type == PackageType.DefaultPackage || !hasExtraPackage)
+        if (ResMgr.ShortKeyDic.ContainsKey(shortKey))
         {
-            var task = Loader.LoadAssetSync<GameObject>(path);
-            return task.AssetObject as GameObject;
+            var prefab = ResMgr.ShortKeyDic[shortKey].LoadPrefab();
+            return GameObject.Instantiate(prefab);
         }
         else
         {
-            if (ExtraLoader.CheckLocationValid(path))
-            {
-                Debug.Log($"--- ExtraLoader {path}");
-                return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
-            }
-            else
-            {
-                Debug.LogWarning($"--- no Extra FailBack to Default {path}");
-            return LoadPrefab(path, PackageType.DefaultPackage);
-            }
+            return ResMgr.LoadInstan(failBackPath, PackageType.DefaultPackage);
         }
+    }
+
+    public static GameObject LoadByShortKey(string shortKey)
+    {
+        if (ShortKeyDic.ContainsKey(shortKey))
+        {
+            return ShortKeyDic[shortKey].LoadPrefab();
+        }
+        else
+        {
+            return null;
+            //return LoadPrefab();
+            //if (ConfigMgr.InitConfig.TryGetValue("ShortKey", shortKey, out string path))
+            //{
+
+            //}
+        }
+    }
+
+    //只加载, 没有实例化
+    public static GameObject LoadPrefab(string path, PackageType type = PackageType.DefaultPackage)
+    {
+        var task = Loader.LoadAssetSync<GameObject>(path);
+        return task.AssetObject as GameObject;
+
+        //if (ExtraLoader.CheckLocationValid(path))
+        //{
+        //    Debug.Log($"--- ExtraLoader {path}");
+        //    return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
+        //}
+        //else
+        //{
+        //    Debug.LogWarning($"--- no Extra FailBack to Default {path}");
+        //return LoadPrefab(path, PackageType.DefaultPackage);
+        //}
     }
 
     //只加载, 没有实例化
@@ -86,11 +115,18 @@ public class ResMgr
         return fileData;
     }
 
-
     #region Init
+    public static async Task InitYooAssetAll()
+    {
+        ResMgr.InitYooAsset();
+        ShortKeyDic.Clear();
+        await ResMgr.InitDefaultPackage();
+        await ResMgr.InitRawPackage();
+        await ResMgr.InitExtraPackage();
+    }
+
     public static void InitYooAsset()
     {
-
         // 初始化资源系统
         YooAssets.Initialize();
         // 创建默认的资源包
@@ -99,102 +135,6 @@ public class ResMgr
         YooAssets.SetDefaultPackage(Loader);
     }
 
-    public static async Task InitExtraPackage()
-    {
-        //EXTRA包的作用: 加载工程外资源
-        //编辑器模拟: 不使用,没意义
-        //离线编辑器: 加载 streamingAssetsPath 判断文件是否存在
-        //离线Exe: 加载指定位置资源,并且需要判断文件是否存在
-        string packageName = ExtraPackage;
-        ResourcePackage package = GetOrCreatPackage(packageName);
-        InitializationOperation initOperation = null;
-        EPlayMode playMode = GetEPlayMode();
-        ExtraLoader = package;
-
-        string defaultHostServer = GetExtraPackageUrl(out bool hasManifest);
-        string fallbackHostServer = defaultHostServer;
-        hasExtraPackage = hasManifest;
-
-        playMode = EPlayMode.HostPlayMode;
-        //var initParameters = new HostPlayModeParameters();
-        //FileSystemParameters.CreateDefaultWebFileSystemParameters()
-        //initParameters.DeliveryFileSystemParameters = new GameQueryServices();
-        //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-
-        IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-        var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-        //var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-        var initParameters = new HostPlayModeParameters();
-        initParameters.BuildinFileSystemParameters = cacheFileSystem;
-        initParameters.CacheFileSystemParameters = cacheFileSystem;
-
-
-        initOperation = package.InitializeAsync(initParameters);
-
-        Debug.Log($"--- initializationOperation task");
-        await initOperation.Task;
-
-        if (initOperation.Status == EOperationStatus.Succeed)
-            Debug.Log("资源包初始化成功！");
-        else
-            Debug.LogError($"资源包初始化失败：{initOperation.Error}");
-        await Task.Yield();
-
-
-
-        var operation1 = package.RequestPackageVersionAsync();
-        await operation1;
-        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-        await operation2;
-
-        ExtraLoader.GetAssetInfos("").LogListStr("--");
-    }
-
-
-
-    public static async Task InitRawPackage()
-    {
-        EPlayMode playMode = GetEPlayMode();
-
-        string packageName = RawPackage;
-
-        ResourcePackage package = GetOrCreatPackage(packageName);
-
-        RawLoader = package;
-
-        InitializationOperation initializationOperation = null;
-
-#if UNITY_EDITOR
-        if (playMode == EPlayMode.EditorSimulateMode)
-        {
-            //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
-            var buildPipeline = EDefaultBuildPipeline.RawFileBuildPipeline;
-            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, RawPackage);
-            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
-            var initParameters = new EditorSimulateModeParameters();
-            initParameters.EditorFileSystemParameters = editorFileSystem;
-            initializationOperation = package.InitializeAsync(initParameters);
-        }
-#endif
-
-        // 单机运行模式
-        if (playMode == EPlayMode.OfflinePlayMode)
-        {
-            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-            var initParameters = new OfflinePlayModeParameters();
-            initParameters.BuildinFileSystemParameters = buildinFileSystem;
-            initializationOperation = package.InitializeAsync(initParameters);
-        }
-        await initializationOperation.Task;
-
-        var operation1 = package.RequestPackageVersionAsync();
-        await operation1;
-        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-        await operation2;
-
-    }
-
-    //需要等待
     public static async Task InitDefaultPackage()
     {
         string packageName = DefaultPackage;
@@ -243,7 +183,134 @@ public class ResMgr
         await operation1;
         var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
         await operation2;
+
+        AddDefaultSection();
     }
+
+
+    public static async Task InitExtraPackage()
+    {
+        string dir = XCPathConfig.GetExtraPackageDir();
+
+        DirectoryInfo directory = new DirectoryInfo(dir);
+        foreach (var item in directory.GetDirectories())
+        {
+            var packageName = item.Name;
+            Debug.Log($"--- load package {packageName}");
+
+            ResourcePackage package = YooAssets.CreatePackage(packageName);
+            InitializationOperation initOperation = null;
+            EPlayMode playMode = GetEPlayMode();
+
+            string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
+            string fallbackHostServer = defaultHostServer;
+            if (!hasManifest)
+            {
+                Debug.LogError($"--- no manifest {defaultHostServer}");
+                continue;
+            }
+            playMode = EPlayMode.HostPlayMode;
+
+            IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+            var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+            var initParameters = new HostPlayModeParameters();
+            initParameters.BuildinFileSystemParameters = cacheFileSystem;
+            initParameters.CacheFileSystemParameters = cacheFileSystem;
+
+            initOperation = package.InitializeAsync(initParameters);
+
+            Debug.Log($"--- initializationOperation task");
+            await initOperation.Task;
+
+            if (initOperation.Status == EOperationStatus.Succeed)
+                Debug.Log("资源包初始化成功！");
+            else
+                Debug.LogError($"资源包初始化失败：{initOperation.Error}");
+    
+            var versionTask = package.RequestPackageVersionAsync();
+            await versionTask;
+            var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
+            await manifestTask;
+
+            IniSection section = ConfigMgr.InitConfig.GetSection(packageName);
+            if (section == null)
+            {
+                Debug.LogError($"--- no section {packageName} in Main.ini ");
+                continue;
+            }
+
+            foreach (var kv in section.Dic)
+            {
+                ShortKeyDic[kv.Key] = new ShortKeyCache()
+                {
+                    package = package,
+                    path = kv.Value
+                };
+            }  
+        }
+    }
+
+    public static void AddDefaultSection()
+    {
+        IniSection section = ConfigMgr.InitConfig.GetSection(DefaultPackage);
+        if (section == null)
+        {
+            Debug.LogWarning($"--- no section {DefaultPackage} in Main.ini ");
+            return;
+        }
+
+        foreach (var kv in section.Dic)
+        {
+            ShortKeyDic[kv.Key] = new ShortKeyCache()
+            {
+                package = Loader,
+                path = kv.Value
+            };
+        }
+    }
+
+    public static async Task InitRawPackage()
+    {
+        EPlayMode playMode = GetEPlayMode();
+
+        string packageName = RawPackage;
+
+        ResourcePackage package = GetOrCreatPackage(packageName);
+
+        RawLoader = package;
+
+        InitializationOperation initializationOperation = null;
+
+#if UNITY_EDITOR
+        if (playMode == EPlayMode.EditorSimulateMode)
+        {
+            //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
+            var buildPipeline = EDefaultBuildPipeline.RawFileBuildPipeline;
+            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, RawPackage);
+            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
+            var initParameters = new EditorSimulateModeParameters();
+            initParameters.EditorFileSystemParameters = editorFileSystem;
+            initializationOperation = package.InitializeAsync(initParameters);
+        }
+#endif
+
+        // 单机运行模式
+        if (playMode == EPlayMode.OfflinePlayMode)
+        {
+            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var initParameters = new OfflinePlayModeParameters();
+            initParameters.BuildinFileSystemParameters = buildinFileSystem;
+            initializationOperation = package.InitializeAsync(initParameters);
+        }
+        await initializationOperation.Task;
+
+        var operation1 = package.RequestPackageVersionAsync();
+        await operation1;
+        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+        await operation2;
+
+    }
+
 
     private static ResourcePackage GetOrCreatPackage(string packageName)
     {
@@ -256,33 +323,20 @@ public class ResMgr
         return tempPack;
     }
 
-    private static string GetExtraPackageUrl(out bool hasManifest)
+    private static string GetExtraPackageUrl(string packName, out bool hasManifest)
     {
-        string packName = ExtraPackage;
-        if (Application.isEditor)
-        {
-            string path = $"{PathTool.GetProjectPath()}/Build/Res/{packName}/";
+        string path =  $"{XCPathConfig.GetExtraPackageDir()}/{packName}/";
 
-            hasManifest = HasManifest(path, packName);
+        hasManifest = HasManifest(path, packName);
 
-            Debug.Log($"--- hasManifest {hasManifest}");
+        return $"file://{path}";
 
-            return $"file://{path}";
-        }
-        else
-        {
-            string path = Application.dataPath + "/Bundles/StandaloneWindows64/ExtraPackage/v1";
-
-            hasManifest = HasManifest(path, packName);
-
-            return $"file://{path}";
-        }
     }
 
     private static bool HasManifest(string dir, string packName)
     {
         string fileName = $"PackageManifest_{packName}.version";
-        string filePath = Path.Combine(dir, fileName);
+        string filePath = System.IO.Path.Combine(dir, fileName);
 
         bool ret = FileTool.IsFileExist(filePath);
 
@@ -302,6 +356,12 @@ public class ResMgr
 
         return playMode;
     }
+
+    #endregion
+
+
+    #region ShortKey&Mod
+
 
     #endregion
 }
@@ -336,5 +396,5 @@ public enum PackageType
 {
     DefaultPackage,
     RawPackage,
-    ExtraPackage
+    ShortKey
 }

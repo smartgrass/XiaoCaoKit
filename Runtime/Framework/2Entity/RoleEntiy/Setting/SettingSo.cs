@@ -24,12 +24,13 @@ namespace XiaoCao
             hasInited = false;
         }
 
-        public T GetOrFrist(int key)
+        public T GetOrDefault(int key, int fallBack = 0)
         {
             if (!hasInited)
             {
                 InitMap(array);
             }
+
 
             if (map.ContainsKey(key))
             {
@@ -37,7 +38,11 @@ namespace XiaoCao
             }
             else if (array.Length > 0)
             {
-                return array[0];
+                if (array.Length <= fallBack)
+                {
+                    fallBack = 0;
+                }
+                return array[fallBack];
             }
             else
             {

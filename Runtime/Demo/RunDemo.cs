@@ -21,7 +21,7 @@ namespace XiaoCao
             }
 
             //初始化
-            await InitYooAsset();
+            await ResMgr.InitYooAssetAll();
 
             Debuger.Log("==== InitYooAsset Finish ====");
 
@@ -51,7 +51,7 @@ namespace XiaoCao
 
         private void LoadTextConfig()
         {
-            var init = ConfigMgr.GetInitConfig;
+            var init = ConfigMgr.InitConfig;
 
         }
 
@@ -89,14 +89,7 @@ namespace XiaoCao
 
         }
 
-        public async Task InitYooAsset()
-        {
-            ResMgr.InitYooAsset();
-            await ResMgr.InitDefaultPackage();
-            await ResMgr.InitRawPackage();
-            await ResMgr.InitExtraPackage();
 
-        }
     }
 
     public enum RunState

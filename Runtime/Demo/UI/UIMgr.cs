@@ -32,7 +32,7 @@ namespace XiaoCao
             base.Init();
             battleHud?.Init();
             skillBarHud?.Init();
-            debugPanel?.Init();
+            //debugPanel?.Init();
             settingPanel?.Init();
 
         }

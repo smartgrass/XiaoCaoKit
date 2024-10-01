@@ -26,8 +26,17 @@ namespace XiaoCao
             return $"{GetGameConfigDir()}/{filePath}";
         }
 
-        
-
+        public static string GetExtraPackageDir()
+        {
+            if (Application.isEditor)
+            {
+                return $"{PathTool.GetProjectPath()}/Build/ExtraPackage";
+            }
+            else
+            {
+                return $"{Application.dataPath}/ExtraPackage";
+            }
+        }
         //BuildTool.AfterBuild 在打包后将复制配置
         public static string GetGameConfigDir()
         {
@@ -50,14 +59,12 @@ namespace XiaoCao
             return $"{DataDir}/{dir.ToString()}/{skillId}.bytes";
         }
 
-        public static string GetRoleBodyPath(string prefabName,RoleType roleType)
+        public static string GetRoleBodyPath(string prefabName, RoleType roleType)
         {
-            if (ConfigMgr.GetInitConfig.TryGetValue(roleType.ToString(), prefabName, out string value))
-            {
-                return value;
-            }
             return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }
+
+
 
         public static string GetIdRolePath(RoleType roleType, int prefabId)
         {

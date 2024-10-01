@@ -57,7 +57,7 @@ namespace XiaoCao
         }
 
 
-        public static IniFile GetInitConfig
+        public static IniFile InitConfig
         {
             get
             {

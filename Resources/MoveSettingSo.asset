@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
+    des: "\u73A9\u5BB6\u9ED8\u8BA4"
     baseMoveSpeed: 3.8
     moveSmooth: 0.05
     rotationLerp: 0.2
@@ -22,6 +23,7 @@ MonoBehaviour:
     GOnGroundMult: 0.8
     MaxGOnGroundMult: 4
   - id: 1
+    des: "\u654C\u4EBA\u9ED8\u8BA4"
     baseMoveSpeed: 3.8
     moveSmooth: 0.05
     rotationLerp: 0.2

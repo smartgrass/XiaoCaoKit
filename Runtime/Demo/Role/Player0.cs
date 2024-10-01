@@ -32,8 +32,8 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(1);
 
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>().GetOnArray(settingId);
+            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>()
+                .GetOrDefault(raceId, DefaultConfigId);
             roleData.playerAttr.Init(savaData.lv);
 
             component.input = new PlayerInput(this);

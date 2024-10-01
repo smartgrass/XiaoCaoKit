@@ -20,12 +20,14 @@ namespace XiaoCao
 
         public abstract RoleType RoleType { get; }
 
-        public bool IsPlayer { get =>  RoleType == RoleType.Player; }
+        public bool IsPlayer { get => RoleType == RoleType.Player; }
+
+        public int DefaultConfigId => IsPlayer ? 0 : 1;
 
         //roleData
         public RoleData roleData;
 
-        public int Level{get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value;}
+        public int Level { get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value; }
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
 
@@ -67,14 +69,18 @@ namespace XiaoCao
         public virtual void CreateIdRole(int prefabId)
         {
             this.prefabId = prefabId;
+
             string baseRole = XCPathConfig.GetIdRolePath(RoleType, prefabId);
-            GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.ExtraPackage);
+            GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.DefaultPackage);
+
+
             idRole = idRoleGo.transform.GetComponent<IdRole>();
             idRole.id = id;
             raceId = idRole.raceId;
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRole.gameObject);
-            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>().GetOrFrist(raceId);
+            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>()
+                .GetOrDefault(raceId,DefaultConfigId);
 #if UNITY_EDITOR
             var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
             if (RoleType == RoleType.Enemy)
@@ -86,8 +92,9 @@ namespace XiaoCao
 
         protected void CreateRoleBody(string bodyName)
         {
-            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName,RoleType);
-            body = ResMgr.LoadInstan(bodyPath,PackageType.ExtraPackage);
+            string shortKey = bodyName;
+            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName, RoleType);
+            body = ResMgr.TryShorKeyInst(shortKey, bodyPath);
             body.transform.SetParent(idRole.transform, false);
             BaseInit();
         }
@@ -97,8 +104,8 @@ namespace XiaoCao
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
             idRole.animator.applyRootMotion = false;
-            int settingId = RaceIdSetting.GetConfigId(raceId);
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>().GetOnArray(settingId);
+            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>()
+                .GetOrDefault(raceId, DefaultConfigId);
         }
 
         protected void SetTeam(int team)
@@ -234,7 +241,7 @@ namespace XiaoCao
             Enable = true;
             RoleMgr.Inst.roleDic.Add(id, this);
             GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Add);
-            GameEvent.AddEventListener<bool>(EventType.TimeSpeedStop.Int(),StopTimeSpeed);
+            GameEvent.AddEventListener<bool>(EventType.TimeSpeedStop.Int(), StopTimeSpeed);
         }
 
         public void RoleOut()
@@ -265,7 +272,7 @@ namespace XiaoCao
 
                 if (roleData.bodyState == EBodyState.Dead)
                 {
-                    Anim.SetBool(AnimHash.IsDead,true);
+                    Anim.SetBool(AnimHash.IsDead, true);
                 }
 
             }
@@ -296,7 +303,7 @@ namespace XiaoCao
                     break;
                 case EntityMsgType.AutoDirect:
                     AutoDirect(msg);
-                    break;                
+                    break;
                 case EntityMsgType.NoBodyCollision:
                     NoBodyCollision(msg);
                     break;
@@ -342,7 +349,7 @@ namespace XiaoCao
 
         private void SetNoGravityTime(object msg)
         {
-            BaseMsg baseMsg =( BaseMsg)msg;
+            BaseMsg baseMsg = (BaseMsg)msg;
             float t1 = baseMsg.numMsg;
             if (baseMsg.state == 0)
             {

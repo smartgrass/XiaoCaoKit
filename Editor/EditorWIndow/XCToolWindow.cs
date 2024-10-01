@@ -124,7 +124,7 @@ namespace AssetEditor.Editor
         [Button("Test Config", Line99)]
         void TestConfig()
         {
-            var t = ConfigMgr.GetInitConfig;
+            var t = ConfigMgr.InitConfig;
         }
 
     }
