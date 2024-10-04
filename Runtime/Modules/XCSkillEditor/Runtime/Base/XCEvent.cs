@@ -22,6 +22,7 @@ namespace XiaoCao
 
 
         public bool isLocalOnly = false;
+        public bool isPlayerOnly = false;
 
         public XCTask task;
         public XCState State { get; set; }

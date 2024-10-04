@@ -1,10 +1,16 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 
 public class AtkTrigger : IdComponent
 {
     public AtkInfo info;
+
+    public int maxTriggerTime = 0;
+
+    public int curTriggerTime { get; set; }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<IdRole>(out IdRole IdRole))
@@ -25,6 +31,13 @@ public class AtkTrigger : IdComponent
                     info.hitDir = (info.hitPos - transform.position);
                     info.hitDir.y = 0;
                     entity.OnDamage(id, info);
+
+                    curTriggerTime++;
+                    if (maxTriggerTime != 0 && curTriggerTime >= maxTriggerTime)
+                    {
+                        Debug.Log($"--- {transform.parent.name} OnEnd");
+                        info.objectData.OnEnd();
+                    }
                 }
             }
         }
@@ -44,5 +57,6 @@ public class AtkInfo
     internal Vector3 hitDir;
     internal Vector3 hitPos;
     internal Vector3 ackObjectPos;
+    public ObjectData objectData;
 }
 

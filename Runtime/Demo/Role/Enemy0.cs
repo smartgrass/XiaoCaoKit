@@ -28,11 +28,13 @@ namespace XiaoCao
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
 
-            var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOrDefault(idRole.aiId);
-            component.aiControl = new AIControl(this);
-            component.aiControl.Init(info);
+            //var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOrDefault(idRole.aiId);
 
-            roleData.playerAttr.Init(level);
+
+            component.aiControl = new AIControl(this);
+            component.aiControl.Init(idRole.aiId);
+
+            roleData.playerAttr.Init(level,IsPlayer);
             roleData.roleControl = component.aiControl;
             RoleIn();
         }

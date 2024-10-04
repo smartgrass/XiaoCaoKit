@@ -34,7 +34,7 @@ namespace XiaoCao
 
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>()
                 .GetOrDefault(raceId, DefaultConfigId);
-            roleData.playerAttr.Init(savaData.lv);
+            roleData.playerAttr.Init(savaData.lv,IsPlayer);
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
@@ -104,7 +104,7 @@ namespace XiaoCao
         public override void OnBreak()
         {
             component.control.OnBreak();
-
+            OnBreakAct?.Invoke();
         }
 
     }
@@ -518,7 +518,7 @@ namespace XiaoCao
         public int def;
         public float crit;
 
-        public void Init(int lv)
+        public void Init(int lv,bool isPlayer)
         {
             this.lv = lv;
             maxHp = hp = 100 + 10 * lv;
@@ -526,6 +526,10 @@ namespace XiaoCao
             maxExp = 100 + 100 * (lv % 10);
             atk = lv * 5 + 5;
             def = lv * 1;
+            if (isPlayer)
+            {
+                atk = lv * 10 + 10;
+            }
         }
 
         public int GetAtk()

@@ -1,4 +1,5 @@
 ﻿using DG.Tweening.Plugins.Core.PathCore;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -64,13 +65,15 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }
 
-
-
         public static string GetIdRolePath(RoleType roleType, int prefabId)
         {
             return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_{prefabId}.prefab";
         }
 
+        public static string GetAIPath(int aiId)
+        {
+            return $"{ResMgr.RESDIR}/Role/AI/AI_{aiId}.asset";
+        }
 
         public static string GetHitEffectPath(int index)
         {
@@ -78,6 +81,10 @@ namespace XiaoCao
         }
         public static string GetAudioPath(string name)
         {
+            if (name.StartsWith(AudioClipDir))
+            {
+                return name;
+            }
             return $"{AudioClipDir}/{name}";
         }
 

@@ -24,6 +24,14 @@ namespace AssetEditor.Editor
         public const int Line1 = 1;
         public const int Line2 = 2;
         public const int Line99 = 99;
+        
+        [HorLayout(true)]
+        public bool IsKaiLe = false;
+        [HorLayout(false)]
+        [OnValueChanged(nameof(CheckDebugGo))]
+        public bool IsShowDebug = true;
+        [OnValueChanged(nameof(OnLevelChange))]
+        public int playerLevel = 5;
 
 
         public override void OnEnable()
@@ -46,7 +54,17 @@ namespace AssetEditor.Editor
                     "IsKaiLe".SetKeyBool(true);
                     OnTimeScale();
                 }
+                IsShowDebug = DebugPanel.DebugGUI_IsShow.GetKeyBool();
             }
+        }
+
+        private void CheckDebugGo()
+        {
+            DebugPanel.DebugGUI_IsShow.SetKeyBool(IsShowDebug);
+            if (MarkObject.TryGet("debugGo", out GameObject debugGo))
+            {
+                debugGo.gameObject.SetActive(IsShowDebug);
+            }          
         }
 
         [Button("选中角色", Line1)]
@@ -115,9 +133,6 @@ namespace AssetEditor.Editor
             SaveXCTask.LoadLubanExcelWithCode();
         }
 
-        public bool IsKaiLe = false;
-        [OnValueChanged(nameof(OnLevelChange))]
-        public int playerLevel = 5;
 
         private void OnLevelChange()
         {
@@ -155,7 +170,7 @@ namespace AssetEditor.Editor
         [Button("Test Config", Line99)]
         void TestConfig()
         {
-            var t = ConfigMgr.InitConfig;
+            var t = ConfigMgr.MainCfg;
         }
 
     }

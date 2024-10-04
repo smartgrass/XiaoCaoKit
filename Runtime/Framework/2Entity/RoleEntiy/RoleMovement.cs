@@ -154,7 +154,7 @@ namespace XiaoCao
             if (Data_R.skillState.Data is ESkillState.SkillEnd && isInput)
             {
                 Data_R.skillState.SetValue(ESkillState.Idle);
-                Debug.Log($"--- 过渡效果 TODO");
+                //Debug.Log($"--- 过渡效果 TODO");
                 //owner.Anim?.CrossFade(AnimHash.Idle, 0.1f);
             }
         }
@@ -169,6 +169,12 @@ namespace XiaoCao
             var startRotation = tf.rotation;
             var rotation = Quaternion.Lerp(startRotation, targetRotation, lerp);
             tf.rotation = rotation;
+        }
+
+        public void LookToDir(Vector3 worldDir)
+        {
+            worldDir.y = 0;
+            tf.rotation = MathTool.ForwardToRotation(worldDir);
         }
 
         private void FixUpdateLockTime()

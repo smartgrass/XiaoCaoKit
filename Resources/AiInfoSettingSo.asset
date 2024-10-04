@@ -92,7 +92,7 @@ MonoBehaviour:
       aimTime: 0.6
       endWaitTime: 0
       hideTime: 1.5
-      isLookAtTargetOnHide: 1
+      isLookAtTargetOnHide: 0
       maxUseTime: 2
       actName: ack1
       nextActName: 

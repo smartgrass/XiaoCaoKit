@@ -75,12 +75,21 @@ public static class XCExtend
     /// <returns></returns>
     public static bool RoateY_Slow(this Transform transform, Vector3 targetPos, float rotationSpeed, float minDetal = 1)
     {
+
+
         Vector3 direction = targetPos - transform.position;
         direction.y = 0;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
+        float startAngle = Quaternion.Angle(transform.rotation, targetRotation);
+        if (Mathf.Abs(startAngle) <= minDetal)
+        {
+            //达到则不再旋转
+            return true;
+        }
 
+
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed);
         float angle = Quaternion.Angle(transform.rotation, targetRotation);
 
         if (Mathf.Abs(angle) <= minDetal)

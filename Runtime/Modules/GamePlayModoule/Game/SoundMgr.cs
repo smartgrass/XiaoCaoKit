@@ -1,10 +1,13 @@
-﻿using Cysharp.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Audio;
 
 namespace XiaoCao
 {
-    public class SoundMgr : MonoSingleton<SoundMgr>, IMgr
+    public class SoundMgr : MonoSingletonPrefab<SoundMgr>, IMgr
     {
+        public AudioMixer mixer;
+        [Header("master,music,sfx")]
+        public AudioMixerGroup[] mixerGroups;
 
         public AudioSource audioSourcePrefab;
         private LoopPool<AudioSource> asPool;
@@ -23,24 +26,51 @@ namespace XiaoCao
 
         public void PlayClip(string soundId, float volume = 1)
         {
+            if (string.IsNullOrEmpty(soundId))
+            {
+                return;
+            }
+
             string path = XCPathConfig.GetAudioPath(soundId);
             AudioClip audioClip = ResMgr.LoadAseet(path) as AudioClip;
-            AudioSource source = asPool.Get();
-            source.transform.SetParent(transform);
+            AudioSource source = asPool.CheckGet(out bool isNew);
+            if (isNew)
+            {
+                source.outputAudioMixerGroup = mixerGroups[2];
+                source.transform.SetParent(transform);
+            }
             source.clip = audioClip;
             source.volume = volume;
             source.Play();
         }
 
-        public void PlayHitAudio(int id, bool isBreak)
-        {
-            if (id == 0) 
-                return;
 
-            string soundId = isBreak ? id + "Break" : id.ToString();
-            AudioClip audioClip = ResMgr.LoadAseet(soundId) as AudioClip;
-            AudioSource source = hitAsPool.Get();
-            source.transform.SetParent(transform);
+
+        public void PlayHitAudio(string tag)
+        {
+            if (string.IsNullOrEmpty(tag))
+            {
+                return;
+            }
+            //Default,Sword,Break
+
+            if (!ConfigMgr.SoundCfg.IsHas(tag))
+            {
+                return;
+            }
+
+            var array = ConfigMgr.SoundCfg.Dic[tag];
+            int count = array.Count;
+            var path = array[Random.Range(0, count)];
+
+
+            AudioClip audioClip = ResMgr.LoadAseet(path) as AudioClip;
+            AudioSource source = hitAsPool.CheckGet(out bool isNew);
+            if (isNew)
+            {
+                source.outputAudioMixerGroup = mixerGroups[2];
+                source.transform.SetParent(transform);
+            }
             source.clip = audioClip;
             source.volume = 1;
             source.Play();

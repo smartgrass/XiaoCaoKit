@@ -78,6 +78,7 @@ namespace XiaoCao
         public Vector3 position;
         public Vector3 eulerAngle;
         public Vector3 scale;
+        public string otherPointName;
 
         public XCState State { get; set; }
 
@@ -146,10 +147,30 @@ namespace XiaoCao
         {
             if (transfromType == TransfromType.StartPos)
             {
-                Tran.eulerAngles = Info.castEuler + eulerAngle;
-                //Quaternion(方向) * localPos = 世界向量
-                Tran.position = Info.castPos + Quaternion.Euler(Info.castEuler) * position;
+                var anglePos = GetRePos(Info.castEuler, Info.castPos, eulerAngle, position);
+                Tran.eulerAngles = anglePos.Item1;
+
+                Tran.position = anglePos.Item2;
             }
+
+
+            if (transfromType is TransfromType.OtherTransfrom)
+            {
+                if (Info.role.GetPonitCache(otherPointName, out Transform tf))
+                {
+                    //修改起点位置为tf.position
+                    if (tf == null)
+                    {
+                        Debug.LogError($"--- {otherPointName} = null");
+                    }
+
+                    var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);
+                    Tran.eulerAngles = anglePos.Item1;
+                    Tran.position = anglePos.Item2 ;
+                    Debug.Log($"--- reset Start pos {tf.name} {tf.position} add {position} = {anglePos.Item2}");
+                }
+            }
+
             if (transfromType is TransfromType.PlayerTransfrom or TransfromType.PlyerPos)
             {
                 //实时计算,误差似乎不可避免
@@ -167,6 +188,20 @@ namespace XiaoCao
             Tran.localScale = scale;
         }
 
+        public static Vector3 GetOffset( Transform tf, Vector3 castPos)
+        {
+            var retAngle = tf.eulerAngles;
+            var retPos = tf.position - castPos;
+            return  retPos;
+        }
+
+        public static (Vector3, Vector3) GetRePos(Vector3 castEuler, Vector3 castPos, Vector3 addAngle, Vector3 addPos)
+        {
+            var retAngle = castEuler + addAngle;
+            //castPos + 偏移量 = castPos + Quaternion(方向) * localPos
+            var retPos = castPos + Quaternion.Euler(castEuler) * addPos;
+            return (castEuler, retPos);
+        }
 
         //TODO 回收错误
         //回收时机: 特效帧结束就回收

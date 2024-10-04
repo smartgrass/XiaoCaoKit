@@ -16,11 +16,15 @@ public class TestRole : GameStartMono
 
     public string enemyIdList = "1,1";
 
+    public int level = 1;
+
     public int genCount = 1;
 
     public float delayGen = 0.5f;
 
     public bool enableAI = true;
+
+    public float circleSize = 1;
 
     public override void OnGameStart()
     {
@@ -62,9 +66,11 @@ public class TestRole : GameStartMono
                         continue;
                     }
 
-                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id);
+                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id,level);
 
                     enemy.enemyData.movement.MoveToImmediate(GetGenPosition(pos, posCount));
+
+                    enemy.enemyData.movement.LookToDir(transform.forward);
 
                     enemy.IsAiOn = enableAI;
 
@@ -79,7 +85,7 @@ public class TestRole : GameStartMono
     {
         if (count > 0)
         {
-            float radius = (count - 2) *0.5f + 2;
+            float radius = ((count - 2) *0.5f + 2) * circleSize;
             Mathf.Clamp(radius, 2, 5);
             var addVec = MathTool.AngleToVector(index * 360 / count).To3D(); ;
             return transform.position + addVec * radius;

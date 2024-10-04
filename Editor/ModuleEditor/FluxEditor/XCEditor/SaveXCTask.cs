@@ -5,16 +5,12 @@ using FluxEditor;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEditor.SearchService;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using XiaoCao;
 using XiaoCaoEditor;
 using Debug = UnityEngine.Debug;
@@ -246,11 +242,10 @@ public class SaveXCTask
         {
             ReadAnimTrack(_track, taskData);
         }
-        else if (eventType == typeof(FPlayParticleEvent))
+        else if (eventType == typeof(FPlayParticleEvent) || 
+            eventType == typeof(FSetActiveEvent))
         {
-            taskData.objectData.isPs = true;
-            //taskData.start = e
-            Debug.Log($"--- {taskData.objectData.ObjectPath} isPs");
+            Debug.Log($"--- {taskData.objectData.ObjectPath}");
             return;
         }
         else if (HasOverrideToXCEvent(eventType))
@@ -275,6 +270,12 @@ public class SaveXCTask
         BindingFlags all = (BindingFlags)~BindingFlags.Default;
         MethodInfo baseMethod = typeof(FEvent).GetMethod("ToXCEvent", all);
         MethodInfo derivedMethod = fEventType.GetMethod("ToXCEvent", all);
+        if (derivedMethod == null)
+        {
+            Debug.LogError($"--- {fEventType} no ToXCEvent ");
+            return false;
+        }
+
 
         if (baseMethod.MetadataToken == derivedMethod.MetadataToken)
         {
@@ -331,9 +332,18 @@ public class SaveXCTask
         ObjectData objectData = new ObjectData();
         objectData.ObjectPath = path;
         objectData.scale = _track.Owner.localScale;
-        objectData.eulerAngle = _track.Owner.localEulerAngles;
-        objectData.position = _track.Owner.localPosition;
+
+        Vector3 parentPos = _track.Owner.transform.parent.position;
+
+        var Pos = ObjectData.GetOffset(_track.Owner.transform, parentPos);
+        Vector3 eulerAngle = _track.Owner.transform.localEulerAngles;
+
+
+        objectData.eulerAngle = _track.Owner.transform.eulerAngles;
+        objectData.position = Pos;
         objectData.transfromType = _track.transfromType;
+        objectData.otherPointName = _track.otherPointName;
+        objectData.isPs = _track.Owner.GetComponentInChildren<ParticleSystem>(true)!=null;
         var range = _track.GetFrameRange();
         objectData.startFrame = range.Start;
         objectData.endFrame = range.End;

@@ -53,6 +53,7 @@ namespace XiaoCao
             }
         }
 
+        //主动打断和被动打断是不一样...需要区分
         public void SetNoBusy()
         {
             OnBreak();

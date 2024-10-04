@@ -19,9 +19,9 @@ MonoBehaviour:
     otherSkillList: 
   - raceId: 1
     des: "\u654C\u4EBA\u9ED8\u8BA4"
-    cmdSkillList: 640000006500000066000000
+    cmdSkillList: 5a0000005b0000005c000000
     otherSkillList: 
   - raceId: 2
     des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
-    cmdSkillList: d1070000
+    cmdSkillList: c9000000
     otherSkillList: 

@@ -42,5 +42,11 @@ namespace XiaoCao
             return totalList[curIndex++];
         }
 
+        public T CheckGet(out bool isNew)
+        {
+            isNew = genCount < Max;
+            return Get();
+        }
+
     }
 }

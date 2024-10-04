@@ -18,6 +18,13 @@ namespace XiaoCao
             if (Application.isEditor)
             {
                 GameData.Init();
+                
+            }
+
+            if (DebugPanel.DebugGUI_IsShow.GetKeyBool())
+            {
+                var prefab = Resources.Load<GameObject>("IngameDebugConsole");
+                var con = GameObject.Instantiate(prefab);
             }
 
             //初始化
@@ -51,7 +58,7 @@ namespace XiaoCao
 
         private void LoadTextConfig()
         {
-            var init = ConfigMgr.InitConfig;
+            var init = ConfigMgr.MainCfg;
 
         }
 

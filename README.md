@@ -1,8 +1,6 @@
 # XiaoCaoKit(非完整项目)
 
-某个开发中的项目的代码部分, 缺少资源无法直接运行。
-
-为方便下个项目快速启动开发，特地拆出子项目。
+某个子项目,无法直接运行,小部分代码可提取。
 
 收集GamePlay中常用的工具函数，配置加载等等，对XiaocaoTool和技能编辑器的进一步整理
 
@@ -12,13 +10,13 @@
 
 * 1.XiaoCao框架专属
 	* 1.1 XiaoCaoWindow 编辑器扩展 
-	* 1.2 XiaoCao的Entity  (借鉴Ecs的id-容器思路)
+	* 1.2 XiaoCao的Entity  (取Ecs的ec思路)
 		* Entity.cs  
 		* BehaviorEntity.cs 
 		* Role.cs  
 	* 1.3 XCSkillEditor 技能编辑器
  		* 保存数据 & 运行时 -> XCTask & XCTaskRunner 
-		* 位移 & 动画 
+		* 位移&动画&特效&音效
 		* 伤害触发器 
 		* 消息 
 		* 特殊处理 
@@ -30,7 +28,7 @@
 	* 对象池 AssetPool.cs
 
 	* UniTask&计时器 XCTime.cs
-	* 消息系统  GameEvent.cs
+	* 消息系统  GameEvent.cs (TEngine里的,很好用)
 	* Log封装  Debuger.cs
 	* 调试信息GUI DebugGUI.cs 
 
@@ -47,7 +45,9 @@
 		* TopDown 
 		* 第三人称 
 		* 索敌视角 [TODO]
-	* 3.1.2 luban表格配置  LubanTables.cs
+	* 3.1.2 luban表格配置  LubanTables.cs 
+	(luban读取有性能优势,复杂的结构, 偏中高量级适用,轻量级不太顺手
+	轻量级配置还是使用xx.ini配置 IniFile.cs)
 	* 3.1.3 游戏启动流程 RunDemo.cs
 		* 等待配置,资源加载完毕-> 
 		* 加载玩家 
@@ -134,7 +134,8 @@ yooAsset -> PackageManager
 
 ## 吐槽
 
-Entity的模式有点难度,需要做很多轮子配合, 但越到后期优势越大
+Entity的模式有点难度,需要做很多轮子配合, 但越到后期优势越大,目前轮子们已大功告成
+
 
 
 

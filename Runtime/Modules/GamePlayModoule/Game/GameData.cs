@@ -50,6 +50,9 @@ namespace XiaoCao
 
         private bool _isTimeStop;
 
+        //每帧都会清空
+        public HashSet<string> frameFlag = new HashSet<string>();
+
         public HashSet<string> map = new HashSet<string>();
 
         public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();

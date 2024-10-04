@@ -57,6 +57,8 @@ namespace Flux
 
         public TransfromType transfromType;
 
+        public string otherPointName;
+
         // keep track of the current event we're updating
         private int _currentEvent = 0;
 

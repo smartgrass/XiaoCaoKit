@@ -27,7 +27,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         HorForward = _buf.ReadFloat();
         HitStop = _buf.ReadFloat();
         BreakPower = _buf.ReadFloat();
-        Sound = _buf.ReadInt();
+        HitClip = _buf.ReadString();
         HitEffect = _buf.ReadInt();
     }
 
@@ -83,7 +83,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// <summary>
     /// 音效
     /// </summary>
-    public readonly int Sound;
+    public readonly string HitClip;
     /// <summary>
     /// 击中特效
     /// </summary>
@@ -123,7 +123,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "horForward:" + HorForward + ","
         + "hitStop:" + HitStop + ","
         + "breakPower:" + BreakPower + ","
-        + "sound:" + Sound + ","
+        + "hitClip:" + HitClip + ","
         + "hitEffect:" + HitEffect + ","
         + "}";
     }

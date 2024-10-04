@@ -17,10 +17,10 @@ MonoBehaviour:
     - id: 0
       cd: 0.8
       sprite: {fileID: 0}
-    - id: 110
+    - id: 90
       cd: 0.5
       sprite: {fileID: 0}
-    hasInited: 1
+    hasInited: 0
     id: 0
     norAtkCount: 3
     resetNorAckTime: 1.5

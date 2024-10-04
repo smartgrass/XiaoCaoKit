@@ -12,6 +12,8 @@ namespace XiaoCao
 
     }
 
+
+
     //行为池具体放So
     //运行时作为info读入
     [Serializable]

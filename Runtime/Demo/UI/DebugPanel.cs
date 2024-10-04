@@ -8,9 +8,11 @@ using Debug = UnityEngine.Debug;
 public class DebugPanel : SettingPanel
 {
 	public override UIPanelType panelType => UIPanelType.DebugPanel;
-    
 
-	private const string DebugGUI_IsShow = "DebugGUI/IsShow";
+
+
+    public const string DebugGUI_IsShow = "DebugGUI/IsShow";
+
 	private const string DebugGUI_IsOtherShowing = "DebugGUI/IsOtherShowing";
 
 	public override void Init(){

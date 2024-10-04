@@ -9,6 +9,8 @@ namespace Flux
     [FEvent("Game Object/TriggerRangeEvent", typeof(FTriggerRangeTrack))]
     public class FTriggerRangeEvent : FEvent
     {
+        public int maxTriggetTime = 0; 
+
         public MeshInfo meshInfo;
 
         public override XCEvent ToXCEvent()
@@ -17,6 +19,7 @@ namespace Flux
             var fe = this;
             xce.range = new XCRange(fe.Start, fe.End);
             xce.meshInfo = fe.meshInfo;
+            xce.maxTriggerTime = fe.maxTriggetTime;
             return xce;
         }
 

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using XiaoCao;
 
 namespace Flux
 {
@@ -43,5 +44,5 @@ namespace Flux
 		{
 			Owner.gameObject.SetActive( _wasActive );
 		}
-	}
+    }
 }

@@ -24,6 +24,8 @@ namespace XiaoCao
     {
         private static IniFile mainConfig;
 
+        private static InitArrayFile soundCfg;
+
         private static LocalSetting localSetting;
 
         public static string GetConfigPath(Type t)
@@ -56,8 +58,7 @@ namespace XiaoCao
             return ret;
         }
 
-
-        public static IniFile InitConfig
+        public static IniFile MainCfg
         {
             get
             {
@@ -70,6 +71,20 @@ namespace XiaoCao
                 return mainConfig;
             }
         }
+
+        public static InitArrayFile SoundCfg 
+        {
+            get
+            {
+                if (soundCfg == null)
+                {
+                    InitArrayFile ini = new InitArrayFile();
+                    ini.LoadFromFile("sound.ini");
+                    soundCfg = ini;
+                }
+                return soundCfg;
+            }
+        }        
 
         public static LocalSetting LocalSetting
         {

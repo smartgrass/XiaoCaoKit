@@ -26,6 +26,16 @@ namespace Flux
         private bool _isBezier;
         public bool isEditorHandles;
 
+        //public ETriggerCmd command;
+        //[Dropdown(nameof(selectList2))]
+        //public string triggerMsg;
+
+        //private string[] selectList2 = new[] { 
+        //    "0",
+        //    TriggerCommond_XCMove.WeaponFirePointName
+        //};
+
+
         public bool IsBezier
         {
             get => _isBezier; set
@@ -189,7 +199,7 @@ namespace Flux
             }
 
             Vector3 currentPosition = GetBezierPathPositionAndIndex(t, out int nextIndex);
-            Owner.transform.position = currentPosition;
+            Owner.transform.position = currentPosition + Owner.transform.parent.position;
         }
 
         public Vector3 GetBezierPathPositionAndIndex(float normalizedTime, out int timeIndex)

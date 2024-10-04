@@ -27,6 +27,8 @@ namespace XiaoCao
         //标记为不占用, 但可以继续Running
         public bool IsNoBusyFlag { get; set; }
 
+        public bool IsPlayer => Info.role.IsPlayer;
+
         public bool IsBusy => State == XCState.Running && !IsNoBusyFlag;
 
         public TaskInfo Info;

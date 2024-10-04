@@ -2,8 +2,11 @@
 using cfg;
 using NaughtyAttributes;
 using System;
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
+using UnityEngine.Animations;
+using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 
 namespace XiaoCao
@@ -48,8 +51,6 @@ namespace XiaoCao
         /// 绑定的模型文件
         public int prefabId;
 
-        public int bodyId;
-
         //势力,相同为友军
         public int team;
 
@@ -57,6 +58,7 @@ namespace XiaoCao
 
         public IdRole idRole;
 
+        public Action OnBreakAct;
 
         #region Get
         internal Animator Anim => idRole.animator;
@@ -80,7 +82,7 @@ namespace XiaoCao
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRole.gameObject);
             raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>()
-                .GetOrDefault(raceId,DefaultConfigId);
+                .GetOrDefault(raceId, DefaultConfigId);
 #if UNITY_EDITOR
             var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
             if (RoleType == RoleType.Enemy)
@@ -106,6 +108,7 @@ namespace XiaoCao
             idRole.animator.applyRootMotion = false;
             roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>()
                 .GetOrDefault(raceId, DefaultConfigId);
+            CheckWeaponPoint();
         }
 
         protected void SetTeam(int team)
@@ -125,6 +128,9 @@ namespace XiaoCao
             if (BaseDamageCheck(ackInfo))
             {
                 var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
+
+                SoundMgr.Inst.PlayHitAudio(setting.HitClip);
+
                 roleData.breakData.OnHit((int)setting.BreakPower);
                 roleData.movement.OnDamage(roleData.breakData.isBreak);
                 if (roleData.breakData.isBreak)
@@ -181,7 +187,7 @@ namespace XiaoCao
 
         public virtual void OnBreak()
         {
-
+            OnBreakAct?.Invoke();
         }
 
         public virtual void SetNoBusy()
@@ -381,7 +387,83 @@ namespace XiaoCao
             }
         }
 
+        public const string WeaponPointName = "WeaponPoint";
+        public const string WeaponFirePointName = "WeaponFirePoint";
         public GameObject WeaponObject { get; set; }
+
+        public Dictionary<string, Transform> pointCache = new Dictionary<string, Transform>();
+
+        public bool GetPonitCache(string pointName, out Transform tf)
+        {
+            if (pointCache.TryGetValue(pointName, out tf))
+            {
+                return tf != null;
+            }
+            tf = transform.FindChildEx(pointName);
+            pointCache[pointName] = tf;
+            return tf != null;
+        }
+
+        public void CheckWeaponPoint()
+        {
+            if (GetPonitCache(WeaponPointName, out Transform tf))
+            {
+                if (tf.childCount > 0)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                SkinnedMeshRenderer skinnedMeshRenderer = Anim.GetComponentInChildren<SkinnedMeshRenderer>();
+                HumanBodyBones rightHandBone = HumanBodyBones.RightHand;
+                var rightHand = Anim.GetBoneTransform(rightHandBone);
+                if (!rightHand)
+                {
+                    Debug.LogError("---  no rightHandBone");
+                }
+                GameObject wpEmpty = new GameObject(WeaponPointName);
+                wpEmpty.transform.SetParent(rightHand, false);
+                tf = wpEmpty.transform;
+            }
+
+            GameObject wp = ResMgr.TryShorKeyInst($"WP_{prefabId}",
+                "Assets/_Res/Item/Weapon/WP_Sword_1.prefab");
+            if (wp == null)
+            {
+                Debug.LogError("---  no weapon ");
+                return;
+            }
+            wp.transform.position = tf.position;
+            wp.transform.rotation = tf.rotation;
+
+            wp.transform.SetParent(transform, true);
+            var pc = wp.AddComponent<ParentConstraint>();
+            ConstraintSource source = new ConstraintSource();
+            source.weight = 1;
+            source.sourceTransform = tf;
+            pc.AddSource(source);
+            pc.constraintActive = true;
+
+
+        }
+        public static void SetLossyScale(Transform tf,Vector3 lossyScale)
+        {
+            Vector3 adjustedLocalScale = DivideVectors(lossyScale, (tf.parent.lossyScale));
+            Debug.Log($"--- tf.parent {tf.parent.name}");
+            tf.localScale = adjustedLocalScale;
+        }
+
+        public static Vector3 DivideVectors(Vector3 v1, Vector3 v2)
+        {
+            if (v2.x == 0 || v2.y == 0 || v2.z == 0)
+
+            {
+                throw new System.DivideByZeroException("除数向量 v2 含有零分量，不能进行除法运算。");
+            }
+            return new Vector3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
+
+        }
 
         public void TakeWeapon(GameObject weapon)
         {
@@ -392,6 +474,7 @@ namespace XiaoCao
             //TODO WeaponData weapon的属性加成
             //可以简单通过名字确定武器id, 比如weapon_1
         }
+
         public void RemoveWeapon()
         {
             var weapon = WeaponObject;
@@ -531,7 +614,7 @@ namespace XiaoCao
         public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
         //死亡处理
         public float deadTimer = 0;
-        public float deadTime = 1.5f;//结束时回收
+        public float deadTime = 3f;//结束时回收
 
         public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
 

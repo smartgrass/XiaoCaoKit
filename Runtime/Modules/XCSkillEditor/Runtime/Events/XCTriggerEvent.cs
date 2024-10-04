@@ -13,6 +13,8 @@ namespace XiaoCao
         public static string[] TriggerNames = new[] 
         { "BoxTrigger", "SphereTrigger", "SectorTrigger", "OtherTrigger" };
 
+        public int maxTriggerTime = 0;
+
         public MeshInfo meshInfo;
 
         public int subSkillId = 0;
@@ -21,7 +23,6 @@ namespace XiaoCao
 
         public Collider CurCol { get; set; }
         public AtkTrigger CurTrigger { get; set; }
-
 
 
         public override void OnTrigger(float startOffsetTime)
@@ -107,9 +108,12 @@ namespace XiaoCao
             PlayerAttr attr = Info.role.roleData.playerAttr;
             int atk = attr.GetAtk();
             bool isCrit = MathTool.IsInRandom(attr.crit / 100f);
+            CurTrigger.maxTriggerTime = maxTriggerTime;
+            CurTrigger.curTriggerTime = 0;
 
             CurTrigger.info = new AtkInfo()
             {
+                objectData = task.ObjectData,
                 team = Info.role.team,
                 skillId = Info.skillId,
                 subSkillId = task.ObjectData.index,

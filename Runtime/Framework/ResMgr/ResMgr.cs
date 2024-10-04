@@ -57,22 +57,6 @@ public class ResMgr
         }
     }
 
-    public static GameObject LoadByShortKey(string shortKey)
-    {
-        if (ShortKeyDic.ContainsKey(shortKey))
-        {
-            return ShortKeyDic[shortKey].LoadPrefab();
-        }
-        else
-        {
-            return null;
-            //return LoadPrefab();
-            //if (ConfigMgr.InitConfig.TryGetValue("ShortKey", shortKey, out string path))
-            //{
-
-            //}
-        }
-    }
 
     //只加载, 没有实例化
     public static GameObject LoadPrefab(string path, PackageType type = PackageType.DefaultPackage)
@@ -232,7 +216,7 @@ public class ResMgr
             var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
             await manifestTask;
 
-            IniSection section = ConfigMgr.InitConfig.GetSection(packageName);
+            IniSection section = ConfigMgr.MainCfg.GetSection(packageName);
             if (section == null)
             {
                 Debug.LogError($"--- no section {packageName} in Main.ini ");
@@ -252,7 +236,7 @@ public class ResMgr
 
     public static void AddDefaultSection()
     {
-        IniSection section = ConfigMgr.InitConfig.GetSection(DefaultPackage);
+        IniSection section = ConfigMgr.MainCfg.GetSection(DefaultPackage);
         if (section == null)
         {
             Debug.LogWarning($"--- no section {DefaultPackage} in Main.ini ");

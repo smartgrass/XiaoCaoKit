@@ -141,7 +141,10 @@ namespace Flux
         {
 #if UNITY_EDITOR
             XCAudioEvent audioEvent = new XCAudioEvent();
-            audioEvent.eName = Path.GetFileName(AssetDatabase.GetAssetPath(_audioClip));
+            //Path.GetFileName(
+            audioEvent.eName = AssetDatabase.GetAssetPath(_audioClip);
+            audioEvent.volume = _volume;
+            audioEvent.isPlayerOnly = IsPlayerOnly;
             Debug.Log($"--- {audioEvent.eName}");
             return audioEvent;
 #else

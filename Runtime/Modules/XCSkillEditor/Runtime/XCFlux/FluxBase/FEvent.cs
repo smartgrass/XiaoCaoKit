@@ -175,7 +175,10 @@ namespace Flux
 	public class FEvent : FObject
 	{
 		public const string UnUsing = "UnUsing/";
-		public override Transform Owner { get { return _track.Owner; } }
+
+        public bool IsPlayerOnly;
+
+        public override Transform Owner { get { return _track.Owner; } }
 
 		public override FSequence Sequence { get { return _track.Sequence; } }
 

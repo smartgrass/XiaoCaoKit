@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -22,6 +23,10 @@ namespace XiaoCao
 
         public Ease easeType = Ease.Linear;
 
+        //特殊处理
+        public ETriggerCmd command;
+        public string triggerMsg;
+
         #region private
         private CharacterController cc;
 
@@ -32,10 +37,24 @@ namespace XiaoCao
         #endregion
         public override void OnTrigger(float startOffsetTime)
         {
-            m4 = Tran.localToWorldMatrix;
+            m4 = Info.playerTF.localToWorldMatrix;
             cc = Info.role.idRole.cc;
+            if (command!= ETriggerCmd.None)
+            {
+                //利用中间类执行,解耦
+                //TriggerCommondHelper.AddCommond(command, triggerMsg, this);
+            }
             base.OnTrigger(startOffsetTime);
         }
+
+        public void ResetStartEnd(Vector3 startVec,Vector3 endVec)
+        {
+            //空判断
+            Debug.Log($"--- ResetStartEnd");
+            this.startVec = startVec;
+            this.endVec = endVec;
+        }
+
 
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
@@ -68,7 +87,7 @@ namespace XiaoCao
             {
                 return;
             }
-            if (cc != null)
+            if (cc != null && task.IsMainTask)
             {
                 // 等价与 Quaternion.Euler(Info.castEuler) * position;
                 cc.Move(m4.MultiplyVector(detalMove));
@@ -77,6 +96,7 @@ namespace XiaoCao
             {
                 var getDelta = m4.MultiplyVector(detalMove);
                 Tran.Translate(getDelta, Space.World);
+                //Tran.position = Tran.position + getDelta;
             }
 
             //if (lookForward) //TODO
