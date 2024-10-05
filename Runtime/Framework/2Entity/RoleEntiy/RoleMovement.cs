@@ -67,6 +67,14 @@ namespace XiaoCao
             maxAnimMoveSpeed = speedRate;
         }
 
+        public void SetLookTarget(Vector3 target)
+        {
+            Debug.Log($"--- SetLookTarget TODO");
+            //需要缓存变量
+            //transform.RoateY_Slow(, Data_R.moveSetting.angleSpeed, 8); 
+
+        }
+
         public void OnMoveing(Vector3 moveDir, bool isLookDir = true)
         {
             if (RoleState.IsMoveLock)

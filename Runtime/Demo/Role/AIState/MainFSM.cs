@@ -5,13 +5,15 @@
     /// </summary>
     ///<see cref="ActPoolFSM"/>
     ///<see cref="SequenceFSM"/>
-    public class MainFSM: AIFSMBase
+    public class MainFSM : AIFSMBase
     {
-        public bool IsLoaded {  get; set; }
+        public bool IsLoaded { get; set; }
 
         private void OnEnable()
         {
             IsLoaded = false;
         }
     }
+
+
 }

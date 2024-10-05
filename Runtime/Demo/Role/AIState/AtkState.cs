@@ -7,7 +7,7 @@ namespace XiaoCao
     ///<see cref="HideState"/>
     ///<see cref="PreAtkState"/>
     /// AtkState 是一个有前摇 后摇的时间
-    [CreateAssetMenu(fileName = "AtkState", menuName = "SO/AI/AtkState", order = 10)]
+    [CreateAssetMenu(fileName = "AtkState", menuName = "SO/AI/AtkState", order = 1)]
     public class AtkState : AIFSMBase
     {
         [XCLabel("攻击前摇")]
@@ -53,10 +53,9 @@ namespace XiaoCao
                 return;
             }
 
-            Debug.Log($"--- AtkState OnUpdate {State}");
-            Timer += Time.deltaTime;
             if (atkState == 0)
             {
+                Timer += Time.deltaTime;
                 if (Timer > beforeAtk)
                 {
                     AtkStart();
@@ -66,6 +65,12 @@ namespace XiaoCao
             }
             else
             {
+                if (control.IsBusy())
+                {
+                    return;
+                }
+               
+                Timer += Time.deltaTime;
                 if (Timer > afterAtk)
                 {
                     OnExit();
@@ -78,7 +83,5 @@ namespace XiaoCao
         {
             control.owner.AIMsg(ActMsgType.Skill, atkMsg);
         }
-
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,29 +8,46 @@ namespace XiaoCao
     /// <summary>
     /// 行为池
     /// </summary>
-    [CreateAssetMenu(fileName = "ActPoolFSM", menuName = "SO/AI/ActPoolFSM", order = 10)]
-    public class ActPoolFSM : MainFSM
+    [CreateAssetMenu(fileName = "ActPoolFSM", menuName = "SO/AI/ActPoolFSM", order = 1)]
+    public class ActPoolFSM : MainDataFSM
     {
-        public SleepState SleepState;
+        [Tooltip("pool结束时调用")]
+        public AIFSMBase EndState;
+
+        public FSMPoolType poolType = FSMPoolType.Random;
+
+        [Tooltip("最大使用次数,0默认抽完")]
+        public int MaxUseTime;
+
         //行为池有 概率,次数
         public List<SubStateData> pool = new List<SubStateData>() { new SubStateData() };
 
 
         public AIFSMBase CurState { get; set; }
+        public AIFSMBase CurEndState { get; set; }
         public List<SubStateData> PoolInst { get; set; }
         public List<SubStateData> CurPool { get; set; }
+
+        public int UseTime { get; set; }
+
+        public bool IsCheckUseTime => UseTime > 0;
 
         public override void OnStart()
         {
             FristLoad();
             CurPool.Clear();
-
+            UseTime = 0;
             foreach (var data in this.PoolInst)
             {
                 data.Reset();
                 CurPool.Add(data);
             }
             State = FSMState.Update;
+
+            if (CurEndState != null )
+            {
+                CurEndState.ResetFSM();
+            }
         }
 
         private void FristLoad()
@@ -53,6 +71,11 @@ namespace XiaoCao
                 subState.state = so;
                 PoolInst.Add(subState);
             }
+            if (EndState != null)
+            {
+                CurEndState = ScriptableObject.Instantiate(EndState) ;
+                CurEndState.InitReset(control);
+            }
         }
 
         public override void OnUpdate()
@@ -65,15 +88,13 @@ namespace XiaoCao
 
             if (CurState == null)
             {
-                var getData = GetOne();
-                if (getData == null)
+                CurState = GetOne();
+                if (CurState == null)
                 {
                     Debug.Log($"--- sub end");
                     OnExit();
                     return;
                 }
-                CurState = getData.state;
-
                 Debug.Log($"--- CurState {CurState.GetType()}");
             }
             if (CurState.State != FSMState.Finish)
@@ -88,19 +109,37 @@ namespace XiaoCao
             }
         }
 
-        private SubStateData GetOne()
+        private AIFSMBase GetOne()
         {
-            if (CurPool.Count == 0)
+            bool IsUseTimeLess = IsCheckUseTime && UseTime >= MaxUseTime;
+
+            if (CurPool.Count == 0 || IsUseTimeLess)
             {
+                if (CurEndState!=null && CurEndState.State == FSMState.None)
+                {
+                    return CurEndState;
+                }
                 return null;
             }
-            var actData = PoolInst.GetRandom(out int index);
-            actData.HasUseTime++;
-            if (actData.HasUseTime >= actData.maxTime)
+
+            SubStateData data;
+            int index;
+            if (poolType == FSMPoolType.Random) {
+                data = PoolInst.GetRandom(out index);
+            }
+            else
+            {
+                index = 0;
+                data = PoolInst[0];
+            }
+
+            data.HasUseTime++;
+            if (data.HasUseTime >= data.maxTime)
             {
                 CurPool.RemoveAt(index);
             }
-            return actData;
+            UseTime++;
+            return data.state;
         }
 
         public override void OnExit()
@@ -127,6 +166,15 @@ namespace XiaoCao
             HasUseTime = 0;
             state.ResetFSM();
         }
+    }
+
+
+    public enum FSMPoolType
+    {
+        [InspectorName("随机")]
+        Random,
+        [InspectorName("顺序")]
+        Sequence
     }
 
 }

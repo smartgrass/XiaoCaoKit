@@ -7,7 +7,7 @@ namespace XiaoCao
     /// <summary>
     /// 顺序池
     /// </summary>
-    [CreateAssetMenu(fileName = "SequenceFSM", menuName = "SO/AI/SequenceFSM",order =10)]  
+    [CreateAssetMenu(fileName = "SequenceFSM", menuName = "SO/AI/SequenceFSM",order =1)]  
     public class SequenceFSM : MainFSM
     {
         //顺序保证执行,
@@ -20,13 +20,12 @@ namespace XiaoCao
         public override void OnStart()
         {
             FristLoad();
-            Index = 0;
-            State = FSMState.Update;
-
             foreach (var fs in SubFsmsInst)
             {
                 fs.ResetFSM();
             }
+            Index = 0;
+            State = FSMState.Update;
         }
 
         private void FristLoad()

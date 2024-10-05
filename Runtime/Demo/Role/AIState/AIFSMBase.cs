@@ -11,7 +11,13 @@ namespace XiaoCao
 
         public AIControl control { get; set; }
 
+        public Transform transform => control.transform;
+
         public Role TargetRole => control.TargetRole;
+
+        public FSMSetting setting => control.mainDataFSM.setting;
+
+        public bool HasTarget => control.HasTarget;
 
         public float curDistance => control.curDistance;
 

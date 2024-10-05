@@ -34,7 +34,7 @@ namespace XiaoCao
             component.aiControl = new AIControl(this);
             component.aiControl.Init(idRole.aiId);
 
-            roleData.playerAttr.Init(level,IsPlayer);
+            roleData.playerAttr.Init(level, IsPlayer);
             roleData.roleControl = component.aiControl;
             RoleIn();
         }
@@ -95,7 +95,7 @@ namespace XiaoCao
             {
                 case ActMsgType.Skill:
                     int msgNum = int.Parse(actMsg);
-                    int skillId =  raceInfo.GetCmdSkillIndex(msgNum);
+                    int skillId = raceInfo.GetCmdSkillIndex(msgNum);
                     component.aiControl.TryPlaySkill(skillId);
                     break;
                 case ActMsgType.OtherSkill:
@@ -112,6 +112,13 @@ namespace XiaoCao
 
     }
 
+
+    public enum ActMsgType
+    {
+        Skill,
+        OtherSkill,
+        Idle
+    }
 
     public class EnemyData0 : RoleData
     {

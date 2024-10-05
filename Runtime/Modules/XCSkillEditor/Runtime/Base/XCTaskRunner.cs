@@ -92,7 +92,7 @@ namespace XiaoCao
             IsAllStop = true;
             Task = null;
             gameObject.SetActive(false);
-            Debug.Log($"--- AllEnd {gameObject} ");
+            Debuger.Log($"--- AllEnd {gameObject} ");
         }
 
         public static void AllEnd2(XCTaskRunner runner)

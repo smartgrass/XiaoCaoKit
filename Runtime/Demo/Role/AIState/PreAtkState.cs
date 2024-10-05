@@ -6,7 +6,7 @@ namespace XiaoCao
     /// 执行追踪, 范围判断的操作
     /// </summary>
     ///<see cref="AtkState"/>
-    [CreateAssetMenu(fileName = "PreAtkState", menuName = "SO/AI/PreAtkState", order = 10)]
+    [CreateAssetMenu(fileName = "PreAtkState", menuName = "SO/AI/PreAtkState", order = 1)]
     public class PreAtkState : AIFSMBase
     {
         public float distance = 3; //执行距离

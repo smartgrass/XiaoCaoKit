@@ -2,32 +2,46 @@
 
 namespace XiaoCao
 {
-    [CreateAssetMenu(menuName = "SO/AI/SleepState", order = 10)]
-    public class SleepState: AIFSMBase
+    [CreateAssetMenu(fileName = "SleepState", menuName = "SO/AI/SleepState", order = 1)]
+    public class SleepState : AIFSMBase, ITimeState
     {
-        public float sleepTime = 2;
+        public bool getFromSetting = true;
 
-        public float timer;
+        private float totalTime = 2;
+
+        public float Timer { get; set; }
+        public float TotalTime { get => totalTime; set => totalTime = value; }
 
         public override void OnStart()
         {
-            timer = sleepTime;
+            if (getFromSetting)
+            {
+                totalTime = setting.sleepTime;
+            }
+            Timer = TotalTime;
+            State = FSMState.Update;
         }
         public override void OnUpdate()
         {
-            if (timer > 0)
+            if (State == FSMState.None)
             {
-                timer -= XCTime.deltaTime;
+                OnStart();
+                return;
             }
-            if (timer <= 0)
+
+            if (Timer > 0)
             {
-                State = FSMState.Finish;
+                Timer -= XCTime.deltaTime;
+            }
+            if (Timer <= 0)
+            {
                 OnExit();
             }
         }
-        public override void OnExit()
-        {
-            State = FSMState.None;
-        }
+    }
+
+    public interface ITimeState
+    {
+        public float TotalTime { get; set; }
     }
 }

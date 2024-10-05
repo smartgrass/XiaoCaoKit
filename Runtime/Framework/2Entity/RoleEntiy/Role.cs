@@ -379,6 +379,11 @@ namespace XiaoCao
             roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
+        public void AISetLookTarget(Vector3 target)
+        {
+            roleData.movement.SetMoveDir(target);
+        }
+
         public virtual void AIMsg(ActMsgType actType, string actMsg)
         {
             if (actType == ActMsgType.Skill)
