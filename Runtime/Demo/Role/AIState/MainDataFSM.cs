@@ -3,6 +3,9 @@
 
     public class MainDataFSM : MainFSM
     {
-        public FSMSetting setting;
+        [XCLabel("描述")]
+        public string des;
+
+        public AISetting setting;
     }
 }

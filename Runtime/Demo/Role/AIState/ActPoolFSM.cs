@@ -11,8 +11,7 @@ namespace XiaoCao
     [CreateAssetMenu(fileName = "ActPoolFSM", menuName = "SO/AI/ActPoolFSM", order = 1)]
     public class ActPoolFSM : MainDataFSM
     {
-        [Tooltip("pool结束时调用")]
-        public AIFSMBase EndState;
+        public IdleState idleState;
 
         public FSMPoolType poolType = FSMPoolType.Random;
 
@@ -24,7 +23,7 @@ namespace XiaoCao
 
 
         public AIFSMBase CurState { get; set; }
-        public AIFSMBase CurEndState { get; set; }
+        public AIFSMBase IdleStateInst { get; set; }
         public List<SubStateData> PoolInst { get; set; }
         public List<SubStateData> CurPool { get; set; }
 
@@ -37,16 +36,25 @@ namespace XiaoCao
             FristLoad();
             CurPool.Clear();
             UseTime = 0;
+
+            State = FSMState.Update;
+
+            if (IdleStateInst != null )
+            {
+                IdleStateInst.ResetFSM();
+            }
+
+            if (!HasTarget)
+            {
+                //OnExit();
+                CurState = IdleStateInst;
+                return;
+            }
+
             foreach (var data in this.PoolInst)
             {
                 data.Reset();
                 CurPool.Add(data);
-            }
-            State = FSMState.Update;
-
-            if (CurEndState != null )
-            {
-                CurEndState.ResetFSM();
             }
         }
 
@@ -71,10 +79,10 @@ namespace XiaoCao
                 subState.state = so;
                 PoolInst.Add(subState);
             }
-            if (EndState != null)
+            if (idleState != null)
             {
-                CurEndState = ScriptableObject.Instantiate(EndState) ;
-                CurEndState.InitReset(control);
+                IdleStateInst = ScriptableObject.Instantiate(idleState) ;
+                IdleStateInst.InitReset(control);
             }
         }
 
@@ -115,10 +123,6 @@ namespace XiaoCao
 
             if (CurPool.Count == 0 || IsUseTimeLess)
             {
-                if (CurEndState!=null && CurEndState.State == FSMState.None)
-                {
-                    return CurEndState;
-                }
                 return null;
             }
 

@@ -25,25 +25,25 @@ namespace XiaoCao
          */
         public MainDataFSM mainDataFSM;
 
-        public Role TargetRole;
-
-        public Transform transform => owner.transform;
-
-        public bool IsAIFree { get => owner.IsFree && !owner.IsAnimBreak; }
-
-
-        public float tempActDistance;
-        public float curDistance;
 
         //每隔1s检查 敌人和cd
         private float searchTargetTime = 1; //无目标 每隔1s检查
         private float searchTime_hasTarget = 5;//有目标 每隔5s检查
         private float searchTimer = 0; //查找
 
-        //setting
-        public float ackTime = 0.8f; //act切换间隔,防止瞬间多次触发
 
-        public MiniTimer sleepTimer = new MiniTimer();
+        public Transform transform => owner.transform;
+        public RoleMovement Movement => owner.roleData.movement;
+        public bool IsAIFree => owner.IsFree && !owner.IsAnimBreak;
+        public bool HasTarget => targetRole != null && !targetRole.IsDie;
+
+
+
+        public Role targetRole;
+        public float tempActDis = 1.5f;
+        public float tempTargetDis;
+        public Vector3 idlePos;
+
 
         public void Init(int aiId)
         {
@@ -57,6 +57,8 @@ namespace XiaoCao
             }
             mainDataFSM = ScriptableObject.Instantiate(so);
             mainDataFSM.InitReset(this);
+            Movement.overridBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
+            idlePos = transform.position;
         }
 
         public override void Update()
@@ -85,15 +87,17 @@ namespace XiaoCao
             }
         }
 
-        public void CheckTarget()
+        #region CheckTarget
+
+        private void CheckTarget()
         {
             searchTimer += Time.deltaTime;
-            if (TargetRole != null && !TargetRole.IsDie)
+            if (targetRole != null && !targetRole.IsDie)
             {
                 //有存活目标 每隔5s检查
                 if (searchTimer > searchTime_hasTarget)
                 {
-                    OnSearchTarget(TargetRole);
+                    OnSearchTarget(targetRole);
                 }
             }
             else
@@ -105,22 +109,20 @@ namespace XiaoCao
                 }
             }
 
-            if (TargetRole != null && !TargetRole.IsDie)
+            if (targetRole != null && !targetRole.IsDie)
             {
-                curDistance = GetDistance(TargetRole.transform);
+                CheckDistance();
             }
         }
-
-        public bool HasTarget => TargetRole != null && !TargetRole.IsDie;
 
 
         private void OnSearchTarget(Role last)
         {
             searchTimer = 0;
 
-            float seeR = 20;
+            float seeR = mainDataFSM.setting.seeR; ;
 
-            float seeAngle = 45;
+            float seeAngle = mainDataFSM.setting.seeAngle;
 
             var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, seeR, seeAngle, out float maxS, owner.team);
 
@@ -130,35 +132,29 @@ namespace XiaoCao
                 findRole = last;
             }
 
-            TargetRole = findRole;
+            targetRole = findRole;
         }
 
+        #endregion
 
 
-        #region Move and Rotate
+        #region Move
         public void Move(float speedRate = 1)
         {
-            Vector3 dir = TargetRole == null ? transform.forward :
-                  (TargetRole.transform.position - transform.position).normalized;
+            Vector3 dir = targetRole == null ? transform.forward :
+                  (targetRole.transform.position - transform.position).normalized;
 
             owner.AIMoveDir(dir, speedRate);
         }
-
-        #endregion
-        #region math
+        public void CheckDistance()
+        {
+            tempTargetDis = GetDistance(targetRole.transform);
+        }
         private float GetDistance(Transform tf)
         {
-            return Vector3.Distance(owner.gameObject.transform.position, tf.position);
+            return Vector3.Distance(transform.position, tf.position);
         }
         #endregion
 
     }
-    public enum HideDir
-    {
-        MoveLeft, //左移
-        MoveRight, //右移
-                   //Back, //后退
-                   //Dash //后闪
-    }
-
 }

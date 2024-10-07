@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace XiaoCao
@@ -65,6 +66,15 @@ namespace XiaoCao
             return random < p;
         }
 
+        public static float RangeFloat(float from, float to)
+        {
+            return UnityEngine.Random.Range(from, to);
+        }
+
+        public static int Range(int from, int to)
+        {
+            return UnityEngine.Random.Range(from, to);
+        }
     }
 
     /// <summary>

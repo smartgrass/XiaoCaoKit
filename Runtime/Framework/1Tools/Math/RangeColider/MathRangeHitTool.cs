@@ -83,4 +83,9 @@ public static class MathRangeHitTool
     {
         return new Vector3(v.x, 0, v.y);
     }
+
+    public static Vector3 ToY0(this Vector3 v)
+    {
+        return new Vector3(v.x, 0, v.z);
+    }
 }

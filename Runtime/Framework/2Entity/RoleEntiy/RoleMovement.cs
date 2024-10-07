@@ -24,7 +24,7 @@ namespace XiaoCao
 
         public float maxAnimMoveSpeed = 1;
 
-        public float newBaseMoveSpeed = 0;
+        public float overridBaseMoveSpeed = 0;
 
         public CharacterController cc => owner.idRole.cc;
         public Transform tf => owner.idRole.tf;
@@ -43,10 +43,6 @@ namespace XiaoCao
 
         public override void FixedUpdate()
         {
-            //if (owner.IsDie)
-            //{
-            //    return;
-            //}
             if (!owner.IsFree)
             {
                 return;
@@ -97,7 +93,7 @@ namespace XiaoCao
                 RotateByMoveDir(moveDir, moveSetting.rotationLerp * RoleState.angleSpeedMult);
             }
 
-            float baseSpeed = newBaseMoveSpeed > 0 ? newBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
+            float baseSpeed = overridBaseMoveSpeed > 0 ? overridBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
 
             float speed = baseSpeed * Data_R.roleState.MoveMultFinal;
 

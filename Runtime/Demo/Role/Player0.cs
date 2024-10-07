@@ -509,32 +509,40 @@ namespace XiaoCao
     public class PlayerAttr
     {
         public int lv;
-        public int hp;
-        public int maxHp;
-        public int mp;
-        public int maxMp;
         public int maxExp;
-        public int atk;
-        public int def;
-        public float crit;
+        public int hp;
+        public int mp;
+
+        public int MapHp => (int)maxHpAtr.CurrentValue;
+        public int MapMp => (int)maxMpAtr.CurrentValue;
+        public int Atk => (int)atkAtr.CurrentValue;
+        public int Def => (int)defAtr.CurrentValue;
+        public float Crit => critAtr.CurrentValue;
+
+
+        public AttributeValue maxHpAtr;
+        public AttributeValue maxMpAtr;
+        public AttributeValue atkAtr;
+        public AttributeValue defAtr;
+        public AttributeValue critAtr; //Float
+
 
         public void Init(int lv,bool isPlayer)
         {
             this.lv = lv;
-            maxHp = hp = 100 + 10 * lv;
-            maxMp = mp = 100 + 10 * lv;
             maxExp = 100 + 100 * (lv % 10);
-            atk = lv * 5 + 5;
-            def = lv * 1;
+
+
+            maxHpAtr.BaseValue = hp = 100 + 10 * lv;
+            maxMpAtr.BaseValue = mp = 100 + 10 * lv;
+            atkAtr.BaseValue = lv * 5 + 5;
+            defAtr.BaseValue = lv * 1;
+            critAtr.BaseValue = 0;
+
             if (isPlayer)
             {
-                atk = lv * 10 + 10;
+                atkAtr.BaseValue = lv * 10 + 10;
             }
-        }
-
-        public int GetAtk()
-        {
-            return atk;
         }
 
     }

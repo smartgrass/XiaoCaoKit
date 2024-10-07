@@ -32,7 +32,7 @@ namespace XiaoCao
 
         public int Level { get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value; }
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
-        public override int MaxHp { get => roleData.playerAttr.maxHp; set => roleData.playerAttr.maxHp = value; }
+        public override int MaxHp { get => roleData.playerAttr.MapHp;}
 
         public float ShowArmorPercentage => roleData.breakData.ShowPercentage;
 
@@ -124,64 +124,79 @@ namespace XiaoCao
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
         {
-            //非死亡则往下执行
-            if (BaseDamageCheck(ackInfo))
+            if (IsDie)
             {
-                var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
+                return;
+            }
 
-                SoundMgr.Inst.PlayHitAudio(setting.HitClip);
+            var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
+            //非死亡则往下执行
+            if (!BaseDamageCheck(ackInfo))
+            {
+                SoundMgr.Inst.PlayHitAudio("Dead");
+                HitTween(ackInfo, setting);
+                return;
+            }
 
-                roleData.breakData.OnHit((int)setting.BreakPower);
-                roleData.movement.OnDamage(roleData.breakData.isBreak);
-                if (roleData.breakData.isBreak)
+            SoundMgr.Inst.PlayHitAudio(setting.HitClip);
+
+            roleData.breakData.OnHit((int)setting.BreakPower);
+            roleData.movement.OnDamage(roleData.breakData.isBreak);
+            if (roleData.breakData.isBreak)
+            {
+                HitTween(ackInfo, setting);
+
+                transform.RotaToPos(ackInfo.hitPos, 0.5f);
+
+                //无重力时间
+                roleData.movement.SetNoGravityT(setting.NoGTime);
+
+                // 打断当前技能
+                OnBreak();
+                if (!BattleData.IsTimeStop)
                 {
-                    //击飞处理
-                    Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
-
-                    Vector3 targetHorVec = ackInfo.ackObjectPos + horDir * setting.AddHor;
-
-                    float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
-
-                    if (!BattleData.IsTimeStop)
-                    {
-                        idRole.cc.DOHit(setting.AddY, horDir * horDistance, setting.HitTime);
-                    }
-
-                    transform.RotaToPos(ackInfo.hitPos, 0.5f);
-
-                    //无重力时间
-                    roleData.movement.SetNoGravityT(setting.NoGTime);
-
-                    // 打断当前技能
-                    OnBreak();
-                    if (!BattleData.IsTimeStop)
-                    {
-                        Anim.TryPlayAnim(AnimHash.Break);
-                        HitStop.Do(setting.HitStop);
-                    }
-                    Debug.Log($"--- AnimHash.Break");
+                    Anim.TryPlayAnim(AnimHash.Break);
+                    HitStop.Do(setting.HitStop);
                 }
-                else
+                Debug.Log($"--- AnimHash.Break");
+            }
+            else
+            {
+                if (!BattleData.IsTimeStop)
                 {
-                    if (!BattleData.IsTimeStop)
-                    {
-                        Anim.TryPlayAnim(AnimHash.Hit);
-                    }
-                    roleData.movement.SetUnMoveTime(0.35f);
+                    Anim.TryPlayAnim(AnimHash.Hit);
                 }
+                roleData.movement.SetUnMoveTime(0.35f);
 
-                //playerMover.SetNoGravityT(setting.NoGravityT);
+            }
 
-                var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
-                effect.SetActive(true);
-                effect.transform.SetParent(transform, true);
 
-                Vector3 tempAckObjectPos = ackInfo.ackObjectPos;
-                tempAckObjectPos.y = ackInfo.hitPos.y;
-                tempAckObjectPos = Vector3.Lerp(ackInfo.ackObjectPos, ackInfo.hitPos, 0.8f);
-                effect.transform.position = tempAckObjectPos; //ackInfo.hitPos;
+            //playerMover.SetNoGravityT(setting.NoGravityT);
 
-                effect.transform.forward = ackInfo.ackObjectPos - transform.position;
+            var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
+            effect.SetActive(true);
+            effect.transform.SetParent(transform, true);
+
+            Vector3 tempAckObjectPos = ackInfo.ackObjectPos;
+            tempAckObjectPos.y = ackInfo.hitPos.y;
+            tempAckObjectPos = Vector3.Lerp(ackInfo.ackObjectPos, ackInfo.hitPos, 0.8f);
+            effect.transform.position = tempAckObjectPos; //ackInfo.hitPos;
+
+            effect.transform.forward = ackInfo.ackObjectPos - transform.position;
+        }
+
+        private void HitTween(AtkInfo ackInfo, SkillSetting setting)
+        {
+            //击飞处理
+            Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
+
+            Vector3 targetHorVec = ackInfo.ackObjectPos + horDir * setting.AddHor;
+
+            float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
+
+            if (!BattleData.IsTimeStop)
+            {
+                idRole.cc.DOHit(setting.AddY, horDir * horDistance, setting.HitTime);
             }
         }
 

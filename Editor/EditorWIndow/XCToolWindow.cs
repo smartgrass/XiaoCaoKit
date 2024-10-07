@@ -106,6 +106,16 @@ namespace AssetEditor.Editor
             }
         }
 
+        [Button("生成敌人", Line1,enabledMode: EButtonEnableMode.Playmode)]
+        void GenEnemy()
+        {
+            var testRole = GameObject.FindAnyObjectByType<TestRole>();
+            if (testRole)
+            {
+                testRole.Gen();
+            }
+        }
+
 
         [Button("打开替换面板", Line1)]
         void OpenRepalceTool()

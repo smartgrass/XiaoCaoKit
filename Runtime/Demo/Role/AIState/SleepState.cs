@@ -3,7 +3,7 @@
 namespace XiaoCao
 {
     [CreateAssetMenu(fileName = "SleepState", menuName = "SO/AI/SleepState", order = 1)]
-    public class SleepState : AIFSMBase, ITimeState
+    public class SleepState : AIFSMBase
     {
         public bool getFromSetting = true;
 
@@ -16,7 +16,7 @@ namespace XiaoCao
         {
             if (getFromSetting)
             {
-                totalTime = setting.sleepTime;
+                totalTime = Setting.sleepTime;
             }
             Timer = TotalTime;
             State = FSMState.Update;
@@ -38,10 +38,5 @@ namespace XiaoCao
                 OnExit();
             }
         }
-    }
-
-    public interface ITimeState
-    {
-        public float TotalTime { get; set; }
     }
 }

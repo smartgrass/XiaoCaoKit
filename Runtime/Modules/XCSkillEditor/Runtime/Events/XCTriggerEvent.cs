@@ -106,8 +106,8 @@ namespace XiaoCao
         private void SetCurAtkTrigger()
         {
             PlayerAttr attr = Info.role.roleData.playerAttr;
-            int atk = attr.GetAtk();
-            bool isCrit = MathTool.IsInRandom(attr.crit / 100f);
+            int atk = (int)attr.atkAtr.CurrentValue ;
+            bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
             CurTrigger.maxTriggerTime = maxTriggerTime;
             CurTrigger.curTriggerTime = 0;
 

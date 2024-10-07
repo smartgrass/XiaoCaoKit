@@ -4,7 +4,7 @@ using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
-    ///<see cref="HideState"/>
+    ///<see cref="IdleState"/>
     ///<see cref="PreAtkState"/>
     /// AtkState 是一个有前摇 后摇的时间
     [CreateAssetMenu(fileName = "AtkState", menuName = "SO/AI/AtkState", order = 1)]
@@ -15,20 +15,21 @@ namespace XiaoCao
 
         [XCLabel("攻击后摇")]
         public float afterAtk = 0; //攻击结束的后摇
-
+        [XCLabel("攻击信息")]
         public string atkMsg ="0"; //信息
 
-        public int atkState = 0;
 
         private float Timer { get; set; }
-
         private bool IsInited { get; set; }
+
+        private int curAtkState = 0;
+
 
         public override void OnStart()
         {
             State = FSMState.Update;
             Timer = 0;
-            atkState = 0;
+            curAtkState = 0;
             if (!IsInited)
             {
                 IsInited = true;
@@ -53,13 +54,13 @@ namespace XiaoCao
                 return;
             }
 
-            if (atkState == 0)
+            if (curAtkState == 0)
             {
                 Timer += Time.deltaTime;
                 if (Timer > beforeAtk)
                 {
                     AtkStart();
-                    atkState++;
+                    curAtkState++;
                     Timer = 0;
                 }
             }

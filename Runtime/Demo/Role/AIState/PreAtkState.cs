@@ -9,6 +9,7 @@ namespace XiaoCao
     [CreateAssetMenu(fileName = "PreAtkState", menuName = "SO/AI/PreAtkState", order = 1)]
     public class PreAtkState : AIFSMBase
     {
+        public string des;
         public float distance = 3; //执行距离
         public float moveTime = 1.5f; //追踪时间
         public float minMoveTime = 0; //追踪时间
@@ -18,6 +19,7 @@ namespace XiaoCao
         {
             State = FSMState.Update;
             moveTimer = 0;
+            control.tempActDis = distance;
         }
         public override void OnUpdate()
         {
@@ -33,7 +35,9 @@ namespace XiaoCao
                 return;
             }
 
-            bool isFar = curDistance > distance;
+            control.CheckDistance();
+
+            bool isFar = control.tempTargetDis > distance;
 
             bool isMoveEnd = moveTimer >= moveTime;
 
