@@ -29,7 +29,7 @@ namespace XiaoCao
         public override void Init()
         {
             base.Init();
-
+            IsInited = true;
         }
         #region 常规
         public override void OnCloseBtnClick()

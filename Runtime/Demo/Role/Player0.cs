@@ -68,7 +68,6 @@ namespace XiaoCao
         {
             DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             DebugGUI.Log("Anim", Anim.speed);
-            DebugGUI.Log("BreakState", playerData.breakData.state);
             DebugGUI.Log("breakArmor", roleData.breakData.armor);
         }
 

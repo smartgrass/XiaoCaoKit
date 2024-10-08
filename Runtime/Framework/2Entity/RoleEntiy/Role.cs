@@ -30,6 +30,8 @@ namespace XiaoCao
         //roleData
         public RoleData roleData;
 
+        public Action<Role> DeadAct;
+        
         public int Level { get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value; }
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
         public override int MaxHp { get => roleData.playerAttr.MapHp;}
@@ -141,8 +143,8 @@ namespace XiaoCao
             SoundMgr.Inst.PlayHitAudio(setting.HitClip);
 
             roleData.breakData.OnHit((int)setting.BreakPower);
-            roleData.movement.OnDamage(roleData.breakData.isBreak);
-            if (roleData.breakData.isBreak)
+            roleData.movement.OnDamage(roleData.breakData.IsBreak);
+            if (roleData.breakData.IsBreak)
             {
                 HitTween(ackInfo, setting);
 
@@ -213,7 +215,7 @@ namespace XiaoCao
         public void CheckBreakUpdate()
         {
             roleData.breakData.OnUpdate(XCTime.deltaTime);
-            if (!roleData.breakData.isBreak)
+            if (!roleData.breakData.IsBreak)
             {
                 roleData.bodyState = EBodyState.Ready;
             }
@@ -253,7 +255,7 @@ namespace XiaoCao
             {
                 Anim.SetBool(AnimHash.IsDead, true);
             }
-            //
+            DeadAct?.Invoke(this);
         }
 
 
@@ -282,7 +284,7 @@ namespace XiaoCao
             //处理击飞
             if (!isOn)
             {
-                if (roleData.breakData.isBreak)
+                if (roleData.breakData.IsBreak)
                 {
                     Anim.TryPlayAnim(AnimHash.Break);
                 }
@@ -637,18 +639,13 @@ namespace XiaoCao
         public float deadTime = 3f;//结束时回收
 
         public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
-
-        public BreakSubState state { get; set; }
+        
         public bool isHover { get; set; }//是否滞空
-        public bool isBreak => state != BreakSubState.None;  //是否破防
+        public bool IsBreak => armor <= 0;
 
         public bool HasHit { get; set; }
 
         public float ShowPercentage => armor / maxArmor;
-
-        public float enterBreakTime;
-
-        public float breakTimer;
 
         public bool UpdateDeadEnd()
         {
@@ -662,17 +659,11 @@ namespace XiaoCao
                 return false;
             }
         }
-
+        private float _lastHitTime;
         public void OnHit(int hitArmor)
         {
             armor -= hitArmor;
-            if (state == BreakSubState.None)
-            {
-                if (armor <= 0)
-                {
-                    state = BreakSubState.BreakStart;
-                }
-            }
+            _lastHitTime = Time.time;
             HasHit = true;
         }
 
@@ -683,32 +674,17 @@ namespace XiaoCao
                 armor += deltaTime * recoverSpeedInner;
             }
 
-            if (state == BreakSubState.BreakRecover)
+            if (_lastHitTime + recoverWait_t < Time.time)
             {
                 armor += deltaTime * recoverSpeed;
             }
-            else if (state == BreakSubState.BreakStart)
-            {
-                breakTimer += deltaTime;
-                if (breakTimer > recoverWait_t)
-                {
-                    state = BreakSubState.BreakRecover;
-                }
-            }
+            
 
             if (armor >= maxArmor)
             {
                 armor = maxArmor;
-                state = BreakSubState.None;
             }
             HasHit = false;
-        }
-
-        public enum BreakSubState
-        {
-            None,
-            BreakStart,
-            BreakRecover
         }
     }
     #endregion

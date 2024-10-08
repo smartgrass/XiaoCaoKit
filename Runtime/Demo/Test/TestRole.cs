@@ -74,12 +74,33 @@ public class TestRole : GameStartMono
 
                     enemy.IsAiOn = enableAI;
 
+                    enemy.DeadAct += OnEnemyDead;
+
+                    curGenCount++;
+                    
+                    _enemyList.Add(enemy.id);
+                    
                     pos++;
                 }
             }
         }
 
     }
+
+    private int curGenCount;
+    private int deadCount;
+    public string groupName;
+    private List<int> _enemyList = new List<int>();
+
+    private void OnEnemyDead(Role role){
+        //TODO临时写法 有需求再优化
+        deadCount++;
+        _enemyList.Remove(role.id);
+        if (deadCount == curGenCount){
+            GameEvent.Send(EventType.EnemyGroupEndEvent.Int(), groupName);
+        }
+    }
+
 
     private Vector3 GetGenPosition(int index,int count)
     {
