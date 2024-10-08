@@ -520,11 +520,11 @@ namespace XiaoCao
         public float Crit => critAtr.CurrentValue;
 
 
-        public AttributeValue maxHpAtr;
-        public AttributeValue maxMpAtr;
-        public AttributeValue atkAtr;
-        public AttributeValue defAtr;
-        public AttributeValue critAtr; //Float
+        public AttributeValue maxHpAtr =new AttributeValue();
+        public AttributeValue maxMpAtr = new AttributeValue();
+        public AttributeValue atkAtr = new AttributeValue();
+        public AttributeValue defAtr = new AttributeValue();
+        public AttributeValue critAtr = new AttributeValue(); //Float
 
 
         public void Init(int lv,bool isPlayer)

@@ -6,7 +6,15 @@ using UnityEngine;
 [Serializable]
 public class AttributeValue
 {
-    public float BaseValue;
+    public float BaseValue { get => _baseValue;
+        set
+        {
+            _baseValue = value;
+            UpdateAttributeModifiers();
+        }
+    
+    }
+    private float _baseValue;
     public float CurrentValue;
     public Dictionary<string, AttributeModifier> Modifiers = new Dictionary<string, AttributeModifier>();
 
