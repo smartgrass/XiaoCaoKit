@@ -427,6 +427,8 @@ namespace XiaoCao
 
         public int prefabId = 0;
 
+        //技能解锁状态
+        public Dictionary<int,int> skillUnlockDic = new Dictionary<int,int>();
 
         public SkillBarData skillBarData = new SkillBarData();
 
