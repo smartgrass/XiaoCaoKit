@@ -21,7 +21,7 @@ namespace XiaoCao
                 
             }
 
-            if (DebugPanel.DebugGUI_IsShow.GetKeyBool())
+            if (DebugSetting.IsDebug)
             {
                 var prefab = Resources.Load<GameObject>("IngameDebugConsole");
                 var con = GameObject.Instantiate(prefab);

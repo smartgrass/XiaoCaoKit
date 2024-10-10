@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace XiaoCao
@@ -14,6 +15,7 @@ namespace XiaoCao
             transform.GetComponent<Button>().onClick.AddListener(Open);
         }
 
+        [Button]
         private void Open()
         {
             UIMgr.Inst.ShowView(type);

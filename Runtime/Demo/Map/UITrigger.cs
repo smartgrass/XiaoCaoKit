@@ -42,6 +42,7 @@ namespace XiaoCao
         Null = -1,
         LevelPanel = 0,
         SettingPanel = 1,
+        PlayerPanel = 2,
         DebugPanel = 99,
     }
 }

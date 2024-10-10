@@ -100,7 +100,7 @@ namespace XiaoCao
 			}
 		}
 
-	public Item( ItemType itemType, string itemId, int itemCount, EQuality itemQuality)
+	public Item( ItemType itemType, string itemId, int itemCount, EQuality itemQuality = EQuality.Blue)
 		{
 			id = itemId;
 			type = itemType;

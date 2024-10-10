@@ -23,6 +23,8 @@ namespace XiaoCao
 
         public SettingPanel settingPanel;
 
+        public PlayerPanel playerPanel;
+
         public HashSet<PanelBase> panels = new HashSet<PanelBase>();
 
         //懒加载 或 主动加载
@@ -34,7 +36,7 @@ namespace XiaoCao
             skillBarHud?.Init();
             //debugPanel?.Init();
             settingPanel?.Init();
-
+            //playerPanel?.Init();
         }
 
         public void ShowView(UIPanelType type)
@@ -90,6 +92,10 @@ namespace XiaoCao
             else if (type == UIPanelType.SettingPanel)
             {
                 return settingPanel;
+            }            
+            else if (type == UIPanelType.PlayerPanel)
+            {
+                return playerPanel;
             }
             Debuger.LogError($"--- no panel {type}");
             return null;

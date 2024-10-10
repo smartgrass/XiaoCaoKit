@@ -451,6 +451,10 @@ namespace XiaoCao
             {
                 holdItems = new List<Item>();
             }
+            if (skillUnlockDic == null)
+            {
+                skillUnlockDic = new Dictionary<int, int>();
+            }
         }
     }
 

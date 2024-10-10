@@ -16,6 +16,7 @@ namespace XiaoCao
         //由玩家缓存数据读取 , 不需要初始值
         public static PlayerSaveData playerSaveData = null;
 
+
         public static void Init()
         {
             commonData = new GameDataCommon();

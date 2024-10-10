@@ -100,4 +100,25 @@ namespace XiaoCao
         }
     }
 
+    public static class DebugSetting{
+
+        public static readonly string DebugGUI_IsShow = "DebugGUI_IsShow";
+
+        public static readonly string OtherShowing = "DebugGUI/IsOtherShowing";
+        public static bool IsDebug
+        {
+            get
+            {
+                if (Application.isEditor)
+                {
+                    if (DebugGUI_IsShow.GetKeyBool())
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+    }
 }

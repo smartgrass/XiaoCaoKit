@@ -54,13 +54,13 @@ namespace AssetEditor.Editor
                     "IsKaiLe".SetKeyBool(true);
                     OnTimeScale();
                 }
-                IsShowDebug = DebugPanel.DebugGUI_IsShow.GetKeyBool();
+                IsShowDebug = DebugSetting.DebugGUI_IsShow.GetKeyBool();
             }
         }
 
         private void CheckDebugGo()
         {
-            DebugPanel.DebugGUI_IsShow.SetKeyBool(IsShowDebug);
+            DebugSetting.DebugGUI_IsShow.SetKeyBool(IsShowDebug);
             if (MarkObject.TryGet("debugGo", out GameObject debugGo))
             {
                 debugGo.gameObject.SetActive(IsShowDebug);

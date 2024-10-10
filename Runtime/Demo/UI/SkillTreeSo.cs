@@ -5,8 +5,10 @@ using UnityEngine.Serialization;
 
 namespace XiaoCao{
 	
-	[CreateAssetMenu(menuName = "SO/SkillTreeSettingSo")]
-	public class SkillTreeSetting : ScriptableObject{
+	[CreateAssetMenu(menuName = "SO/SkillTreeSo")]
+	public class SkillTreeSo : ScriptableObject{
+		public Vector2 posScale = Vector2.one;
+
 		public List<SkillSubTree> datas;
 	}
 
@@ -14,8 +16,8 @@ namespace XiaoCao{
 	public class SkillSubTree: IIndex{
 		public int id = 0;
 		public int Id => id;
-		public Vector2 pos;
-		public Vector2 link;
+		public Vector2Int pos;
+		public Vector2Int link;
 		public Sprite icon;
 	}
 }
