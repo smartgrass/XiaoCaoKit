@@ -20,6 +20,7 @@ namespace XiaoCao
 {
     ///<see cref="MoveSettingSo"/>
     ///<see cref="PlayerSettingSo"/>
+    ///<see cref="LocalizeMgr"/>
     public class ConfigMgr
     {
         private static IniFile mainConfig;
