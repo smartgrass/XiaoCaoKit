@@ -15,7 +15,7 @@ namespace AssetEditor.Editor
 {
     public class XCToolWindow : XiaoCaoWindow
     {
-        [MenuItem(XCEditorTools.XCToolWindow)]
+        [MenuItem(XCEditorTools.XCToolWindow,priority=1)]
         public static XCToolWindow Open()
         {
             return OpenWindow<XCToolWindow>("XiaoCao调试面板");
@@ -180,7 +180,9 @@ namespace AssetEditor.Editor
         [Button("Test Config", Line99)]
         void TestConfig()
         {
-            var t = ConfigMgr.MainCfg;
+            LocalizeMgr.ClearCache();
+            LocalizeMgr t = LocalizeMgr.Inst;
+            LocalizeMgr.Localize("Key").LogStr();
         }
 
     }

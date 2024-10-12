@@ -11,7 +11,14 @@ public static class PlayerPrefsTool
     public static bool GetKeyBool(this string key)
     {
         return PlayerPrefs.GetInt(key).ToBool();
+    }    
+    public static string GetKeyString(this string key,string defaultValue = ""){
+        return PlayerPrefs.GetString(key,defaultValue);
+    }    
+    public static void SetKeyString(this string key,string value){
+        PlayerPrefs.SetString(key,value);
     }
+
 
     public static bool ToBool(this int num)
     {

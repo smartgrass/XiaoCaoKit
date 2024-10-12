@@ -58,8 +58,8 @@ namespace XiaoCao
 
         private void LoadTextConfig()
         {
-            var init = ConfigMgr.MainCfg;
-
+            ConfigMgr.Init();
+            LocalizeMgr localizeMgr = LocalizeMgr.Inst;
         }
 
         private void LoadPlayerData()

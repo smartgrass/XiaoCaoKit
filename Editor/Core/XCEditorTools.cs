@@ -33,7 +33,7 @@ namespace XiaoCaoEditor
         public const string OpenPath_GenConfigPath = XiaoCaoPath + "打开生成配置位置";
 
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
-        public const string XCToolWindow = "XiaoCao/XCToolWindow";
+        public const string XCToolWindow = "XiaoCao/XiaoCao调试面板";
         public const string XCFindWindow = "XiaoCao/查询面板";
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage

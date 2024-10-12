@@ -53,7 +53,19 @@ public class IniFile
             return section.GetValue(key, defaultValue);
         }
         return defaultValue;
-    }    
+    }
+
+    public bool TryGetFristValue(string key, out string ret){
+        IniSection section = m_sectionList[0];
+        if (section.Dic.TryGetValue(key,out string value))
+        {
+            ret = value;
+            return true;
+        }
+        ret = null;
+        return false;
+    }
+    
     public bool TryGetValue(string sectionName, string key, out string ret)
     {
         IniSection section = GetSection(sectionName);
@@ -77,46 +89,36 @@ public class IniFile
             IniSection section = null;
             int equalSignPos = 0;//=号的标记的位置
             string key, value;
-            while (true)
+            while ((line = sr.ReadLine()) != null)
             {
-                line = sr.ReadLine();
-                if (null == line)
-                {
-                    break;
-                }
                 line = line.Trim();
-                if (line == "")
+                if (line == "") continue;
+                
+                // 跳过注释
+                if (line.StartsWith("//")) continue;
+                
+                
+                // 处理 Section
+                if (line.StartsWith("[") && line.EndsWith("]"))
                 {
-                    continue;
-                }
-                //跳过注释
-                if (line.Length >= 2 && line[0] == '/' && line[1] == '/')
-                {
-                    continue;
-                }
-                if (line[0] == '[' && line[line.Length - 1] == ']')
-                {
-                    //移除首尾的'[]'
-                    line = line.Remove(0, 1);
-                    line = line.Remove(line.Length - 1, 1);
-                    //去SectionList缓存中找是否存在这个Section
-                    section = GetSection(line);
-                    //如果没有找到就直接new一个
-                    if (null == section)
+                    string sectionName = line.Substring(1, line.Length - 2);
+                    section = GetSection(sectionName) ?? new IniSection(sectionName);
+                    if (!m_sectionList.Contains(section))
                     {
-                        section = new IniSection(line);
                         m_sectionList.Add(section);
                     }
                 }
                 else
                 {
-                    //就是在这个头下面的数据字段，key-value格式
                     equalSignPos = line.IndexOf('=');
-                    if (equalSignPos != 0)
+                    if (equalSignPos > 0)
                     {
-                        key = line.Substring(0, equalSignPos);
-                        value = line.Substring(equalSignPos + 1, line.Length - equalSignPos - 1);
-                        section.AddKeyValue(key, value);
+                        key = line.Substring(0, equalSignPos).Trim();
+                        value = line.Substring(equalSignPos + 1).Trim();
+
+                        // 处理换行符（\n）
+                        value = value.Replace("\\n", "\n");
+                        section?.AddKeyValue(key, value);
                     }
                     else
                     {

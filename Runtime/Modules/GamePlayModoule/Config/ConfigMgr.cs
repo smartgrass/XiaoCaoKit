@@ -29,6 +29,10 @@ namespace XiaoCao
 
         private static LocalSetting localSetting;
 
+        public static void Init(){
+            var init = MainCfg;
+        }
+        
         public static string GetConfigPath(Type t)
         {
             return $"{ResMgr.RESDIR}/Config/{t.Name}";
