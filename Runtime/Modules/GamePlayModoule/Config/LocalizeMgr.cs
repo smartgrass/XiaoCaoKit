@@ -4,10 +4,11 @@ namespace XiaoCao
 {
 	public class LocalizeMgr:Singleton<LocalizeMgr>,IClearCache
 	{
-		public static IniFile LocalizeData;
+		private static IniFile _localizeData;
 		private const string DirName = "Localize/";
 		private const string CurLangKey = "CurLang";
-		public static Language Language;
+		public static ELanguage CurLanguage;
+		public static Action OnLanguageChanged = null;
 
 		protected override void Init(){
 			base.Init();
@@ -15,7 +16,7 @@ namespace XiaoCao
 		}
 
 		public static string Localize(string key){
-			if (LocalizeData.TryGetFristValue(key,out string value)){
+			if (_localizeData.TryGetFristValue(key,out string value)){
 				return value;	
 			}
 			return CurLangKey+key;
@@ -24,46 +25,37 @@ namespace XiaoCao
 		public static void Load()
 		{
 			var langStr= CurLangKey.GetKeyString();
-			Enum.TryParse(langStr, out Language lang);
-			Language = lang;
+			Enum.TryParse(langStr, out ELanguage lang);
+			CurLanguage = lang;
             
 			LoadLangData(lang);
 		}
 
-		private static void LoadLangData(Language lang){
+		private static void LoadLangData(ELanguage lang){
 			var ini = new IniFile();
 			ini.LoadFromFile(DirName + lang.ToString()+".ini");
-			LocalizeData = ini;
+			_localizeData = ini;
 		}
 
-		public static void ChangeCurLang(Language lang){
-			if (Language == lang) return;
+		public static void ChangeCurLang(ELanguage lang){
+			if (CurLanguage == lang) return;
 			
 			CurLangKey.SetKeyString(lang.ToString());
 			LoadLangData(lang);
-			Language = lang;
-		}
-
-
-
-        
-		public void TestMethod1()
-		{
-
+			CurLanguage = lang;
+			OnLanguageChanged?.Invoke();
 		}
 		
 		
 	}
 
-	//[TestClass]
-	//public class UnitTest1
-	//{
-	//    private const string Expected = "Hello World!";
-	//    [TestMethod]
+	public class LangSetting{
+		//与枚举1,1对应
+		public static string[] ShowNames =  { "English", "中文" };
+	}
+	
 
-	//}
-
-	public enum Language{
+	public enum ELanguage{
 		En,
 		Cn
 	}
