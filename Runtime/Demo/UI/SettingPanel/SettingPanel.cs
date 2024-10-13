@@ -21,12 +21,18 @@ public class SettingPanel : TabPanel
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
         SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
         SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
-
+       
 
         mainPanel.Show();
         gameObject.SetActive(false);
         Prefabs.gameObject.SetActive(false); 
         IsInited = true;
+    }
+
+    public override void Hide()
+    {
+        base.Hide();
+        LocalSetting.SaveSetting();
     }
 
 }

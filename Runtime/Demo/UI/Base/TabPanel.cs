@@ -38,15 +38,15 @@ public abstract class TabPanel : PanelBase
         subPanel.Prefabs = Prefabs;
         subPanel.subPanelName = panelName;
 
-        GameObject tabBtn = Instantiate(Prefabs.btn, TABS);
-        var btn = tabBtn.GetComponentInChildren<Button>();
-        btn.onClick.AddListener(() =>
+        GameObject tabBtnGo = Instantiate(Prefabs.tabBtn, TABS);
+        var tabBtn = tabBtnGo.GetComponentInChildren<Button>();
+        subPanel.TabBtn = tabBtn;
+        tabBtn.onClick.AddListener(() =>
         {
             subPanel.Show();
-            btn.Select();
         });
-        tabBtn.GetComponentInChildren<Button>().Select();
-        tabBtn.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
+        tabBtnGo.GetComponentInChildren<Button>().Select();
+        tabBtnGo.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
 
         subPanel.Init();
         list.Add(subPanel);
@@ -61,6 +61,10 @@ public abstract class TabPanel : PanelBase
             if (subPanel.subPanelName != subPanelName)
             {
                 subPanel.Hide();
+            }
+            else
+            {
+                subPanel.TabBtn.Select();
             }
         }
 
@@ -97,9 +101,7 @@ public abstract class TabPanel : PanelBase
     public override void Hide()
     {
         gameObject.SetActive(false);
-        IsShowing = false;
         UIMgr.Inst.HideView(panelType);
-        LocalSetting.SaveSetting();
     }
 
     public override void Show()

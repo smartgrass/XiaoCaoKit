@@ -62,6 +62,8 @@ namespace XiaoCao
 
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
+        public bool UIEnter;
+
 
         ///<see cref="BattleFlagNames"/>
         public bool HasFlag(string flag)

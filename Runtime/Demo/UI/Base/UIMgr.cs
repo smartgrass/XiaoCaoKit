@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     public class UIMgr : MonoSingletonPrefab<UIMgr>,IMgr
     {
         //UI分类:
@@ -25,7 +26,9 @@ namespace XiaoCao
 
         public PlayerPanel playerPanel;
 
-        public HashSet<PanelBase> panels = new HashSet<PanelBase>();
+        public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
+
+        public PanelBase lastPanel;
 
         //懒加载 或 主动加载
 
@@ -47,19 +50,22 @@ namespace XiaoCao
             {
                 midCanvas.enabled = false;
             }
-            panels.Add(panel);
+            showingPanels.Add(panel);
+            lastPanel = panel;
             CheckPlayInputAble();
         }
 
         public void HideView(UIPanelType type)
         {
             PanelBase panel = GetPanel(type);
-            if (panel && panel.IsShowing)
+            if (!panel || !panel.IsShowing)
             {
-                panel.IsShowing = false;
-                panel.Hide();
-                panels.Remove(levelPanel);
+                return;
             }
+            panel.IsShowing = false;
+            panel.Hide();
+            showingPanels.Remove(panel);
+
             if (IsHideMid(type))
             {
                 midCanvas.enabled = true;
@@ -68,12 +74,39 @@ namespace XiaoCao
         }
 
 
+        private void Update()
+        {
+            //电脑端
+            if (showingPanels.Count <=0)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    ShowView(UIPanelType.SettingPanel);
+                }
+                else if (Input.GetKeyDown(KeyCode.C))
+                {
+                    ShowView(UIPanelType.PlayerPanel);
+                }
+            }
+            else
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    if (lastPanel!=null && lastPanel.IsShowing)
+                    {
+                        lastPanel.Hide();
+                    }
+                } 
+            }
+
+
+        }
 
         //屏蔽输入
         void CheckPlayInputAble()
         {
             bool can = true;
-            foreach (var panel in panels)
+            foreach (var panel in showingPanels)
             {
                 if (panel.StopPlayerControl && panel.IsShowing)
                 {
@@ -103,14 +136,7 @@ namespace XiaoCao
 
         public bool IsHideMid(UIPanelType type)
         {
-            if (type == UIPanelType.SettingPanel)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return true;
         }
         public void PlayDamageText(int atk, Vector3 textPos)
         {

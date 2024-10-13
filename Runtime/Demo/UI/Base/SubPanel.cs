@@ -20,6 +20,8 @@ public abstract class SubPanel
 
     public Transform transform => gameObject.transform;
 
+    public Button TabBtn {  get;  set; }
+
     //public void ShowOrHide()
     //{
     //    if (gameObject.activeSelf)
@@ -36,6 +38,7 @@ public abstract class SubPanel
     {
         gameObject.SetActive(true);
         panel.SwitchPanel(subPanelName);
+
     }
     public void Hide()
     {

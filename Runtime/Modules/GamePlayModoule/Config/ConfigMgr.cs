@@ -126,12 +126,22 @@ namespace XiaoCao
 
         public static LocalSetting Load()
         {
-            return SaveMgr.ReadData<LocalSetting>(out bool isSuc);
+            var ret = SaveMgr.ReadData<LocalSetting>(out bool isSuc);
+            if (!isSuc)
+            {
+
+            }
+            return ret;
         }
 
         public static void SaveSetting()
         {
             SaveMgr.SaveData<LocalSetting>(ConfigMgr.LocalSetting);
+        }
+
+        public void SetDefaultSetting()
+        {
+
         }
     }
 }

@@ -68,7 +68,6 @@ namespace XiaoCao
         public override void Hide()
         {
             gameObject.SetActive(false);
-            IsShowing = false;
             UIMgr.Inst.HideView(panelType);
         }
 

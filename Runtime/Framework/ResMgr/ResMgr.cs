@@ -35,8 +35,6 @@ public class ResMgr
     public static ResourcePackage Loader;
     public static ResourcePackage RawLoader;
 
-    public static bool hasExtraPackage;
-
     public static Dictionary<string, ShortKeyCache> ShortKeyDic = new Dictionary<string, ShortKeyCache>();
 
     public static GameObject LoadInstan(string path, PackageType type = PackageType.DefaultPackage)

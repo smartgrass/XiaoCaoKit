@@ -1,5 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.IO;
+using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Networking;
 
 namespace XiaoCao
 {
@@ -9,9 +12,9 @@ namespace XiaoCao
         [Header("master,music,sfx")]
         public AudioMixerGroup[] mixerGroups;
 
-        public AudioSource audioSourcePrefab;
         private LoopPool<AudioSource> asPool;
         private LoopPool<AudioSource> hitAsPool;
+        private AudioSource musicAs;
 
         public override void Init()
         {
@@ -22,7 +25,26 @@ namespace XiaoCao
 
             asPool = new LoopPool<AudioSource>(prefab, 5);
             hitAsPool = new LoopPool<AudioSource>(prefab, 5);
+            musicAs = Instantiate(prefab, transform);
+            musicAs.outputAudioMixerGroup = mixerGroups[1];
+            musicAs.loop = true;
+            PlayMusice();
         }
+
+        ///<see cref="SoundPanel.MainVolumeKey"/>
+        ///输入参数为 0~1
+        public void SetVolume(string group, float volume)
+        {
+            volume = Remap01ToDB(volume);
+            mixer.SetFloat(group, volume);
+        }
+
+        private float Remap01ToDB(float x)
+        {
+            if (x <= 0.0f) x = 0.0001f;
+            return Mathf.Log10(x) * 20.0f;
+        }
+
 
         public void PlayClip(string soundId, float volume = 1)
         {
@@ -74,6 +96,52 @@ namespace XiaoCao
             source.clip = audioClip;
             source.volume = 1;
             source.Play();
+        }
+
+
+        public void PlayMusice()
+        {
+            DirectoryInfo directory = new DirectoryInfo($"{XCPathConfig.GetGameConfigDir()}/Bgm");
+            var files = directory.GetFiles("*.mp3", SearchOption.TopDirectoryOnly);
+            if (files.Length > 0)
+            {
+                StartCoroutine(LoadAndPlayMP3(files[0].FullName));
+            }
+        }
+
+
+        private IEnumerator LoadAndPlayMP3(string filePath)
+        {
+            if (!FileTool.IsFileExist(filePath))
+            {
+                Debug.LogError($"---  no file {filePath}");
+            }
+            Debug.Log($"--- LoadAndPlayMP3 {filePath}");
+
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
+            {
+                if (www.result != UnityWebRequest.Result.ConnectionError && www.result != UnityWebRequest.Result.ProtocolError)
+                {
+                    yield return www.SendWebRequest();
+                    if (www.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogError(www.error);
+                    }
+                    else
+                    {
+                        AudioClip audioClip = DownloadHandlerAudioClip.GetContent(www);
+                        musicAs.clip = audioClip;
+                        musicAs.Play();
+                    }
+                }
+
+                else
+                {
+                    Debug.LogError("Invalid URL or file path: " + filePath);
+                }
+
+            }
+
         }
     }
 
