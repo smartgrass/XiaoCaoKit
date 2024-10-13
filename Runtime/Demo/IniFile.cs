@@ -13,11 +13,16 @@ public class IniFile
     {
         m_sectionList = new List<IniSection>();
     }
-    public void LoadFromFile(string fileName)
+    public void LoadFromFile(string fileName,string failBack = null)
     {
         string strFullPath = XCPathConfig.GetGameConfigFile(fileName);
         if (!File.Exists(strFullPath))
         {
+            if (failBack != null)
+            {
+                Debug.LogError($"--- no file {fileName}");
+                LoadFromFile(failBack,null);
+            }
             return;
         }
         using (FileStream fs = new FileStream(strFullPath, FileMode.Open))

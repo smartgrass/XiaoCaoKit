@@ -22,7 +22,11 @@ namespace XiaoCao
 
 
             var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
-           
+
+            skillPanel.Show();
+
+            gameObject.SetActive(false);
+            Prefabs.gameObject.SetActive(false);
             IsInited = true;
         }
 

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 ///<see cref="IClearCache"/>
-public abstract class Singleton<T> where T : class, new()
+public abstract class Singleton<T> where T : Singleton<T>, new()
 {
 
-    protected static T _instance = null;
+    protected static T _instance;
 
     public static T Inst
     {
@@ -15,6 +15,7 @@ public abstract class Singleton<T> where T : class, new()
             if (_instance == null)
             {
                 _instance = new T();
+                _instance.Init();
             }
             return _instance;
         }
@@ -22,12 +23,12 @@ public abstract class Singleton<T> where T : class, new()
 
     protected Singleton()
     {
-        if(_instance!=null)
+        if (_instance != null)
         {
+            _instance = null;
+            Debug.LogError("This " + (typeof(T)).ToString() + " Singleton Instance is not null !!!");
             throw new System.Exception("This " + (typeof(T)).ToString() + " Singleton Instance is not null !!!");
         }
-
-        Init();
     }
 
     protected virtual void Init()
@@ -48,6 +49,10 @@ public abstract class Singleton<T> where T : class, new()
 
 //标记为需要主动清除, 定时清除
 public interface IClearCache { }
+public interface IInit
+{
+    public void Init();
+}
 
 //管理器抽象
 public interface IMgr { }

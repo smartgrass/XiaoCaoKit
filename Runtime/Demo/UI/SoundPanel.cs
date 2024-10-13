@@ -10,8 +10,6 @@ public class SoundPanel : SubPanel
 
     public override void Init()
     {
-        Hide();
-
         //数值调整->slider
         AddSlider(MainVolumeKey, OnMainChange, new Vector2(0, 1),MainVolumeGetter());
 

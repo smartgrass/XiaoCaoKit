@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
+using XiaoCao.UI;
 
 public abstract class TabPanel : PanelBase
 {
@@ -13,7 +14,7 @@ public abstract class TabPanel : PanelBase
     public UIPrefabs Prefabs;
     public Transform PANELS;
     public Transform TABS;
-    public TMP_Text Title;
+    public TextMeshProUGUI Title;
 
 
 
@@ -38,12 +39,31 @@ public abstract class TabPanel : PanelBase
         subPanel.subPanelName = panelName;
 
         GameObject tabBtn = Instantiate(Prefabs.btn, TABS);
-        tabBtn.GetComponent<Button>().onClick.AddListener(subPanel.Show);
-        tabBtn.GetComponentInChildren<TextMeshProUGUI>().text = panelName;
+        var btn = tabBtn.GetComponentInChildren<Button>();
+        btn.onClick.AddListener(() =>
+        {
+            subPanel.Show();
+            btn.Select();
+        });
+        tabBtn.GetComponentInChildren<Button>().Select();
+        tabBtn.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
 
         subPanel.Init();
         list.Add(subPanel);
         return subPanel;
+    }
+
+    public void SwitchPanel(string subPanelName)
+    {
+        SetSubTitle(subPanelName);
+        foreach (var subPanel in list)
+        {
+            if (subPanel.subPanelName != subPanelName)
+            {
+                subPanel.Hide();
+            }
+        }
+
     }
 
     public SubPanel GetPanel(string subPanelName)
@@ -64,7 +84,7 @@ public abstract class TabPanel : PanelBase
     }
     public void SetSubTitle(string str)
     {
-        this.Title.text = str;
+        this.Title.BindLocalizer(str);
     }
 
     #region 常规

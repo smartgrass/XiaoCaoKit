@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -7,31 +8,53 @@ namespace XiaoCao.UI{
 		public TextMeshProUGUI Text => GetComponent<TextMeshProUGUI>();
 
 		public string key;
+
+		private bool _hasLocalized = false;
 		
 		private void Awake(){
-			LocalizeMgr.OnLanguageChanged += OnLanguageChanged;
+			LocalizeMgr.Inst.OnLanguageChanged += OnLanguageChanged;
 		}
 
-		void OnLanguageChanged(){
-			SetLocalize(key);
-		}
+		void Start()
+		{
+			if (!_hasLocalized)
+			{
+                ReFresh();
+            }
+        }
+
+        [Button]
+        public void ReFresh()
+        {
+            SetLocalize(key);
+        }
+
+        void OnLanguageChanged(){
+			ReFresh();
+        }
 		
 		public void SetLocalize(string key){
 			this.key = key;
 			Text.text = new LocalizeStr(key);
-		}
-		
-		public void ReFresh(){
-			SetLocalize(key);
-		}
+			_hasLocalized = true;
+
+        }
+
 		
 		private void OnDestroy(){
-			LocalizeMgr.OnLanguageChanged -= OnLanguageChanged;
+			LocalizeMgr.Inst.OnLanguageChanged -= OnLanguageChanged;
 		}
 	}
-	
 
-	public struct LocalizeStr{
+	public static class LocalizerExtend
+	{
+		public static void BindLocalizer(this TextMeshProUGUI tmp, string key)
+		{
+            tmp.gameObject.GetOrAddComponent<Localizer>().SetLocalize(key);
+        }
+	}
+
+    public struct LocalizeStr{
 		public LocalizeStr(string key){
 			this.Key = key;
 		}

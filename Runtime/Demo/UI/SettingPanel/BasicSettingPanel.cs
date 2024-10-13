@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
 
-public class BaseSettingPanel: SubPanel
+public class BasicSettingPanel: SubPanel
 {
 	public override void Init(){
-		Hide();
 
 		//Language
 		AddLanguageDropDown();
@@ -17,7 +18,7 @@ public class BaseSettingPanel: SubPanel
 		foreach (ELanguage item in Enum.GetValues(typeof(ELanguage))){
 			enumList.Add(LangSetting.ShowNames[(int)item]);
 		}
-		Dropdown langDropDown = AddDropdown(LocalizeKey.Language, OnLangChange, enumList);
+        var langDropDown = AddDropdown(LocalizeKey.Language, OnLangChange, enumList);
 		langDropDown.SetValueWithoutNotify((int)LocalizeMgr.CurLanguage);
 	}
 

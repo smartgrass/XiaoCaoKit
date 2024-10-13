@@ -59,6 +59,9 @@ namespace XiaoCao
         private void LoadTextConfig()
         {
             ConfigMgr.Init();
+//#if UNITY_EDITOR
+//            LocalizeMgr.ClearCache();
+//#endif
             LocalizeMgr localizeMgr = LocalizeMgr.Inst;
         }
 

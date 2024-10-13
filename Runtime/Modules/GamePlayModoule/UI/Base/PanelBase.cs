@@ -1,4 +1,5 @@
-﻿using UnityEngine.UI;
+﻿using NaughtyAttributes;
+using UnityEngine.UI;
 namespace XiaoCao
 {
     public abstract class PanelBase : ViewBase
@@ -9,6 +10,7 @@ namespace XiaoCao
 
         public bool IsInited { get; set; }
 
+        [ReadOnly]
         public bool IsShowing;
 
         public virtual UIPanelType panelType { get; }

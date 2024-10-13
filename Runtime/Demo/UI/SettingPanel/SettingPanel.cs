@@ -17,10 +17,13 @@ public class SettingPanel : TabPanel
             return;
         }
         base.Init();
-        SubPanel subPanel = AddPanel<SoundPanel>("Sound");
-        SubPanel debugPanel = AddPanel<DebugPanel>("DebugPanel");
 
-        subPanel.Show();
+        SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
+        SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
+        SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
+
+
+        mainPanel.Show();
         gameObject.SetActive(false);
         Prefabs.gameObject.SetActive(false); 
         IsInited = true;

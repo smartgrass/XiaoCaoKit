@@ -15,7 +15,6 @@ namespace XiaoCao
 
         public override void Init()
         {
-            Hide();
             view = gameObject.GetComponent<SkillPanelView>();
 
             Debug.Log($"--- SkillPanel init");

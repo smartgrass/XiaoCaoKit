@@ -36,7 +36,7 @@ namespace XiaoCao
             skillBarHud?.Init();
             //debugPanel?.Init();
             settingPanel?.Init();
-            //playerPanel?.Init();
+            playerPanel?.Init();
         }
 
         public void ShowView(UIPanelType type)

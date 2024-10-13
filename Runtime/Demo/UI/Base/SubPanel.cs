@@ -20,23 +20,22 @@ public abstract class SubPanel
 
     public Transform transform => gameObject.transform;
 
-    public void ShowOrHide()
-    {
-        if (gameObject.activeSelf)
-        {
-            Hide();
-        }
-        else
-        {
-            Show();
-        }
-    }
+    //public void ShowOrHide()
+    //{
+    //    if (gameObject.activeSelf)
+    //    {
+    //        Hide();
+    //    }
+    //    else
+    //    {
+    //        Show();
+    //    }
+    //}
 
     public void Show()
     {
         gameObject.SetActive(true);
-        panel.SetSubTitle(subPanelName);
-
+        panel.SwitchPanel(subPanelName);
     }
     public void Hide()
     {
@@ -61,10 +60,10 @@ public abstract class SubPanel
         return slider;
     }
 
-    public Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents){
+    public TMP_Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents){
         GameObject dropdownPrefab = Prefabs.dropDown;
         GameObject instance = Object.Instantiate(dropdownPrefab, gameObject.transform);
-        Dropdown dropdown = instance.GetComponentInChildren<Dropdown>();
+        TMP_Dropdown dropdown = instance.GetComponentInChildren<TMP_Dropdown>();
         
         TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);

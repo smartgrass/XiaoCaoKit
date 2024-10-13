@@ -9,8 +9,6 @@ public class DebugPanel : SubPanel
 {
     public override void Init()
     {
-        Hide();
-
 
 
     }
