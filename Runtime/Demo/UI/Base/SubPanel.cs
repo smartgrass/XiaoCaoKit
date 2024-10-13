@@ -20,7 +20,7 @@ public abstract class SubPanel
 
     public Transform transform => gameObject.transform;
 
-    public Button TabBtn {  get;  set; }
+    public Button TabBtn { get; set; }
 
     //public void ShowOrHide()
     //{
@@ -46,9 +46,9 @@ public abstract class SubPanel
     }
 
     public abstract void Init();
-    
-    
-    public Slider AddSlider(string title, UnityAction<float> onValueChange, Vector2 range,float initValue =1)
+
+
+    public Slider AddSlider(string title, UnityAction<float> onValueChange, Vector2 range, float initValue = 1)
     {
         GameObject instance = Object.Instantiate(Prefabs.sliderText, gameObject.transform);
         Slider slider = instance.transform.GetChild(1).GetComponent<Slider>();
@@ -57,38 +57,47 @@ public abstract class SubPanel
         slider.minValue = range.x;
         slider.SetValueWithoutNotify(initValue);
         slider.onValueChanged.AddListener(onValueChange);
-        
+
         TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
         return slider;
     }
 
-    public TMP_Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents){
+    public TMP_Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents, bool needKey = true)
+    {
         GameObject dropdownPrefab = Prefabs.dropDown;
         GameObject instance = Object.Instantiate(dropdownPrefab, gameObject.transform);
         TMP_Dropdown dropdown = instance.GetComponentInChildren<TMP_Dropdown>();
-        
-        TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
-        textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
-        
-        
+
+        if (needKey)
+        {
+            TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
+        }
+        else
+        {
+            TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            textMesh.text = title;
+        }
+
         dropdown.ClearOptions();
         dropdown.AddOptions(contents);
         dropdown.onValueChanged.AddListener(onValueChange);
         return dropdown;
     }
 
-    public void AddToggle(string title, UnityAction<bool> onValueChange){
+    public void AddToggle(string title, UnityAction<bool> onValueChange)
+    {
         GameObject togglePrefab = Prefabs.toggle;
         GameObject instance = Object.Instantiate(togglePrefab, gameObject.transform);
         Toggle toggle = instance.GetComponentInChildren<Toggle>();
-        
+
         TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
 
         toggle.onValueChanged.AddListener(onValueChange);
     }
-    
+
     public void AddButton(string title, UnityAction onClick)
     {
         GameObject buttonPrefab = Prefabs.btn;
@@ -99,5 +108,5 @@ public abstract class SubPanel
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
         button.onClick.AddListener(onClick);
     }
-    
+
 }

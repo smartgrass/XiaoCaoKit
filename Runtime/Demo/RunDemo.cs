@@ -1,4 +1,5 @@
 ﻿#define EnableLog	
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading.Tasks;
 using TEngine;
@@ -43,6 +44,7 @@ namespace XiaoCao
 
             GameEvent.Send(EventType.GameStartFinsh.Int());
 
+
             //ui在游戏启动后才执行
             try
             {
@@ -53,6 +55,10 @@ namespace XiaoCao
                 Debug.LogError($"--- uiMgr {e}");
             }
 
+
+            await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
+
+            var sound = SoundMgr.Inst;
 
         }
 

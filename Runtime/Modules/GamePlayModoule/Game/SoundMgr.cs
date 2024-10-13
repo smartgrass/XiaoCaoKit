@@ -28,7 +28,7 @@ namespace XiaoCao
             musicAs = Instantiate(prefab, transform);
             musicAs.outputAudioMixerGroup = mixerGroups[1];
             musicAs.loop = true;
-            PlayMusice();
+            PlaySettingBgm();
         }
 
         ///<see cref="SoundPanel.MainVolumeKey"/>
@@ -98,8 +98,37 @@ namespace XiaoCao
             source.Play();
         }
 
+        //根据文件名播放歌曲
+        public void PlayBgmByName(string fileName)
+        {
+            if (fileName == "" || fileName == "--")
+            {
+                musicAs.Stop();
+                return;
+            }
+            string filePath = $"{XCPathConfig.GetGameConfigDir()}/Bgm/{fileName}";
 
-        public void PlayMusice()
+            if (!FileTool.IsFileExist(filePath))
+            {
+                return;
+            }
+            StartCoroutine(LoadAndPlayMP3(filePath));
+        }
+
+        public void PlaySettingBgm()
+        {
+            string bgm = LocalizeKey.Bgm.GetKeyString();
+            if (bgm == "")
+            {
+                PlayFristBgm();
+            }
+            else
+            {
+                PlayBgmByName(bgm);
+            }
+        }
+
+        public void PlayFristBgm()
         {
             DirectoryInfo directory = new DirectoryInfo($"{XCPathConfig.GetGameConfigDir()}/Bgm");
             var files = directory.GetFiles("*.mp3", SearchOption.TopDirectoryOnly);

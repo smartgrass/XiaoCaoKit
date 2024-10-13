@@ -19,7 +19,7 @@ public class BasicSettingPanel: SubPanel
 			enumList.Add(LangSetting.ShowNames[(int)item]);
 		}
         var langDropDown = AddDropdown(LocalizeKey.Language, OnLangChange, enumList);
-		langDropDown.SetValueWithoutNotify((int)LocalizeMgr.CurLanguage);
+        langDropDown.SetValueWithoutNotify((int)LocalizeMgr.CurLanguage);
 	}
 
 	private void OnLangChange(int index){
