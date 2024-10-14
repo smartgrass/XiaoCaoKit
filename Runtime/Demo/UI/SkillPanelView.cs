@@ -2,6 +2,7 @@
 
 namespace XiaoCao
 {
+
     public class SkillPanelView: MonoBehaviour
     {
         public GameObject cellPrefab;

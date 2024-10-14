@@ -58,15 +58,8 @@ namespace XiaoCao
             Debug.Log($"--- ChangeCurLang {lang}");
             _instance.OnLanguageChanged?.Invoke();
         }
-
-
     }
 
-    public class LangSetting
-    {
-        //与枚举1,1对应
-        public static string[] ShowNames = { "English", "中文" };
-    }
 
 
     public enum ELanguage

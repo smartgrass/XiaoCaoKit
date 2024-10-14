@@ -8,6 +8,8 @@ namespace XiaoCao
     {
         public SkillPanelView view;
 
+        //public 
+
         public SkillTreeSo setting;
 
         private List<SkillCell> cells = new List<SkillCell>();

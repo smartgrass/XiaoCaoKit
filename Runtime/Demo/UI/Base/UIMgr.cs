@@ -20,8 +20,6 @@ namespace XiaoCao
 
         public LevelPanel levelPanel;
 
-        public DebugPanel debugPanel;
-
         public SettingPanel settingPanel;
 
         public PlayerPanel playerPanel;
@@ -37,7 +35,6 @@ namespace XiaoCao
             base.Init();
             battleHud?.Init();
             skillBarHud?.Init();
-            //debugPanel?.Init();
             settingPanel?.Init();
             playerPanel?.Init();
         }

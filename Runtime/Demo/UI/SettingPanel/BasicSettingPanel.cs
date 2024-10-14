@@ -16,7 +16,7 @@ public class BasicSettingPanel: SubPanel
 	private void AddLanguageDropDown(){
 		List<string> enumList = new List<string>();
 		foreach (ELanguage item in Enum.GetValues(typeof(ELanguage))){
-			enumList.Add(LangSetting.ShowNames[(int)item]);
+			enumList.Add(LocalizeKey.LanguageShowNames[(int)item]);
 		}
         var langDropDown = AddDropdown(LocalizeKey.Language, OnLangChange, enumList);
         langDropDown.SetValueWithoutNotify((int)LocalizeMgr.CurLanguage);
