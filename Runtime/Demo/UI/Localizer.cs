@@ -52,6 +52,10 @@ namespace XiaoCao.UI{
 		{
             tmp.gameObject.GetOrAddComponent<Localizer>().SetLocalize(key);
         }
+
+		public static string ToLocalizeStr(this string key){
+			return LocalizeMgr.Localize(key);
+		}
 	}
 
     public struct LocalizeStr{

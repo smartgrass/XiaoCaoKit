@@ -1,18 +1,27 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
+    
+    // public class ItemUI : MonoBehaviour
     public class SkillDetalUI : MonoBehaviour
     {
         //名称,描述 全部使用实时拼接模式
         public TextMeshProUGUI titleText;//lv在在
         public TextMeshProUGUI desText;
+        
+        
+        public Button upgradeBtn;
+        public Button colseBtn; //区域外关闭
+        
 
 
         public int SkillId {  get;  set; }
         //ObjPool
-        //List<ItemUI> 所需材料
+        //List<ItemUI> 显示所需材料
 
         public void SetSkillInfo(int skillId)
         {
@@ -24,6 +33,9 @@ namespace XiaoCao
         {
             int lv = 1;
             //满级
+            titleText.text = $"{LocalizeKey.GetSkillNameKey(SkillId).ToLocalizeStr()} lv{lv}";
+            desText.text = LocalizeKey.GetSkillDesc(SkillId,lv);
+
 
         }
 
