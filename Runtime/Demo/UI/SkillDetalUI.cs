@@ -5,8 +5,6 @@ using XiaoCao.UI;
 
 namespace XiaoCao
 {
-    
-    // public class ItemUI : MonoBehaviour
     public class SkillDetalUI : MonoBehaviour
     {
         //名称,描述 全部使用实时拼接模式

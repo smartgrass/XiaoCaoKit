@@ -453,6 +453,7 @@ namespace XiaoCao
 
         public SkillBarData skillBarData = new SkillBarData();
 
+        //ItemUI
         public Inventory inventory = new Inventory();
         //持有物
         public List<Item> holdItems = new List<Item>();
