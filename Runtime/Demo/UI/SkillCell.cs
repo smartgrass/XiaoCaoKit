@@ -1,11 +1,14 @@
 ﻿using NaughtyAttributes;
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace XiaoCao
 {
-    public class SkillCell : MonoBehaviour{
+    public class SkillCell : MonoBehaviour,IPointerClickHandler
+	{
 
 		public Color lockColor = Color.white;
 		public Color unlockColor = Color.white;
@@ -18,8 +21,14 @@ namespace XiaoCao
 		public int skillIndex;
 
 		public bool isUnlock;
+		public Action clickAct;
 
-		public void SetUnlock(bool isUnlock){
+        public void OnPointerClick(PointerEventData eventData)
+        {
+			clickAct?.Invoke();
+        }
+
+        public void SetUnlock(bool isUnlock){
 			if (isUnlock)
 			{
 				ringImg.color = unlockRingColor;

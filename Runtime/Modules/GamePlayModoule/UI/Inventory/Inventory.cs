@@ -61,9 +61,21 @@ namespace XiaoCao
 			return items.Find(item => item.Key == itemName);
 		}
 
+        public int GetItemCount(string itemKey)
+        {
+			var item = FindItemByName(itemKey);
+			if (item != null)
+			{
+				return item.count;
+			}
+			else
+			{
+				return 0;
+			}
+        }
 
-		// 显示背包中的物品
-		public void DisplayInventory()
+        // 显示背包中的物品
+        public void DisplayInventory()
 		{
 			Debug.Log("Inventory Contents:");
 			foreach (Item item in items)

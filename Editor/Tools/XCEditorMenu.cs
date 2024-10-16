@@ -256,8 +256,11 @@ namespace XiaoCaoEditor
                         field.SetValue(component, findComponent);
 
                         Debug.Log($"--- {field.Name} {findComponent}");
+                        isFound = true;
                     }
                 }
+
+
             }
 
             EditorUtility.SetDirty(component);

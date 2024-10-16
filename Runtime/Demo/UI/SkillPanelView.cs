@@ -11,7 +11,7 @@ namespace XiaoCao
         public Transform Prefab;
 
 
-        public SkillDisplay skillDisplay;
+        public SkillUpgradeView skillDisplay;
     }
 
 }

@@ -49,6 +49,11 @@ namespace XiaoCao
                 var data = setting.datas[i];
                 Vector3 pos = new Vector3(data.pos.x * setting.posScale.x, data.pos.y * setting.posScale.y);
                 (cell.transform as RectTransform).localPosition = pos;
+
+                cell.clickAct +=(() =>
+                {
+                    view.skillDisplay.ShowSkill(cell.skillIndex);
+                });
             }
         }
     }
