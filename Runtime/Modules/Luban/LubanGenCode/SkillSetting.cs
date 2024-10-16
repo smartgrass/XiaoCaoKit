@@ -18,7 +18,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
     {
         Id = _buf.ReadString();
         Name = _buf.ReadString();
-        Desc = _buf.ReadString();
+        ExtendDesc = _buf.ReadString();
         AckRate = _buf.ReadFloat();
         AddY = _buf.ReadFloat();
         HitTime = _buf.ReadFloat();
@@ -47,7 +47,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// <summary>
     /// 描述
     /// </summary>
-    public readonly string Desc;
+    public readonly string ExtendDesc;
     /// <summary>
     /// 攻击倍率
     /// </summary>
@@ -114,7 +114,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "name:" + Name + ","
-        + "desc:" + Desc + ","
+        + "extendDesc:" + ExtendDesc + ","
         + "ackRate:" + AckRate + ","
         + "addY:" + AddY + ","
         + "HitTime:" + HitTime + ","

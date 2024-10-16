@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using cfg;
+using EasyUI.Helpers;
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -10,36 +15,70 @@ namespace XiaoCao
 		public TMP_Text nameText;
 		public TMP_Text desText;
 		public Transform itemsParent;
+        public Button sureBtn;
 
 		private List<GameObject> itemCells = new List<GameObject>();
         private AssetPool itemCellPool;
 		private bool isInit;
+        private int skillId;
+        public SkillPanel SkillPanel { get; set; }
 
 
-		public void Init()
-		{
-			if (!isInit)
-			{
-				isInit = true;
-				itemCellPool = new AssetPool(UIPrefabMgr.Inst.itemCellPrefab);
-			}
-		}
+        public void Init()
+        {
+            if (isInit)
+            {
+                return;
+            }
+            isInit = true;
+            itemCellPool = new AssetPool(UIPrefabMgr.Inst.itemCellPrefab);
+            sureBtn.onClick.AddListener(OnUpgrade);
+        }
 
+        private void OnUpgrade()
+        {
+            //判断材料是否足够
+            //足够则扣除
+            var inventory = GameData.playerSaveData.inventory;
+            List<Item> list = LubanTables.GetSkillUpgradeItems(skillId);
+            bool isEnough = true;
+            foreach (Item item in list)
+            {
+                if (!inventory.CheckEnoughItem(item.Key,item.count))
+                {
+                    isEnough = false;
+                }
+            }
 
-        public void ShowSkill(int skillIndex){
+            if (isEnough)
+            {
+                foreach (Item item in list)
+                {
+                    inventory.ConsumeItem(item.Key, item.count);
+                }
+                GameData.playerSaveData.AddSkillLevel(skillId);
+                PlayerSaveData.Sava();
+                SkillPanel.UpdateUI();
+            }
+            else
+            {
+                //UIPrefabMgr.
+                UIMgr.PopToast(LocalizeKey.NoEnough.ToLocalizeStr());
+            }
+
+        }
+
+        public void ShowSkill(int skillId){
 			Init();
+            this.skillId = skillId;
             gameObject.SetActive(true);
-			//TODO 本地化
 
-			//TODO get合成材料
-
-			List<Item> list = new List<Item>();
-			foreach (var item in list)
+            List<Item> list = LubanTables.GetSkillUpgradeItems(skillId);
+            foreach (var item in list)
 			{
 				var cellGo = itemCellPool.Get();
 				ItemCell cell = cellGo.GetComponent<ItemCell>();
 				cell.SetItem(item,true);
-
             }
 		}
 
@@ -48,26 +87,13 @@ namespace XiaoCao
             if (Input.GetMouseButtonDown(0)) // 假设我们检测鼠标左键点击
             {
                 Vector2 mousePosition = Input.mousePosition;
-                if (UIClickDetector.IsPointerOverTarget(mousePosition,(transform as RectTransform).rect))
+                if (!UIClickDetector.IsPointerOverTarget(mousePosition,(transform as RectTransform)))
                 {
-                    // 点击发生在UI元素上
-                    Debug.Log("Clicked on the UI");
-                }
-                else
-                {
-                    // 点击未发生在UI元素上
                     Hide();
                 }
             }
         }
 
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            if (!RectTransformUtility.RectangleContainsScreenPoint(transform.GetComponent<RectTransform>(), eventData.position, eventData.pressEventCamera))
-            {
-                Hide();
-            }
-        }
 
         public void Hide()
 		{
@@ -79,31 +105,9 @@ namespace XiaoCao
 
     public static class UIClickDetector
     {
-        public static bool IsPointerOverGameObject(Vector2 screenPosition)
+        public static bool IsPointerOverTarget(Vector2 mousePosition, RectTransform rect)
         {
-            PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
-            pointerEventData.position = screenPosition;
-
-
-            List<RaycastResult> results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointerEventData, results);
-
-            return results.Count > 0;
-        }        
-        
-        public static Vector2 ToCamvasPos(Canvas canvas,Vector2 mousePosition)
-        {
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePosition);//屏幕坐标转换世界坐标
-            Vector2 uiPos = canvas.transform.InverseTransformPoint(worldPos);//世界坐标转换位本地坐标
-
-
-            return uiPos;
-        }
-
-        public static bool IsPointerOverTarget(Vector2 mousePosition, Rect rect)
-        {
-            var screenPosition =ToCamvasPos(UIMgr.Inst.topCanvas, mousePosition);
-            return rect.Contains(screenPosition);
+            return RectTransformUtility.RectangleContainsScreenPoint(rect, mousePosition);
         }
     }
 

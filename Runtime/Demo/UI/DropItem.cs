@@ -14,10 +14,9 @@
 			if (!string.IsNullOrEmpty( getFromSetting)){
 				
 			}
-			
-			
-			string id = $"{EquipmentSub.ToString()}_{level}";
-			return new Item( ItemType.Equipment,id,1, itemQuality);
+
+			string id = $"{EquipmentSub.ToString()}_{(int)itemQuality}";
+			return new Item( ItemType.Equipment,id,1);
 		}
 	}
 }

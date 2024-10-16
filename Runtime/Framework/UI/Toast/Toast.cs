@@ -34,7 +34,7 @@ namespace EasyUI.Toast {
    public static class Toast {
       public static bool isLoaded = false ;
 
-      private static ToastUI toastUI ;
+      private static ToastUI toastUI;
 
       private static void Prepare () {
          if (!isLoaded) {

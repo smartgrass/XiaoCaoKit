@@ -34,7 +34,7 @@ namespace XiaoCao
         [Button]
         void UpdateSkill()
         {
-            (GetPanel("Skill") as SkillPanel).UpdateState();
+            (GetPanel("Skill") as SkillPanel).UpdateUI();
         }
 
 

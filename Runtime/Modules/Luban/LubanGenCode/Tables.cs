@@ -16,12 +16,14 @@ public partial class Tables
     public SkillSettingReader SkillSettingReader {get; }
     public LevelSettingReader LevelSettingReader {get; }
     public ChapterSettingReader ChapterSettingReader {get; }
+    public SkillUpgradeSettingReader SkillUpgradeSettingReader {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
         SkillSettingReader = new SkillSettingReader(loader("skillsettingreader"));
         LevelSettingReader = new LevelSettingReader(loader("levelsettingreader"));
         ChapterSettingReader = new ChapterSettingReader(loader("chaptersettingreader"));
+        SkillUpgradeSettingReader = new SkillUpgradeSettingReader(loader("skillupgradesettingreader"));
         ResolveRef();
     }
     
@@ -30,6 +32,7 @@ public partial class Tables
         SkillSettingReader.ResolveRef(this);
         LevelSettingReader.ResolveRef(this);
         ChapterSettingReader.ResolveRef(this);
+        SkillUpgradeSettingReader.ResolveRef(this);
     }
 }
 

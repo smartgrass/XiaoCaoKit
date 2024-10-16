@@ -12,6 +12,7 @@ namespace XiaoCao
 
 
         public GameObject popupUIPrefab;
+
         public GameObject itemCellPrefab;
 
         private AssetPool popupUIPool;

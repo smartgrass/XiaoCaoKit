@@ -6,6 +6,7 @@ namespace XiaoCao{
         public static string[] LanguageShowNames = { "English", "中文" };
         public static string Language = "Language";
 		public static string Bgm = "Bgm";
+		public static string NoEnough = "NoEnough";
 
 
 

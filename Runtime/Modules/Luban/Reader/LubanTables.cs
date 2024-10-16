@@ -1,5 +1,7 @@
 ﻿using Luban;
+using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 using XiaoCao;
 
@@ -11,6 +13,7 @@ namespace cfg
         private static SkillSettingReader SkillSettingReader => LubanTables.Inst.Tables.SkillSettingReader;
         private static LevelSettingReader LevelSettingReader => LubanTables.Inst.Tables.LevelSettingReader;
         private static ChapterSettingReader ChapterSettingReader => LubanTables.Inst.Tables.ChapterSettingReader;
+        private static SkillUpgradeSettingReader SkillUpgradeSettingReader => LubanTables.Inst.Tables.SkillUpgradeSettingReader;
 
         public static ChapterSetting GetChapterSetting(int key)
         {
@@ -34,10 +37,10 @@ namespace cfg
         }
 
 
-        public static SkillSetting GetSkillSetting(int skillId,int subSkillId)
+        public static SkillSetting GetSkillSetting(int skillId, int subSkillId)
         {
-            string infoKey = GetSkillAckKey(skillId,subSkillId);
-            
+            string infoKey = GetSkillAckKey(skillId, subSkillId);
+
             return GetSkillSetting(infoKey);
         }
         public static string GetSkillAckKey(int ackId, int subAckId)
@@ -58,6 +61,16 @@ namespace cfg
                 ret = SkillSettingReader.DataList[0];
             }
             return ret;
+        }
+
+        public static List<XiaoCao.Item> GetSkillUpgradeItems(int skillId)
+        {
+            var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
+            if (ret == null)
+            {
+                return new List<XiaoCao.Item>();
+            }
+            return ret.NeedItems;
         }
 
         #endregion

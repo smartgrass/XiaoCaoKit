@@ -1,11 +1,13 @@
-﻿using System;
+﻿using EasyUI.Helpers;
+using EasyUI.Toast;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace XiaoCao
 {
 
-    public class UIMgr : MonoSingletonPrefab<UIMgr>,IMgr
+    public class UIMgr : MonoSingletonPrefab<UIMgr>, IMgr
     {
         //UI分类:
         //静态ui ->游戏开始就加载    hud
@@ -74,7 +76,7 @@ namespace XiaoCao
         private void Update()
         {
             //电脑端
-            if (showingPanels.Count <=0)
+            if (showingPanels.Count <= 0)
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
@@ -89,11 +91,11 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    if (lastPanel!=null && lastPanel.IsShowing)
+                    if (lastPanel != null && lastPanel.IsShowing)
                     {
                         lastPanel.Hide();
                     }
-                } 
+                }
             }
 
 
@@ -122,7 +124,7 @@ namespace XiaoCao
             else if (type == UIPanelType.SettingPanel)
             {
                 return settingPanel;
-            }            
+            }
             else if (type == UIPanelType.PlayerPanel)
             {
                 return playerPanel;
@@ -139,6 +141,12 @@ namespace XiaoCao
         {
             battleHud.ShowDamageText(atk, textPos);
         }
+
+        public static void PopToast(string str, float time = 1)
+        {
+            Toast.Show(str, time);
+        }
+
     }
 }
 

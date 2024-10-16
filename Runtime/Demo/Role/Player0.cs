@@ -474,6 +474,23 @@ namespace XiaoCao
                 skillUnlockDic = new Dictionary<int, int>();
             }
         }
+
+        public void AddSkillLevel(int skillId)
+        {
+            if (!skillUnlockDic.ContainsKey(skillId))
+            {
+                skillUnlockDic[skillId] = 1;
+            }
+            else
+            {
+                skillUnlockDic[skillId] = skillUnlockDic[skillId] + 1;
+            }
+        }
+
+        public static void Sava()
+        {
+            SaveMgr.SaveData(PlayerSaveData.Current);
+        }
     }
 
     //玩家特有数据

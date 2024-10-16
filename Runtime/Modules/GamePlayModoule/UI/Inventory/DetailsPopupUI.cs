@@ -16,6 +16,18 @@ namespace XiaoCao
             itemCountText.text = itemCount;
         }
 
+        void Update()
+        {
+            if (Input.GetMouseButtonDown(0)) // 假设我们检测鼠标左键点击
+            {
+                Vector2 mousePosition = Input.mousePosition;
+                if (!UIClickDetector.IsPointerOverTarget(mousePosition, (transform as RectTransform)))
+                {
+                    ClosePopup(gameObject);
+                }
+            }
+        }
+
         public static void ClosePopup(GameObject gameObject)
         {
             UIPrefabMgr.Inst.PopupUIPool.Release(gameObject);

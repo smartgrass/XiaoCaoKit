@@ -31,12 +31,14 @@ namespace XiaoCao
             }
 
             view.Prefab.gameObject.SetActive(false);
+            view.skillUpgradeView.gameObject.SetActive(false);
+            view.skillUpgradeView.SkillPanel = this;
             //点亮和熄灭
             //玩家解锁数据保存
-            UpdateState();
+            UpdateUI();
         }
 
-        public void UpdateState()
+        public void UpdateUI()
         {
             var dic = PlayerSaveData.Current.skillUnlockDic;
             for (int i = 0; i < cells.Count; i++)
@@ -52,7 +54,7 @@ namespace XiaoCao
 
                 cell.clickAct +=(() =>
                 {
-                    view.skillDisplay.ShowSkill(cell.skillIndex);
+                    view.skillUpgradeView.ShowSkill(cell.skillIndex);
                 });
             }
         }
