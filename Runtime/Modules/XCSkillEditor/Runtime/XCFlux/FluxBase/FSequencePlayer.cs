@@ -97,13 +97,13 @@ namespace Flux
 
 		void LateUpdate()
 		{
-			if( UpdateMode != AnimatorUpdateMode.AnimatePhysics )
+			if( UpdateMode != AnimatorUpdateMode.Fixed )
 				CheckSequence();
 		}
 
 		void FixedUpdate()
 		{
-			if( UpdateMode == AnimatorUpdateMode.AnimatePhysics )
+			if( UpdateMode == AnimatorUpdateMode.Fixed )
 				CheckSequence();
 		}
 	}

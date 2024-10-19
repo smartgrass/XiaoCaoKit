@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
-using UnityEngine.Networking.Types;
 using UnityEngine.UI;
 
 namespace XiaoCao

@@ -405,7 +405,7 @@ namespace Flux
 			case AnimatorUpdateMode.Normal:
 				_lastUpdateTime = Time.time;
 				break;
-			case AnimatorUpdateMode.AnimatePhysics:
+			case AnimatorUpdateMode.Fixed:
 				_lastUpdateTime = Time.fixedTime;
 				break;
 			case AnimatorUpdateMode.UnscaledTime:
@@ -496,7 +496,7 @@ namespace Flux
 			case AnimatorUpdateMode.Normal:
 				_lastUpdateTime = Time.time;
 				break;
-			case AnimatorUpdateMode.AnimatePhysics:
+			case AnimatorUpdateMode.Fixed:
 				_lastUpdateTime = Time.fixedTime;
 				break;
 			case AnimatorUpdateMode.UnscaledTime:
@@ -569,7 +569,7 @@ namespace Flux
 		// Updates the sequence when update mode is NOT AnimatePhysics
 		protected virtual void Update()
 		{
-			if( _updateMode == AnimatorUpdateMode.AnimatePhysics || !_isPlaying )
+			if( _updateMode == AnimatorUpdateMode.Fixed || !_isPlaying )
 			{
 				return;
 			}
@@ -580,7 +580,7 @@ namespace Flux
 		// Updates the sequence when update mode is AnimatePhysics
 		protected virtual void FixedUpdate()
 		{
-			if( _updateMode != AnimatorUpdateMode.AnimatePhysics || !_isPlaying )
+			if( _updateMode != AnimatorUpdateMode.Fixed || !_isPlaying )
 			{
 				return;
 			}

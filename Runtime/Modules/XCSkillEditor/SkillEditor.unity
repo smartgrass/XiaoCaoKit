@@ -368,6 +368,7 @@ MonoBehaviour:
   - {fileID: 1746189919}
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -439,6 +440,7 @@ MonoBehaviour:
   - {fileID: 1238097449}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!43 &99708643
 Mesh:
   m_ObjectHideFlags: 0
@@ -706,7 +708,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -836,11 +838,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 2006638538}
   _triggerOnSkip: 1
   _frameRange:
     _start: 7
     _end: 10
+  maxTriggetTime: 0
   meshInfo:
     meshType: 2
     values:
@@ -877,6 +881,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1107459352}
   _triggerOnSkip: 1
   _frameRange:
@@ -945,6 +950,7 @@ MonoBehaviour:
   - {fileID: 2121777689}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &167303754
 Transform:
   m_ObjectHideFlags: 0
@@ -997,6 +1003,7 @@ MonoBehaviour:
   - {fileID: 1393767572}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &169980057
 Transform:
   m_ObjectHideFlags: 0
@@ -1049,6 +1056,7 @@ MonoBehaviour:
   - {fileID: 1566490275}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &189450930
 Transform:
   m_ObjectHideFlags: 0
@@ -1143,7 +1151,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isGameStarted: 0
   roleType: 0
-  raceId: 0
+  enemyIdList: 1,1
+  level: 1
+  genCount: 1
+  delayGen: 0.5
+  enableAI: 1
+  circleSize: 1
+  groupName: 
 --- !u!1001 &230335229
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1330,6 +1344,7 @@ MonoBehaviour:
   - {fileID: 686782458}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &313152205
 GameObject:
   m_ObjectHideFlags: 0
@@ -1375,6 +1390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 398786540}
   _triggerOnSkip: 1
   _frameRange:
@@ -1429,6 +1445,7 @@ MonoBehaviour:
   - {fileID: 2118957093}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &317998677
 Transform:
   m_ObjectHideFlags: 0
@@ -1551,6 +1568,7 @@ MonoBehaviour:
   - {fileID: 604698572}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &398786538
 GameObject:
   m_ObjectHideFlags: 0
@@ -1603,6 +1621,7 @@ MonoBehaviour:
   - {fileID: 313152207}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &399621044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1692,6 +1711,7 @@ MonoBehaviour:
   - {fileID: 1491507669}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &453279403
 Transform:
   m_ObjectHideFlags: 0
@@ -1994,6 +2014,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 2091703063}
   _triggerOnSkip: 1
   _frameRange:
@@ -2052,6 +2073,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 623688429}
   _triggerOnSkip: 1
   _frameRange:
@@ -2096,6 +2118,7 @@ MonoBehaviour:
   - {fileID: 905207472}
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -2326,11 +2349,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 328914999}
   _triggerOnSkip: 1
   _frameRange:
     _start: 9
     _end: 11
+  maxTriggetTime: 0
   meshInfo:
     meshType: 2
     values:
@@ -2389,6 +2414,7 @@ MonoBehaviour:
   - {fileID: 532501137}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &686782456
 GameObject:
   m_ObjectHideFlags: 0
@@ -2434,6 +2460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 295436432}
   _triggerOnSkip: 1
   _frameRange:
@@ -2579,6 +2606,7 @@ MonoBehaviour:
   _events: []
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &710062745
 Transform:
   m_ObjectHideFlags: 0
@@ -2661,6 +2689,7 @@ MonoBehaviour:
   - {fileID: 1935412726}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &729715848
 Transform:
   m_ObjectHideFlags: 0
@@ -3110,6 +3139,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 533414475}
   _triggerOnSkip: 1
   _frameRange:
@@ -3180,6 +3210,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1893263266}
   _triggerOnSkip: 1
   _frameRange:
@@ -3356,6 +3387,7 @@ MonoBehaviour:
   - {fileID: 1010379924}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!4 &972021268 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1137031735825520646, guid: 5e0fc4e9bbb39e3489b0cf5913b02659, type: 3}
@@ -3391,6 +3423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1867313707}
   _triggerOnSkip: 1
   _frameRange:
@@ -3605,6 +3638,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 965762419}
   _triggerOnSkip: 1
   _frameRange:
@@ -3841,6 +3875,7 @@ MonoBehaviour:
   - {fileID: 157491350}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1109390834
 GameObject:
   m_ObjectHideFlags: 0
@@ -4052,6 +4087,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2905304498519498571, guid: ffa3550f5c0d67e4b915ded67809d18e, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ffa3550f5c0d67e4b915ded67809d18e, type: 3}
 --- !u!1 &1161685062
@@ -4200,11 +4239,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1557886930}
   _triggerOnSkip: 1
   _frameRange:
     _start: 8
     _end: 10
+  maxTriggetTime: 0
   meshInfo:
     meshType: 2
     values:
@@ -4256,6 +4297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1700300396}
   _triggerOnSkip: 1
   _frameRange:
@@ -4361,6 +4403,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 78986067}
   _triggerOnSkip: 1
   _frameRange:
@@ -4541,6 +4584,7 @@ MonoBehaviour:
   _events: []
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -4606,6 +4650,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 169980056}
   _triggerOnSkip: 1
   _frameRange:
@@ -4775,6 +4820,7 @@ MonoBehaviour:
   _events: []
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1431894376
 GameObject:
   m_ObjectHideFlags: 0
@@ -4811,6 +4857,7 @@ MonoBehaviour:
   - {fileID: 1817084525}
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -4942,11 +4989,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1888461491}
   _triggerOnSkip: 1
   _frameRange:
     _start: 24
     _end: 26
+  maxTriggetTime: 0
   meshInfo:
     meshType: 2
     values:
@@ -4983,6 +5032,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 453279402}
   _triggerOnSkip: 1
   _frameRange:
@@ -5143,6 +5193,7 @@ MonoBehaviour:
   - {fileID: 1728863402}
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -5214,6 +5265,7 @@ MonoBehaviour:
   - {fileID: 1200241355}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1566490274
 GameObject:
   m_ObjectHideFlags: 0
@@ -5244,6 +5296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 189450929}
   _triggerOnSkip: 1
   _frameRange:
@@ -5319,6 +5372,7 @@ MonoBehaviour:
   - {fileID: 1978440911}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1637437114
 GameObject:
   m_ObjectHideFlags: 0
@@ -5801,6 +5855,7 @@ MonoBehaviour:
   - {fileID: 1203053727}
   _cacheMode: 0
   transfromType: 1
+  otherPointName: 
 --- !u!1 &1728863401
 GameObject:
   m_ObjectHideFlags: 0
@@ -5831,6 +5886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1499617221}
   _triggerOnSkip: 1
   _frameRange:
@@ -5901,6 +5957,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1885736313}
   _triggerOnSkip: 1
   _frameRange:
@@ -5941,6 +5998,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 73381203}
   _triggerOnSkip: 1
   _frameRange:
@@ -6265,6 +6323,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1431894377}
   _triggerOnSkip: 1
   _frameRange:
@@ -6470,6 +6529,7 @@ MonoBehaviour:
   - {fileID: 977356233}
   _cacheMode: 5
   transfromType: 0
+  otherPointName: 
   _animatorController: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
   _layerName: Base Layer
   _layerId: 0
@@ -6541,6 +6601,7 @@ MonoBehaviour:
   - {fileID: 1731608456}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1888461489
 GameObject:
   m_ObjectHideFlags: 0
@@ -6594,6 +6655,7 @@ MonoBehaviour:
   - {fileID: 1485054475}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1893263264
 GameObject:
   m_ObjectHideFlags: 0
@@ -6646,6 +6708,7 @@ MonoBehaviour:
   - {fileID: 918492679}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &1893539782
 GameObject:
   m_ObjectHideFlags: 0
@@ -6985,6 +7048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 729715847}
   _triggerOnSkip: 1
   _frameRange:
@@ -7040,6 +7104,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 1623288617}
   _triggerOnSkip: 1
   _frameRange:
@@ -7112,12 +7177,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1aaee073b1a5ab64387a4acddf72497c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterPrefab: {fileID: 5772125295885166477, guid: 940e6e9b6fd38eb42a860b15007aeae1, type: 3}
   dirs:
   - {fileID: 102900000, guid: 1ce00dd6a79943248421016cc38608e8, type: 3}
   - {fileID: 102900000, guid: c646ddb3af437014da0c8ebbc5bf0669, type: 3}
+  characterPrefab: {fileID: 5772125295885166477, guid: 940e6e9b6fd38eb42a860b15007aeae1, type: 3}
   count: 14
   onelineCount: 7
+  currentAnimationIndex: 0
 --- !u!1 &2006638536
 GameObject:
   m_ObjectHideFlags: 0
@@ -7170,6 +7236,7 @@ MonoBehaviour:
   - {fileID: 130204429}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &2013818703
 GameObject:
   m_ObjectHideFlags: 0
@@ -7427,6 +7494,7 @@ MonoBehaviour:
   - {fileID: 528074474}
   _cacheMode: 0
   transfromType: 0
+  otherPointName: 
 --- !u!1 &2118957092
 GameObject:
   m_ObjectHideFlags: 0
@@ -7457,11 +7525,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 317998676}
   _triggerOnSkip: 1
   _frameRange:
     _start: 7
     _end: 9
+  maxTriggetTime: 0
   meshInfo:
     meshType: 2
     values:
@@ -7513,6 +7583,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _id: 0
+  IsPlayerOnly: 0
   _track: {fileID: 167303753}
   _triggerOnSkip: 1
   _frameRange:
@@ -8894,6 +8965,18 @@ PrefabInstance:
       propertyPath: m_LocalRotation.z
       value: 0.0939251
       objectReference: {fileID: 0}
+    - target: {fileID: 4885301371922852569, guid: 36078ab0369161e49a29d349ae3e0739, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+    - target: {fileID: 4885301371922852569, guid: 36078ab0369161e49a29d349ae3e0739, type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+    - target: {fileID: 4885301371922852569, guid: 36078ab0369161e49a29d349ae3e0739, type: 3}
+      propertyPath: m_Materials.Array.data[2]
+      value: 
+      objectReference: {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
     - target: {fileID: 4947536876666625124, guid: 36078ab0369161e49a29d349ae3e0739, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.012848739

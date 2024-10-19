@@ -538,7 +538,7 @@ namespace AssetEditor.Editor
             if (name == nameof(AnimatorOverrideController).ToLower()) return typeof(AnimatorOverrideController);
             if (name == nameof(AvatarMask).ToLower()) return typeof(AvatarMask);
             if (name == nameof(PlayableAsset).ToLower()) return typeof(PlayableAsset);
-            if (name == nameof(PhysicMaterial).ToLower()) return typeof(PhysicMaterial);
+            if (name == nameof(PhysicsMaterial).ToLower()) return typeof(PhysicsMaterial);
             if (name == nameof(LightingSettings).ToLower()) return typeof(LightingSettings);
             if (name == nameof(LightmapParameters).ToLower()) return typeof(LightmapParameters);
             if (name == nameof(NavMeshData).ToLower()) return typeof(NavMeshData);
