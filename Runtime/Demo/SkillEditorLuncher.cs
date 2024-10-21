@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
 
@@ -7,7 +8,7 @@ public class SkillEditorLuncher : MonoBehaviour
     private void Awake()
     {
         RunDemo demo = new RunDemo();
-        demo.Run();
+        demo.Run().Forget();
     }
 
 }

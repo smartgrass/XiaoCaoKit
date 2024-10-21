@@ -45,6 +45,22 @@ namespace XiaoCao
             return Mathf.Log10(x) * 20.0f;
         }
 
+        public void PlayClip(AudioClip audioClip, float volume = 1)
+        {
+            if (audioClip != null)
+            {
+                AudioSource source = asPool.CheckGet(out bool isNew);
+                if (isNew)
+                {
+                    source.outputAudioMixerGroup = mixerGroups[2];
+                    source.transform.SetParent(transform);
+                }
+                source.clip = audioClip;
+                source.volume = volume;
+                source.Play();
+            }
+        }
+
 
         public void PlayClip(string soundId, float volume = 1)
         {

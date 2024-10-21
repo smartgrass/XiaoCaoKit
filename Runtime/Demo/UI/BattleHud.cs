@@ -26,6 +26,7 @@ namespace XiaoCao
             GameEvent.AddEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
+            gameObject.SetActive(true);
         }
 
         private void OnDestroy()

@@ -122,4 +122,19 @@ public static class HitTween
         });
         return tween;
     }
+
+
+    //public static Tween DoShake(Transform tf = )
+    //{
+    //    Transform tf = 
+
+
+    //    float time = 0;
+    //    float lastT = 0, deltaT = 0;
+
+    //    //0 ->1的数值动画
+    //    Tween tween = DOTween.To(x => time = x, 0, 1, duration);
+    //    tween.SetEase(Ease.OutQuart);
+
+    //}
 }

@@ -29,11 +29,11 @@ namespace XiaoCao
 
     public class CommandFinder : Singleton<CommandFinder>
     {
-        private Dictionary<string, Type> commandTypes;
+        private Dictionary<string, Type> commandTypeDic;
 
         public IXCCommand GetCommand(string name)
         {
-            if (commandTypes.TryGetValue(name, out Type commandType))
+            if (commandTypeDic.TryGetValue(name, out Type commandType))
             {
                 var commandInstance = Activator.CreateInstance(commandType) as IXCCommand;
                 return commandInstance;
@@ -45,18 +45,17 @@ namespace XiaoCao
 
         protected override void Init()
         {
-            commandTypes = GetAllCommandTypes();
+            commandTypeDic = GetAllCommandTypes();
         }
 
         public Dictionary<string, Type> GetAllCommandTypes()
         {
             // Find all types in the assembly that inherit from Command
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
+            var typeDic = this.GetType().Assembly.GetTypes()
                 .Where(type => typeof(IXCCommand).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                 .ToDictionary(type => type.Name, type => type);
 
-            return types;
+            return typeDic;
         }
 
     }

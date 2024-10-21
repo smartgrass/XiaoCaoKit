@@ -1,7 +1,13 @@
-﻿using System;
+﻿using cfg;
+using System;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
+/*
+ 攻击层级, PLAYER_ATK & Layers.ENEMY_ATK
+ 受击中层级:  PLAYER & ENEMY
+
+ */
 
 public class AtkTrigger : IdComponent
 {
@@ -13,7 +19,14 @@ public class AtkTrigger : IdComponent
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<IdRole>(out IdRole IdRole))
+        if (other.attachedRigidbody == null)
+        {
+            return;
+        }
+
+
+
+        if (other.attachedRigidbody.TryGetComponent<IdRole>(out IdRole IdRole))
         {
             if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
             {
@@ -24,12 +37,8 @@ public class AtkTrigger : IdComponent
                         //时停时玩家不受伤害
                         return;
                     }
-
-                    //阵营判断
-                    info.ackObjectPos = transform.position;
-                    info.hitPos = other.ClosestPointOnBounds(transform.position);
-                    info.hitDir = (info.hitPos - transform.position);
-                    info.hitDir.y = 0;
+                    //击中信息
+                    InitHitInfo(other);
                     entity.OnDamage(id, info);
 
                     curTriggerTime++;
@@ -41,6 +50,25 @@ public class AtkTrigger : IdComponent
                 }
             }
         }
+
+        //EntityType
+
+        if (other.attachedRigidbody.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
+        {
+            if (GetEntity().HasTag(RoleTagCommon.MainPlayer))
+            {
+                InitHitInfo(other);
+                item.OnDamage(id, info);
+            }
+        }
+    }
+
+    private void InitHitInfo(Collider other)
+    {
+        info.ackObjectPos = transform.position;
+        info.hitPos = other.ClosestPointOnBounds(transform.position);
+        info.hitDir = (info.hitPos - transform.position);
+        info.hitDir.y = 0;
     }
 }
 
@@ -58,5 +86,13 @@ public class AtkInfo
     internal Vector3 hitPos;
     internal Vector3 ackObjectPos;
     public ObjectData objectData;
+
+    public SkillSetting GetSkillSetting
+    {
+        get
+        {
+            return LubanTables.GetSkillSetting(skillId, subSkillId);
+        }
+    }
 }
 

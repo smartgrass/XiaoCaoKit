@@ -31,10 +31,10 @@ namespace XiaoCao
         public RoleData roleData;
 
         public Action<Role> DeadAct;
-        
+
         public int Level { get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value; }
         public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
-        public override int MaxHp { get => roleData.playerAttr.MapHp;}
+        public override int MaxHp { get => roleData.playerAttr.MapHp; }
 
         public float ShowArmorPercentage => roleData.breakData.ShowPercentage;
 
@@ -121,7 +121,7 @@ namespace XiaoCao
             {
                 item.gameObject.layer = layer;
             }
-            gameObject.layer = Layers.BODY;
+            gameObject.layer = Layers.BODY_PHYSICS;
         }
 
         public virtual void OnDamage(int atker, AtkInfo ackInfo)
@@ -131,7 +131,7 @@ namespace XiaoCao
                 return;
             }
 
-            var setting = LubanTables.GetSkillSetting(ackInfo.skillId, ackInfo.subSkillId);
+            var setting = ackInfo.GetSkillSetting;
             //非死亡则往下执行
             if (!BaseDamageCheck(ackInfo))
             {
@@ -171,20 +171,8 @@ namespace XiaoCao
                 roleData.movement.SetUnMoveTime(0.35f);
 
             }
-
-
             //playerMover.SetNoGravityT(setting.NoGravityT);
-
-            var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
-            effect.SetActive(true);
-            effect.transform.SetParent(transform, true);
-
-            Vector3 tempAckObjectPos = ackInfo.ackObjectPos;
-            tempAckObjectPos.y = ackInfo.hitPos.y;
-            tempAckObjectPos = Vector3.Lerp(ackInfo.ackObjectPos, ackInfo.hitPos, 0.8f);
-            effect.transform.position = tempAckObjectPos; //ackInfo.hitPos;
-
-            effect.transform.forward = ackInfo.ackObjectPos - transform.position;
+            HitHelper.ShowHitEffect(transform, ackInfo);
         }
 
         private void HitTween(AtkInfo ackInfo, SkillSetting setting)
@@ -239,11 +227,7 @@ namespace XiaoCao
             }
             Hp -= atkInfo.atk;
 
-
-            Vector3 textPos = transform.position;
-            textPos.y = atkInfo.ackObjectPos.y;
-            textPos = Vector3.Lerp(atkInfo.ackObjectPos, textPos, 0.8f);
-            UIMgr.Inst.PlayDamageText(atkInfo.atk, textPos);
+            HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
             return true;
         }
 
@@ -343,7 +327,7 @@ namespace XiaoCao
             }
             else
             {
-                gameObject.layer = Layers.BODY;
+                gameObject.layer = Layers.BODY_PHYSICS;
             }
         }
 
@@ -469,7 +453,7 @@ namespace XiaoCao
 
 
         }
-        public static void SetLossyScale(Transform tf,Vector3 lossyScale)
+        public static void SetLossyScale(Transform tf, Vector3 lossyScale)
         {
             Vector3 adjustedLocalScale = DivideVectors(lossyScale, (tf.parent.lossyScale));
             Debug.Log($"--- tf.parent {tf.parent.name}");
@@ -639,7 +623,7 @@ namespace XiaoCao
         public float deadTime = 3f;//结束时回收
 
         public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
-        
+
         public bool isHover { get; set; }//是否滞空
         public bool IsBreak => armor <= 0;
 
@@ -678,7 +662,7 @@ namespace XiaoCao
             {
                 armor += deltaTime * recoverSpeed;
             }
-            
+
 
             if (armor >= maxArmor)
             {

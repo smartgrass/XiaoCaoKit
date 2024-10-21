@@ -14,9 +14,9 @@
 public sealed class Layers
 {
     
-    public const int BODY = 10;
+    public const int BODY_PHYSICS = 10;
     
-    public const int BODY_MASK = 1024;
+    public const int BODY_PHYSICS_MASK = 1024;
     
     public const int DEFAULT = 0;
     

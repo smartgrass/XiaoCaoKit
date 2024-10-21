@@ -1,6 +1,7 @@
 ﻿#define EnableLog	
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TEngine;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace XiaoCao
 {
     public class RunDemo
     {
-        public async void Run()
+        public async UniTask Run()
         {
 
             //这里做点编辑器开关
@@ -18,8 +19,7 @@ namespace XiaoCao
 
             if (Application.isEditor)
             {
-                GameData.Init();
-                
+                GameData.Init();     
             }
 
             if (DebugSetting.IsDebug)
@@ -28,11 +28,14 @@ namespace XiaoCao
                 var con = GameObject.Instantiate(prefab);
             }
 
+            Debug.Log($"--- PreLoad Run {Time.frameCount} {Thread.CurrentThread.ManagedThreadId}");
+
             //初始化
             await ResMgr.InitYooAssetAll();
 
             Debuger.Log("==== InitYooAsset Finish ====");
 
+            PreLoad();
             //版本判断 无
 
             //玩家数据
@@ -61,6 +64,14 @@ namespace XiaoCao
             var sound = SoundMgr.Inst;
 
         }
+
+        public void PreLoad()
+        {
+            var inst = CommandFinder.Inst;
+            XCTaskRunner.PreInitPool();
+            var pool = RunTimePoolMgr.Inst;
+        }
+
 
         private void LoadTextConfig()
         {

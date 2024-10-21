@@ -120,6 +120,7 @@ namespace XiaoCao
                 atk = atk,
                 isCrit = isCrit,
             };
+            CurTrigger.id = Info.role.id;
         }
 
 

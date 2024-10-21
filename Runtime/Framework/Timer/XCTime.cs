@@ -29,7 +29,7 @@ public class XCTime
 
 
     //UniTask的取消需要依赖 CancellationTokenSource.Cancel(); 相对麻烦
-    //但性能上比Task更有优势
+    //但基于值类型的UniTask和自定义的 AsyncMethodBuilder 可以实现0GC
     public static async UniTask DelayRun(float time, Action action, CancellationTokenSource cancellationToken = null)
     {
         CancellationToken token = cancellationToken != null ? cancellationToken.Token : default(CancellationToken);
@@ -60,8 +60,9 @@ public class XCTime
         }
     }
 
-
+    //https://blog.csdn.net/dzj2021/article/details/134348978
     //https://github.com/Cysharp/UniTask#getting-started
+    //https://qiita.com/toRisouP/items/4445b6b9bf00e49eb147
     /*
     await UniTask.WaitUntil(() => isActive == false);
     await UniTask.Delay(TimeSpan.FromSeconds(10), ignoreTimeScale: false);

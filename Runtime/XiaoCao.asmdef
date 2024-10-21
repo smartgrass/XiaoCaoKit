@@ -8,7 +8,8 @@
         "UniTask.TextMeshPro",
         "Cinemachine",
         "FancyScrollView",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Fantasy.Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

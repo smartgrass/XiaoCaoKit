@@ -49,18 +49,25 @@ namespace XiaoCao
         /// </summary>
         public static XCTaskRunner CreatNewByData(XCTaskData data, TaskInfo info)
         {
-            if (runnerPool == null)
-            {
-                GameObject go = new GameObject($"Runner_{info.entityId}");
-                go.AddComponent<XCTaskRunner>();
-                runnerPool = new AssetPool(go);
-            }
+            PreInitPool();
             //使用对象池
             GameObject gameObject = runnerPool.Get();
+            gameObject.name = $"Runner_{info.entityId}";
             XCTaskRunner runner = gameObject.GetComponent<XCTaskRunner>();
             runner.Init(data, info);
             return runner;
         }
+
+        public static void PreInitPool()
+        {
+            if (runnerPool == null)
+            {
+                GameObject go = new GameObject($"Runner_Pre");
+                go.AddComponent<XCTaskRunner>();
+                runnerPool = new AssetPool(go);
+            }
+        }
+
         public void Init(XCTaskData data, TaskInfo info)
         {
             //Debug.Log($"--- skill {info.skillId} {data}");

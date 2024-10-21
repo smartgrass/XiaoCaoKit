@@ -22,6 +22,8 @@ public sealed class Tags
     
     public const string GAME_CONTROLLER = "GameController";
     
+    public const string ITEM = "Item";
+    
     public const string MAIN_CAMERA = "MainCamera";
     
     public const string PLAYER = "Player";

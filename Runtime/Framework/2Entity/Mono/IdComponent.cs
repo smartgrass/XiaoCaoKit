@@ -9,9 +9,18 @@ public class IdComponent : MonoBehaviour
     [NaughtyAttributes.ReadOnly]
     public int id;
 
+    public virtual EEntityType EntityType { get; }
+
     public BehaviorEntity GetEntity()
     {
         EntityMgr.Inst.FindEntity<BehaviorEntity>(id, out BehaviorEntity entity);
         return entity;
     }
+}
+
+
+public enum EEntityType
+{
+    Role,
+    Item
 }
