@@ -95,8 +95,8 @@ namespace XiaoCao
             Role role = GameDataCommon.Current.player0;
             if (role != null && role.isBodyCreated)
             {
-                target = role.idRole.Follow;
-                controller.SetTarget(role.idRole.Follow, role.idRole.LookAt);
+                target = role.idRole.GetFollow;
+                controller.SetTarget(role.idRole.GetFollow, role.idRole.GetLookAt);
             }
         }
     }

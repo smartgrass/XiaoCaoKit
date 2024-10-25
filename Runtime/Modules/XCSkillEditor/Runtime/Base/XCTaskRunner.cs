@@ -33,7 +33,7 @@ namespace XiaoCao
 
         public static AssetPool runnerPool;
 
-        public static XCTaskRunner CreatNew(int skillId, int roleId, TaskInfo info)
+        public static XCTaskRunner CreatNew(string skillId, int roleId, TaskInfo info)
         {
             XCTaskData data = SkillDataMgr.Get(skillId, roleId);
             if (data == null)
@@ -174,7 +174,7 @@ namespace XiaoCao
         internal Animator playerAnimator;
 
         public int entityId;
-        public int skillId;  //如100
+        public string skillId;  //如100
 
         //释放技能时记录角度 和 位置
         public Vector3 castEuler;
@@ -186,12 +186,12 @@ namespace XiaoCao
 
     public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache
     {
-        public Dictionary<int, XCTaskData> dataCache = new Dictionary<int, XCTaskData>();
+        public Dictionary<string, XCTaskData> dataCache = new Dictionary<string, XCTaskData>();
 
-        public static XCTaskData Get(int skillId, int raceId)
+        public static XCTaskData Get(string skillId, int raceId)
         {
 
-            int idKey = skillId + raceId * 1000;
+            string idKey = $"{raceId}_{skillId}";
             if (Inst.dataCache.TryGetValue(idKey, out XCTaskData data))
             {
                 return data;

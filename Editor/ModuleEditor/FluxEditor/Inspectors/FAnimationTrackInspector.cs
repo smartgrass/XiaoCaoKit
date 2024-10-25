@@ -165,6 +165,11 @@ namespace FluxEditor
 
 			AnimatorController controller = (AnimatorController)track.AnimatorController;
 
+			if (controller == null) {
+
+				track.GetAnimator().runtimeAnimatorController = track.Sequence.SeqSetting.forEditorAC;
+            }
+
 			track.UpdateEventIds();
 
 			AnimatorControllerLayer layer = FindLayer( controller, track.LayerName );

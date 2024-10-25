@@ -6,22 +6,22 @@ namespace XiaoCao
 {
     public class EnemyMaker : Singleton<EnemyMaker>, IClearCache
     {
-        public Dictionary<int, Type> enemyTypeDic = new Dictionary<int, Type>();
+        public Dictionary<string, Type> enemyTypeDic = new Dictionary<string, Type>();
 
         public Dictionary<string, Enemy0> enmeyGroup = new Dictionary<string, Enemy0>(); 
         
         protected override void Init()
         {
             base.Init();
-            Add(1, typeof(Enemy0));
+            //Add(1, typeof(Enemy0));
         }
 
-        public void Add(int enemyId, Type type)
+        public void Add(string enemyId, Type type)
         {
             enemyTypeDic[enemyId] = type;
         }
 
-        public Enemy0 CreatEnemy(int enemyId,int level = 1)
+        public Enemy0 CreatEnemy(string enemyId,int level = 1)
         {
             Enemy0 enemy = null;
             if (enemyTypeDic.ContainsKey(enemyId))

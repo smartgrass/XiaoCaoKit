@@ -7,6 +7,7 @@ using XiaoCao;
 
 namespace XiaoCaoEditor
 {
+
     public static class BuildTool
     {
         public static string buildPath = null;
@@ -33,5 +34,6 @@ namespace XiaoCaoEditor
         }
 
     }
+
 
 }

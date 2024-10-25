@@ -25,6 +25,7 @@ namespace XiaoCao
             GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(),true);
             coroutine = StartCoroutine(IEWaitRecover());
             CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.TimeStop);
+            XCTime.timeScale = 2;
         }
 
         public void RecoverTimeSpeed() {
@@ -46,6 +47,7 @@ namespace XiaoCao
             GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
             BattleData.IsTimeStop = false;
             CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.None);
+            XCTime.timeScale = 1;
         }
 
     }

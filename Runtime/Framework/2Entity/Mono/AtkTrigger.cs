@@ -79,7 +79,7 @@ public class AtkInfo
     public int atk = 1;
     public bool isCrit; //暴击
 
-    public int skillId = 0;
+    public string skillId;
     public int subSkillId = 0;
 
     internal Vector3 hitDir;

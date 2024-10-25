@@ -4,6 +4,10 @@ using System;
 using DG.Tweening.Plugins.Core.PathCore;
 using UnityEngine;
 using Path = System.IO.Path;
+using NUnit.Framework;
+using System.Collections.Generic;
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -38,6 +42,25 @@ public static class PathTool
         return upperPath;
     }
 
+
+    public static List<string> GetDirAllFileName(string dirPath)
+    {
+        List<string> fileNames = new List<string>();
+
+        // 获取目录下的所有文件信息  
+        string[] files = Directory.GetFiles(dirPath);
+        foreach (string file in files)
+        {
+            string extension = Path.GetExtension(file);
+            if (extension != ".meta")
+            {
+                // 获取文件名（不包含路径和后缀）  
+                string fileName = Path.GetFileNameWithoutExtension(file);
+                fileNames.Add(fileName);
+            }
+        }
+        return fileNames;
+    }
 
     public static string GetRegularPath(string path)
     {

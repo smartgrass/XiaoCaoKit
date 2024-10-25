@@ -10,18 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dbb797673222ab444b64311b410946e8, type: 3}
-  m_Name: RaceInfoSettingSo
+  m_Name: AiCmdSettingSo
   m_EditorClassIdentifier: 
   array:
-  - raceId: 1
-    des: "\u73A9\u5BB6\u9ED8\u8BA4"
-    cmdSkillList: 0000000001000000
-    otherSkillList: 
-  - raceId: 1
+  - CmdSettingId: 0
     des: "\u654C\u4EBA\u9ED8\u8BA4"
-    cmdSkillList: 5a0000005b0000005c000000
-    otherSkillList: 
-  - raceId: 2
+    cmdSkillList:
+    - NorAck0
+    - NorAck1
+  - CmdSettingId: 1
+    des: "\u654C\u4EBA\u9ED8\u8BA4"
+    cmdSkillList:
+    - 101
+    - 102
+  - CmdSettingId: 2
     des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
-    cmdSkillList: c9000000
-    otherSkillList: 
+    cmdSkillList:
+    - 201
+  - CmdSettingId: 3
+    des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
+    cmdSkillList: []

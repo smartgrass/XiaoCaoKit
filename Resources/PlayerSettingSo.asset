@@ -20,7 +20,9 @@ MonoBehaviour:
     - id: 90
       cd: 0.5
       sprite: {fileID: 0}
-    hasInited: 0
+    hasInited: 1
     id: 0
     norAtkCount: 3
     resetNorAckTime: 1.5
+    JumpY: 2
+    JumpNoGravityT: 0.35

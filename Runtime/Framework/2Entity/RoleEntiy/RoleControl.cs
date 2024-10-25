@@ -30,7 +30,7 @@ namespace XiaoCao
             }
             return false;
         }
-        private bool IsHighLevelSkill(int skillId)
+        private bool IsHighLevelSkill(string skillId)
         {
             //读表 读配置
             return false;
@@ -154,7 +154,7 @@ namespace XiaoCao
         }
 
 
-        public virtual void TryPlaySkill(int skillId)
+        public virtual void TryPlaySkill(string skillId)
         {
 
             //条件判断, 耗蓝等等
@@ -167,7 +167,7 @@ namespace XiaoCao
             RcpPlaySkill(skillId);
         }
 
-        public virtual void RcpPlaySkill(int skillId)
+        public virtual void RcpPlaySkill(string skillId)
         {
             PreSkillStart(skillId);
             Data_R.curSkillId = skillId;
@@ -200,7 +200,7 @@ namespace XiaoCao
 
 
         //技能开始前根据输入调整方向 等数据
-        protected virtual void PreSkillStart(int skillId)
+        protected virtual void PreSkillStart(string skillId)
         {
 
         }
@@ -235,7 +235,7 @@ namespace XiaoCao
 
     public interface IRoleControl
     {
-        public void TryPlaySkill(int skillId);
+        public void TryPlaySkill(string skillId);
 
         public bool IsBusy(int level = 0);
         public void SetNoBusy();

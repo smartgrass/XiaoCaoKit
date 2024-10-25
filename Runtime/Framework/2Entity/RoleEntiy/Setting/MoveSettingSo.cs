@@ -4,22 +4,14 @@ using UnityEngine;
 namespace XiaoCao
 {
     [CreateAssetMenu(menuName = "SO/MoveSettingSo")]
-    public class MoveSettingSo : SettingSo<MoveSetting>
-    {
-
-    }
-
-
-    //基础数值
-    [Serializable]
-    public class MoveSetting : IIndex
+    public class MoveSettingSo : ScriptableObject
     {
         public int id = 0;
 
         public string des;
         public int Id => id;
 
-        public float baseMoveSpeed = 4;
+        public float baseMoveSpeed = 3.8f;
 
         public float moveSmooth = 0.05f;
 
@@ -27,10 +19,12 @@ namespace XiaoCao
 
         public float angleSpeed = 10;
 
-        public float g = -40;
+        public float g = -73.04f;
 
         public float GOnGroundMult = 0.8f;
 
         public float MaxGOnGroundMult = 4;
+
+        public Vector3 CamFollewOffset = new Vector3(0,0.83f,0);
     }
 }

@@ -93,7 +93,7 @@ namespace XiaoCao
 
             data0.CheckNull();
 
-            data0.prefabId = 0;
+            //data0.prefabId
 
             if (Application.isEditor && "IsKaiLe".GetKeyBool())
             {

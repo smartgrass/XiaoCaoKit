@@ -45,7 +45,7 @@ namespace XiaoCao
         public Vector3 idlePos;
 
 
-        public void Init(int aiId)
+        public AIControl Init(int aiId)
         {
             string configPath = XCPathConfig.GetAIPath(aiId).LogStr("--");
             var so = ResMgr.LoadAseet(configPath) as MainDataFSM;
@@ -59,6 +59,7 @@ namespace XiaoCao
             mainDataFSM.InitReset(this);
             Movement.overridBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
             idlePos = transform.position;
+            return this;
         }
 
         public override void Update()

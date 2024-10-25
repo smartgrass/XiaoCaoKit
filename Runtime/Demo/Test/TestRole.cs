@@ -16,6 +16,11 @@ public class TestRole : GameStartMono
 
     public string enemyIdList = "1,1";
 
+    [Dropdown(nameof(GetDirAllFileName))]
+    [Label("")]
+    [Header("Show all Enmey")]
+    public string enmeyBrowse;
+
     public int level = 1;
 
     public int genCount = 1;
@@ -26,24 +31,26 @@ public class TestRole : GameStartMono
 
     public float circleSize = 1;
 
+    private List<string> GetDirAllFileName()
+    {
+        return PathTool.GetDirAllFileName("Assets/_Res/Role/Enemy");
+    }
+
     public override void OnGameStart()
     {
         XCTime.DelayRun(delayGen, Gen).ToObservable();
     }
 
-    private int[] GetEnemyList()
+    private string[] GetEnemyList()
     {
-        List<int> list = new List<int>();
-        if (string.IsNullOrEmpty(enemyIdList))
+        List<string> list = new List<string>();
+        string[] ids = enemyIdList.Split(',');
+        if (ids.Length == 0)
         {
+            list.Add(enemyIdList);
             return list.ToArray();
         }
-        string[] ids = enemyIdList.Split(',');
-        foreach (string id in ids)
-        {
-            list.Add(int.Parse(id));
-        }
-        return list.ToArray();
+        return ids;
     }
 
     //需要一个生成敌人预制体
@@ -52,19 +59,14 @@ public class TestRole : GameStartMono
     {
         if (roleType == RoleType.Enemy)
         {
-            int[] enemyList = GetEnemyList();
+            string[] enemyList = GetEnemyList();
 
             int pos = 0;
             int posCount = genCount * enemyList.Length;
             for (int i = 0; i < genCount; i++)
             {
-                foreach (int id in enemyList)
+                foreach (string id in enemyList)
                 {
-                    if (id  < 0)
-                    {
-                        Debug.LogError("--- id < 0 ");
-                        continue;
-                    }
 
                     Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id,level);
 

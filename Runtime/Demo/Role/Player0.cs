@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using DG.Tweening;
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 using Input = UnityEngine.Input;
 
 namespace XiaoCao
@@ -33,8 +35,8 @@ namespace XiaoCao
             SetTeam(1);
 
             playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>()
-                .GetOrDefault(raceId, DefaultConfigId);
-            roleData.playerAttr.Init(savaData.lv,IsPlayer);
+                .GetOrDefault(raceId, 0);
+            roleData.playerAttr.Init(savaData.lv, IsPlayer);
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
@@ -130,7 +132,7 @@ namespace XiaoCao
                 ////屏幕安全边距
                 //if (GetMouseProportionalCoordinates().y < 0.9f)
                 //{
-                    
+
                 //}
 
             }
@@ -139,7 +141,10 @@ namespace XiaoCao
                 data.inputs[InputKey.LeftShift] = true;
 
             if (Input.GetKeyDown(KeyCode.Space))
-                data.inputs[InputKey.Space] = true;
+                data.inputs[InputKey.Space] = true;            
+            
+            if (Input.GetKeyDown(KeyCode.Tab))
+                data.inputs[InputKey.Tab] = true;
 
             for (int i = 0; i < 6; i++)
             {
@@ -201,6 +206,7 @@ namespace XiaoCao
         public PlayerData0 Data_P => owner.playerData;
         public PlayerInputData InputData => owner.playerData.inputData;
         public PlayerAtkTimer AtkTimers => owner.component.atkTimers;
+        public Tween JumpTween { get; set; }
 
         public override void Update()
         {
@@ -223,7 +229,7 @@ namespace XiaoCao
 
             if (InputData.skillInput != 0)
             {
-                TryPlaySkill(InputData.skillInput);
+                TryPlaySkill(InputData.skillInput.ToString());
             }
 
             if (InputData.inputs[InputKey.NorAck])
@@ -231,7 +237,7 @@ namespace XiaoCao
                 TryNorAck();
             }
 
-            if (InputData.inputs[InputKey.Space])
+            if (InputData.inputs[InputKey.Tab])
             {
                 if (BattleData.IsTimeStop)
                 {
@@ -239,21 +245,40 @@ namespace XiaoCao
                 }
                 else
                 {
-                    TimeStopMgr.Inst.StopTimeSpeed(5);
+                    TimeStopMgr.Inst.StopTimeSpeed(6);
                 }
+            }
+
+            if (InputData.inputs[InputKey.Space])
+            {
+                TryJump();
+
             }
         }
 
+        public void TryJump()
+        {
+            if (!Data_R.IsStateFree || IsBusy())
+                return;
+            if (JumpTween != null && JumpTween.IsPlaying())
+            {
+                return;
+            }
 
-        protected override void PreSkillStart(int skillId)
+            owner.Anim.Play(AnimNames.Jump);
+            JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
+            Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
+        }
+
+        protected override void PreSkillStart(string skillId)
         {
             if (InputData.x != 0 || InputData.y != 0)
             {
                 var dir = owner.component.movement.inputDir;
                 this.Data_P.movement.RotateByMoveDir(dir, 1);
             }
-            int rollId = owner.raceInfo.RollId;
-            if (rollId != skillId)
+
+            if (AnimNames.Roll != skillId)
             {
                 DefaultAutoDirect();
             }
@@ -261,15 +286,14 @@ namespace XiaoCao
 
         public void TryRoll()
         {
-            int rollId = owner.raceInfo.RollId;
             //判断冷缩
-            if (!AtkTimers.IsSkillReady(rollId))
+            if (!AtkTimers.IsSkillReady(AnimNames.Roll))
             {
-                Debug.Log($"{rollId} cd {AtkTimers.GetWaitTime(rollId)}");
+                Debug.Log($"rollId cd {AtkTimers.GetWaitTime(AnimNames.Roll)}");
                 return;
             }
 
-            AtkTimers.SetSkillEnterCD(rollId);
+            AtkTimers.SetSkillEnterCD(AnimNames.Roll);
 
             //停止&打断当前动作
             if (IsBusy())
@@ -277,7 +301,7 @@ namespace XiaoCao
                 SetNoBusy();
             }
 
-            RcpPlaySkill(rollId);
+            RcpPlaySkill(AnimNames.Roll);
         }
 
         public void TryNorAck()
@@ -291,7 +315,7 @@ namespace XiaoCao
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 
-            RcpPlaySkill(RaceIdSetting.GetNorAckIdFull(nextNorAckIndex));
+            RcpPlaySkill($"{AnimNames.NorAck}{nextNorAckIndex}");
         }
 
         public override void DefaultAutoDirect()
@@ -311,19 +335,11 @@ namespace XiaoCao
 
 
         //执行使用技能, 一般不直接使用
-        public override void RcpPlaySkill(int skillId)
+        public override void RcpPlaySkill(string skillId)
         {
-
-            bool isOtherSkill = IsOtherSkill(skillId);
-
             base.RcpPlaySkill(skillId);
         }
 
-        //平a 翻滚等跳跃等"特殊技能"
-        public bool IsOtherSkill(int skillId)
-        {
-            return skillId < 0;
-        }
 
     }
     //相当于System, 无数据
@@ -333,7 +349,7 @@ namespace XiaoCao
         public PlayerAtkTimer(Player0 owner) : base(owner) { }
         public PlayerSetting playerSetting => Data_P.playerSetting;
 
-        public Dictionary<int, SkillCdData> dic = new Dictionary<int, SkillCdData>();
+        public Dictionary<string, SkillCdData> dic = new Dictionary<string, SkillCdData>();
 
         public float norAckTimer;
 
@@ -358,7 +374,7 @@ namespace XiaoCao
         }
 
 
-        private void CheckDic(int skillIndex)
+        private void CheckDic(string skillIndex)
         {
             if (!dic.ContainsKey(skillIndex))
             {
@@ -368,26 +384,30 @@ namespace XiaoCao
             }
         }
 
+        //public bool IsSkillReady(string skillId)
+        //{
+        //    int hash = skillId.GetHashCode();
+        //}
 
-        public bool IsSkillReady(int skillIndex)
+        public bool IsSkillReady(string skillIndex)
         {
             CheckDic(skillIndex);
             return !dic[skillIndex].IsCd;
         }
 
-        public void SetSkillEnterCD(int skillIndex)
+        public void SetSkillEnterCD(string skillIndex)
         {
             CheckDic(skillIndex);
             dic[skillIndex].EnterCD();
         }
 
-        public float GetProcess(int skillIndex)
+        public float GetProcess(string skillIndex)
         {
             CheckDic(skillIndex);
             return dic[skillIndex].GetCurProccess();
         }
 
-        public float GetWaitTime(int skillIndex)
+        public float GetWaitTime(string skillIndex)
         {
             CheckDic(skillIndex);
             return dic[skillIndex].GetWaitTime();
@@ -396,8 +416,6 @@ namespace XiaoCao
 
         public class SkillCdData
         {
-            public int skillId;
-
             public float cd;
 
             public float cdFinishTime { get; set; }
@@ -446,10 +464,10 @@ namespace XiaoCao
 
         public int raceId = 0;
 
-        public int prefabId = 0;
+        public string prefabId;
 
         //技能解锁状态
-        public Dictionary<int,int> skillUnlockDic = new Dictionary<int,int>();
+        public Dictionary<int, int> skillUnlockDic = new Dictionary<int, int>();
 
         public SkillBarData skillBarData = new SkillBarData();
 
@@ -461,7 +479,7 @@ namespace XiaoCao
         //反序列化读取的数据, 可能会出现空的现象
         internal void CheckNull()
         {
-            if (skillBarData == null)
+            if (skillBarData == null || skillBarData.onSkill == null)
             {
                 skillBarData = new SkillBarData();
             }
@@ -472,6 +490,10 @@ namespace XiaoCao
             if (skillUnlockDic == null)
             {
                 skillUnlockDic = new Dictionary<int, int>();
+            }
+            if (string.IsNullOrEmpty( prefabId) )
+            {
+                prefabId = "P_0";
             }
         }
 
@@ -508,7 +530,7 @@ namespace XiaoCao
 
     public class SkillBarData
     {
-        public int[] onSkill = new int[GameSetting.SkillCountOnBar];
+        public string[] onSkill = new string[GameSetting.SkillCountOnBar];
     }
 
     public class PlayerInputData
@@ -560,14 +582,14 @@ namespace XiaoCao
         public float Crit => critAtr.CurrentValue;
 
 
-        public AttributeValue maxHpAtr =new AttributeValue();
+        public AttributeValue maxHpAtr = new AttributeValue();
         public AttributeValue maxMpAtr = new AttributeValue();
         public AttributeValue atkAtr = new AttributeValue();
         public AttributeValue defAtr = new AttributeValue();
         public AttributeValue critAtr = new AttributeValue(); //Float
 
 
-        public void Init(int lv,bool isPlayer)
+        public void Init(int lv, bool isPlayer)
         {
             this.lv = lv;
             maxExp = 100 + 100 * (lv % 10);
@@ -603,6 +625,7 @@ namespace XiaoCao
         public const int NorAck = 0;
         public const int LeftShift = 1;
         public const int Space = 2; //Jump
+        public const int Tab = 3;
     }
     #endregion
 

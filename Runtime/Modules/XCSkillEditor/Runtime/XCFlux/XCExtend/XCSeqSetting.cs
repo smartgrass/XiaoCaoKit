@@ -16,5 +16,6 @@ namespace XiaoCao
         public string raceId;
 
         public RuntimeAnimatorController targetAnimtorController;
+        public RuntimeAnimatorController forEditorAC;
     }
 }

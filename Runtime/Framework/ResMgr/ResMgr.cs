@@ -8,7 +8,6 @@ using UnityEngine;
 using XiaoCao;
 using YooAsset;
 
-
 public class ResMgr
 {
     public static void LoadExample(string path)
@@ -72,6 +71,32 @@ public class ResMgr
         //    Debug.LogWarning($"--- no Extra FailBack to Default {path}");
         //return LoadPrefab(path, PackageType.DefaultPackage);
         //}
+    }
+
+
+
+    public static T LoadAseetOrDefault<T>(string path,string fallBackPath) where T : Object
+    {
+        T ret = LoadAseet<T>(path);
+        if (ret)
+        {
+            return ret;
+        }
+        return LoadAseet<T>(fallBackPath);
+    }
+
+    public static T LoadAseet<T>(string path) where T : Object
+    {
+        if (Loader.CheckLocationValid(path))
+        {
+            var task = Loader.LoadAssetSync<T>(path);
+            return task.AssetObject as T;
+        }
+        else
+        {
+            Debug.LogWarning($"--- no Asset {path}");
+            return null;
+        }
     }
 
     //只加载, 没有实例化

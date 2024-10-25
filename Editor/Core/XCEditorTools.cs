@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -196,9 +197,17 @@ namespace XiaoCaoEditor
 
     public static class XCAnimatorTool
     {
-        public static void CheckAnim(RuntimeAnimatorController runtimeAnim, Dictionary<string, AnimationClip> animDic, int skillId)
+        public static void CheckAnim(RuntimeAnimatorController runtimeAnim, Dictionary<string, AnimationClip> animDic, string skillIdStr)
         {
+            int skillIdNum = 999;
 
+            if (!int.TryParse(skillIdStr, out skillIdNum))
+            {
+                skillIdNum = skillIdStr.GetHashCode() % 1000;
+                Debug.Log($"--- GetHashCode {skillIdNum %1000}");
+            }
+            
+ 
             AnimatorController ac = runtimeAnim as AnimatorController;
             if (ac.layers.Length < 1)
             {
@@ -223,7 +232,7 @@ namespace XiaoCaoEditor
                 {
                     //添加
                     isChange = true;
-                    Vector3 pos = GetClipPos(skillId, i);
+                    Vector3 pos = GetClipPos(skillIdNum, i);
                     AnimatorState state = sm.AddState(key, pos);
                     state.motion = value;
                     state.AddExitTransition(true);
@@ -302,6 +311,84 @@ namespace XiaoCaoEditor
 
             return new Vector3(600 + subPosYIndex * 220, (posYIndex + subIndex / 5f) * 50, 0);
         }
+
+        [MenuItem(XCEditorTools.AssetCheck + "清空动画机")]
+        private static void ClearAnimator()
+        {
+            var select = Selection.activeObject;
+            AnimatorController ac = select as AnimatorController;
+            if (ac == null)
+            {
+                return;
+            }
+            ac.layers = new[] { ac.layers[0] };
+            EditorUtility.SetDirty(ac);
+            AssetDatabase.SaveAssets();     //保存改动的资源
+            AssetDatabase.Refresh();
+        }
+
+        [MenuItem(XCEditorTools.AssetCheck + "Re Name Fbx Clip")]
+        private static void ReNameFbxClip()
+        {
+            foreach (var item in Selection.gameObjects)
+            {
+                string path = AssetDatabase.GetAssetPath(item);
+                ModelImporter importer = ModelImporter.GetAtPath(path) as ModelImporter;
+                Debug.Log($"--- importer {importer}");
+                if (importer == null)
+                {
+                    return;
+                }
+
+                Debug.Log($"---  len {importer.clipAnimations.Length} {importer.defaultClipAnimations.Length} ");
+                if (importer.defaultClipAnimations.Length == 1)
+                {
+                    Debug.Log($"--- importer.name {new FileInfo(path).Name} {item.name}");
+                    ModelImporterClipAnimation clip = importer.defaultClipAnimations[0];
+                    clip.name = new FileInfo(path).Name;
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip};
+                }
+                importer.SaveAndReimport();
+            }
+        }
+
+        [MenuItem(XCEditorTools.AssetCheck + "Fbx Clip Bake To Pose(Orig-Feet-Orig)")]
+        private static void BakeToPose()
+        {
+            foreach (var item in Selection.gameObjects)
+            {
+                string path = AssetDatabase.GetAssetPath(item);
+                ModelImporter importer = ModelImporter.GetAtPath(path) as ModelImporter;
+                if (importer == null)
+                {
+                    return;
+                }
+
+                if (importer.defaultClipAnimations.Length == 1 && importer.clipAnimations.Length == 0)
+                {
+                    Debug.Log($"--- importer.name {new FileInfo(path).Name} {item.name}");
+                    ModelImporterClipAnimation clip = importer.defaultClipAnimations[0];
+                    clip.name = new FileInfo(path).Name;
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip };
+                }
+
+                if (importer.clipAnimations.Length == 1)
+                {
+                    var clip = importer.clipAnimations[0];
+                    clip.keepOriginalOrientation = true;
+                    clip.heightFromFeet = true;
+                    clip.keepOriginalPositionXZ = true;
+                    clip.keepOriginalPositionY = false;
+                    clip.lockRootHeightY = true;
+                    clip.lockRootRotation = true;
+                    clip.lockRootPositionXZ = true;
+
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip };
+                }
+                importer.SaveAndReimport();
+            }
+        }
+
     }
 
 

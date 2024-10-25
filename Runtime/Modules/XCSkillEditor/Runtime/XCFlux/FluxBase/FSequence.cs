@@ -46,8 +46,8 @@ namespace Flux
 
         #region XCSeq
         [SerializeField]
-		[SeqHeaderShow(1,5,80,"ID", RaceIdSetting.README)]
-        public int _skillId;
+		[SeqHeaderShow(1,5,80,"ID", RaceSetting.README)]
+        public string _skillId;
         [SerializeField]
 		[SeqHeaderShow(1, 100, 100,"Des")]
 		private string _des;

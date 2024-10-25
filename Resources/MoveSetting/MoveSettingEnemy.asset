@@ -9,11 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ad827f73059fa245b87340cbbfd5c52, type: 3}
-  m_Name: Player0
+  m_Script: {fileID: 11500000, guid: 63b068c9c07c44f47ad013d3176e8618, type: 3}
+  m_Name: MoveSettingEnemy
   m_EditorClassIdentifier: 
+  id: 0
   des: 
-  type: 1
-  raceId: 0
-  targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}
-  forEditorAC: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
+  baseMoveSpeed: 3.8
+  moveSmooth: 0.05
+  rotationLerp: 0.2
+  angleSpeed: 10
+  g: -73.04
+  GOnGroundMult: 0.8
+  MaxGOnGroundMult: 4

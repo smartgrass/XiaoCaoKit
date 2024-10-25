@@ -9,8 +9,6 @@ namespace XiaoCao
 {
 
     [CreateAssetMenu(menuName = "SO/PlayerSettingSo")]
-
-    /// <see cref="RaceIdSetting"/>
     /// <see cref="PlayerSkillSetting"/>
     /// player专属的设置
     public class PlayerSettingSo : SettingSo<PlayerSetting>
@@ -36,12 +34,16 @@ namespace XiaoCao
         //平a重置时间
         public float resetNorAckTime = 1.5f;
 
+        public float JumpY = 2.5f;
 
-        //TODO 序号和id
-        public PlayerSkillSetting GetSkillSetting(int skillIndex)
+        public float JumpNoGravityT = 0.4f;
+
+        public PlayerSkillSetting GetSkillSetting(string skillIndex)
         {
+            Debug.Log($"--- TODO PlayerSkillSetting");
+            return new PlayerSkillSetting();
             //InitMap(playerSkillSettingArray);
-            return GetOrFrist(skillIndex);
+            //return GetOrFrist(skillIndex);
         }
     }
 

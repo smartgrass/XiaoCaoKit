@@ -25,8 +25,6 @@ namespace XiaoCao
 
         public bool IsPlayer { get => RoleType == RoleType.Player; }
 
-        public int DefaultConfigId => IsPlayer ? 0 : 1;
-
         //roleData
         public RoleData roleData;
 
@@ -45,13 +43,11 @@ namespace XiaoCao
         public bool IsAnimBreak => Anim.GetCurrentAnimatorStateInfo(0).IsTag("Break");
 
         ///职业,种族: 每一个角色和敌人都有对应的 raceId
-        ///<see cref="RaceIdSetting"/>
+        ///<see cref="RaceSetting"/>
         public int raceId;
 
-        public RaceInfo raceInfo;
-
         /// 绑定的模型文件
-        public int prefabId;
+        public string prefabId;
 
         //势力,相同为友军
         public int team;
@@ -70,7 +66,7 @@ namespace XiaoCao
         //AI控制
         public bool IsAiOn;
 
-        public virtual void CreateIdRole(int prefabId)
+        public virtual void CreateIdRole(string prefabId)
         {
             this.prefabId = prefabId;
 
@@ -83,8 +79,6 @@ namespace XiaoCao
             raceId = idRole.raceId;
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRole.gameObject);
-            raceInfo = ConfigMgr.LoadSoConfig<RaceInfoSettingSo>()
-                .GetOrDefault(raceId, DefaultConfigId);
 #if UNITY_EDITOR
             var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
             if (RoleType == RoleType.Enemy)
@@ -106,10 +100,9 @@ namespace XiaoCao
         protected void BaseInit()
         {
             idRole.animator = body.GetComponent<Animator>();
-            idRole.animator.runtimeAnimatorController = idRole.runtimeAnim;
+            idRole.animator.runtimeAnimatorController = idRole.LoadRuntimeAc;
             idRole.animator.applyRootMotion = false;
-            roleData.moveSetting = ConfigMgr.LoadSoConfig<MoveSettingSo>()
-                .GetOrDefault(raceId, DefaultConfigId);
+            roleData.moveSetting = idRole.moveSetting;
             CheckWeaponPoint();
         }
 
@@ -294,7 +287,7 @@ namespace XiaoCao
             switch (type)
             {
                 case EntityMsgType.PlayNextSkill:
-                    int skillId = (int)msg;
+                    string skillId = (string)msg;
                     roleData.roleControl.TryPlaySkill(skillId);
                     break;
                 case EntityMsgType.SetNoBusy:
@@ -450,25 +443,6 @@ namespace XiaoCao
             source.sourceTransform = tf;
             pc.AddSource(source);
             pc.constraintActive = true;
-
-
-        }
-        public static void SetLossyScale(Transform tf, Vector3 lossyScale)
-        {
-            Vector3 adjustedLocalScale = DivideVectors(lossyScale, (tf.parent.lossyScale));
-            Debug.Log($"--- tf.parent {tf.parent.name}");
-            tf.localScale = adjustedLocalScale;
-        }
-
-        public static Vector3 DivideVectors(Vector3 v1, Vector3 v2)
-        {
-            if (v2.x == 0 || v2.y == 0 || v2.z == 0)
-
-            {
-                throw new System.DivideByZeroException("除数向量 v2 含有零分量，不能进行除法运算。");
-            }
-            return new Vector3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
-
         }
 
         public void TakeWeapon(GameObject weapon)
@@ -548,7 +522,7 @@ namespace XiaoCao
     public class RoleData
     {
 
-        public int curSkillId;
+        public string curSkillId;
 
         public EBodyState bodyState;
 
@@ -565,7 +539,7 @@ namespace XiaoCao
         public IRoleControl roleControl;
 
         //特殊,需要手动赋值
-        public MoveSetting moveSetting;
+        public MoveSettingSo moveSetting;
 
         public RoleMovement movement;
         public bool IsStateFree => bodyState is not EBodyState.Break or EBodyState.Dead;

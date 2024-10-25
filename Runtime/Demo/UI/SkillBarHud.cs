@@ -23,12 +23,12 @@ namespace XiaoCao
 
         private void CheckImg()         
         {
-            atkTimer = GameDataCommon.Current.player0.component.atkTimers;
+            ////atkTimer = GameDataCommon.Current.player0.component.atkTimers;
             for (int i = 0; i < SkillCount; i++)
             {
                 var solt = cachePool.cacheList[i];
-                int skillndex = BarData.onSkill[i];
-                solt.image.sprite = atkTimer.playerSetting.GetSkillSetting(skillndex).sprite;
+                string skillndex = BarData.onSkill[i];
+                solt.image.sprite = SpriteResHelper.LoadSkillIcon(skillndex);
             }
         }
 

@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.ComponentModel;
+using NaughtyAttributes;
 
 namespace Flux
 {
@@ -92,6 +94,7 @@ namespace Flux
 				return _animatorController; 
 			} }
 
+
 		[SerializeField]
 		[HideInInspector]
 		private string _layerName = null;
@@ -116,15 +119,24 @@ namespace Flux
 				return RequiredCacheMode | CacheMode.RuntimeForward;
 			}
 		}
+		[NaughtyAttributes.ReadOnly()]
+		public Animator curAnimtor;
 
         public Animator GetAnimator()
 		{
-            Animator animator  = Owner.GetComponentInChildren<Animator>();
+            Animator animator = Owner.GetComponentInChildren<Animator>();
             if (animator == null)
 			{
-                Owner.gameObject.AddComponent<Animator>();
+				if (Owner.GetChild(0).TryGetComponent<Animator>(out Animator anim))
+				{
+                    curAnimtor = anim;
+                    return anim;
+                }
+                Debug.LogError($"--- no animator {Owner}");
             }
-			return animator;
+            curAnimtor = animator;
+
+            return animator;
         }
 
         public override void Init()

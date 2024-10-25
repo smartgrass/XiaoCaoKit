@@ -19,7 +19,7 @@ namespace XiaoCao
 
 
         //prefabId = enemyId
-        public void Init(int prefabId, int level = 1)
+        public void Init(string prefabId, int level = 1)
         {
             CreateIdRole(prefabId);
             CreateRoleBody(idRole.bodyName);
@@ -28,11 +28,12 @@ namespace XiaoCao
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
 
-            //var info = ConfigMgr.LoadSoConfig<AiInfoSettingSo>().GetOrDefault(idRole.aiId);
 
+            AddEnemyData aiData = idRole.gameObject.GetComponent<AddEnemyData>();
 
-            component.aiControl = new AIControl(this);
-            component.aiControl.Init(idRole.aiId);
+            int curCmdSettingId = aiData.cmdSettingId >= 0 ? aiData.cmdSettingId : raceId;
+            enemyData.AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(curCmdSettingId, 0);
+            component.aiControl = new AIControl(this).Init(aiData.aiId);
 
             roleData.playerAttr.Init(level, IsPlayer);
             roleData.roleControl = component.aiControl;
@@ -95,13 +96,11 @@ namespace XiaoCao
             {
                 case ActMsgType.Skill:
                     int msgNum = int.Parse(actMsg);
-                    int skillId = raceInfo.GetCmdSkillIndex(msgNum);
-                    component.aiControl.TryPlaySkill(skillId);
+                    component.aiControl.TryPlaySkill(enemyData.AiCmdSetting.GetCmdSkillByIndex(msgNum));
                     break;
                 case ActMsgType.OtherSkill:
-                    //特殊处理
-                    int otherSkilId = int.Parse(actMsg);
-                    component.aiControl.TryPlaySkill(otherSkilId);
+
+                    component.aiControl.TryPlaySkill(actMsg);
                     break;
                 case ActMsgType.Idle:
                     break;
@@ -123,6 +122,8 @@ namespace XiaoCao
     public class EnemyData0 : RoleData
     {
         public EnemyShareData0 component = new EnemyShareData0();
+
+        public AiSkillCmdSetting AiCmdSetting;
     }
 
 

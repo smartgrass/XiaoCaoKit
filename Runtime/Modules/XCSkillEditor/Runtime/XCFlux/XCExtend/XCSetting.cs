@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using Path = System.IO.Path;
 
 namespace XiaoCao
 {
@@ -21,6 +22,19 @@ namespace XiaoCao
         public static readonly string HitEffectDir = "Assets/_Res/SkillPrefab/Hit";
         public static readonly string AudioClipDir = "Assets/_Res/Audio";
         public static readonly string SpriteDir = "Assets/_Res/SpriteDir";
+
+        public static readonly string AnimControllerDir = "Assets/_Res/Role/AnimController";
+
+
+        public static string GetSkillIconPath(string skillId) {
+            return $"{SpriteDir}/SkillIcon/{skillId}.png";
+        }
+
+        //获取动画机
+        public static string GetAnimatorControllerPath(string raceId)
+        {
+            return $"{AnimControllerDir}/{raceId}.controller";
+        }
 
         public static string GetGameConfigFile(string filePath)
         {
@@ -55,7 +69,7 @@ namespace XiaoCao
         {
             return $"{PerfabDir}/{raceId.ToString()}";
         }
-        public static string GetSkillDataPath(string dir, int skillId)
+        public static string GetSkillDataPath(string dir, string skillId)
         {
             return $"{DataDir}/{dir.ToString()}/{skillId}.bytes";
         }
@@ -65,9 +79,9 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }
 
-        public static string GetIdRolePath(RoleType roleType, int prefabId)
+        public static string GetIdRolePath(RoleType roleType, string prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{roleType.ToShortName()}_{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/{roleType}/{prefabId}.prefab";
         }
 
         public static string GetAIPath(int aiId)

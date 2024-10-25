@@ -1,4 +1,6 @@
-﻿using NaughtyAttributes;
+﻿using DG.Tweening.Plugins.Core.PathCore;
+using NaughtyAttributes;
+using System.IO;
 using UnityEngine;
 using XiaoCao;
 
@@ -8,27 +10,69 @@ public class IdRole : IdComponent
 {
     public int raceId = 1;
     public string bodyName = "Body_P_0";
-    public int aiId = 0;
-    public RuntimeAnimatorController runtimeAnim;
+    public string animControllerName = "";
+    public RuntimeAnimatorController LoadRuntimeAc
+    {
+        get
+        {
+            string path = string.IsNullOrEmpty(animControllerName) ? XCPathConfig.GetAnimatorControllerPath(raceId.ToString()) :
+                XCPathConfig.GetAnimatorControllerPath(animControllerName);
+
+            var loadAc = ResMgr.LoadAseet(path) as RuntimeAnimatorController;
+            if (loadAc != null)
+            {
+                return loadAc;
+            }
+            Debug.LogError($"--- no RuntimeAnimatorController {path}");
+            return null;
+        }
+    }
+
+
+
     public Rigidbody rb;
     public CharacterController cc;
     public Collider[] triggerCols;
 
 
-    public Transform Follow;
-    public Transform LookAt;
+
     public Vector3 hpBarOffset = Vector3.up;
+    public MoveSettingSo moveSetting;
 
-    [HideInInspector]
-    public Transform tf;
+    private Transform _follow;
 
+    private Transform _lookAt;
+    public Transform GetFollow
+    {
+        get
+        {
+            if (_follow == null)
+            {
+                _follow = new GameObject("Follow").transform;
+                _follow.SetParent(transform);
+                _follow.localPosition = moveSetting.CamFollewOffset;
+            }
+            return _follow;
+        }
+    }
+
+    public Transform GetLookAt
+    {
+        get
+        {
+            if (_lookAt == null)
+            {
+                _lookAt = GetFollow;
+            }
+            return _lookAt;
+        }
+    }
+
+
+    //Debug View"
     [ReadOnly]
     public Animator animator;
 
-    private void Awake()
-    {
-        tf = transform;
-    }
 
     private void OnDestroy()
     {
@@ -51,10 +95,5 @@ public class IdRole : IdComponent
             rb = GetComponent<Rigidbody>();
         if (cc == null)
             cc = GetComponent<CharacterController>();
-        if (Follow == null)
-        {
-            Follow = transform.Find("Follow"); 
-            LookAt = Follow;
-        }
     }
 }

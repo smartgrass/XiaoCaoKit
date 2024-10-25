@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DG.Tweening;
+using System;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
@@ -27,9 +28,9 @@ namespace XiaoCao
         public float overridBaseMoveSpeed = 0;
 
         public CharacterController cc => owner.idRole.cc;
-        public Transform tf => owner.idRole.tf;
+        public Transform tf => owner.idRole.transform;
 
-        public MoveSetting moveSetting => Data_R.moveSetting;
+        public MoveSettingSo moveSetting => Data_R.moveSetting;
 
         public Vector3 camForward => CameraMgr.Forword;
 
@@ -56,7 +57,7 @@ namespace XiaoCao
             OnMoveing(inputDir);
         }
 
-        public void SetMoveDir(Vector3 moveDir,float speedRate = 1, bool isLookDir = true)
+        public void SetMoveDir(Vector3 moveDir, float speedRate = 1, bool isLookDir = true)
         {
             inputDir = moveDir;
             this.isLookDir = isLookDir;
@@ -164,7 +165,7 @@ namespace XiaoCao
         }
 
 
-        public void RotateByMoveDir(Vector3 worldMoveDir,float lerp = 1)
+        public void RotateByMoveDir(Vector3 worldMoveDir, float lerp = 1)
         {
             if (worldMoveDir.IsZore())
                 return;
@@ -236,7 +237,7 @@ namespace XiaoCao
             float GroundedRadius = 0.28f;
             // set sphere position, with offset
             Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
-            
+
             isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK, QueryTriggerInteraction.Ignore);
 
             // update animator if using character
@@ -268,7 +269,7 @@ namespace XiaoCao
         {
             enableGravity = true;
             if (noGravityTimer > 0)
-            {   
+            {
                 enableGravity = false;
                 noGravityTimer -= Time.fixedDeltaTime;
             }
@@ -281,8 +282,8 @@ namespace XiaoCao
         }
         public void SetSkillNoGravityT(float time)
         {
-            skillNoGravityTimer = time;     
-        }        
+            skillNoGravityTimer = time;
+        }
         public void SetNoGravityT(float time)
         {
             Debug.Log($"--- SetNoGravityT {time} ");
