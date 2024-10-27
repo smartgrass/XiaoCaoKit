@@ -2,6 +2,7 @@
 using NaughtyAttributes;
 using System;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
@@ -81,18 +82,18 @@ namespace XiaoCao
                 _inputLook.x = Input.GetAxis("Mouse X");
                 _inputLook.y = Input.GetAxis("Mouse Y");
             }
-            else if(Mode == CameraMode.TowDown)
-            {   
+            else if (Mode == CameraMode.TowDown)
+            {
                 if (!Input.mouseScrollDelta.IsZore())
                 {
-                    var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y, 
+                    var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
                         setting_topDown.camDistance - 3, setting_topDown.camDistance + 3);
                     CFT.m_CameraDistance = distance;
                 }
             }
 
 
-     
+
         }
         public void OnFixedUpdate()
         {
@@ -102,7 +103,7 @@ namespace XiaoCao
             }
             else
             {
-                TopDownUpdate();
+                TopDownFixedUpdate();
             }
         }
         //索敌的思路, 可以将瞄准中心变为 玩家和敌人的中心点
@@ -132,20 +133,104 @@ namespace XiaoCao
             curAngleY = setting_topDown.defaultAngle.y;
             CFT.m_CameraDistance = setting_topDown.camDistance;
         }
-        void TopDownUpdate()
+        void TopDownFixedUpdate()
         {
+
+             CheckPlayer();
+            
             vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
         }
 
 
+        private Role lastEnemy;
+        private float findEnmeyTime;
+        private float remindEnmeyTime = 0.5f;
+        public void CheckPlayer()
+        {
+            bool isAutoLockEnmey = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
+            bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
+            
+            Player0 player0 = GameDataCommon.Current.player0;
+            if (player0 != null && !player0.roleData.IsBusy)
+            {
+                if (!isAutoLockEnmey)
+                {
+                    if (!isLockCam)
+                    {
+                        AimToDIr(player0.transform.forward);
+                    }
+                    return;
+                }
 
+
+                bool hasEnmey = false;
+
+                if (findEnmeyTime + remindEnmeyTime < Time.time)
+                {
+                    lastEnemy = null;
+                }
+
+                Role findRole = lastEnemy;
+                if (lastEnemy == null || lastEnemy.IsDie)
+                {
+                    if (player0.FindEnemy(out findRole, setting_topDown.seeR, setting_topDown.seeAngle))
+                    {
+                        lastEnemy = findRole;
+                        findEnmeyTime = Time.time;
+                        hasEnmey = true;
+                    }
+                }
+                else
+                {
+                    hasEnmey = true;
+                }
+
+                //TODO 减少频率
+                if (hasEnmey && !findRole.IsDie)
+                {
+                    //规则 偏角不能超过15度
+                    Vector3 dir = (findRole.transform.position - player0.transform.position);
+                    AimToDIr(dir);
+                }
+                else
+                {
+                    if (!isLockCam)
+                    {
+                        AimToDIr(player0.transform.forward);
+                    }
+                }
+            }
+
+        }
+
+        private void AimToDIr(Vector3 dir)
+        {
+            //如果相差超过90度, 则不跟踪
+            Vector3 inputDir = CameraMgr.Forword;
+
+            float deltaAngle = MathTool.SignedAngleY(inputDir, dir);
+            DebugGUI.Log("deltaAngle", deltaAngle);
+
+            if (Mathf.Abs(deltaAngle) < setting_topDown.aimSafeAngle)
+            {
+                return;
+            }
+            //float addSpeed = 1;
+
+            if (Mathf.Abs(deltaAngle) > 180 - setting_topDown.aimSafeAngle)
+            {
+                return;
+            }
+
+            curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime);
+        }
 
         public void SetTarget(Transform follow, Transform lookAt = null)
         {
             vcam_topDown.Follow = follow;
-            vcam_topDown.LookAt = lookAt;
-
             _curFollow = follow;
+            CameraMgr.Inst.aimer.SetAim(lookAt, 0);
+            vcam_topDown.LookAt = CameraMgr.Inst.aimer.transform;
             _curLookAt = lookAt;
 
             if (Mode == CameraMode.TowDown)
@@ -180,6 +265,12 @@ namespace XiaoCao
     {
         public Vector2 defaultAngle = new Vector2(30, 0);
         public float camDistance = 7.5f;
+        public float aimLerp = 0.1f;
+        [XCLabel("安全角度范围")]
+        public float aimSafeAngle = 5;
+        public float seeR = 8;
+        public float seeAngle = 45;
+
     }
 
 }

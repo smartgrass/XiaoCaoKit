@@ -33,7 +33,7 @@ public class ItemCrystal : ItemIdComponent
         startBodyPos = body.localPosition;
     }
 
-    public override void OnDamage(int atker, AtkInfo ackInfo)
+    public override void OnDamage(AtkInfo ackInfo)
     {
         if (isDead)
         {

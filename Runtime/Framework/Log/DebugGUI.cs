@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using XiaoCao;
 
 
 public class DebugGUI : MonoBehaviour
@@ -30,9 +31,6 @@ public class DebugGUI : MonoBehaviour
     // 单例实例
     private static DebugGUI instance;
 
-    private static bool IsShow { get { return "DebugGUI/IsShow".GetKeyBool(); } }
-    private static bool IsOtherShowing { get { return "DebugGUI/IsOtherShowing".GetKeyBool(); } }
-
     // 获取DebugGUI实例的方法
     public static DebugGUI GetInstance()
     {
@@ -47,12 +45,8 @@ public class DebugGUI : MonoBehaviour
 
     void OnGUI()
     {
-        if (!IsShow)
-        {
-            return;
-        }        
-        
-        if (IsOtherShowing)
+
+        if (!DebugSetting.DebugGUI_IsShow.GetKeyBool())
         {
             return;
         }

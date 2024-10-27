@@ -86,7 +86,7 @@ public abstract class SubPanel
         return dropdown;
     }
 
-    public void AddToggle(string title, UnityAction<bool> onValueChange)
+    public Toggle AddToggle(string title, UnityAction<bool> onValueChange)
     {
         GameObject togglePrefab = Prefabs.toggle;
         GameObject instance = Object.Instantiate(togglePrefab, gameObject.transform);
@@ -96,6 +96,7 @@ public abstract class SubPanel
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
 
         toggle.onValueChanged.AddListener(onValueChange);
+        return toggle;
     }
 
     public void AddButton(string title, UnityAction onClick)

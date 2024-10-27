@@ -54,7 +54,7 @@ public class TestRole : GameStartMono
     }
 
     //需要一个生成敌人预制体
-    [Button("生成")]
+    [Button("生成", enabledMode: EButtonEnableMode.Playmode)]
     public void Gen()
     {
         if (roleType == RoleType.Enemy)

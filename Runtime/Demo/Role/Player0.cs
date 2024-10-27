@@ -34,9 +34,8 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(1);
 
-            playerData.playerSetting = ConfigMgr.LoadSoConfig<PlayerSettingSo>()
-                .GetOrDefault(raceId, 0);
-            roleData.playerAttr.Init(savaData.lv, IsPlayer);
+            playerData.playerSetting = ConfigMgr.playerSettingSo.GetOrDefault(raceId, 0);
+            roleData.playerAttr.Init(savaData.lv, ConfigMgr.commonSettingSo.playerSetting);
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
@@ -105,7 +104,6 @@ namespace XiaoCao
         public override void OnBreak()
         {
             component.control.OnBreak();
-            OnBreakAct?.Invoke();
         }
 
     }
@@ -268,6 +266,28 @@ namespace XiaoCao
             owner.Anim.Play(AnimNames.Jump);
             JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
             Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
+
+            //if (FindEnemy(out Role findRole))
+            //{
+            //    Debug.Log($"--- Find Role {findRole.transform.name}");
+            //    owner.idRole.StartCoroutine(IEJumpTo(findRole.transform.position));
+            //} 
+        }
+
+
+        private System.Collections.IEnumerator IEJumpTo(Vector3 pos)
+        {
+            //1 跳起, & LookAt
+            CameraMgr.Inst.tempLookAt.position = pos;
+            CameraMgr.Inst.aimer.SetAim(CameraMgr.Inst.tempLookAt);
+            CameraMgr.Inst.aimer.SetMainWeight(0.7f);
+
+
+           //匀速运动 到终点
+
+           //落地
+
+           yield return null;
         }
 
         protected override void PreSkillStart(string skillId)
@@ -572,7 +592,7 @@ namespace XiaoCao
     {
         public int lv;
         public int maxExp;
-        public int hp;
+        public int hp; //实时数值
         public int mp;
 
         public int MapHp => (int)maxHpAtr.CurrentValue;
@@ -589,22 +609,20 @@ namespace XiaoCao
         public AttributeValue critAtr = new AttributeValue(); //Float
 
 
-        public void Init(int lv, bool isPlayer)
+        public void Init(int lv, AttrSetting setting)
         {
+            if (lv <1)
+            {
+                lv = 1;
+            }
             this.lv = lv;
             maxExp = 100 + 100 * (lv % 10);
 
-
-            maxHpAtr.BaseValue = hp = 100 + 10 * lv;
-            maxMpAtr.BaseValue = mp = 100 + 10 * lv;
-            atkAtr.BaseValue = lv * 5 + 5;
-            defAtr.BaseValue = lv * 1;
+            maxHpAtr.BaseValue = hp =(int) (setting.endHp * lv / setting.maxLevel);
+            maxMpAtr.BaseValue = mp = (int)(setting.endMp * lv / setting.maxLevel);
+            atkAtr.BaseValue = (int)(setting.endAtk * lv / setting.maxLevel);
+            defAtr.BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
             critAtr.BaseValue = 0;
-
-            if (isPlayer)
-            {
-                atkAtr.BaseValue = lv * 10 + 10;
-            }
         }
 
     }

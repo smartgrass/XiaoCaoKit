@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using TEngine;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.SceneManagement;
 using XiaoCao;
+using Debug = UnityEngine.Debug;
 namespace XiaoCao
 {
     ///<see cref="GameDataCommon"/>
@@ -86,6 +89,21 @@ namespace XiaoCao
             SetGameState(GameState.Running);
         }
         #endregion
+
+
+        public void StarTestProfiler(Action act)
+        {
+            string tag = "TestFun";
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            UnityEngine.Profiling.Profiler.BeginSample(tag);
+            //act.Invoke();
+            UnityEngine.Profiling.Profiler.EndSample();
+            sw.Stop();
+            UnityEngine.Debug.Log(string.Format($"-- TestFun {tag}: {0} ms", sw.ElapsedMilliseconds));
+        }
+
+
     }
 
     public class SceneIndex

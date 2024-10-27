@@ -16,13 +16,17 @@ namespace XiaoCao
         [XCLabel("攻击后摇")]
         public float afterAtk = 0; //攻击结束的后摇
         [XCLabel("攻击信息")]
-        public string atkMsg ="0"; //信息
+        public string atkMsg = "0"; //信息
 
+        [XCLabel("受击计时延迟")]
+        public float damageInterrupt = 0.1f;
 
         private float Timer { get; set; }
         private bool IsInited { get; set; }
 
         private int curAtkState = 0;
+
+        private int lastDamageFrame = 0;
 
 
         public override void OnStart()
@@ -33,18 +37,35 @@ namespace XiaoCao
             if (!IsInited)
             {
                 IsInited = true;
-                control.owner.OnBreakAct += OnBreak;
+                control.owner.OnDamageAct += OnDamage;
             }
         }
 
-        //如果攻击计时被打断时重置一下
-        private void OnBreak()
+        private void OnDamage(AtkInfo info, bool isBreak)
         {
             if (State == FSMState.Update)
             {
+                return;
+            }
+
+            if (isBreak)
+            {
+                //如果攻击计时被打断时重置一下
                 Timer = 0;
             }
+            else
+            {
+                //普通受击会小幅度减少攻击计时
+                if (lastDamageFrame != Time.frameCount)
+                {
+                    Timer -= damageInterrupt;
+                    lastDamageFrame = Time.frameCount;
+                }
+            }
         }
+
+
+
 
         public override void OnUpdate()
         {
@@ -70,7 +91,7 @@ namespace XiaoCao
                 {
                     return;
                 }
-               
+
                 Timer += Time.deltaTime;
                 if (Timer > afterAtk)
                 {

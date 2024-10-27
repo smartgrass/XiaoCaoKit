@@ -358,11 +358,11 @@ public static class MathTool
     }
 
     //排除y的距离计算
-    public static float GetHorDistance(Vector3 a,Vector3 b)
+    public static float GetHorDistance(Vector3 a, Vector3 b)
     {
         float num = a.x - b.x;
         float num3 = a.z - b.z;
-        return (float)Math.Sqrt(num * num  + num3 * num3);
+        return (float)Math.Sqrt(num * num + num3 * num3);
     }
 
     /// <summary>
@@ -427,6 +427,13 @@ public static class MathTool
         return (float)angleDegrees;
     }
 
+    //计算两向量夹角, 有正负号, 正顺时针
+    public static float SignedAngleY(Vector3 from, Vector3 to)
+    {
+        return Vector2.SignedAngle(from.To2D(), to.To2D());
+    }
+
+
     public static Quaternion ForwardToRotation(Vector3 forward)
     {
         //对于角色的Y轴一般向上的
@@ -481,12 +488,12 @@ public static class MathTool
         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, lerp);
     }
 
-    public static void RotateY(this Transform transform,float angle)
+    public static void RotateY(this Transform transform, float angle)
     {
         transform.Rotate(Vector3.up, angle);
     }
 
-    public static void RotateYMax(this Transform transform,float targetAngleInDegrees, float maxAngle)
+    public static void RotateYMax(this Transform transform, float targetAngleInDegrees, float maxAngle)
     {
         // 将目标角度从度转换为弧度  
         float targetAngleInRadians = targetAngleInDegrees * Mathf.Deg2Rad;

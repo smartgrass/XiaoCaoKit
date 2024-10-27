@@ -33,7 +33,7 @@ namespace XiaoCao
 
         public override void OnStart()
         {
-            FristLoad();
+            bool isFrist =  FristLoad();
             CurPool.Clear();
             UseTime = 0;
 
@@ -44,7 +44,9 @@ namespace XiaoCao
                 IdleStateInst.ResetFSM();
             }
 
-            if (!HasTarget)
+
+
+            if (!HasTarget || (isFrist && RandomHelper.GetRandom(setting.randomIdleStart)))
             {
                 //OnExit();
                 CurState = IdleStateInst;
@@ -58,12 +60,12 @@ namespace XiaoCao
             }
         }
 
-        private void FristLoad()
+        private bool FristLoad()
         {
             Debug.Log($"--- ActPoolFSM FristLoad {IsLoaded}");
             if (IsLoaded)
             {
-                return;
+                return false;
             }
             IsLoaded = true;
 
@@ -84,6 +86,7 @@ namespace XiaoCao
                 IdleStateInst = ScriptableObject.Instantiate(idleState) ;
                 IdleStateInst.InitReset(control);
             }
+            return true;
         }
 
         public override void OnUpdate()

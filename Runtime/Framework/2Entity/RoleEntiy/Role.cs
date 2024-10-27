@@ -3,10 +3,12 @@ using cfg;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TEngine;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 using UnityEngine.Animations;
-using Random = UnityEngine.Random;
+using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
 namespace XiaoCao
@@ -56,7 +58,7 @@ namespace XiaoCao
 
         public IdRole idRole;
 
-        public Action OnBreakAct;
+        public Action<AtkInfo, bool> OnDamageAct;
 
         #region Get
         internal Animator Anim => idRole.animator;
@@ -117,7 +119,7 @@ namespace XiaoCao
             gameObject.layer = Layers.BODY_PHYSICS;
         }
 
-        public virtual void OnDamage(int atker, AtkInfo ackInfo)
+        public virtual void OnDamage(AtkInfo ackInfo)
         {
             if (IsDie)
             {
@@ -137,6 +139,9 @@ namespace XiaoCao
 
             roleData.breakData.OnHit((int)setting.BreakPower);
             roleData.movement.OnDamage(roleData.breakData.IsBreak);
+
+            OnDamageAct?.Invoke(ackInfo, roleData.breakData.IsBreak);
+
             if (roleData.breakData.IsBreak)
             {
                 HitTween(ackInfo, setting);
@@ -177,15 +182,25 @@ namespace XiaoCao
 
             float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
 
+            float deltaY = ackInfo.ackObjectPos.y - transform.position.y;
+
+            float addY = setting.AddY;
+
+            //限制高
+            if (deltaY < 0)
+            {
+                addY = setting.AddY + deltaY;
+            }
+
             if (!BattleData.IsTimeStop)
             {
-                idRole.cc.DOHit(setting.AddY, horDir * horDistance, setting.HitTime);
+                float w = idRole.weight;
+                idRole.cc.DOHit(addY / w, horDir * horDistance/ w, setting.HitTime/ w);
             }
         }
 
         public virtual void OnBreak()
         {
-            OnBreakAct?.Invoke();
         }
 
         public virtual void SetNoBusy()
@@ -384,6 +399,20 @@ namespace XiaoCao
             {
 
             }
+        }
+
+        public bool FindEnemy(out Role findRole, float dis = 8, float angle = 30 )
+        {
+            findRole = RoleMgr.Inst.SearchEnemyRole(gameObject.transform, dis, angle, out float maxScore, team);
+            if (findRole != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
 
         public const string WeaponPointName = "WeaponPoint";

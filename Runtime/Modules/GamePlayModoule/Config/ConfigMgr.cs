@@ -29,10 +29,19 @@ namespace XiaoCao
 
         private static LocalSetting localSetting;
 
-        public static void Init(){
+        public static PlayerSettingSo playerSettingSo;
+
+        public static CommonSo commonSettingSo;
+
+        public static void Init()
+        {
+
             var init = MainCfg;
+            playerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
+            commonSettingSo = ConfigMgr.LoadSoConfig<CommonSo>();
+            var soundCfg = SoundCfg;
         }
-        
+
         public static string GetConfigPath(Type t)
         {
             return $"{ResMgr.RESDIR}/Config/{t.Name}";
@@ -77,7 +86,7 @@ namespace XiaoCao
             }
         }
 
-        public static InitArrayFile SoundCfg 
+        public static InitArrayFile SoundCfg
         {
             get
             {
@@ -89,7 +98,7 @@ namespace XiaoCao
                 }
                 return soundCfg;
             }
-        }        
+        }
 
         public static LocalSetting LocalSetting
         {
@@ -97,9 +106,9 @@ namespace XiaoCao
             {
                 if (localSetting == null)
                 {
-                    localSetting = LocalSetting.Load(); 
-                }            
-                return localSetting;           
+                    localSetting = LocalSetting.Load();
+                }
+                return localSetting;
             }
         }
 
@@ -108,15 +117,21 @@ namespace XiaoCao
     public class LocalSetting
     {
         [OdinSerialize]
-        public Dictionary<string,float> floatDic = new Dictionary<string, float>();
+        public Dictionary<string, float> floatDic = new Dictionary<string, float>();
 
-        public float GetValue(string key ,float defaultValue)
+        public float GetValue(string key, float defaultValue)
         {
-            if (floatDic.TryGetValue(key,out float value))
+            if (floatDic.TryGetValue(key, out float value))
             {
                 return value;
             }
             return defaultValue;
+        }
+
+        public bool GetBoolValue(string key)
+        {
+            float value = GetValue(key, 0);  
+            return value > 0;
         }
 
         public void SetValue(string key, float value)
@@ -141,7 +156,7 @@ namespace XiaoCao
 
         public void SetDefaultSetting()
         {
-
+            //TODO
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Cinemachine;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     public class CameraMgr : MonoSingleton<CameraMgr>, IMgr
     {
         #region static
@@ -32,7 +34,16 @@ namespace XiaoCao
 
         public ICameraController controller;
         public Transform target;
+        public CamerAimer aimer;
+        public Transform tempLookAt;
 
+        public override void Init()
+        {
+            base.Init();
+            tempLookAt = new GameObject("tempLookAt").transform;
+            var tempLookAtGo = new GameObject("CamerAimer");
+            aimer = tempLookAtGo.AddComponent<CamerAimer>();
+        }
 
         public void InitCam(ICameraController setCam = null)
         {
@@ -40,6 +51,7 @@ namespace XiaoCao
             {
                 controller = setCam;
             }
+            
             if (controller == null)
             {
                 GameObject camPrefab = Resources.Load(camPath) as GameObject;
@@ -98,6 +110,11 @@ namespace XiaoCao
                 target = role.idRole.GetFollow;
                 controller.SetTarget(role.idRole.GetFollow, role.idRole.GetLookAt);
             }
+        }
+
+        private void LookAtTarget(Transform tf)
+        {
+            //controller.SetTarget(role.idRole.GetFollow, role.idRole.GetLookAt);
         }
     }
 

@@ -11,9 +11,26 @@ public class BasicSettingPanel: SubPanel
 
 		//Language
 		AddLanguageDropDown();
-	}
 
-	private void AddLanguageDropDown(){
+        var toggle = AddToggle(LocalizeKey.LockCam, OnToggleLockCam);
+        toggle.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
+
+        var toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
+		toggle2.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
+    }
+
+    private void OnToggleLockCam(bool isOn)
+    {
+
+        ConfigMgr.LocalSetting.SetValue(LocalizeKey.LockCam, isOn ? 1 : 0);
+    }
+
+    private void OnToggleLockEnemy(bool isOn)
+    {
+        ConfigMgr.LocalSetting.SetValue(LocalizeKey.AutoLockEnemy, isOn? 1 :0);
+    }
+
+    private void AddLanguageDropDown(){
 		List<string> enumList = new List<string>();
 		foreach (ELanguage item in Enum.GetValues(typeof(ELanguage))){
 			enumList.Add(LocalizeKey.LanguageShowNames[(int)item]);

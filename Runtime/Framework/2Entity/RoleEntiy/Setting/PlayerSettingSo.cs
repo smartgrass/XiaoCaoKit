@@ -47,6 +47,25 @@ namespace XiaoCao
         }
     }
 
+    [Serializable]
+    public class AttrSetting
+    {
+        public int maxLevel = 50;
+
+        //线性增长 设定50级
+        public float endHp = 5000;
+
+        public float endMp = 1200;
+
+        public float endAtk = 250;
+
+        public float endDef = 500;
+
+
+
+    }
+
+
     public class ArrayDic<T> where T : IIndex
     {
         public Dictionary<int, T> map;

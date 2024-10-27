@@ -35,6 +35,14 @@ namespace XiaoCao
 
         public Player0 player0;
 
+        public int playerId => player0.id;
+
+        public bool IsPlayerId(int id)
+        {
+            if (player0 == null) return false;
+            return player0.id == id;
+        }
+
         public bool loadMod = false;
 
     }

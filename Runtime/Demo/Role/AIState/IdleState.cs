@@ -22,9 +22,10 @@ namespace XiaoCao
 
         //将修改Timer的时间, 1表示随机范围为 (-sleepTimeWhenLoop ,hideTime)
         //0.1表示为  (Mathf.Lerp(hideTime, --sleepTimeWhenLoop, enterRandom) , hideTime)
+        [Header("随机start时间, 1表示start时间为idleTime结尾,直接退出第一次循环")]
         public float enterRandom = 0.5f;
 
-        public int maxLoop = 0;
+        public int maxLoop = 3;
 
 
         public float Timer { get; set; }

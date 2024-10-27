@@ -1,8 +1,9 @@
 ﻿using cfg;
 using System;
-using UnityEditor;
+using System.Diagnostics;
 using UnityEngine;
 using XiaoCao;
+using Debug = UnityEngine.Debug;
 /*
  攻击层级, PLAYER_ATK & Layers.ENEMY_ATK
  受击中层级:  PLAYER & ENEMY
@@ -11,7 +12,7 @@ using XiaoCao;
 
 public class AtkTrigger : IdComponent
 {
-    public AtkInfo info;
+    public AtkInfo ackInfo;
 
     public int maxTriggerTime = 0;
 
@@ -30,22 +31,28 @@ public class AtkTrigger : IdComponent
         {
             if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
             {
-                if (entity.team != info.team)
+                if (entity.team != ackInfo.team && !entity.IsDie)
                 {
                     if (BattleData.IsTimeStop && entity.IsPlayer)
                     {
                         //时停时玩家不受伤害
                         return;
                     }
+                    if (ackInfo.IsLocalPlayer)
+                    {
+                        var setting = ackInfo.GetSkillSetting;
+                        CamEffectMgr.Inst.CamShakeEffect(setting.ShakeLevel);
+                    }
+
                     //击中信息
                     InitHitInfo(other);
-                    entity.OnDamage(id, info);
+                    entity.OnDamage(ackInfo);
 
                     curTriggerTime++;
                     if (maxTriggerTime != 0 && curTriggerTime >= maxTriggerTime)
                     {
                         Debug.Log($"--- {transform.parent.name} OnEnd");
-                        info.objectData.OnEnd();
+                        ackInfo.objectData.OnEnd();
                     }
                 }
             }
@@ -58,24 +65,26 @@ public class AtkTrigger : IdComponent
             if (GetEntity().HasTag(RoleTagCommon.MainPlayer))
             {
                 InitHitInfo(other);
-                item.OnDamage(id, info);
+                item.OnDamage(ackInfo);
             }
         }
     }
 
     private void InitHitInfo(Collider other)
     {
-        info.ackObjectPos = transform.position;
-        info.hitPos = other.ClosestPointOnBounds(transform.position);
-        info.hitDir = (info.hitPos - transform.position);
-        info.hitDir.y = 0;
+        ackInfo.ackObjectPos = transform.position;
+        ackInfo.hitPos = other.ClosestPointOnBounds(transform.position);
+        ackInfo.hitDir = (ackInfo.hitPos - transform.position);
+        ackInfo.hitDir.y = 0;
     }
+
 }
 
 [Serializable]
 public class AtkInfo
 {
     public int team;
+    public int atker; //攻击者
     public int atk = 1;
     public bool isCrit; //暴击
 
@@ -87,11 +96,26 @@ public class AtkInfo
     internal Vector3 ackObjectPos;
     public ObjectData objectData;
 
+    private SkillSetting setting;
+
+    public bool IsLocalPlayer
+    {
+        get
+        {
+            return GameDataCommon.Current.IsPlayerId(atker);
+        }
+    }
+
+
     public SkillSetting GetSkillSetting
     {
         get
         {
-            return LubanTables.GetSkillSetting(skillId, subSkillId);
+            if (setting == null)
+            {
+                return LubanTables.GetSkillSetting(skillId, subSkillId);
+            }
+            return setting;
         }
     }
 }

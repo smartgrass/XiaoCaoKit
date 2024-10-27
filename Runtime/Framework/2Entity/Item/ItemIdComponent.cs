@@ -12,7 +12,7 @@ public class ItemIdComponent : IdComponent
 
     public AudioClip deadClip;
 
-    public virtual void OnDamage(int atker, AtkInfo atkInfo)
+    public virtual void OnDamage(AtkInfo atkInfo)
     {
         HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
     }

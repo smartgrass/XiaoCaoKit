@@ -37,8 +37,6 @@ namespace XiaoCao
         public bool IsAIFree => owner.IsFree && !owner.IsAnimBreak;
         public bool HasTarget => targetRole != null && !targetRole.IsDie;
 
-
-
         public Role targetRole;
         public float tempActDis = 1.5f;
         public float tempTargetDis;

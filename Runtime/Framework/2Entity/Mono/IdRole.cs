@@ -11,6 +11,9 @@ public class IdRole : IdComponent
     public int raceId = 1;
     public string bodyName = "Body_P_0";
     public string animControllerName = "";
+
+    [XCLabel("重量, 影响击飞程度")]
+    public float weight = 1;
     public RuntimeAnimatorController LoadRuntimeAc
     {
         get
@@ -27,7 +30,6 @@ public class IdRole : IdComponent
             return null;
         }
     }
-
 
 
     public Rigidbody rb;

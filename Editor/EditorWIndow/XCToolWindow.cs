@@ -63,7 +63,11 @@ namespace AssetEditor.Editor
             DebugSetting.DebugGUI_IsShow.SetKeyBool(IsShowDebug);
             if (MarkObject.TryGet("debugGo", out GameObject debugGo))
             {
-                debugGo.gameObject.SetActive(IsShowDebug);
+                if (debugGo)
+                {
+                    debugGo.gameObject.SetActive(IsShowDebug);
+                }
+                
             }          
         }
 

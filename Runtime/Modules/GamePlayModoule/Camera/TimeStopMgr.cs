@@ -24,7 +24,7 @@ namespace XiaoCao
 
             GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(),true);
             coroutine = StartCoroutine(IEWaitRecover());
-            CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.TimeStop);
+            CamEffectMgr.Inst.SetOpenEffect(CamEffectMgr.CameraEffect.TimeStop);
             XCTime.timeScale = 2;
         }
 
@@ -46,7 +46,7 @@ namespace XiaoCao
         {
             GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
             BattleData.IsTimeStop = false;
-            CamEffectMgr.Inst.OpenEffect(CamEffectMgr.CameraEffect.None);
+            CamEffectMgr.Inst.SetOpenEffect(CamEffectMgr.CameraEffect.TimeStop,false);
             XCTime.timeScale = 1;
         }
 

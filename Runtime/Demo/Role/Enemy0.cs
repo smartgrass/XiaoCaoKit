@@ -35,7 +35,7 @@ namespace XiaoCao
             enemyData.AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(curCmdSettingId, 0);
             component.aiControl = new AIControl(this).Init(aiData.aiId);
 
-            roleData.playerAttr.Init(level, IsPlayer);
+            roleData.playerAttr.Init(level, ConfigMgr.commonSettingSo.enemySetting);
             roleData.roleControl = component.aiControl;
             RoleIn();
         }

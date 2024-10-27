@@ -39,22 +39,20 @@ namespace cfg
 
         public static SkillSetting GetSkillSetting(string skillId, int subSkillId)
         {
-            string infoKey = GetSkillAckKey(skillId, subSkillId);
+            string subKey = $"{skillId}_{subSkillId}";
+            //子节点找不到则找父节点
+            string mainKey = skillId.ToString();
 
-            return GetSkillSetting(infoKey);
-        }
-        public static string GetSkillAckKey(string skillId, int subAckId)
-        {
-            if (subAckId == 0)
-            {
-                return skillId.ToString();
-            }
-            return $"{skillId}_{subAckId}";
+            return GetSkillSetting(subKey, mainKey);
         }
 
-        public static SkillSetting GetSkillSetting(string key)
+        public static SkillSetting GetSkillSetting(string key,string fallback)
         {
             var ret = SkillSettingReader.GetOrDefault(key);
+            if(ret == null)
+            {
+                 ret = SkillSettingReader.GetOrDefault(fallback);
+            }
             if (ret == null)
             {
                 //默认值

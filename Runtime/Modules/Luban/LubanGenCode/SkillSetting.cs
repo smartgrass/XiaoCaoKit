@@ -21,10 +21,12 @@ public sealed partial class SkillSetting : Luban.BeanBase
         ExtendDesc = _buf.ReadString();
         AckRate = _buf.ReadFloat();
         AddY = _buf.ReadFloat();
+        AddHor = _buf.ReadFloat();
+        MaxY2 = _buf.ReadFloat();
         HitTime = _buf.ReadFloat();
         NoGTime = _buf.ReadFloat();
-        AddHor = _buf.ReadFloat();
         HorForward = _buf.ReadFloat();
+        ShakeLevel = _buf.ReadInt();
         HitStop = _buf.ReadFloat();
         BreakPower = _buf.ReadFloat();
         HitClip = _buf.ReadString();
@@ -57,6 +59,14 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly float AddY;
     /// <summary>
+    /// 水平推力
+    /// </summary>
+    public readonly float AddHor;
+    /// <summary>
+    /// 击飞限高, 防止超过角色高度
+    /// </summary>
+    public readonly float MaxY2;
+    /// <summary>
     /// 上升时间
     /// </summary>
     public readonly float HitTime;
@@ -65,13 +75,13 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly float NoGTime;
     /// <summary>
-    /// 水平推力
-    /// </summary>
-    public readonly float AddHor;
-    /// <summary>
     /// 技能正方向(0~360)
     /// </summary>
     public readonly float HorForward;
+    /// <summary>
+    /// 相机震动等级
+    /// </summary>
+    public readonly int ShakeLevel;
     /// <summary>
     /// 顿帧
     /// </summary>
@@ -107,6 +117,8 @@ public sealed partial class SkillSetting : Luban.BeanBase
         
         
         
+        
+        
     }
 
     public override string ToString()
@@ -117,10 +129,12 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "extendDesc:" + ExtendDesc + ","
         + "ackRate:" + AckRate + ","
         + "addY:" + AddY + ","
+        + "addHor:" + AddHor + ","
+        + "maxY2:" + MaxY2 + ","
         + "HitTime:" + HitTime + ","
         + "NoGTime:" + NoGTime + ","
-        + "addHor:" + AddHor + ","
         + "horForward:" + HorForward + ","
+        + "shakeLevel:" + ShakeLevel + ","
         + "hitStop:" + HitStop + ","
         + "breakPower:" + BreakPower + ","
         + "hitClip:" + HitClip + ","

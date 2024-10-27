@@ -19,11 +19,14 @@ namespace XiaoCao
         public float walkAnimSR = 0.5f;
         [XCLabel("攻击欲望")]
         public float idleExitRate = 0.5f;
+        [Header("开头直接进入Idle概率")]
+        public float randomIdleStart = 0.5f;
 
         public bool isLookAtTargetOnHide;
 
         [Header("视觉范围")]
         public float seeR = 18;
         public float seeAngle = 40;
+
     }
 }

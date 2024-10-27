@@ -35,6 +35,7 @@ namespace XiaoCao
         public Vector3 camForward => CameraMgr.Forword;
 
         public Vector3 inputDir;
+        //public Vector3 lastInputDir;
         public bool isLookDir;
 
         protected bool isGrounded = true;
@@ -169,7 +170,7 @@ namespace XiaoCao
         {
             if (worldMoveDir.IsZore())
                 return;
-
+            worldMoveDir.y = 0;
             var targetRotation = MathTool.ForwardToRotation(worldMoveDir);
             var startRotation = tf.rotation;
             var rotation = Quaternion.Lerp(startRotation, targetRotation, lerp);

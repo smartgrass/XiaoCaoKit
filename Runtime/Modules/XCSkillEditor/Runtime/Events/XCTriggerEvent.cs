@@ -111,7 +111,7 @@ namespace XiaoCao
             CurTrigger.maxTriggerTime = maxTriggerTime;
             CurTrigger.curTriggerTime = 0;
 
-            CurTrigger.info = new AtkInfo()
+            CurTrigger.ackInfo = new AtkInfo()
             {
                 objectData = task.ObjectData,
                 team = Info.role.team,
@@ -119,6 +119,7 @@ namespace XiaoCao
                 subSkillId = task.ObjectData.index,
                 atk = atk,
                 isCrit = isCrit,
+                atker = Info.role.id
             };
             CurTrigger.id = Info.role.id;
         }

@@ -34,6 +34,7 @@ namespace XiaoCao
             await ResMgr.InitYooAssetAll();
 
             Debuger.Log("==== InitYooAsset Finish ====");
+            ConfigMgr.Init();
 
             PreLoad();
             //版本判断 无
@@ -63,6 +64,8 @@ namespace XiaoCao
 
             var sound = SoundMgr.Inst;
 
+            Debug.Log($"--- IsTimeStop");
+
         }
 
         public void PreLoad()
@@ -75,7 +78,6 @@ namespace XiaoCao
 
         private void LoadTextConfig()
         {
-            ConfigMgr.Init();
 //#if UNITY_EDITOR
 //            LocalizeMgr.ClearCache();
 //#endif
