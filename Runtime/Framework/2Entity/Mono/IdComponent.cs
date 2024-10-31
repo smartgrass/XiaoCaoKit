@@ -24,12 +24,12 @@ public class IdComponent : MonoBehaviour
         return entity;
     }
 
-    [Button(enabledMode: EButtonEnableMode.Playmode)]
-    public void AddEntityViewEditor()
-    {
-        var role = gameObject.GetOrAddComponent<RoleDataViewer>();
-        role.entity = GetEntity() as Role;
-    }
+    //[Button(enabledMode: EButtonEnableMode.Playmode)]
+    //public void AddEntityViewEditor()
+    //{
+    //    var role = gameObject.GetOrAddComponent<RoleDataViewer>();
+    //    role.entity = GetEntity() as Role;
+    //}
 }
 
 
