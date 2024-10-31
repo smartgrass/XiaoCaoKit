@@ -11,7 +11,7 @@ namespace XiaoCao
         {
         }
 
-        protected float _tempAnimMoveSpeed;
+        public float _tempAnimMoveSmooth;
 
         protected float velocityY = 0;
 
@@ -35,7 +35,8 @@ namespace XiaoCao
         public Vector3 camForward => CameraMgr.Forword;
 
         public Vector3 inputDir;
-        //public Vector3 lastInputDir;
+        public Vector3 lastInputDir;
+
         public bool isLookDir;
 
         protected bool isGrounded = true;
@@ -143,6 +144,7 @@ namespace XiaoCao
 
         public void Used()
         {
+            lastInputDir = inputDir;
             inputDir = Vector3.zero;
             isLookDir = false;
         }
@@ -203,7 +205,7 @@ namespace XiaoCao
             //限制最大移速动画
             inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSpeed, moveSetting.moveSmooth);
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSmooth, moveSetting.moveSmooth);
 
             //影响移速倍率
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
@@ -215,7 +217,7 @@ namespace XiaoCao
 
         public void OnDamage(bool isBreak)
         {
-            _tempAnimMoveSpeed = 0;
+            _tempAnimMoveSmooth = 0;
         }
 
         internal void SetUnMoveTime(float t)

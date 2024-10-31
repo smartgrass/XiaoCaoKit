@@ -9,6 +9,8 @@ using System.IO;
 using static OdinPlayerPrefs;
 using static UnityEngine.LightProbeProxyVolume;
 using DataFormat = OdinSerializer.DataFormat;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+
 
 
 
@@ -132,6 +134,11 @@ namespace XiaoCao
         {
             float value = GetValue(key, 0);  
             return value > 0;
+        }
+
+        public void SetBoolValue(string key, bool isOn)
+        {
+            SetValue( key, isOn ? 1 : 0);
         }
 
         public void SetValue(string key, float value)

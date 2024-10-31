@@ -136,8 +136,8 @@ namespace XiaoCao
         void TopDownFixedUpdate()
         {
 
-             CheckPlayer();
-            
+            CheckPlayer();
+
             vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
         }
 
@@ -145,11 +145,12 @@ namespace XiaoCao
         private Role lastEnemy;
         private float findEnmeyTime;
         private float remindEnmeyTime = 0.5f;
+        private float tempSpeed;
         public void CheckPlayer()
         {
             bool isAutoLockEnmey = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
             bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
-            
+
             Player0 player0 = GameDataCommon.Current.player0;
             if (player0 != null && !player0.roleData.IsBusy)
             {
@@ -190,39 +191,74 @@ namespace XiaoCao
                 {
                     //规则 偏角不能超过15度
                     Vector3 dir = (findRole.transform.position - player0.transform.position);
+
+                    //dir = Vector3.Lerp(dir, player0.transform.forward, 1f * Time.fixedDeltaTime);
+
                     AimToDIr(dir);
                 }
                 else
                 {
                     if (!isLockCam)
                     {
-                        AimToDIr(player0.transform.forward);
+                        AimToDIr(player0.transform.forward, player0.roleData.movement.lastInputDir.IsZore());
                     }
                 }
             }
 
         }
 
-        private void AimToDIr(Vector3 dir)
+        private float lastDeltaAngle;
+
+        private void AimToDIr(Vector3 dir, bool isStoping = false)
         {
             //如果相差超过90度, 则不跟踪
             Vector3 inputDir = CameraMgr.Forword;
 
             float deltaAngle = MathTool.SignedAngleY(inputDir, dir);
-            DebugGUI.Log("deltaAngle", deltaAngle);
+
+            if (isStoping)
+            {
+                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.stopAngleX, setting_topDown.aimLerp * Time.fixedDeltaTime);
+            }
+            else
+            {
+                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
+            }
+
 
             if (Mathf.Abs(deltaAngle) < setting_topDown.aimSafeAngle)
             {
                 return;
             }
-            //float addSpeed = 1;
 
             if (Mathf.Abs(deltaAngle) > 180 - setting_topDown.aimSafeAngle)
             {
                 return;
             }
+            //抖动原因: 目标处于安全角边界, 刚移出时, 触发回正
+            //可能解决办法: 符号控制, 左转, 右转需要等待一个静止帧
+            if (lastDeltaAngle * deltaAngle < 0)
+            {
+                lastDeltaAngle = deltaAngle;
+                isStoping = true;
+                return;
+            }
 
-            curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime);
+
+            lastDeltaAngle = deltaAngle;
+
+
+            if (isStoping) {
+                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime * setting_topDown.smoothTime);
+            }
+            else
+            {
+                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime);
+            }
+
+            // curAngleY = Mathf.SmoothDamp(curAngleY, curAngleY - deltaAngle, ref tempSpeed, setting_topDown.smoothTime);
+
+
         }
 
         public void SetTarget(Transform follow, Transform lookAt = null)
@@ -264,8 +300,10 @@ namespace XiaoCao
     public class CamDataTopDown
     {
         public Vector2 defaultAngle = new Vector2(30, 0);
+        public float stopAngleX = 5;
         public float camDistance = 7.5f;
         public float aimLerp = 0.1f;
+        public float smoothTime = 0.5f;
         [XCLabel("安全角度范围")]
         public float aimSafeAngle = 5;
         public float seeR = 8;

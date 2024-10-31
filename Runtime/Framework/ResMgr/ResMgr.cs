@@ -117,6 +117,11 @@ public class ResMgr
     public static byte[] LoadRawByte(string path)
     {
         Debug.Log($"---  {path}");
+        if (!RawLoader.CheckLocationValid(path))
+        {
+            return null;
+        }
+
         var handle = RawLoader.LoadRawFileSync(path);
         byte[] fileData = handle.GetRawFileData();
         return fileData;

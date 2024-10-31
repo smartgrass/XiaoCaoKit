@@ -1,5 +1,6 @@
 ﻿namespace XiaoCao
 {
+
     internal class XCCommand_NorAck : IXCCommand
     {
         public XCTask task { get; set; }

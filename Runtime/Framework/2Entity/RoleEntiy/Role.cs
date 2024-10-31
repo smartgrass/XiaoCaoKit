@@ -195,7 +195,7 @@ namespace XiaoCao
             if (!BattleData.IsTimeStop)
             {
                 float w = idRole.weight;
-                idRole.cc.DOHit(addY / w, horDir * horDistance/ w, setting.HitTime/ w);
+                idRole.cc.DOHit(addY / w, horDir * horDistance / w, setting.HitTime / w);
             }
         }
 
@@ -276,13 +276,16 @@ namespace XiaoCao
             //处理击飞
             if (!isOn)
             {
-                if (roleData.breakData.IsBreak)
+                if (roleData.breakData.HasHit)
                 {
-                    Anim.TryPlayAnim(AnimHash.Break);
-                }
-                else if (roleData.breakData.HasHit)
-                {
-                    Anim.TryPlayAnim(AnimHash.Hit);
+                    if (roleData.breakData.IsBreak)
+                    {
+                        Anim.TryPlayAnim(AnimHash.Break);
+                    }
+                    else
+                    {
+                        Anim.TryPlayAnim(AnimHash.Hit);
+                    }
                 }
 
                 if (roleData.bodyState == EBodyState.Dead)
@@ -401,7 +404,7 @@ namespace XiaoCao
             }
         }
 
-        public bool FindEnemy(out Role findRole, float dis = 8, float angle = 30 )
+        public bool FindEnemy(out Role findRole, float dis = 8, float angle = 30)
         {
             findRole = RoleMgr.Inst.SearchEnemyRole(gameObject.transform, dis, angle, out float maxScore, team);
             if (findRole != null)
@@ -434,6 +437,8 @@ namespace XiaoCao
 
         public void CheckWeaponPoint()
         {
+            return;
+            /*
             if (GetPonitCache(WeaponPointName, out Transform tf))
             {
                 if (tf.childCount > 0)
@@ -472,6 +477,7 @@ namespace XiaoCao
             source.sourceTransform = tf;
             pc.AddSource(source);
             pc.constraintActive = true;
+            */
         }
 
         public void TakeWeapon(GameObject weapon)

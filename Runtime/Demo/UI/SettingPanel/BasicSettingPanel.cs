@@ -22,12 +22,12 @@ public class BasicSettingPanel: SubPanel
     private void OnToggleLockCam(bool isOn)
     {
 
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.LockCam, isOn ? 1 : 0);
+        ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.LockCam ,isOn);
     }
 
     private void OnToggleLockEnemy(bool isOn)
     {
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.AutoLockEnemy, isOn? 1 :0);
+        ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.AutoLockEnemy, isOn);
     }
 
     private void AddLanguageDropDown(){

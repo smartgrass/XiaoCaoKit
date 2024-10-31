@@ -1,5 +1,6 @@
 ﻿using DG.Tweening.Plugins.Core.PathCore;
 using NaughtyAttributes;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using XiaoCao;
@@ -9,6 +10,8 @@ using XiaoCao;
 public class IdRole : IdComponent
 {
     public int raceId = 1;
+
+    [Dropdown(nameof(GetDirAllFileName))]
     public string bodyName = "Body_P_0";
     public string animControllerName = "";
 
@@ -44,6 +47,13 @@ public class IdRole : IdComponent
     private Transform _follow;
 
     private Transform _lookAt;
+
+    private List<string> GetDirAllFileName()
+    {
+        return PathTool.GetDirAllFileName("Assets/_Res/Role/Body");
+    }
+
+
     public Transform GetFollow
     {
         get

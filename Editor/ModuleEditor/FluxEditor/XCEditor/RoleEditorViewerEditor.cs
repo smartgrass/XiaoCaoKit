@@ -3,15 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 
-[CustomEditor(typeof(IdComponent), true)]
-public class IdComponentEditor : Editor
+[CustomEditor(typeof(RoleDataViewer), true)]
+public class RoleEditorViewerEditor : Editor
 {
-    public IdComponent self;
+    public RoleDataViewer self;
 
     public Object DrawTarget;
     private void OnEnable()
     {
-        self = (IdComponent)target;
+        self = (RoleDataViewer)target;
     }
 
     public override void OnInspectorGUI()
@@ -20,11 +20,11 @@ public class IdComponentEditor : Editor
 
         if (Application.isPlaying && GameDataCommon.Current.gameState == GameState.Running)
         {
-            var entity = self.GetEntity();
+            var entity = self.entity;
             if (entity != null)
             {
-                var role = entity as Role;
-                ComponentViewHelper.Draw(role);
+                var role = entity ;
+                ComponentViewHelper.Draw(entity);
             }
         }
     }

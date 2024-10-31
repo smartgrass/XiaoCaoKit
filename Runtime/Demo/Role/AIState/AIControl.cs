@@ -67,6 +67,7 @@ namespace XiaoCao
                 OnDeadUpdate();
                 return;
             }
+            owner.CheckBreakUpdate();
 
             if (!owner.IsAiOn) return;
             if (!IsAIFree) return;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using UnityEngine;
 using XiaoCao;
 
 /// <summary>
@@ -11,10 +12,23 @@ public class IdComponent : MonoBehaviour
 
     public virtual EEntityType EntityType { get; }
 
+    public BehaviorEntity entity;
+
     public BehaviorEntity GetEntity()
     {
-        EntityMgr.Inst.FindEntity<BehaviorEntity>(id, out BehaviorEntity entity);
+        if (entity == null)
+        {
+            EntityMgr.Inst.FindEntity<BehaviorEntity>(id, out BehaviorEntity entity);
+            this.entity = entity;
+        }
         return entity;
+    }
+
+    [Button(enabledMode: EButtonEnableMode.Playmode)]
+    public void AddEntityViewEditor()
+    {
+        var role = gameObject.GetOrAddComponent<RoleDataViewer>();
+        role.entity = GetEntity() as Role;
     }
 }
 
