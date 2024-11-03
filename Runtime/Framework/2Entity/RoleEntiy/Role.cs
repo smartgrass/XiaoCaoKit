@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using TEngine;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Animations;
 using Debug = UnityEngine.Debug;
@@ -250,6 +251,14 @@ namespace XiaoCao
             DeadAct?.Invoke(this);
         }
 
+        public void InitRoleData()
+        {
+            var setting = ConfigMgr.commonSettingSo;
+            int lv = roleData.playerAttr.lv;
+            AttrSetting attr = IsPlayer ? setting.playerSetting : setting.enemySetting;
+            roleData.breakData.maxArmor = attr.maxArmor;
+            roleData.playerAttr.Init(lv, attr);
+        }
 
         public void RoleIn()
         {
@@ -621,8 +630,8 @@ namespace XiaoCao
 
     public class BreakData
     {
-        public float armor = 5;  //虽说有小数, 实际用整数
-        public float maxArmor = 5;
+        public float armor = 4;  //虽说有小数, 实际用整数
+        public float maxArmor = 4;
         public float recoverWait_t = 0.8f;  //进入破防后,多久启动恢复
         public float recoverFinish_t = 0.5f; //恢复满需要时间
         public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用,小怪一般为0 

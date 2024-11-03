@@ -44,7 +44,14 @@ namespace XiaoCao
 
         public GameObject Get()
         {
-            return pool.Get();
+            var get = pool.Get();
+            //空检测
+            if (get == null)
+            {
+                pool.ClearNull();
+                get = pool.Get();
+            }
+            return get;
         }
         public void Release(GameObject gameObject)
         {

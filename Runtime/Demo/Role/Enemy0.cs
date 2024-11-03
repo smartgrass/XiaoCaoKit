@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -24,10 +25,11 @@ namespace XiaoCao
             CreateIdRole(prefabId);
             CreateRoleBody(idRole.bodyName);
             SetTeam(0);
+            roleData.playerAttr.lv = level;
+            InitRoleData();
 
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
-
 
             AddEnemyData aiData = idRole.gameObject.GetComponent<AddEnemyData>();
 
@@ -35,7 +37,7 @@ namespace XiaoCao
             enemyData.AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(curCmdSettingId, 0);
             component.aiControl = new AIControl(this).Init(aiData.aiId);
 
-            roleData.playerAttr.Init(level, ConfigMgr.commonSettingSo.enemySetting);
+
             roleData.roleControl = component.aiControl;
             RoleIn();
         }

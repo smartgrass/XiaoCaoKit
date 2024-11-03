@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 
@@ -106,21 +107,28 @@ namespace XiaoCao
         private void SetCurAtkTrigger()
         {
             PlayerAttr attr = Info.role.roleData.playerAttr;
-            int atk = (int)attr.atkAtr.CurrentValue ;
+            int baseAtk = (int)attr.atkAtr.CurrentValue ;
             bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
             CurTrigger.maxTriggerTime = maxTriggerTime;
             CurTrigger.curTriggerTime = 0;
 
-            CurTrigger.ackInfo = new AtkInfo()
+            var info =new AtkInfo()
             {
                 objectData = task.ObjectData,
                 team = Info.role.team,
                 skillId = Info.skillId,
                 subSkillId = task.ObjectData.index,
-                atk = atk,
+                baseAtk = baseAtk,
+                atk = baseAtk,
                 isCrit = isCrit,
                 atker = Info.role.id
             };
+            info.atk = (int)(baseAtk * info.GetSkillSetting.AckRate);
+
+            CurTrigger.ackInfo = info;
+
+
+
             CurTrigger.id = Info.role.id;
         }
 
@@ -142,13 +150,25 @@ namespace XiaoCao
     }
 
 
-    public class TriggerCache : Singleton<TriggerCache>, IClearCache
+    public class TriggerCache : Singleton<TriggerCache>, IClearCache, IHasClear
     {
+        protected override void Init()
+        {
+            base.Init();
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
 
-        public static Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
+        private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+        {
+            ClearCache();
+        }
+
+        public Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
+        
+
         public static GameObject GetTrigger(MeshType meshType)
         {
-            if (dicPool.TryGetValue(meshType, out AssetPool assetPool))
+            if (Inst.dicPool.TryGetValue(meshType, out AssetPool assetPool))
             {
                 return assetPool.Get();
             }
@@ -177,13 +197,13 @@ namespace XiaoCao
             }
 
             assetPool = new AssetPool(newObject);
-            dicPool[meshType] = assetPool;
+            Inst.dicPool[meshType] = assetPool;
             return assetPool.Get();
         }
 
         public static void Release(MeshType meshType, GameObject gameObject)
         {
-            dicPool[meshType].Release(gameObject);
+            Inst.dicPool[meshType].Release(gameObject);
         }
 
     }

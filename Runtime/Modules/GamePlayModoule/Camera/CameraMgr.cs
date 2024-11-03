@@ -41,8 +41,11 @@ namespace XiaoCao
         {
             base.Init();
             tempLookAt = new GameObject("tempLookAt").transform;
-            var tempLookAtGo = new GameObject("CamerAimer");
-            aimer = tempLookAtGo.AddComponent<CamerAimer>();
+
+            var tempAimerGo = new GameObject("CamerAimer");
+            aimer = tempAimerGo.AddComponent<CamerAimer>();
+            tempAimerGo.transform.SetParent(transform,true);
+            tempLookAt.transform.SetParent(transform, true);
         }
 
         public void InitCam(ICameraController setCam = null)

@@ -97,10 +97,16 @@ namespace XiaoCao
 
     public class NewLineAttribute : MetaAttribute, IXCDrawAttribute
     {
-        public NewLineAttribute() { }
+        public NewLineAttribute(string header = "") { this.Header = header; }
+
+        public string Header;
 
         public void OnDraw(Object targetObject, Action action)
         {
+            if (!string.IsNullOrEmpty(Header))
+            {
+                GUILayout.Label(Header);
+            }
             action?.Invoke();
         }
     }

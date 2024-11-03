@@ -19,7 +19,8 @@ namespace XiaoCao
 
         private readonly Func<T, int> m_ActtionId;
 
-        public int CountAll { get; private set; }
+        //当前生成数
+        public int CurCount { get; private set; }
 
         public ObjectPool(Func<T> createFunc, Action<T> actionOnGet = null, Action<T> actionOnRelease = null, Func<T, int> ActtionId = null, int defaultCapacity = 10)
         {
@@ -41,7 +42,7 @@ namespace XiaoCao
             if (m_List.Count == 0)
             {
                 val = m_CreateFunc();
-                CountAll++;
+                CurCount++;
             }
             else
             {
@@ -66,7 +67,7 @@ namespace XiaoCao
         public void Clear()
         {
             m_List.Clear();
-            CountAll = 0;
+            CurCount = 0;
         }
 
         public void Dispose()
@@ -76,7 +77,22 @@ namespace XiaoCao
 
         internal void ClearNull()
         {
+            List<int> indexList = new();
 
+            for (int i = 0; i < m_List.Count; i++)
+            {
+                var element = m_List[i];
+                if (element == null)
+                {
+                    indexList.Add(i);
+                }
+            }
+
+            for (int i = indexList.Count - 1; i >= 0; i--)
+            {
+                indexList.RemoveAt(i);
+            }
+            CurCount = CurCount - indexList.Count;
         }
     }
 }

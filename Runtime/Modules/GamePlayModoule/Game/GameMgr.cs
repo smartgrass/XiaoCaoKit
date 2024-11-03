@@ -1,10 +1,13 @@
+using NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Threading;
 using TEngine;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
 namespace XiaoCao
@@ -25,6 +28,16 @@ namespace XiaoCao
         public SaveMgr saveMgr;
 
         #endregion
+
+        
+        public GameDataCommon debugGameData;
+
+        [Button]
+        void DebuggameData()
+        {
+            debugGameData = GameDataCommon.Current;
+        }
+
         public override void Init()
         {
             base.Init();
@@ -46,12 +59,13 @@ namespace XiaoCao
         #region Scene
 
 
-        private int curScene;
+        private string curScene;
 
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
         {
-            curScene = scene.buildIndex;
+            //curScene = scene.buildIndex;
+            curScene = scene.name;
             Debug.Log($"--- curScene {curScene}");
         }
 
@@ -61,31 +75,45 @@ namespace XiaoCao
 
         }
 
-        public void LoadScene(int sceneBuildIndex)
+        public void ReloadScene()
         {
-            StartCoroutine(LoadSceneInBackground(sceneBuildIndex));
+            SetGameState(GameState.Exit);
+            curScene = SceneManager.GetActiveScene().name;
+            LoadScene(curScene);
+        }
+
+        public void LoadScene(string sceneName)
+        {
+            SetGameState(GameState.Loading);
+            GameDataCommon.Current.NextSceneName = curScene;
+            SceneManager.LoadScene(SceneNames.Loading);
+            StartCoroutine(LoadSceneInBackground(sceneName));
         }
 
         public void UnloadActiveScene()
         {
-            if (curScene > 0)
-            {
-                SceneManager.UnloadSceneAsync(curScene);
-                curScene = 0;
-            }
+            //Debug.Log($"--- UnloadSceneAsync {curScene}");
+            //return SceneManager.UnloadSceneAsync(curScene);
         }
 
-        private IEnumerator LoadSceneInBackground(int sceneBuildIndex)
+        private IEnumerator LoadSceneInBackground(string NextScene)
         {
-            SetGameState(GameState.Loading);
-            UnloadActiveScene();
 
-            curScene = sceneBuildIndex;
-            AsyncOperation loadingScene = SceneManager.LoadSceneAsync(sceneBuildIndex, LoadSceneMode.Additive);
+            curScene = NextScene;
+            AsyncOperation loadingScene = SceneManager.LoadSceneAsync(NextScene, LoadSceneMode.Single);
+            Debug.Log($"--- LoadSceneInBackground {NextScene}");
             while (!loadingScene.isDone)
-                yield return new WaitForSeconds(0.25f);
+            {
+                float progress = loadingScene.progress;
 
-            SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(sceneBuildIndex));
+                Debug.Log($"Loading: {progress * 100:F2}%"); 
+
+                yield return new WaitForSeconds(0.25f);
+            }
+
+
+            // SceneManager.GetSceneByBuildIndex(sceneBuildIndex)
+            //SceneManager.SetActiveScene(SceneManager.GetSceneByName(curScene));
             SetGameState(GameState.Running);
         }
         #endregion
@@ -114,9 +142,14 @@ namespace XiaoCao
     }
 
 
-    ///使用<see cref="GameMgr"/>
+    ///直接使用<see cref="GameMgr"/>
     public class SceneMgr { }
 
+    public static class SceneNames
+    {
+        public static string Level = "Level";
+        public static string Loading = "Loading";
+    }
     
 
 

@@ -61,6 +61,7 @@ namespace XiaoCao
 
         public float endDef = 500;
 
+        public float maxArmor = 4;
 
 
     }

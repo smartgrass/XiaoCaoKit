@@ -16,7 +16,7 @@ namespace XiaoCao
         //由玩家缓存数据读取 , 不需要初始值
         public static PlayerSaveData playerSaveData = null;
 
-
+        [RuntimeInitializeOnLoadMethod]
         public static void Init()
         {
             commonData = new GameDataCommon();
@@ -34,6 +34,10 @@ namespace XiaoCao
         public GameState gameState;
 
         public Player0 player0;
+
+        public string NextSceneName;
+
+        public bool IsHasLoad;
 
         public int playerId => player0.id;
 

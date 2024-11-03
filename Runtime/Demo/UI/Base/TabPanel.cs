@@ -10,6 +10,8 @@ public abstract class TabPanel : PanelBase
 {
     [NonSerialized]
     public List<SubPanel> list = new List<SubPanel>();
+    [NonSerialized]
+    public SubPanel curPanel;
 
     public UIPrefabs Prefabs;
     public Transform PANELS;
@@ -65,9 +67,9 @@ public abstract class TabPanel : PanelBase
             else
             {
                 subPanel.TabBtn.Select();
+                curPanel = subPanel;
             }
         }
-
     }
 
     public SubPanel GetPanel(string subPanelName)

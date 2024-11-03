@@ -611,3 +611,23 @@ public static class MathTool
     }
     #endregion
 }
+
+
+//世界坐标转换相关
+public static class WorldScreenHelper
+{
+    public static Vector2 WorldToAnchorPos(Vector3 position, RectTransform canvasRectTransform)
+    {
+        Vector3 screenPoint3 = Camera.main.WorldToScreenPoint(position);//世界坐标转换为屏幕坐标
+        if (screenPoint3.z < 0)
+        {
+            //背面
+            screenPoint3 = -screenPoint3;
+        }
+        Vector2 screenPoint = screenPoint3;
+        Vector2 screenSize = new Vector2(Screen.width, Screen.height);
+        screenPoint -= screenSize / 2;//将屏幕坐标变换为以屏幕中心为原点
+        Vector2 anchorPos = screenPoint / screenSize * canvasRectTransform.sizeDelta;//缩放得到UGUI坐标
+        return anchorPos;
+    }
+}

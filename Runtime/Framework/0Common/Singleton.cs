@@ -49,6 +49,9 @@ public abstract class Singleton<T> where T : Singleton<T>, new()
 
 //标记为需要主动清除, 定时清除
 public interface IClearCache { }
+
+public interface IHasClear { }
+
 public interface IInit
 {
     public void Init();

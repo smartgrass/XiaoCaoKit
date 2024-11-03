@@ -21,10 +21,11 @@ namespace XiaoCao
             base.Init();
             _instance = this;
             GameObject prefabGO = new GameObject("AudioSource");
+            prefabGO.transform.SetParent(transform, true);
             AudioSource prefab = prefabGO.AddComponent<AudioSource>();
 
-            asPool = new LoopPool<AudioSource>(prefab, 5);
-            hitAsPool = new LoopPool<AudioSource>(prefab, 5);
+            asPool = new LoopPool<AudioSource>(prefab, 5, transform);
+            hitAsPool = new LoopPool<AudioSource>(prefab, 5,transform);
             musicAs = Instantiate(prefab, transform);
             musicAs.outputAudioMixerGroup = mixerGroups[1];
             musicAs.loop = true;

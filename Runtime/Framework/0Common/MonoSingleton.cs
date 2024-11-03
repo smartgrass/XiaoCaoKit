@@ -25,7 +25,7 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
                     DontDestroyOnLoad(DDOLGO);
                 }
 
-                GameObject go = new GameObject(typeof(T).ToString());
+                GameObject go = new GameObject(typeof(T).Name.ToString());
                 go.transform.SetParent(DDOLGO.transform, false);
                 _instance= go.AddComponent<T>();
                 _instance.Init();

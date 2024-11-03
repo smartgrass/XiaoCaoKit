@@ -187,13 +187,21 @@ namespace XiaoCao
 
         private void FixUpdateLockTime()
         {
+            //平衡
+            float unScale = 1;
+            if (XCTime.timeScale > 1)
+            {
+                unScale = 1 / XCTime.timeScale;
+            }
+
             if (RoleState.moveLockTime > 0)
             {
-                RoleState.moveLockTime -= XCTime.fixedDeltaTime;
+                RoleState.moveLockTime -= XCTime.unscalefixedDeltaTime * unScale;
             }
+
             if (RoleState.rotateLockTime > 0)
             {
-                RoleState.rotateLockTime -= XCTime.fixedDeltaTime;
+                RoleState.rotateLockTime -= XCTime.unscalefixedDeltaTime * unScale;
             }
         }
 
@@ -205,7 +213,14 @@ namespace XiaoCao
             //限制最大移速动画
             inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSmooth, moveSetting.moveSmooth);
+            float moveSmooth = moveSetting.moveSmooth;
+            if (XCTime.timeScale > 1)
+            {
+                //加速速成处理
+                moveSmooth = moveSmooth / XCTime.timeScale;
+            }
+
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSmooth, moveSmooth);
 
             //影响移速倍率
             RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);

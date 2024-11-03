@@ -49,7 +49,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    TimeStopMgr.Inst.StopTimeSpeed(6);
+                    TimeStopMgr.Inst.StopTimeSpeed(5);
                 }
             }
             if (InputData.inputs[InputKey.Focus])

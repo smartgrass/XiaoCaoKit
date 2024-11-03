@@ -144,7 +144,7 @@ namespace XiaoCao
 
         private Role lastEnemy;
         private float findEnmeyTime;
-        private float remindEnmeyTime = 0.5f;
+        private float remindEnmeyTime = 0.25f;
         private float tempSpeed;
         public void CheckPlayer()
         {
@@ -192,6 +192,10 @@ namespace XiaoCao
                     //规则 偏角不能超过15度
                     Vector3 dir = (findRole.transform.position - player0.transform.position);
 
+                    distance = dir.magnitude;
+
+                    //UIMgr.Inst.battleHud.ShowAnimTarget(findRole.transform.position + Vector3.up);
+
                     //dir = Vector3.Lerp(dir, player0.transform.forward, 1f * Time.fixedDeltaTime);
 
                     AimToDIr(dir);
@@ -200,14 +204,18 @@ namespace XiaoCao
                 {
                     if (!isLockCam)
                     {
+                        distance = 0;
+
                         AimToDIr(player0.transform.forward, player0.roleData.movement.lastInputDir.IsZore());
                     }
+                    //UIMgr.Inst.battleHud.HideAnimTarget();
                 }
             }
 
         }
 
         private float lastDeltaAngle;
+        private float distance;
 
         private void AimToDIr(Vector3 dir, bool isStoping = false)
         {
@@ -222,7 +230,13 @@ namespace XiaoCao
             }
             else
             {
-                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
+                float addX = 0;
+                if (distance > 0 && distance  < 10)
+                {
+                    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0 , distance /10);
+                }
+
+                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x + addX, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
             }
 
 
@@ -248,7 +262,8 @@ namespace XiaoCao
             lastDeltaAngle = deltaAngle;
 
 
-            if (isStoping) {
+            if (isStoping)
+            {
                 curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime * setting_topDown.smoothTime);
             }
             else
@@ -265,7 +280,6 @@ namespace XiaoCao
         {
             vcam_topDown.Follow = follow;
             _curFollow = follow;
-            CameraMgr.Inst.aimer.SetAim(lookAt, 0);
             vcam_topDown.LookAt = CameraMgr.Inst.aimer.transform;
             _curLookAt = lookAt;
 
@@ -273,6 +287,7 @@ namespace XiaoCao
             {
                 TopDownInit();
             }
+            CameraMgr.Inst.aimer.SetAim(lookAt, 0);
         }
 
         private void OnEditorModeChanged()
@@ -301,6 +316,7 @@ namespace XiaoCao
     {
         public Vector2 defaultAngle = new Vector2(30, 0);
         public float stopAngleX = 5;
+        public float nearAddAngleX = 15;
         public float camDistance = 7.5f;
         public float aimLerp = 0.1f;
         public float smoothTime = 0.5f;

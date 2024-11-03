@@ -1,9 +1,10 @@
 using cfg;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using NaughtyAttributes;
+using System.CodeDom.Compiler;
 using UnityEngine;
 using XiaoCao;
-
 public class ItemCrystal : ItemIdComponent
 {
     public AudioClip hitClip;
@@ -16,11 +17,15 @@ public class ItemCrystal : ItemIdComponent
 
     public bool isDead;
 
-    public float shakeLen = 0.5f; 
+    public Vector3 hpBarOffset = Vector3.up;
+
+    public float shakeLen = 0.5f;
 
     private Vector3 startBodyPos;
 
     private Tween tween;
+
+    private HpBar hpBar;
 
     private void Start()
     {
@@ -42,12 +47,15 @@ public class ItemCrystal : ItemIdComponent
         }
 
         hp--;
-        if (hp < 0)
+        HitHelper.ShowDamageText(transform, 1, ackInfo);
+        HitHelper.ShowHitEffect(transform, ackInfo);
+
+        SetHpBar();
+
+        if (hp <= 0)
         {
-            deadEvent?.Invoke();
-            SoundMgr.Inst.PlayClip(deadClip);
-            TimeStopMgr.Inst.StopTimeSpeed(5);
-            isDead = true;
+            OnDead();
+            return;
         }
         else
         {
@@ -62,26 +70,43 @@ public class ItemCrystal : ItemIdComponent
         {
             body.localPosition = startBodyPos;
         });
-
- 
-        HitHelper.ShowDamageText(transform, 1, ackInfo);
-        HitHelper.ShowHitEffect(transform, ackInfo);
     }
 
+    private void SetHpBar()
+    {
+        if (hpBar == null)
+        {
+            hpBar = UIMgr.Inst.battleHud.AddItemHpBar(transform, hpBarOffset);
+        }
+        hpBar.UpdateHealthBar((float)hp / maxHp);
+    }
 
-    [Button(enabledMode:EButtonEnableMode.Playmode)]
+    private void OnDead()
+    {
+        SoundMgr.Inst.PlayClip(deadClip);
+        deadEvent?.Invoke();
+        isDead = true;
+        DoExploded();
+        UIMgr.Inst.battleHud.RemoveItemHpBar(transform);
+        if (transform.TryGetComponent<IExecute>(out IExecute execute))
+        {
+            execute.Execute();
+        }
+    }
+
+    #region 爆炸动画
+
+    [Button(enabledMode: EButtonEnableMode.Playmode)]
     void DoExploded()
     {
         var mesh = body.GetComponent<MeshFilter>().mesh;
         Vector3 center = mesh.bounds.center;
-        center = center + Vector3.down * mesh.bounds.size.y *0.1f;
-        
+        center = center + Vector3.down * mesh.bounds.size.y * 0.1f;
 
         //子物体移到外层,给子物体施力
         ExplodedPos(center);
-
         //隐藏原body
-        body.gameObject.SetActive(false);
+        HideSelf();
     }
 
     [Header("爆炸设定")]
@@ -91,10 +116,8 @@ public class ItemCrystal : ItemIdComponent
     private void ExplodedPos(Vector3 centerPos)
     {
         int len = body.childCount;
-        Debug.Log($"--- len {len}");
         for (int i = 0; i < len; i++)
         {
-            Debug.Log($"--- i {i}");
             Transform child = body.GetChild(0);
             child.SetParent(transform, true);
             child.gameObject.SetActive(true);
@@ -102,6 +125,24 @@ public class ItemCrystal : ItemIdComponent
             if (rb == null) continue;
             rb.AddExplosionForce(_explosionForce, centerPos, _explosionRadius, 1);
         }
-
     }
+
+
+    private void HideSelf()
+    {
+        if (transform.TryGetComponent<Collider>(out Collider col))
+        {
+            col.enabled = false;
+        }
+        body.gameObject.SetActive(false);
+
+        XCTime.DelayRun(4.5f, HideAll).Forget();
+    }
+
+    private void HideAll()
+    {
+        gameObject.SetActive(false);
+    }
+
+    #endregion
 }

@@ -1,8 +1,11 @@
 ﻿using DG.Tweening;
 using System.Collections.Generic;
+using System.Data;
 using TEngine;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings;
 
 namespace XiaoCao
 {
@@ -10,9 +13,13 @@ namespace XiaoCao
     {
         public Dictionary<int, HpBar> barDic = new Dictionary<int, HpBar>();
 
+        public Dictionary<Transform, HpBar> itemHpBarDic = new Dictionary<Transform, HpBar>();
+
         public GameObject worldHpBarPrefab;
 
         public Transform worldHpBarParent;
+
+        public RectTransform aimImgRT;
 
         public HpBar playerBar;
 
@@ -40,6 +47,7 @@ namespace XiaoCao
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 NorHpBarUpdate();
+                UpdateItemHpBar();
             }
         }
         //每帧都执行, 检查增加
@@ -78,15 +86,54 @@ namespace XiaoCao
                 {
                     GameObject newBarGo = pool.Get();
                     bar = newBarGo.GetComponent<HpBar>();
-                    bar.Init(role.RoleType);
+                    bar.InitColor(role.RoleType);
                     barDic[role.id] = bar;
                     bar.transform.SetParent(worldHpBarParent, false);
-                    bar.SetParent(role);
+                    bar.SetFollowRole(role);
                 }
                 bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
                 bar.UpdateArmorBar(role.ShowArmorPercentage);
                 bar.UpdatePostion();
 
+            }
+        }
+
+        public HpBar AddItemHpBar(Transform target, Vector3 offset)
+        {
+            GameObject newBarGo = pool.Get();
+            var bar = newBarGo.GetComponent<HpBar>();
+            itemHpBarDic[target] = bar;
+            bar.transform.SetParent(worldHpBarParent, false);
+            bar.SetFollow(target,offset);
+            return bar;
+        }
+
+        public void RemoveItemHpBar(Transform key)
+        {
+            if (itemHpBarDic.ContainsKey(key))
+            {
+                var bar = itemHpBarDic[key];
+                bar.gameObject.SetActive(false);
+                pool.Release(bar.gameObject);
+                itemHpBarDic.Remove(key);
+            }
+        }
+        public void RemoveItemHpBar(HpBar value)
+        {
+            foreach (var item in itemHpBarDic)
+            {
+                if (item.Value == value)
+                {
+                    itemHpBarDic.Remove(item.Key);
+                }          
+            }
+        }
+
+        void UpdateItemHpBar()
+        {
+            foreach (var item in itemHpBarDic)
+            {
+                item.Value.UpdatePostion();
             }
         }
 
@@ -109,29 +156,26 @@ namespace XiaoCao
             }
         }
 
-        private void HpBarUpdate()
-        {
-
-        }
 
 
         #region DamageText
         public DamageTextSetting DamageUITSetting;
         public int maxTextCount = 6;
-        public Text firstText;
+        public TMP_Text firstText;
         private Transform textParent;
-        private List<Text> _damageTexts = new List<Text>();
+        private List<TMP_Text> _damageTexts = new List<TMP_Text>();
         private List<DamageTextTween> _damageTextTweens = new List<DamageTextTween>();
         private Vector2 changeVec2;
         private int nextText;
 
         public void InitDamageText()
         {
-            textParent = firstText.transform;
+            textParent = firstText.transform.parent;
+            firstText.color = Color.white.SetAlpha(0);
             _damageTexts.Add(firstText);
             for (int i = 1; i < maxTextCount; i++)
             {
-                Text newText = Instantiate(firstText, textParent);
+                TMP_Text newText = Instantiate(firstText, textParent);
                 _damageTexts.Add(newText);
             }
 
@@ -147,7 +191,7 @@ namespace XiaoCao
             Vector3 mScreen = Camera.main.WorldToScreenPoint(mTarget);
             if (mScreen.z > 0)
             {
-                Text t = _damageTextTweens[nextText].text;
+                TMP_Text t = _damageTextTweens[nextText].text;
 
                 Sequence tween = _damageTextTweens[nextText].tween;
 
@@ -175,7 +219,8 @@ namespace XiaoCao
                 float randomY = DamageUITSetting.MoveY * Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y);
 
                 t.text = (num).ToString();
-                t.transform.position = mScreen;
+
+                t.transform.position = mScreen + DamageUITSetting.starY * Vector3.one;
                 //tween.SetEase(DamageUITSetting.ease);
                 //大小
                 tween.Join(DOTween.To(x => t.fontSize = (int)x, DamageUITSetting.frontSizeStart, DamageUITSetting.frontSizeEnd, DamageUITSetting.flyTime / 2).SetLoops(2, LoopType.Yoyo));
@@ -184,25 +229,32 @@ namespace XiaoCao
                 tween.Join(t.transform.DOMoveY(mScreen.y + DamageUITSetting.MoveY, DamageUITSetting.flyTime / 2));
                 //颜色
                 t.color = DamageUITSetting.startColor;
+               
 
                 var textTween = t.DOColor(DamageUITSetting.endColor, DamageUITSetting.flyTime / 2);
 
                 tween.Join(textTween);
 
-                //tween.Append(DOTween.To(x => t.fontSize = (int)x, DamageUITSetting.frontSizeMid , DamageUITSetting.frontSizeStart, DamageUITSetting.flyTime/2));
-
-                Color ac = Color.white;
-                ac.a = 0;
-                tween.OnComplete(() => { t.color = ac; });
-
-                gameObject.SetActive(true);
+                tween.OnComplete(() => { t.color = Color.white.SetAlpha(0); });
             }
         }
+
+        internal void ShowAnimTarget(Vector3 position)
+        {
+            Vector2 pos = WorldScreenHelper.WorldToAnchorPos(position,UIMgr.Inst.midCanvas.transform as RectTransform);
+            aimImgRT.anchoredPosition = pos;    
+        }
+
+        public void HideAnimTarget()
+        {
+            aimImgRT.anchoredPosition = Vector2.down * Screen.height;
+        }
+
 
 
         public class DamageTextTween
         {
-            public Text text;
+            public TMP_Text text;
             public Sequence tween;
         }
 
@@ -214,6 +266,7 @@ namespace XiaoCao
             public float frontSizeStart = 33;
             public float frontSizeEnd = 44;
 
+            public float starY = 10;
             public float MoveY = 60;
             public float flyTime = 0.5f;
             public Color startColor = Color.white;
@@ -221,6 +274,7 @@ namespace XiaoCao
             public Vector2 randomVec2 = new Vector2(25, 40);
             public Vector2 randomScaleVec2 = new Vector2(0.5f, 1);
             public Vector2 offset = new Vector2(60, 100);
+
         }
 
         #endregion

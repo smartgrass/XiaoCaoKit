@@ -33,7 +33,7 @@ namespace XiaoCao
         private Vector3 _offset;
 
 
-        public void Init(RoleType roleType)
+        public void InitColor(RoleType roleType)
         {
             fillImage.color = White;
             //if (roleType == RoleType.Player)
@@ -47,7 +47,14 @@ namespace XiaoCao
 
         }
 
-        public void SetParent(Role role)
+
+        public void SetFollow(Transform tf, Vector3 offset)
+        {
+            _targetTF = tf;
+            _offset = offset;
+        }
+
+        public void SetFollowRole(Role role)
         {
             float h = role.idRole.cc.height;
 
@@ -61,17 +68,20 @@ namespace XiaoCao
         public void UpdatePostion()
         {
             transform.position = _targetTF.TransformPoint(_offset);
+            //Watch Cam
+            Vector3 dir = -CameraMgr.Main.transform.position + transform.position;
+            transform.rotation = Quaternion.LookRotation(dir);
         }
 
         public void UpdateHealthBar(float healthPercentage)
         {
             fillImage.fillAmount = healthPercentage;
 
-            if (healthPercentage > 2f/3f)
+            if (healthPercentage > 2f / 3f)
             {
                 fillImage.color = Green;
             }
-            else if (healthPercentage > 1/3f)
+            else if (healthPercentage > 1 / 3f)
             {
                 fillImage.color = Orange;
             }

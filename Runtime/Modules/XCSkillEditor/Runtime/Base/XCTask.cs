@@ -61,6 +61,7 @@ namespace XiaoCao
         public void StartRun(float startTime = 0)
         {
             data.HasTrigger = true;
+            Info.taskRunner = Runner;
             data.objectData?.OnTrigger(Info);
             State = XCState.Running;
             _startSubTrackIndex = 0;

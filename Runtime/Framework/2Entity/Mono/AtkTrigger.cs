@@ -85,7 +85,8 @@ public class AtkInfo
 {
     public int team;
     public int atker; //攻击者
-    public int atk = 1;
+    public int atk = 1; //倍率计算后
+    public int baseAtk = 1;  //角色基础攻击力.
     public bool isCrit; //暴击
 
     public string skillId;

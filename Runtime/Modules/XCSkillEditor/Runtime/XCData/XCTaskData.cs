@@ -166,7 +166,7 @@ namespace XiaoCao
 
                     var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);
                     Tran.eulerAngles = anglePos.Item1;
-                    Tran.position = anglePos.Item2 ;
+                    Tran.position = anglePos.Item2;
                     Debug.Log($"--- reset Start pos {tf.name} {tf.position} add {position} = {anglePos.Item2}");
                 }
             }
@@ -183,16 +183,16 @@ namespace XiaoCao
             }
             else
             {
-                Tran.SetParent(null, true);
+                Tran.SetParent(Info.taskRunner.transform, true);
             }
             Tran.localScale = scale;
         }
 
-        public static Vector3 GetOffset( Transform tf, Vector3 castPos)
+        public static Vector3 GetOffset(Transform tf, Vector3 castPos)
         {
             var retAngle = tf.eulerAngles;
             var retPos = tf.position - castPos;
-            return  retPos;
+            return retPos;
         }
 
         public static (Vector3, Vector3) GetRePos(Vector3 castEuler, Vector3 castPos, Vector3 addAngle, Vector3 addPos)
@@ -219,6 +219,11 @@ namespace XiaoCao
             Tran.gameObject.SetActive(false);
             PoolMgr.Inst.Release(ObjectPath, Tran.gameObject);
             State = XCState.Stopped;
+        }
+
+        public void ForceClear()
+        {
+            OnEnd();
         }
 
     }

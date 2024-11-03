@@ -38,6 +38,7 @@ public abstract class SubPanel
     {
         gameObject.SetActive(true);
         panel.SwitchPanel(subPanelName);
+        RefreshUI();
 
     }
     public void Hide()
@@ -47,6 +48,10 @@ public abstract class SubPanel
 
     public abstract void Init();
 
+    public virtual void RefreshUI()
+    {
+
+    }
 
     public Slider AddSlider(string title, UnityAction<float> onValueChange, Vector2 range, float initValue = 1)
     {

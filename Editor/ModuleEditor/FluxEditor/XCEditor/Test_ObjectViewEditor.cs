@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(Test_ObjectView), true)]
+//[CustomEditor(typeof(Test_ObjectView), true)]
 public class Test_ObjectViewEditor : Editor
 {
     public Test_ObjectView self;

@@ -1,6 +1,9 @@
 ﻿
 using OdinSerializer;
+using OdinSerializer.Utilities;
+using System;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,7 +12,7 @@ namespace XiaoCao
     /// <summary>
     /// 相当于System 无数据,RunTime时构建
     /// </summary>
-    public class XCTaskRunner : MonoBehaviour
+    public class XCTaskRunner : MonoBehaviour,IClearCache
     {
 
         public TaskInfo debugInfo;
@@ -31,7 +34,18 @@ namespace XiaoCao
         public UnityEvent<XCTaskRunner> onAllTaskEndEvent = new UnityEvent<XCTaskRunner>(); //所有Task不执行时触发
 
 
+        //[StaticCache]
         public static AssetPool runnerPool;
+
+        private void Awake()
+        {
+            GameEvent.AddEventListener<GameState, GameState>(EventType.GameStateChange.Int(), GameStateChange);
+        }
+
+        private void OnDestroy()
+        {
+            GameEvent.RemoveEventListener<GameState, GameState>(EventType.GameStateChange.Int(), GameStateChange);
+        }
 
         public static XCTaskRunner CreatNew(string skillId, int roleId, TaskInfo info)
         {
@@ -64,6 +78,7 @@ namespace XiaoCao
             {
                 GameObject go = new GameObject($"Runner_Pre");
                 go.AddComponent<XCTaskRunner>();
+                GameObject.DontDestroyOnLoad(go);
                 runnerPool = new AssetPool(go);
             }
         }
@@ -165,6 +180,22 @@ namespace XiaoCao
                 Task.StopTimeSpeed(isOn);
             }
         }
+
+        private void GameStateChange(GameState state1, GameState state2)
+        {
+            if (state2 == GameState.Exit)
+            {
+                if (Task!= null && Task.State == XCState.Running)
+                {
+                    if (Task.ObjectData!= null)
+                    {
+                        Debug.Log($"--- ForceClear");
+                        Task.ObjectData.ForceClear();
+                    }
+                    GameObject.Destroy(gameObject);
+                }
+            }
+        }
     }
 
     public class TaskInfo
@@ -182,6 +213,8 @@ namespace XiaoCao
         public Vector3 castPos;
 
         public float speed = 1;
+
+        public XCTaskRunner taskRunner; 
     }
 
     public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache

@@ -14,7 +14,10 @@ public class XCTime
     /// 对时间都做一层封装,方便处理
     /// </summary>
     internal static float deltaTime => Time.deltaTime * timeScale;
+
     internal static float fixedDeltaTime => Time.fixedDeltaTime * timeScale;
+
+    internal static float unscalefixedDeltaTime => Time.fixedDeltaTime;
     internal static float unscaledDeltaTime => Time.unscaledDeltaTime;
 
     public static float timeScale = 1;

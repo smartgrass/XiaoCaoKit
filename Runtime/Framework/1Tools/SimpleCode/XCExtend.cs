@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using XiaoCao;
 using UnityEngine.UI;
+using TMPro;
 
 public static class XCExtend
 {
@@ -104,11 +105,16 @@ public static class XCExtend
         }
     }
 
-    public static TweenerCore<Color, Color, ColorOptions> DOColor(this Text target, Color endValue, float duration)
+    public static TweenerCore<Color, Color, ColorOptions> DOColor(this TMP_Text target, Color endValue, float duration)
     {
         TweenerCore<Color, Color, ColorOptions> t = DOTween.To(() => target.color, x => target.color = x, endValue, duration);
         t.SetTarget(target);
         return t;
+    }
+
+    public static Color SetAlpha(this Color color, float alpha) {
+        color.a = alpha;
+        return color;
     }
 
 }

@@ -1,10 +1,10 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace XiaoCao
 {
@@ -86,7 +86,7 @@ namespace XiaoCao
             if (method is null && !nonPublic && allowInternal)
             { // could be "internal" or "protected internal"; look for a non-public, then back-check
                 method = property.GetGetMethod(true);
-                if (method !=null && !(method.IsAssembly || method.IsFamilyOrAssembly))
+                if (method != null && !(method.IsAssembly || method.IsFamilyOrAssembly))
                 {
                     method = null;
                 }
@@ -102,7 +102,7 @@ namespace XiaoCao
             if (method is null && !nonPublic && allowInternal)
             { // could be "internal" or "protected internal"; look for a non-public, then back-check
                 method = property.GetGetMethod(true);
-                if (method!=null && !(method.IsAssembly || method.IsFamilyOrAssembly))
+                if (method != null && !(method.IsAssembly || method.IsFamilyOrAssembly))
                 {
                     method = null;
                 }
@@ -152,6 +152,96 @@ namespace XiaoCao
             return members;
         }
 
+
+
+
+
+        // 尝试根据路径获取静态数据的值  
+
+        public static object GetValueFromPath(string path)
+        {
+            try
+            {
+                string[] parts = path.Split('.');
+                object current = null;
+                Type currentType = null;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    string part = parts[i];
+                    // 如果是第一部分，特殊处理以获取静态字段或属性  
+                    if (i == 0)
+                    {
+                        // 获取类型（假设路径的第一部分是类的完全限定名或简单名）  
+                        currentType = Type.GetType(part, false) ?? Type.GetType("XiaoCao." + part, false);
+
+                        if (currentType == null)
+                        {
+                            Debug.LogError($"Type '{part}' not found.");
+                            return null;
+                        }
+
+
+                        // 获取静态字段或属性  
+                        FieldInfo fieldInfo = currentType.GetField(part, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                        PropertyInfo propertyInfo = fieldInfo == null ? currentType.GetProperty(part, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) : null;
+
+                        if (fieldInfo != null)
+                        {
+                            current = fieldInfo.GetValue(null);
+                        }
+                        else if (propertyInfo != null)
+                        {
+                            current = propertyInfo.GetValue(null, null);
+                        }
+                        else
+                        {
+                            Debug.LogError($"Static field or property '{part}' not found in type '{currentType.FullName}'.");
+                            return null;
+                        }
+                    }
+
+                    else
+                    {
+                        // 对于后续部分，假设它们是非静态属性或字段  
+                        if (current == null)
+                        {
+                            Debug.LogError($"Cannot access property or field '{part}' because the previous value is null.");
+                            return null;
+                        }
+
+
+
+                        currentType = current.GetType();
+
+                        var fieldInfo = currentType.GetField(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (fieldInfo != null)
+                        {
+                            current = fieldInfo.GetValue(current);
+                        }
+                        else
+                        {
+                            var propertyInfo = currentType.GetProperty(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (propertyInfo != null)
+                            {
+                                current = propertyInfo.GetValue(current, null);
+                            }
+                            else
+                            {
+                                Debug.LogError($"Field or property '{part}' not found in type '{currentType.FullName}'.");
+                                return null;
+                            }
+                        }
+                    }
+                }
+                return current;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error retrieving value from path: {path}\n{e}");
+                return null;
+            }
+        }
+
     }
     /// <summary>
     /// Intended to be a direct map to regular TypeCode, but:
@@ -190,4 +280,6 @@ namespace XiaoCao
         IntPtr = 108,
         UIntPtr = 109,
     }
+
+
 }

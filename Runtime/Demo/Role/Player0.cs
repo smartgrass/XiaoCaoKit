@@ -34,7 +34,8 @@ namespace XiaoCao
             SetTeam(1);
 
             playerData.playerSetting = ConfigMgr.playerSettingSo.GetOrDefault(raceId, 0);
-            roleData.playerAttr.Init(savaData.lv, ConfigMgr.commonSettingSo.playerSetting);
+            roleData.playerAttr.lv = savaData.lv;
+            InitRoleData();
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);

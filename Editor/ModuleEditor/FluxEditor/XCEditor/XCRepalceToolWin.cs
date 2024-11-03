@@ -13,7 +13,7 @@ namespace AssetEditor.Editor
 {
     public class XCRepalceToolWin : XiaoCaoWindow
     {
-        [Label("被替换目标")]
+        [Label("被替换实例")]
         public GameObject instance;
         
         public GameObject prefab;

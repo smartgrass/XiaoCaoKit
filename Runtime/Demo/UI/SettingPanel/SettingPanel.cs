@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,7 @@ using XiaoCao;
 
 public class SettingPanel : TabPanel
 {
+    public Button reloadBtn;
     public override UIPanelType panelType => UIPanelType.SettingPanel;
 
     public override void Init()
@@ -21,12 +23,17 @@ public class SettingPanel : TabPanel
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
         SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
         SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
-       
+        reloadBtn.onClick.AddListener(OnReload);
 
         mainPanel.Show();
         gameObject.SetActive(false);
         Prefabs.gameObject.SetActive(false); 
         IsInited = true;
+    }
+
+    private void OnReload()
+    {
+        GameMgr.Inst.ReloadScene();
     }
 
     public override void Hide()
@@ -35,6 +42,11 @@ public class SettingPanel : TabPanel
         LocalSetting.SaveSetting();
     }
 
+    public override void Show()
+    {
+        base.Show();
+        curPanel?.Show();
+    }
 }
 
 

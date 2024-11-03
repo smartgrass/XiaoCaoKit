@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 using XiaoCao;
 using EventType = XiaoCao.EventType;
 
-public class TestRole : GameStartMono
+public class TestRole : GameStartMono,IExecute
 {
     public RoleType roleType = RoleType.Enemy;
 
@@ -51,6 +51,11 @@ public class TestRole : GameStartMono
             return list.ToArray();
         }
         return ids;
+    }
+
+    public void Execute()
+    {
+        Gen();
     }
 
     //需要一个生成敌人预制体
