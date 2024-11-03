@@ -33,7 +33,7 @@ namespace XiaoCao
 
             if (InputData.skillInput != 0)
             {
-                TryPlaySkill(InputData.skillInput.ToString());
+                TryCastSkill(InputData.skillInput.ToString());
             }
 
             if (InputData.inputs[InputKey.NorAck])
@@ -65,6 +65,23 @@ namespace XiaoCao
             }
         }
 
+        public void TryCastSkill(string skillId)
+        {
+            if (!IsRoleCanPlaySkill())
+            {
+                return;
+            }
+            //判断冷缩
+            if (!AtkTimers.IsSkillReady(skillId))
+            {
+                return;
+            }
+            AtkTimers.SetSkillEnterCD(skillId);
+
+            RcpPlaySkill(skillId);
+        }
+
+
         private void SwitchFocus()
         {
             bool isOn = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
@@ -73,8 +90,11 @@ namespace XiaoCao
 
         public void TryJump()
         {
-            if (!Data_R.IsStateFree || IsBusy())
+            if (!IsRoleCanPlaySkill())
+            {
                 return;
+            }
+
             if (JumpTween != null && JumpTween.IsPlaying())
             {
                 return;
@@ -143,7 +163,7 @@ namespace XiaoCao
 
         public void TryNorAck()
         {
-            if (!Data_R.IsStateFree || IsBusy())
+            if (!IsRoleCanPlaySkill())
                 return;
 
             GameEvent.Send(EventType.AckingNorAck.Int());

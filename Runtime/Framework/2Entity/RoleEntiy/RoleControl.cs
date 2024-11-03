@@ -153,16 +153,22 @@ namespace XiaoCao
             animSpeedTask = XCTime.DelayRun(stopTime, () => { SetAnimSpeed(1); }, cts);
         }
 
+        //基本技能条件
+        public bool IsRoleCanPlaySkill()
+        {
+            //条件判断, 耗蓝等等
+            if (!Data_R.IsStateFree || IsBusy())
+                return false;
+
+            return true;
+        }
 
         public virtual void TryPlaySkill(string skillId)
         {
-
-            //条件判断, 耗蓝等等
-            if (!Data_R.IsStateFree)
+            if (!IsRoleCanPlaySkill())
+            {
                 return;
-            //排除高优先级技能, 高优先级技能可以在别的技能使用过程中使用
-            if (IsBusy() && !IsHighLevelSkill(skillId))
-                return;
+            }
 
             RcpPlaySkill(skillId);
         }
@@ -202,7 +208,6 @@ namespace XiaoCao
         //技能开始前根据输入调整方向 等数据
         protected virtual void PreSkillStart(string skillId)
         {
-
         }
 
         public virtual void DefaultAutoDirect()

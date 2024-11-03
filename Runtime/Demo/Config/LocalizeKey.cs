@@ -9,6 +9,7 @@ namespace XiaoCao{
 		public static string NoEnough = "NoEnough";
         public static string AutoLockEnemy = "AutoLockEnemy";
         public static string LockCam = "LockCam"; //锁定视角
+        public static string SkinList = "SkinList"; //锁定视角
 
 
 

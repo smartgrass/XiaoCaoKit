@@ -33,15 +33,52 @@ namespace XiaoCao
 
         public static PlayerSettingSo playerSettingSo;
 
+        public static SkillDataSo skillDataSo;
+
         public static CommonSo commonSettingSo;
+
+        public static List<string> SkinList;
 
         public static void Init()
         {
-
             var init = MainCfg;
             playerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
             commonSettingSo = ConfigMgr.LoadSoConfig<CommonSo>();
+            skillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             var soundCfg = SoundCfg;
+            GetSkinList();
+        }
+
+        private static void GetSkinList()
+        {
+            List<string> skinList = new List<string>();
+            IniSection section = ConfigMgr.MainCfg.GetSection(ResMgr.DefaultPackage);
+            string str = section.GetValue("SkinList", "");
+            string[] array = str.Split(',');
+            if (array.Length != 0)
+            {
+                skinList.AddRange(str.Split(','));
+            }
+            else
+            {
+                skinList.Add(str);
+            }
+            SkinList = skinList;
+        }
+
+        public static string GetSettingSkinName()
+        {
+            int index = (int)ConfigMgr.LocalSetting.GetValue(LocalizeKey.SkinList, 0);
+            return GetSkinName(index);
+        }
+
+        public static string GetSkinName(int index)
+        {
+            if (SkinList.Count == 0)
+            {
+                return "Body_Skin_0";
+            }
+            return SkinList[index % SkinList.Count];
         }
 
         public static string GetConfigPath(Type t)
@@ -132,13 +169,13 @@ namespace XiaoCao
 
         public bool GetBoolValue(string key)
         {
-            float value = GetValue(key, 0);  
+            float value = GetValue(key, 0);
             return value > 0;
         }
 
         public void SetBoolValue(string key, bool isOn)
         {
-            SetValue( key, isOn ? 1 : 0);
+            SetValue(key, isOn ? 1 : 0);
         }
 
         public void SetValue(string key, float value)

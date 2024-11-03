@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public abstract class SettingSo<T> : ScriptableObject where T : IIndex
+    ///<see cref="KeyMapSo"/>
+    public abstract class NumMapSo<T> : ScriptableObject where T : IIndex
     {
         public T[] array = new T[1];
 
@@ -92,4 +93,6 @@ namespace XiaoCao
     {
         public int Id { get; }
     }
+
+
 }

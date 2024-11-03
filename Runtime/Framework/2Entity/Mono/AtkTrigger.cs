@@ -20,14 +20,19 @@ public class AtkTrigger : IdComponent
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.attachedRigidbody == null)
+        var rb = other.attachedRigidbody;
+        if (rb == null)
         {
+            return;
+        }
+        if (!other.isTrigger)
+        {
+            Debug.LogWarning($"--- other !isTrigger {other.gameObject.name}");
             return;
         }
 
 
-
-        if (other.attachedRigidbody.TryGetComponent<IdRole>(out IdRole IdRole))
+        if (rb.TryGetComponent<IdRole>(out IdRole IdRole))
         {
             if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
             {
@@ -60,13 +65,11 @@ public class AtkTrigger : IdComponent
 
         //EntityType
 
-        if (other.attachedRigidbody.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
+        if (rb.CompareTag(Tags.ITEM) && GetEntity().HasTag(RoleTagCommon.MainPlayer) &&
+            rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
         {
-            if (GetEntity().HasTag(RoleTagCommon.MainPlayer))
-            {
-                InitHitInfo(other);
-                item.OnDamage(ackInfo);
-            }
+            InitHitInfo(other);
+            item.OnDamage(ackInfo);
         }
     }
 

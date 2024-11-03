@@ -30,6 +30,10 @@ namespace XiaoCao
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
             CreateIdRole(savaData.prefabId);
+            if (isMainPlayer)
+            {
+                idRole.bodyName = ConfigMgr.GetSettingSkinName();
+            }
             CreateRoleBody(idRole.bodyName);
             SetTeam(1);
 
@@ -141,10 +145,12 @@ namespace XiaoCao
         //反序列化读取的数据, 可能会出现空的现象
         internal void CheckNull()
         {
-            if (skillBarData == null || skillBarData.onSkill == null)
-            {
-                skillBarData = new SkillBarData();
-            }
+            // ConfigMgr.LocalSetting.GetBoolValue 暂时不用
+
+            //if (skillBarData == null || skillBarData.onSkill == null)
+            //{
+            skillBarData = SkillBarData.GetDefault();
+            //}
             if (inventory == null)
             {
                 inventory = new Inventory();
@@ -192,7 +198,18 @@ namespace XiaoCao
 
     public class SkillBarData
     {
-        public string[] onSkill = new string[GameSetting.SkillCountOnBar];
+        public string[] onSkill;
+
+        public static SkillBarData GetDefault()
+        {
+            SkillBarData skillBarData = new SkillBarData();
+            skillBarData.onSkill = new string[GameSetting.SkillCountOnBar];
+            for (int i = 0; i < skillBarData.onSkill.Length; i++)
+            {
+                skillBarData.onSkill[i] = (i + 1).ToString();
+            }
+            return skillBarData;
+        }
     }
 
     public class PlayerInputData

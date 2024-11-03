@@ -9,7 +9,7 @@ using UnityEngine;
 namespace XiaoCao
 {
     [CreateAssetMenu(menuName = "SO/AiInfoSo")]
-    public class AiCmdSettingSo : SettingSo<AiSkillCmdSetting> { }
+    public class AiCmdSettingSo : NumMapSo<AiSkillCmdSetting> { }
 
 
     [Serializable]

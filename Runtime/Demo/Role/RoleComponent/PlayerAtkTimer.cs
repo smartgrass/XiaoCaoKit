@@ -38,7 +38,7 @@ namespace XiaoCao
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.cd = playerSetting.GetSkillSetting(skillIndex).cd;
+                skillCdData.cd = ConfigMgr.skillDataSo.GetOrDefault(skillIndex).cd;
                 dic[skillIndex] = skillCdData;
             }
         }
@@ -60,10 +60,14 @@ namespace XiaoCao
             dic[skillIndex].EnterCD();
         }
 
-        public float GetProcess(string skillIndex)
+        public float GetWaitTimeProccess(string skillIndex)
         {
+            if (string.IsNullOrEmpty(skillIndex))
+            {
+                return 1;
+            }
             CheckDic(skillIndex);
-            return dic[skillIndex].GetCurProccess();
+            return dic[skillIndex].GetWaitTimeProccess();
         }
 
         public float GetWaitTime(string skillIndex)
@@ -75,7 +79,7 @@ namespace XiaoCao
 
         public class SkillCdData
         {
-            public float cd;
+            public float cd = 1;
 
             public float cdFinishTime { get; set; }
 
@@ -85,13 +89,14 @@ namespace XiaoCao
                 cdFinishTime = Time.time + cd;
             }
 
-            public float GetCurProccess()
+            //剩余时间 / 总cd -> 百分比
+            public float GetWaitTimeProccess()
             {
                 if (IsCd)
                 {
                     return (cdFinishTime - Time.time) / cd;
                 }
-                return 1;
+                return 0;
             }
 
             public float GetWaitTime()

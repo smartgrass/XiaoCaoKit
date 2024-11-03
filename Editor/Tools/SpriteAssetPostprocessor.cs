@@ -13,7 +13,7 @@ namespace XiaoCaoEditor
         // 当纹理文件被导入时调用  
         private void OnPreprocessTexture()
         {
-            Debug.Log($"--- assetPath {assetPath}");
+
             // 检查文件是否在目标目录中  
             if (assetPath.StartsWith(targetDirectoryPath))
             {
@@ -24,12 +24,14 @@ namespace XiaoCaoEditor
                 textureImporter.textureType = TextureImporterType.Sprite;
 
                 // 可选：设置Sprite导入模式（例如，单个精灵、多精灵等）  
-                // textureImporter.spriteImportMode = SpriteImportMode.Single;  
+                textureImporter.spriteImportMode = SpriteImportMode.Single;
 
                 textureImporter.spritePixelsPerUnit = 100; // 根据需要调整  
                 textureImporter.mipmapEnabled = false; // 禁用mipmap  
 
                 textureImporter.SaveAndReimport();
+
+                Debug.Log($"--- assetPath {assetPath} {SpriteImportMode.Single}");
             }
         }
     }

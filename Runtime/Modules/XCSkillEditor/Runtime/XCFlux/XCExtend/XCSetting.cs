@@ -21,12 +21,13 @@ namespace XiaoCao
 
         public static readonly string HitEffectDir = "Assets/_Res/SkillPrefab/Hit";
         public static readonly string AudioClipDir = "Assets/_Res/Audio";
-        public static readonly string SpriteDir = "Assets/_Res/SpriteDir";
+        public static readonly string SpriteDir = "Assets/_Res/Sprite";
 
         public static readonly string AnimControllerDir = "Assets/_Res/Role/AnimController";
 
 
-        public static string GetSkillIconPath(string skillId) {
+        public static string GetSkillIconPath(string skillId)
+        {
             return $"{SpriteDir}/SkillIcon/{skillId}.png";
         }
 
@@ -114,7 +115,8 @@ namespace XiaoCao
         }
     }
 
-    public static class DebugSetting{
+    public static class DebugSetting
+    {
 
         public static readonly string DebugGUI_IsShow = "DebugGUI_IsShow";
 
@@ -125,10 +127,7 @@ namespace XiaoCao
             {
                 if (Application.isEditor)
                 {
-                    if (DebugGUI_IsShow.GetKeyBool())
-                    {
-                        return true;
-                    }
+                    return DebugGUI_IsShow.GetKeyBool();
                 }
                 return false;
             }

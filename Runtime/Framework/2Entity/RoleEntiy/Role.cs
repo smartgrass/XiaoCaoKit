@@ -100,13 +100,20 @@ namespace XiaoCao
             BaseInit();
         }
 
+        public void ChangeBody(string bodyName)
+        {
+            GameObject.Destroy(body);
+            Debug.Log($"--- ChangeBody bodyName");
+            CreateRoleBody(bodyName);
+            
+        }
+
         protected void BaseInit()
         {
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.LoadRuntimeAc;
             idRole.animator.applyRootMotion = false;
             roleData.moveSetting = idRole.moveSetting;
-            CheckWeaponPoint();
         }
 
         protected void SetTeam(int team)
@@ -442,51 +449,6 @@ namespace XiaoCao
             tf = transform.FindChildEx(pointName);
             pointCache[pointName] = tf;
             return tf != null;
-        }
-
-        public void CheckWeaponPoint()
-        {
-            return;
-            /*
-            if (GetPonitCache(WeaponPointName, out Transform tf))
-            {
-                if (tf.childCount > 0)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                SkinnedMeshRenderer skinnedMeshRenderer = Anim.GetComponentInChildren<SkinnedMeshRenderer>();
-                HumanBodyBones rightHandBone = HumanBodyBones.RightHand;
-                var rightHand = Anim.GetBoneTransform(rightHandBone);
-                if (!rightHand)
-                {
-                    Debug.LogError("---  no rightHandBone");
-                }
-                GameObject wpEmpty = new GameObject(WeaponPointName);
-                wpEmpty.transform.SetParent(rightHand, false);
-                tf = wpEmpty.transform;
-            }
-
-            GameObject wp = ResMgr.TryShorKeyInst($"WP_{prefabId}",
-                "Assets/_Res/Item/Weapon/WP_Sword_1.prefab");
-            if (wp == null)
-            {
-                Debug.LogError("---  no weapon ");
-                return;
-            }
-            wp.transform.position = tf.position;
-            wp.transform.rotation = tf.rotation;
-
-            wp.transform.SetParent(transform, true);
-            var pc = wp.AddComponent<ParentConstraint>();
-            ConstraintSource source = new ConstraintSource();
-            source.weight = 1;
-            source.sourceTransform = tf;
-            pc.AddSource(source);
-            pc.constraintActive = true;
-            */
         }
 
         public void TakeWeapon(GameObject weapon)

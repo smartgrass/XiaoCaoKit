@@ -9,23 +9,14 @@ namespace XiaoCao
 {
 
     [CreateAssetMenu(menuName = "SO/PlayerSettingSo")]
-    /// <see cref="PlayerSkillSetting"/>
     /// player专属的设置
-    public class PlayerSettingSo : SettingSo<PlayerSetting>
+    public class PlayerSettingSo : NumMapSo<PlayerSetting>
     {
-        public override void OnInit()
-        {
-            base.OnInit();
-            foreach (var item in array)
-            {
-                item.OnInit();
-            }
-        }
     }
 
 
     [Serializable]
-    public class PlayerSetting : ArrayDic<PlayerSkillSetting>, IIndex
+    public class PlayerSetting : IIndex
     {
         public int id = 0;
         public int Id => id;
@@ -37,14 +28,6 @@ namespace XiaoCao
         public float JumpY = 2.5f;
 
         public float JumpNoGravityT = 0.4f;
-
-        public PlayerSkillSetting GetSkillSetting(string skillIndex)
-        {
-            Debug.Log($"--- TODO PlayerSkillSetting");
-            return new PlayerSkillSetting();
-            //InitMap(playerSkillSettingArray);
-            //return GetOrFrist(skillIndex);
-        }
     }
 
     [Serializable]
@@ -116,19 +99,6 @@ namespace XiaoCao
         {
             hasInited = false;
         }
-    }
-
-
-    [Serializable]
-    public class PlayerSkillSetting : IIndex
-    {
-        public int id;
-
-        public float cd;
-
-        public Sprite sprite;
-
-        public int Id => id;
     }
 
 

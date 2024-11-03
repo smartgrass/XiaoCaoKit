@@ -94,7 +94,8 @@ namespace XiaoCao
 
     public static class GameSetting
     {
-        public const int SkillCountOnBar = 6;
+        //目前技能
+        public const int SkillCountOnBar = 2;
 
         //根据阵营分层级
         public static int GetTeamLayer(int team)

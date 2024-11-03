@@ -9,12 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 740baf4945e9fcb4aa5e89f06ae198df, type: 3}
-  m_Name: PlayerSettingSo
+  m_Script: {fileID: 11500000, guid: fca41f2cbb13c0348afa4b7ffb43e007, type: 3}
+  m_Name: SkillDataSo
   m_EditorClassIdentifier: 
   array:
+  - id: Roll
+    cd: 1.5
   - id: 0
-    norAtkCount: 3
-    resetNorAckTime: 1.5
-    JumpY: 2
-    JumpNoGravityT: 0.35
+    cd: 4
+  - id: 1
+    cd: 4
+  - id: 2
+    cd: 4
