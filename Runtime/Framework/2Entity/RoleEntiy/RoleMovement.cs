@@ -51,12 +51,12 @@ namespace XiaoCao
                 return;
             }
 
-            MoveFixUpdate();
+            FixedUpdateMove();
         }
 
-        protected virtual void MoveFixUpdate()
+        protected virtual void FixedUpdateMove()
         {
-            OnMoveing(inputDir);
+            OnMoveing(inputDir,true);
         }
 
         public void SetMoveDir(Vector3 moveDir, float speedRate = 1, bool isLookDir = true)
@@ -74,7 +74,7 @@ namespace XiaoCao
 
         }
 
-        public void OnMoveing(Vector3 moveDir, bool isLookDir = true)
+        public void OnMoveing(Vector3 moveDir, bool isLookDir)
         {
             if (RoleState.IsMoveLock)
             {
@@ -167,6 +167,11 @@ namespace XiaoCao
             }
         }
 
+        public void AimToPos(Vector3 pos)
+        {
+            Vector3 dir = pos - cc.transform.position;
+            RotateByMoveDir(dir, 1);
+        }
 
         public void RotateByMoveDir(Vector3 worldMoveDir, float lerp = 1)
         {
@@ -179,6 +184,7 @@ namespace XiaoCao
             tf.rotation = rotation;
         }
 
+        
         public void LookToDir(Vector3 worldDir)
         {
             worldDir.y = 0;
@@ -238,7 +244,7 @@ namespace XiaoCao
         internal void SetUnMoveTime(float t)
         {
             //小于0则取消
-            if (t < 0)
+            if (t <= 0)
             {
                 RoleState.moveLockTime = 0;
             }
@@ -309,6 +315,67 @@ namespace XiaoCao
             {
                 noGravityTimer = time;
             }
+        }
+
+        RoleGrappling grappling;
+        public void Startgrappling()
+        {
+            if (grappling == null)
+            {
+                grappling = new RoleGrappling(this);
+            }
+            Vector3 addVec = camForward * 15;
+            //if (addVec.y < 3) {
+                addVec.y = 5;
+            //}
+            Vector3 targetPos = cc.transform.position + addVec;
+            owner.idRole.StartCoroutine(grappling.Grappling(targetPos));
+        }
+    }
+
+    //钩锁
+    public class RoleGrappling {
+        public RoleGrappling(RoleMovement roleMovement)
+        {
+            this.movement = roleMovement;
+            owner = movement.owner as Player0;
+        }
+
+        private RoleMovement movement;
+        public Player0 owner;
+        public CharacterController cc=>movement.cc;
+        public bool grappling;
+        public float speed = 10;
+
+        //TODO 优化
+        public System.Collections.IEnumerator Grappling(Vector3 pos)
+        {
+            //1 跳起
+            movement.AimToPos(pos);
+            owner.Anim.Play(AnimNames.Jump);
+            movement.SetNoGravityT(10);
+            movement.SetUnMoveTime(10);
+            movement.cc.DOHit(owner.playerData.playerSetting.JumpY, Vector3.zero, 0.2f);
+
+            yield return new WaitForSeconds(0.2f);
+
+            //LookAt TODO 更改瞄准
+            CameraMgr.Inst.tempLookAt.position = pos;
+            CameraMgr.Inst.aimer.SetAim(CameraMgr.Inst.tempLookAt);
+            CameraMgr.Inst.aimer.SetMainWeight(0.7f);
+
+            float moveTime = Vector3.Distance(cc.transform.position, pos) / speed;
+            moveTime =Mathf.Clamp(moveTime,0.1f,3);
+
+
+            //匀速运动 到终点, TODO 改为FixUpdate?
+            movement.cc.DoMoveTo(pos, moveTime);
+
+            yield return new WaitForSeconds(moveTime) ;
+            //落地动画
+            movement.noGravityTimer = 0.0f;
+            movement.SetUnMoveTime(-1);
+            yield return null;
         }
 
     }

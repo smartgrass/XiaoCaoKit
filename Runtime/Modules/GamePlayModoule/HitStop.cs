@@ -3,6 +3,7 @@ using System.Collections;
 using XiaoCao;
 using DG.Tweening;
 using UnityEngine.TextCore;
+using DG.Tweening.Core;
 
 public class HitStop : MonoSingleton<HitStop>
 {
@@ -123,6 +124,31 @@ public static class HitTween
         return tween;
     }
 
+    public static Tween DoMoveTo(this CharacterController cc, Vector3 pos, float duration, Ease ease = Ease.InOutQuart)
+    {
+        float time = 0;
+        float lastT = 0, deltaT = 0;
+
+        Tween tween = DOTween.To(x => time = x, 0, 1, duration);
+        
+
+        tween.SetEase(ease);
+
+        Vector3 endPos = pos;   
+        Vector3 startPos = cc.transform.position;
+        float distance = Vector3.Distance(startPos, endPos);
+        
+        tween.OnUpdate(() =>
+        {
+            deltaT = time - lastT;
+            lastT = time;
+            Vector3 dir =(endPos - cc.transform.position).normalized;
+            Vector3 delta = dir * distance * deltaT;
+            cc.Move(delta);
+        });
+
+        return tween;
+    }
 
     //public static Tween DoShake(Transform tf = )
     //{

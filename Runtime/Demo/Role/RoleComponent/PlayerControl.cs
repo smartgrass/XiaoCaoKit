@@ -100,9 +100,13 @@ namespace XiaoCao
                 return;
             }
 
-            owner.Anim.Play(AnimNames.Jump);
-            JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
-            Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
+            
+
+            //owner.Anim.Play(AnimNames.Jump);
+            //JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
+            //Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
+
+            Data_R.movement.Startgrappling();
 
             //if (FindEnemy(out Role findRole))
             //{
@@ -111,21 +115,6 @@ namespace XiaoCao
             //} 
         }
 
-
-        private System.Collections.IEnumerator IEJumpTo(Vector3 pos)
-        {
-            //1 跳起, & LookAt
-            CameraMgr.Inst.tempLookAt.position = pos;
-            CameraMgr.Inst.aimer.SetAim(CameraMgr.Inst.tempLookAt);
-            CameraMgr.Inst.aimer.SetMainWeight(0.7f);
-
-
-            //匀速运动 到终点
-
-            //落地
-
-            yield return null;
-        }
 
         protected override void PreSkillStart(string skillId)
         {

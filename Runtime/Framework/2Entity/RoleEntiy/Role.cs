@@ -64,6 +64,9 @@ namespace XiaoCao
         #region Get
         internal Animator Anim => idRole.animator;
         public bool isBodyCreated => body != null;
+
+        public RoleMovement Movement=> roleData.movement;
+
         #endregion
 
         //AI控制
