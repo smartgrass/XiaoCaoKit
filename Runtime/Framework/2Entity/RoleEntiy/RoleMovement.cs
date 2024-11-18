@@ -9,6 +9,7 @@ namespace XiaoCao
     {
         public RoleMovement(Role _owner) : base(_owner)
         {
+            Init();
         }
 
         public float _tempAnimMoveSmooth;
@@ -43,6 +44,11 @@ namespace XiaoCao
 
         //用于控制当前帧是否移动
         public bool isMovingThisFrame = true;
+
+        public void Init()
+        {
+            owner.Anim.SetFloat(AnimNames.IdleValue, moveSetting.idleValue);
+        }
 
         public override void FixedUpdate()
         {

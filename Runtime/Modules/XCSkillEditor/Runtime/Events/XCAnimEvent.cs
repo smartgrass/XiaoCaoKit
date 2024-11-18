@@ -90,6 +90,7 @@ namespace XiaoCao
     public static class AnimNames
     {
         public const string Idle = "Idle";
+        public const string IdleValue = "idleValue";
         public const string Break = "Break";
         public const string Hit = "Hit"; //Trigger
         public const string HitIndex = "HitIndex";

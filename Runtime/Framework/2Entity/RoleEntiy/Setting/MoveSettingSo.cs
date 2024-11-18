@@ -25,6 +25,8 @@ namespace XiaoCao
 
         public float MaxGOnGroundMult = 4;
 
+        public float idleValue = 0.3f;
+
         public Vector3 CamFollewOffset = new Vector3(0,0.83f,0);
     }
 }

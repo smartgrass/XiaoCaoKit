@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using XiaoCao;
 using UnityEditor;
 using UnityEngine;
+using static MathLayoutTool;
+using System.Drawing;
 
 public class Test_MapLayout : MonoBehaviour
 {
@@ -12,18 +14,25 @@ public class Test_MapLayout : MonoBehaviour
     [OnValueChanged(nameof(GetBounds))]
     public GameObject prefab;
 
-    public Vector3 genXYZ = Vector3.one;
+    public Vector3Int genXYZ = Vector3Int.one;
     [Label("追加间距")]
     public Vector3 addValue;
 
-    [Label("是否空心")]
-    public bool IsHollow;
+    [Label("是否空心/墙体")]
+    public bool IsHollow = true;
+
+    //边缘分组
+    public bool sortGroup = true;
+
 
     public string prefabName;
     [ReadOnly]
     public Vector3 boxSize;
     [ReadOnly]
     public Vector3 center;
+
+
+
 
     void GetBounds()
     {
@@ -36,16 +45,45 @@ public class Test_MapLayout : MonoBehaviour
         center = b.center;
     }
 
-    [Button]
-    void Gen()
+
+    [Button("生成/排列")]
+    void TestGent()
     {
         if (prefab == null)
         {
             return;
         }
+        GridArrangementTool grid = new GridArrangementTool(genXYZ.x, genXYZ.z, genXYZ.y, IsHollow);
+        Debug.Log($"--- grid {grid.TotalCells()}");
+
         Vector3 size = boxSize + addValue;
+        int count = grid.TotalCells();
+        for (int n = 0; n < count; n++)
+        {
+            var obj = GetObject(n);
+            obj.name = $"{prefabName}{n}";
+            var point = grid.GetCoordinates(n);
 
+            var x = (point.Item1) * size.x; //+ center.x/2;
+            var y = (point.Item2) * size.y; //+ center.y/2;
+            var z = (point.Item3) * size.z;// + center.z/2;
+            obj.transform.localPosition = new Vector3(x, y, z);
+        }
 
+        int delta = transform.childCount - count;
+        if (delta > 0)
+        {
+            for (int i = 0; i < delta; i++)
+            {
+                var go = transform.GetChild(count).gameObject;
+                GameObject.DestroyImmediate(go);
+            }
+        }
+    }
+
+    [Button("选择边缘X", -10)]
+    void SelectBorderX()
+    {
         int prefabIndex = 0;
         for (int i = 0; i < genXYZ.x; i++)
         {
@@ -61,36 +99,20 @@ public class Test_MapLayout : MonoBehaviour
                     {
                         continue;
                     }
-
-                    var obj = GetObject(prefabIndex);
-                    obj.name = $"{prefabName}{prefabIndex}";
-                    var point = new Vector3(i, j, k);
-
-                    var x = (i) * size.x; //+ center.x/2;
-                    var y = (j) * size.y; //+ center.y/2;
-                    var z = (k) * size.z;// + center.z/2;
-
-                    obj.transform.localPosition = new Vector3(x, y, z);
-                    prefabIndex++;
                 }
-            }
-        }
-
-        int maxCount = prefabIndex;
-        int delta = transform.childCount - maxCount;
-        if (delta > 0)
-        {
-            for (int i = 0; i < delta; i++)
-            {
-                var go = transform.GetChild(maxCount).gameObject;
-                GameObject.DestroyImmediate(go);
+                
             }
         }
     }
 
+    [Button("选择边缘Z", -10)]
+    void SelectBorderZ()
+    {
+
+    }
 
 
-private int GetIndex(int x, int y, int z)
+    private int GetIndex(int x, int y, int z)
     {
         //y层,x列 ,z行
         return y * (int)genXYZ.x * (int)genXYZ.z + z * (int)genXYZ.x + x;

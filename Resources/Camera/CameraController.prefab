@@ -54,7 +54,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 0}
   m_Follow: {fileID: 0}
   m_Lens:
-    FieldOfView: 41
+    FieldOfView: 52
     OrthographicSize: 10
     NearClipPlane: 0.2
     FarClipPlane: 500
@@ -123,8 +123,11 @@ MonoBehaviour:
     BottomClamp: -10
   setting_topDown:
     defaultAngle: {x: 25, y: 0}
-    camDistance: 7.5
+    stopAngleX: 5
+    nearAddAngleX: 15
+    camDistance: 6.5
     aimLerp: 0.7
+    smoothTime: 0.5
     aimSafeAngle: 15
     seeR: 9
     seeAngle: 45

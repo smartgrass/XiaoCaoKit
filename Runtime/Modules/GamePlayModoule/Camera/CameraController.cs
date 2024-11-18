@@ -87,7 +87,7 @@ namespace XiaoCao
                 if (!Input.mouseScrollDelta.IsZore())
                 {
                     var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
-                        setting_topDown.camDistance - 3, setting_topDown.camDistance + 3);
+                        setting_topDown.camDistance - 4, setting_topDown.camDistance + 4);
                     CFT.m_CameraDistance = distance;
                 }
             }

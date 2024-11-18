@@ -9,7 +9,130 @@ using Cinemachine.Utility;
 //矩形排列, TODO: 圆形排列
 public static class MathLayoutTool
 {
+    #region   矩形排列XYZ
+    //一维化
+    public class GridArrangementTool
+
+    {
+
+        public int XLen { get; private set; } // X
+
+        public int ZLen { get; private set; } // Z
+
+        public int Layers { get; private set; } // Y方向上的层数
+
+        public bool IsHollow { get; private set; } // 是否为空心网格
+
+
+
+        public GridArrangementTool(int x, int z, int y, bool isHollow)
+        {
+            XLen = x;
+            ZLen = z;
+            Layers = y;
+            IsHollow = isHollow;
+        }
+
+
+        // 计算总单元格数的方法
+        public int TotalCells()
+        {
+            if (!IsHollow)
+            {
+                return XLen * ZLen * Layers;
+            }
+            else
+            {
+                int count = XLen * ZLen * Layers;
+
+                int off = GetMinMult(XLen - 2) * (ZLen - 2) * Layers;
+
+                return count - off;
+            }
+
+        }
+
+        private int GetMinMult(int num)
+        {
+            if (num < 0)
+            {
+                return 0;
+            }
+            return num;
+        }
+
+
+
+        // 通过x, y, z计算位置序号n的方法
+
+        public int GetIndex(int x, int y, int z)
+        {
+            if (x < 0 || x >= XLen || y < 0 || y >= Layers || z < 0 || z >= ZLen)
+            {
+                throw new ArgumentOutOfRangeException("Coordinates are out of grid bounds.");
+            }
+            //TODO
+
+
+            return y * ZLen * XLen + z * XLen + x;
+
+        }
+
+
+
+        // 通过序号n计算出x, y, z的方法
+
+        public (int, int, int) GetCoordinates(int index)
+        {
+            if (index < 0 || index >= TotalCells())
+            {
+                throw new ArgumentOutOfRangeException("Index is out of range.");
+            }
+            if (IsHollow)
+            {
+                int pY = 0;
+                if (index < XLen * 2)
+                {
+
+                    //前边界
+                    if (index < XLen * 1)
+                    {
+                        return (index, pY, 0);
+                    }
+                    //后边界
+                    else
+                    {
+                        return (index - XLen, pY, ZLen - 1);
+                    }
+                }
+                //侧边
+                else
+                {
+                    int delta = index - (XLen * 2);
+                    if (delta < (ZLen-2) * 1)
+                    {
+                        //+1 排除前面
+                        return (0, pY, delta + 1);
+                    }
+                    else
+                    {
+                        return (XLen - 1, pY, delta - (ZLen - 2) + 1);
+                    }
+                }
+            }
+
+            int y = index / (ZLen * XLen);
+            index %= ZLen * XLen;
+            int z = index / XLen;
+            int x = index % XLen;
+            return (x, y, z);
+        }
+    }
+
+    #endregion
+
     #region   矩形排列
+
     public enum Alignment
     {
         Left,
@@ -41,50 +164,6 @@ public static class MathLayoutTool
         }
         //Left不需要任何处理
         return new Vector2(endX, startY);
-    }
-
-    //空心矩形排列
-    public class RectangularArrangement
-    {
-        public static List<(int, int)> ArrangeObjects(int rectangleWidth, int rectangleHeight, int objectSize, int margin)
-        {
-            List<(int, int)> coordinates = new List<(int, int)>();
-
-            // Calculate the number of objects that can fit on each side
-            int objectsOnTop = (rectangleWidth - 2 * margin) / objectSize;
-            int objectsOnSide = (rectangleHeight - 2 * margin) / objectSize;
-
-            // Calculate the coordinates for each side
-            for (int i = 0; i < objectsOnTop; i++)
-            {
-                int x = margin + i * objectSize;
-                int y = margin;
-                coordinates.Add((x, y));
-            }
-
-            for (int i = 0; i < objectsOnSide; i++)
-            {
-                int x = rectangleWidth - margin - objectSize;
-                int y = margin + i * objectSize;
-                coordinates.Add((x, y));
-            }
-
-            for (int i = objectsOnTop - 1; i >= 0; i--)
-            {
-                int x = margin + i * objectSize;
-                int y = rectangleHeight - margin - objectSize;
-                coordinates.Add((x, y));
-            }
-
-            for (int i = objectsOnSide - 1; i > 0; i--)
-            {
-                int x = margin;
-                int y = margin + i * objectSize;
-                coordinates.Add((x, y));
-            }
-
-            return coordinates;
-        }
     }
 
 

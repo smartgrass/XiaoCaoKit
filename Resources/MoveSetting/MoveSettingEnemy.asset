@@ -21,3 +21,5 @@ MonoBehaviour:
   g: -73.04
   GOnGroundMult: 0.8
   MaxGOnGroundMult: 4
+  idleValue: 0.5
+  CamFollewOffset: {x: 0, y: 0.83, z: 0}
