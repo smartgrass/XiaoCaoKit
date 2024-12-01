@@ -11,7 +11,7 @@ namespace XiaoCao
 {
 
     /// <summary>
-    /// 字段注释
+    /// 字段注释, 对非XCEditor的使用
     /// </summary>
     public class XCLabelAttribute : PropertyAttribute
     {

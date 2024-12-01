@@ -25,8 +25,7 @@ namespace XiaoCao
         private Vector3 tempCenter;
         private float tempTotalVolume = 1;
 
-
-        [Button]
+        [Button("切割")]
         void DoSlice()
         {
             //获取随机切割面
@@ -42,29 +41,31 @@ namespace XiaoCao
             Material mat = crossSectionMaterial ? crossSectionMaterial : GetMat(game);
             for (int i = 0; i < cutCount; i++)
             {
-                var ret = DoSliceObjects(list, planes[i], mat);
+                var retList = DoSliceObjects(list, planes[i], mat);
                 if (i != 0)
                 {
                     Debug.Log($"--- destory {i}");
                     list.ForEach(o =>
                     {
-                        if (Application.isPlaying)
+                        if (!o.CompareTag(Tags.ITEM))
                         {
-                            Destroy(o);
+                            DestroyImmediate(o);
                         }
                         else
                         {
-                            DestroyImmediate(o);
+                            o.tag = Tags.UNTAGGED;
                         }
                     });
                 }
                 list.Clear();
-                list.AddRange(ret);
+                list.AddRange(retList);
             }
 
             list.ForEach(o =>
             {
+                //Vector3 pos = o.transform.localPosition;
                 o.transform.SetParent(game.transform);
+                o.transform.localPosition = Vector3.zero;
                 var rb = o.GetOrAddComponent<Rigidbody>();
                 var mesh = o.GetComponent<MeshFilter>().sharedMesh;
                 SetRigiBodyMass(rb, GetVolume(mesh), tempTotalVolume);
@@ -75,6 +76,18 @@ namespace XiaoCao
             tempList = list;
         }
 
+        [Button("切割 & 保存mesh")]
+        void SavaAllMesh()
+        {
+            DoSlice();
+            int i = 1;
+            foreach (var item in tempList)
+            {
+                item.gameObject.name = tempName + "_" + i;
+                i++;
+                SavaMesh(item);
+            }
+        }
 
         //获取体积
         private float GetVolume(Mesh mesh)
@@ -117,9 +130,10 @@ namespace XiaoCao
             tempCenter = center;
             tempTotalVolume = GetVolume(mesh);
             tempName = mesh.name;
-            var planes = GetShatterPlanes(center, cutCount);
+            var planes = GetShatterPlanes(mesh.bounds, cutCount);
             return planes;
         }
+
 
         private List<GameObject> DoSliceObjects(List<GameObject> objs, Plane plane, Material material)
         {
@@ -127,19 +141,38 @@ namespace XiaoCao
             foreach (var obj in objs)
             {
                 var gameObjects = obj.SliceInstantiate(plane, new TextureRegion(0.0f, 0.0f, 1.0f, 1.0f), material);
-                list.AddRange(gameObjects);
+                if (gameObjects != null)
+                {
+                    list.AddRange(gameObjects);
+                    obj.tag = Tags.UNTAGGED;
+                }
+                else
+                {
+                    obj.tag = Tags.ITEM;
+                    list.Add(obj);
+                }
             }
             return list;
         }
 
+        public bool randomCenter = true;
 
-        public Plane[] GetShatterPlanes(Vector3 point, int cuts = 1)
+        public Plane[] GetShatterPlanes(Bounds bounds, int cuts = 1)
         {
             Plane[] planes = new Plane[cuts];
 
+            Vector3 center = bounds.center;
+
             for (int i = 0; i < planes.Length; i++)
             {
-                planes[i] = new Plane(point, Random.onUnitSphere);
+                if (randomCenter)
+                {
+                    center = bounds.center;
+                    float y = bounds.size.y * Random.Range(-0.4f, 0.4f);
+                    float x = bounds.size.x * Random.Range(-0.4f, 0.4f);
+                    center += new Vector3(x, y);
+                }
+                planes[i] = new Plane(center, Random.onUnitSphere);
             }
             return planes;
         }
@@ -147,41 +180,23 @@ namespace XiaoCao
 
 
         [SerializeField] private float _triggerForce = 0.5f;
-        [SerializeField] private float _explosionRadius = 5;
         [SerializeField] private float _explosionForce = 500;
         [SerializeField] private GameObject _particles;
 
+        [SerializeField] private float _testExplosionRadius = 5;
         private void DoExploded(Vector3 centerPos)
         {
-            var surroundingObjects = Physics.OverlapSphere(centerPos, _explosionRadius);
+            var surroundingObjects = Physics.OverlapSphere(centerPos, _testExplosionRadius);
             foreach (var obj in surroundingObjects)
             {
                 Debug.Log($"--- DoExploded");
                 var rb = obj.GetComponent<Rigidbody>();
                 if (rb == null) continue;
 
-                rb.AddExplosionForce(_explosionForce, centerPos, _explosionRadius, 1);
+                rb.AddExplosionForce(_explosionForce, centerPos, _testExplosionRadius, 1);
             }
             //Instantiate(_particles, transform.position, Quaternion.identity);
         }
-
-
-
-
-
-        [Button("保存mesh")]
-        void SavaAllMesh()
-        {
-            int i = 1;
-            foreach (var item in tempList)
-            {
-                item.gameObject.name = tempName + "_" + i;
-                i++;
-                SavaMesh(item);
-            }
-        }
-
-
 
 
 
@@ -189,7 +204,7 @@ namespace XiaoCao
         {
             Debug.Log("mesh" + game.name);
             var meshFilter = game.GetComponent<MeshFilter>();
-            Mesh mesh = meshFilter.sharedMesh;       
+            Mesh mesh = meshFilter.sharedMesh;
             string path = savaPath + "/" + game.name + ".asset";
             UnityEditor.AssetDatabase.CreateAsset(mesh, path);
             meshFilter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);

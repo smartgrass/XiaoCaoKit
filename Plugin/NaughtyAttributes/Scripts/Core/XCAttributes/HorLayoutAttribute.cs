@@ -93,6 +93,9 @@ namespace XiaoCao
     }
 
 
+    /// <summary>
+    /// XCEditor中代替Header
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
 
     public class NewLineAttribute : MetaAttribute, IXCDrawAttribute
