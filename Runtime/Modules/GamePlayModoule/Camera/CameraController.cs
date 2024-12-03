@@ -137,12 +137,10 @@ namespace XiaoCao
         {
 
             CheckPlayer();
-
+            UIMgr.Inst.battleHud.AnimTargetFixUpdate();
             vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
         }
 
-
-        private Role lastEnemy;
         private float findEnmeyTime;
         private float remindEnmeyTime = 0.25f;
         private float tempSpeed;
@@ -163,20 +161,18 @@ namespace XiaoCao
                     return;
                 }
 
-
                 bool hasEnmey = false;
 
                 if (findEnmeyTime + remindEnmeyTime < Time.time)
                 {
-                    lastEnemy = null;
+                    player0.roleData.lastEnemy = null;
                 }
-
-                Role findRole = lastEnemy;
-                if (lastEnemy == null || lastEnemy.IsDie)
+                Role findRole = player0.roleData.lastEnemy;
+                if (findRole == null || findRole.IsDie)
                 {
                     if (player0.FindEnemy(out findRole, setting_topDown.seeR, setting_topDown.seeAngle))
                     {
-                        lastEnemy = findRole;
+                        player0.roleData.lastEnemy = findRole;
                         findEnmeyTime = Time.time;
                         hasEnmey = true;
                     }
@@ -193,11 +189,7 @@ namespace XiaoCao
                     Vector3 dir = (findRole.transform.position - player0.transform.position);
 
                     distance = dir.magnitude;
-
-                    //UIMgr.Inst.battleHud.ShowAnimTarget(findRole.transform.position + Vector3.up);
-
                     //dir = Vector3.Lerp(dir, player0.transform.forward, 1f * Time.fixedDeltaTime);
-
                     AimToDIr(dir);
                 }
                 else
@@ -208,10 +200,8 @@ namespace XiaoCao
 
                         AimToDIr(player0.transform.forward, player0.roleData.movement.lastInputDir.IsZore());
                     }
-                    //UIMgr.Inst.battleHud.HideAnimTarget();
                 }
             }
-
         }
 
         private float lastDeltaAngle;

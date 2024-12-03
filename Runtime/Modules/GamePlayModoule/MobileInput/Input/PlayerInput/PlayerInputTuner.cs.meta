@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c0fef52aba102b545b6b997bfacb03e0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 263242
+  packageName: Multi-Input First Person Controller (Lite)
+  packageVersion: 1.0
+  assetPath: Assets/MFPC/Scripts/Input/PlayerInput/PlayerInputTuner.cs
+  uploadId: 621915

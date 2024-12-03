@@ -1,11 +1,9 @@
 ﻿using DG.Tweening;
 using System.Collections.Generic;
-using System.Data;
 using TEngine;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using static UnityEditor.PlayerSettings;
+using Image = UnityEngine.UI.Image;
 
 namespace XiaoCao
 {
@@ -21,11 +19,14 @@ namespace XiaoCao
 
         public RectTransform aimImgRT;
 
+
         public HpBar playerBar;
 
         public Canvas worldCanvas;
 
         private AssetPool pool;
+
+        private readonly Vector3 hidePos = new Vector3(0, -999, 0);
 
         public void Init()
         {
@@ -50,6 +51,7 @@ namespace XiaoCao
                 UpdateItemHpBar();
             }
         }
+
         //每帧都执行, 检查增加
         private void NorHpBarUpdate()
         {
@@ -104,7 +106,7 @@ namespace XiaoCao
             var bar = newBarGo.GetComponent<HpBar>();
             itemHpBarDic[target] = bar;
             bar.transform.SetParent(worldHpBarParent, false);
-            bar.SetFollow(target,offset);
+            bar.SetFollow(target, offset);
             return bar;
         }
 
@@ -125,7 +127,7 @@ namespace XiaoCao
                 if (item.Value == value)
                 {
                     itemHpBarDic.Remove(item.Key);
-                }          
+                }
             }
         }
 
@@ -229,7 +231,7 @@ namespace XiaoCao
                 tween.Join(t.transform.DOMoveY(mScreen.y + DamageUITSetting.MoveY, DamageUITSetting.flyTime / 2));
                 //颜色
                 t.color = DamageUITSetting.startColor;
-               
+
 
                 var textTween = t.DOColor(DamageUITSetting.endColor, DamageUITSetting.flyTime / 2);
 
@@ -239,15 +241,36 @@ namespace XiaoCao
             }
         }
 
+        public void AnimTargetFixUpdate()
+        {
+            Player0 player0 = GameDataCommon.Current.player0;
+            if (player0 != null)
+            {
+                Role role = player0.roleData.lastEnemy;
+                if (role != null && !role.IsDie)
+                {
+                    ShowAnimTarget(role.transform.position);
+                }
+                else
+                {
+                    HideAnimTarget();
+                }
+            }
+            else
+            {
+                HideAnimTarget();
+            }
+        }
+
         internal void ShowAnimTarget(Vector3 position)
         {
-            Vector2 pos = WorldScreenHelper.WorldToAnchorPos(position,UIMgr.Inst.midCanvas.transform as RectTransform);
-            aimImgRT.anchoredPosition = pos;    
+            //Vector2 pos = WorldScreenHelper.WorldToAnchorPos(position,UIMgr.Inst.midCanvas.transform as RectTransform);
+            aimImgRT.transform.position = position;
         }
 
         public void HideAnimTarget()
         {
-            aimImgRT.anchoredPosition = Vector2.down * Screen.height;
+            aimImgRT.transform.position = hidePos;
         }
 
 

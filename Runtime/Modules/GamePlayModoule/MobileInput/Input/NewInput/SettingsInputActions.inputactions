@@ -1,0 +1,44 @@
+{
+    "name": "SettingsInputActions",
+    "maps": [
+        {
+            "name": "Settings",
+            "id": "344aebd3-415e-416e-a938-ad97548b4859",
+            "actions": [
+                {
+                    "name": "Open",
+                    "type": "Button",
+                    "id": "16c2e2e1-895b-4b09-b58d-69daf7d38861",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "ea4ce14b-51f5-4b0e-8868-eeb98f6f85b6",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "85856994-4da4-431b-b46c-97c663075d5c",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Open",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

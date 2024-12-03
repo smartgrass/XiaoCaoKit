@@ -551,6 +551,9 @@ namespace XiaoCao
         public MoveSettingSo moveSetting;
 
         public RoleMovement movement;
+
+        public Role lastEnemy;
+
         public bool IsStateFree => bodyState is not EBodyState.Break or EBodyState.Dead;
 
         public bool IsBusy => roleControl.IsBusy();

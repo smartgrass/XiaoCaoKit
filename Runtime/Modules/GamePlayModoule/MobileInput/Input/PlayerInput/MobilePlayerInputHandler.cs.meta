@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4fc8ac5e28d1a004b80df8f80ed46b54
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 263242
+  packageName: Multi-Input First Person Controller (Lite)
+  packageVersion: 1.0
+  assetPath: Assets/MFPC/Scripts/Input/PlayerInput/MobilePlayerInputHandler.cs
+  uploadId: 621915

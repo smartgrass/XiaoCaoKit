@@ -17,8 +17,8 @@ namespace XiaoCao
                 return;
             }
 
-            data.x = Input.GetAxis("Horizontal");
-            data.y = Input.GetAxis("Vertical");
+            CheckInputXY();
+
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
             {
                 data.inputs[InputKey.NorAck] = true;
@@ -37,8 +37,8 @@ namespace XiaoCao
                 data.inputs[InputKey.Space] = true;
 
             if (Input.GetKeyDown(KeyCode.Tab))
-                data.inputs[InputKey.Tab] = true;         
-            
+                data.inputs[InputKey.Tab] = true;
+
             if (Input.GetKeyDown(KeyCode.F))
                 data.inputs[InputKey.Focus] = true;
 
@@ -60,6 +60,14 @@ namespace XiaoCao
 
             owner.playerData.inputData.Copy(data);
         }
+
+        private void CheckInputXY()
+        {
+            float x = Input.GetAxis("Horizontal");
+            float y = Input.GetAxis("Vertical");
+            data.AddInputXY(x, y);
+        }
+
         public override void FixedUpdate()
         {
             movement.SetMoveDir(GetInputMoveDir());

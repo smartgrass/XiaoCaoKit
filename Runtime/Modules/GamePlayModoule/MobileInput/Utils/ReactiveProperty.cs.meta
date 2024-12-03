@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: a59fe715fac54150bd02ee72fe32922e
+timeCreated: 1694790930
+AssetOrigin:
+  serializedVersion: 1
+  productId: 263242
+  packageName: Multi-Input First Person Controller (Lite)
+  packageVersion: 1.0
+  assetPath: Assets/MFPC/Scripts/Utils/ReactiveProperty.cs
+  uploadId: 621915

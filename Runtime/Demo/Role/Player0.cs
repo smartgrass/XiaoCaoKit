@@ -229,6 +229,15 @@ namespace XiaoCao
             KeyCode.K, KeyCode.L , KeyCode.U,KeyCode.I,KeyCode.O
         };
 
+        public void AddInputXY(float x,float y)
+        {
+            if (x != 0 || y != 0)
+            {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
         public void Reset()
         {
             for (int i = 0; i < inputs.Length; i++)
