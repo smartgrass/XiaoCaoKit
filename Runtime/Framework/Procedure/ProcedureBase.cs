@@ -2,11 +2,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
 using XiaoCao;
 
-//流程,代码分块
-//暂无并行需求
+//流程: 与写静态方法区别不大,主要是可读性,代码分块,进度展示
 public abstract class ProcedureBase
 {
     public abstract void Start();
@@ -32,8 +30,6 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
     {
         base.Init();
     }
-
-    public bool hasLoad => GameDataCommon.Current.IsHasLoad;
 
     public List<ProcedureBase> Procedures = new List<ProcedureBase>();
 
@@ -61,7 +57,6 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
             LoadedDic.Add(item.GetType());
         }
         Procedures.Clear();
-        GameDataCommon.Current.IsHasLoad = true;
     }
 
 }

@@ -1,7 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace XiaoCao
@@ -36,8 +34,6 @@ namespace XiaoCao
         public Player0 player0;
 
         public string NextSceneName;
-
-        public bool IsHasLoad;
 
         public int playerId => player0.id;
 

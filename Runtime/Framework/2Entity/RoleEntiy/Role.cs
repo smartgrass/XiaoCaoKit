@@ -157,8 +157,6 @@ namespace XiaoCao
             {
                 HitTween(ackInfo, setting);
 
-                transform.RotaToPos(ackInfo.hitPos, 0.5f);
-
                 //无重力时间
                 roleData.movement.SetNoGravityT(setting.NoGTime);
 
@@ -166,6 +164,7 @@ namespace XiaoCao
                 OnBreak();
                 if (!BattleData.IsTimeStop)
                 {
+                    transform.RotaToPos(ackInfo.hitPos, 0.5f);
                     Anim.TryPlayAnim(AnimHash.Break);
                     HitStop.Do(setting.HitStop);
                 }
