@@ -5,6 +5,7 @@ namespace XiaoCao
 {
     /// <summary>
     /// 封装业务对象池
+    /// PoolMgr做为底层代码, 一般不新增内容
     /// </summary>
     public class RunTimePoolMgr : Singleton<RunTimePoolMgr>
     {

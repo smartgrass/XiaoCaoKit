@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using XiaoCao;
 
-public class TimeStopExecute : MonoExecute
+public class TimeStopExec : MonoExecute
 {
     public float time = 5;
 

@@ -106,6 +106,7 @@ public class TestRole : GameStartMono,IExecute
         if (deadCount == curGenCount){
             GameEvent.Send(EventType.EnemyGroupEndEvent.Int(), groupName);
         }
+        GetItemHelper.GetItem(role.transform.position);
     }
 
 

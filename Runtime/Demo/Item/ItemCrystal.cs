@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using NaughtyAttributes;
 using Newtonsoft.Json.Linq;
-using System;
 using System.CodeDom.Compiler;
 using System.Collections;
 using UnityEngine;
@@ -100,11 +99,11 @@ public class ItemCrystal : ItemIdComponent
         deadEvent?.Invoke();
         isDead = true;
         DoExploded();
+        //隐藏原body
+        HideSelf();
         UIMgr.Inst.battleHud.RemoveItemHpBar(transform);
-        if (transform.TryGetComponent<IExecute>(out IExecute execute))
-        {
-            execute.Execute();
-        }
+
+        ExecuteHelper.DoExecute(transform);
     }
 
     [Button("检查")]
@@ -172,8 +171,6 @@ public class ItemCrystal : ItemIdComponent
 
         //子物体移到外层,给子物体施力
         ExplodedPos(explodePos);
-        //隐藏原body
-        HideSelf();
     }
 
     [NewLine("爆炸设定")]

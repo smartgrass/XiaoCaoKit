@@ -11,6 +11,8 @@ namespace XiaoCao
         //借助 
         private Dictionary<string, AssetPool> dicPools = new Dictionary<string, AssetPool>();
 
+        private Dictionary<GameObject, AssetPool> prefabPools = new Dictionary<GameObject, AssetPool>();
+
         public GameObject Get(string path, float releaseTime = 0)
         {
             GameObject obj = GetOrCreatPool(path).Get();
@@ -19,6 +21,32 @@ namespace XiaoCao
                 var task = XCTime.DelayRun(releaseTime, () => { Release(path, obj); });
             }
             return obj;
+        }
+
+        public GameObject GetFromPrefab(GameObject prefab)
+        {
+            if (prefab == null)
+            {
+                Debug.LogError("---  prefab null");
+                return null;
+            }
+            return GetOrCreatPrefabPool(prefab).Get();
+        }
+
+        private AssetPool GetOrCreatPrefabPool(GameObject prefab)
+        {
+            var id = prefab.GetInstanceID().ToString();
+
+            if (!dicPools.ContainsKey(id))
+            {
+                AssetPool pool = new AssetPool(prefab);
+                dicPools[id] = pool;
+                return pool;
+            }
+            else
+            {
+                return dicPools[id];
+            }
         }
 
         public void Release(string path, GameObject obj)

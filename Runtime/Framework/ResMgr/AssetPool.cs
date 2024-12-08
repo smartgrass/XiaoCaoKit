@@ -17,7 +17,7 @@ namespace XiaoCao
         public AssetPool(GameObject prefab)
         {
             this.prefab = prefab;
-            prefab.SetActive(false);
+            //prefab.SetActive(false); 
             pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
         }
 
