@@ -149,7 +149,7 @@ namespace XiaoCao
         PlayerEvent = 100, //分界线
         AckingNorAck = 101,
         TimeSpeedStop = 102,
-        EnemyGroupEndEvent = 103,
+        EnemyDeadEvent = 103,
     }
 
     public static class BattleFlagNames

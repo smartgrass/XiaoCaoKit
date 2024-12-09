@@ -1,4 +1,7 @@
 ﻿using System.ComponentModel;
+using System.Data;
+using TEngine;
+using UnityEditor.Graphs;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -77,6 +80,16 @@ namespace XiaoCao
             RoleOut();
         }
 
+        public override void OnDie(AtkInfo atkInfo)
+        {
+            enemyData.deadInfo = new EnemyDeadInfo()
+            {
+                killerId = atkInfo.atker,
+            };
+            base.OnDie(atkInfo);
+            GameEvent.Send(EventType.EnemyDeadEvent.Int(), id);
+        }
+
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
@@ -126,8 +139,19 @@ namespace XiaoCao
         public EnemyShareData0 component = new EnemyShareData0();
 
         public AiSkillCmdSetting AiCmdSetting;
+
+        public EnemyDeadInfo deadInfo;
     }
 
+
+    public struct EnemyDeadInfo
+    {
+        //击杀信息
+        public int killerId;
+        //pos
+        //击杀方式
+
+    }
 
     public class EnemyShareData0 : IShareData
     {

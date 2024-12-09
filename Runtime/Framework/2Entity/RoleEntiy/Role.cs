@@ -3,9 +3,11 @@ using cfg;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using TEngine;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using UnityEditor.Graphs;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -240,7 +242,8 @@ namespace XiaoCao
             if (targetHp <= 0)
             {
                 Hp = 0;
-                OnDie();
+
+                OnDie(atkInfo);
                 return false;
             }
             Hp -= atkInfo.atk;
@@ -249,9 +252,9 @@ namespace XiaoCao
             return true;
         }
 
-        public override void OnDie()
+        public override void OnDie(AtkInfo atkInfo)
         {
-            base.OnDie();
+            base.OnDie(atkInfo);
             roleData.bodyState = EBodyState.Dead;
             if (!BattleData.IsTimeStop)
             {

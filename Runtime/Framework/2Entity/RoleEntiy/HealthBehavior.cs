@@ -7,7 +7,7 @@
 
         public virtual bool IsDie => Hp <= 0;
 
-        public virtual void OnDie()
+        public virtual void OnDie(AtkInfo atkInfo)
         {
         }
     }
@@ -17,6 +17,6 @@
         int Hp { get; set; }
         int MaxHp { get; set; }
         bool IsDie { get; }
-        void OnDie();
+        void OnDie(AtkInfo atkInfo);
     }
 }

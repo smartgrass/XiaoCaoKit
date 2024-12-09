@@ -104,7 +104,7 @@ public class TestRole : GameStartMono,IExecute
         deadCount++;
         _enemyList.Remove(role.id);
         if (deadCount == curGenCount){
-            GameEvent.Send(EventType.EnemyGroupEndEvent.Int(), groupName);
+            GameEvent.Send(EventType.EnemyGroupEndEvent.Int(), role.id, groupName);
         }
         GetItemHelper.GetItem(role.transform.position);
     }
