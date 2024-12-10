@@ -23,7 +23,7 @@ namespace XiaoCao
             {
                 if (_atkTimer == null)
                 {
-                    _atkTimer = GameDataCommon.Current.player0.component.atkTimers;
+                    _atkTimer = GameDataCommon.LocalPlayer.component.atkTimers;
                 }
                 return _atkTimer;
             }

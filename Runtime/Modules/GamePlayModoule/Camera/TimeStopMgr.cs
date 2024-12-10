@@ -22,7 +22,7 @@ namespace XiaoCao
             //1.敌人停止动画
             //2.修改runner的speed [每个敌人都执行]
 
-            GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(),true);
+            GameEvent.Send<bool>(EGameEvent.TimeSpeedStop.Int(),true);
             coroutine = StartCoroutine(IEWaitRecover());
             CamEffectMgr.Inst.SetOpenEffect(CamEffectMgr.CameraEffect.TimeStop);
             XCTime.timeScale = 2;
@@ -44,7 +44,7 @@ namespace XiaoCao
         }
         private static void Recover()
         {
-            GameEvent.Send<bool>(EventType.TimeSpeedStop.Int(), false);
+            GameEvent.Send<bool>(EGameEvent.TimeSpeedStop.Int(), false);
             BattleData.IsTimeStop = false;
             CamEffectMgr.Inst.SetOpenEffect(CamEffectMgr.CameraEffect.TimeStop,false);
             XCTime.timeScale = 1;

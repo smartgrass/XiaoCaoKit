@@ -155,7 +155,7 @@ namespace XiaoCao
             if (!IsRoleCanPlaySkill())
                 return;
 
-            GameEvent.Send(EventType.AckingNorAck.Int());
+            GameEvent.Send(EGameEvent.AckingNorAck.Int());
 
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 

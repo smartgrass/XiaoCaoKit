@@ -124,7 +124,7 @@ namespace XiaoCao
 
     public class PlayerSaveData
     {
-        public static PlayerSaveData Current => GameData.playerSaveData;
+        public static PlayerSaveData Current => GameAllData.playerSaveData;
 
         public int lv;
 

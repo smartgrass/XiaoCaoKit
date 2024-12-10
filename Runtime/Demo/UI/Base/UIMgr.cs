@@ -112,7 +112,7 @@ namespace XiaoCao
                     can = false;
                 }
             }
-            GameData.battleData.CanPlayerControl.SetValue(can);
+            GameAllData.battleData.CanPlayerControl.SetValue(can);
         }
 
         public PanelBase GetPanel(UIPanelType type)

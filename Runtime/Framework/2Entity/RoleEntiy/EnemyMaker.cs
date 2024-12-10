@@ -46,12 +46,12 @@ namespace XiaoCao
         public List<Enemy0> list;
 
         public EnmeyGroup() {
-            GameEvent.AddEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
+            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
         }
 
         public void Dispose()
         {
-            GameEvent.RemoveEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
+            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
         }
         private void OnEntityChange(int arg1, RoleChangeType type)
         {

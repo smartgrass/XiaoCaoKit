@@ -32,7 +32,7 @@ public class DebugPanel : SubPanel
     {
         Debug.Log($"--- SkinChange {index}");
         ConfigMgr.LocalSetting.SetValue(LocalizeKey.SkinList, index);
-        GameDataCommon.Current.player0.ChangeBody(ConfigMgr.GetSkinName(index));
+        GameDataCommon.LocalPlayer.ChangeBody(ConfigMgr.GetSkinName(index));
 
     }
 }

@@ -87,7 +87,7 @@ namespace XiaoCao
                 killerId = atkInfo.atker,
             };
             base.OnDie(atkInfo);
-            GameEvent.Send(EventType.EnemyDeadEvent.Int(), id);
+            GameEvent.Send(EGameEvent.EnemyDeadEvent.Int(), id);
         }
 
 

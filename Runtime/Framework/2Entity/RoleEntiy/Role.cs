@@ -276,15 +276,15 @@ namespace XiaoCao
         {
             Enable = true;
             RoleMgr.Inst.roleDic.Add(id, this);
-            GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Add);
-            GameEvent.AddEventListener<bool>(EventType.TimeSpeedStop.Int(), StopTimeSpeed);
+            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.Int(), id, RoleChangeType.Add);
+            GameEvent.AddEventListener<bool>(EGameEvent.TimeSpeedStop.Int(), StopTimeSpeed);
         }
 
         public void RoleOut()
         {
             Debug.Log($"--- RoleOut {id}");
-            GameEvent.Send<int, RoleChangeType>(EventType.RoleChange.Int(), id, RoleChangeType.Remove);
-            GameEvent.RemoveEventListener<bool>(EventType.TimeSpeedStop.Int(), StopTimeSpeed);
+            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.Int(), id, RoleChangeType.Remove);
+            GameEvent.RemoveEventListener<bool>(EGameEvent.TimeSpeedStop.Int(), StopTimeSpeed);
             RoleMgr.Inst.roleDic.Remove(id);
         }
 

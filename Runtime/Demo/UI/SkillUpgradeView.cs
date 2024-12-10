@@ -39,7 +39,7 @@ namespace XiaoCao
         {
             //判断材料是否足够
             //足够则扣除
-            var inventory = GameData.playerSaveData.inventory;
+            var inventory = GameAllData.playerSaveData.inventory;
             List<Item> list = LubanTables.GetSkillUpgradeItems(skillId);
             bool isEnough = true;
             foreach (Item item in list)
@@ -56,7 +56,7 @@ namespace XiaoCao
                 {
                     inventory.ConsumeItem(item.Key, item.count);
                 }
-                GameData.playerSaveData.AddSkillLevel(skillId);
+                GameAllData.playerSaveData.AddSkillLevel(skillId);
                 PlayerSaveData.Sava();
                 SkillPanel.UpdateUI();
             }

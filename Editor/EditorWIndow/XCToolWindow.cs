@@ -83,7 +83,7 @@ namespace AssetEditor.Editor
 
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
-                Selection.activeGameObject = GameDataCommon.Current.player0.gameObject;
+                Selection.activeGameObject = GameDataCommon.LocalPlayer.gameObject;
             }
         }
 
@@ -158,7 +158,7 @@ namespace AssetEditor.Editor
 
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
-                GameMgr.Inst.Player.PlayerAttr.lv = playerLevel;
+                GameMgr.Inst.LocalPlayer.PlayerAttr.lv = playerLevel;
             }
 
         }

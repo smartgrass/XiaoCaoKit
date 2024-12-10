@@ -8,7 +8,7 @@ using TEngine;
 using UnityEngine;
 using UnityEngine.UIElements;
 using XiaoCao;
-using EventType = XiaoCao.EventType;
+using EGameEvent = XiaoCao.EGameEvent;
 
 public class TestRole : GameStartMono,IExecute
 {
@@ -104,7 +104,7 @@ public class TestRole : GameStartMono,IExecute
         deadCount++;
         _enemyList.Remove(role.id);
         if (deadCount == curGenCount){
-            GameEvent.Send(EventType.EnemyGroupEndEvent.Int(), role.id, groupName);
+            GameEvent.Send(EGameEvent.EnemyGroupEndEvent.Int(), groupName);
         }
         GetItemHelper.GetItem(role.transform.position);
     }

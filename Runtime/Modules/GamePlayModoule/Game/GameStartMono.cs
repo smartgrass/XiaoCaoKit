@@ -2,16 +2,12 @@
 using TEngine;
 using UnityEngine;
 using XiaoCao;
-using EventType = XiaoCao.EventType;
+using EGameEvent = XiaoCao.EGameEvent;
 /// <summary>
-/// Editor test
+/// 用于获取 GameStart回调, 控制时序
 /// </summary>
-/// 
 public class GameStartMono : MonoBehaviour
 {
-    /// <summary>
-    /// Mono执行start时, GameState可能还处于加载中, 所以需要等待加载完成
-    /// </summary>
     [ReadOnly]
     public bool isGameStarted;
 
@@ -26,7 +22,7 @@ public class GameStartMono : MonoBehaviour
         else
         {
             hasAddListener = true;
-            GameEvent.AddEventListener(EventType.GameStartFinsh.Int(), OnGameStart);
+            GameEvent.AddEventListener(EGameEvent.GameStartFinsh.Int(), OnGameStart);
         }
     }
 
@@ -34,7 +30,7 @@ public class GameStartMono : MonoBehaviour
     {
         if (hasAddListener)
         {
-            GameEvent.RemoveEventListener(EventType.GameStartFinsh.Int(), OnGameStart);
+            GameEvent.RemoveEventListener(EGameEvent.GameStartFinsh.Int(), OnGameStart);
         }
     }
 

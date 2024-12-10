@@ -23,7 +23,7 @@ namespace XiaoCao
 
             if (isNeedItem)
             {
-                int hasCount = GameData.playerSaveData.inventory.GetItemCount(Item.Key);
+                int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(Item.Key);
                 text.text = $"{hasCount}/{Item.count}";
             }
             else

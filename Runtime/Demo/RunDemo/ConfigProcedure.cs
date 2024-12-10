@@ -60,7 +60,7 @@ namespace XiaoCao
                 data0.lv = PlayerPrefs.GetInt("playerLv");
             }
 
-            GameData.playerSaveData = data0;
+            GameAllData.playerSaveData = data0;
 
             player.Init(data0, true);
 
@@ -94,7 +94,7 @@ namespace XiaoCao
 
             GameMgr.Inst.SetGameState(GameState.Running);
 
-            GameEvent.Send(EventType.GameStartFinsh.Int());
+            GameEvent.Send(EGameEvent.GameStartFinsh.Int());
 
             try
             {

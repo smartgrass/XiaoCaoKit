@@ -19,7 +19,7 @@ public class GetItemHelper
         var trail = trailGo.GetComponent<SoulTrailTween>();
         trailGo.transform.position = pos;
         trail.startPoint = trailGo.transform.position;
-        trail.targetTf = GameData.commonData.player0.transform;
+        trail.targetTf = GameDataCommon.GetPlayer().transform;
         trail.Play();
     }
 }

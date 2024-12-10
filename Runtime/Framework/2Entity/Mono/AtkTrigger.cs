@@ -106,7 +106,7 @@ public class AtkInfo
     {
         get
         {
-            return GameDataCommon.Current.IsPlayerId(atker);
+            return GameDataCommon.Current.IsLocalPlayerId(atker);
         }
     }
 

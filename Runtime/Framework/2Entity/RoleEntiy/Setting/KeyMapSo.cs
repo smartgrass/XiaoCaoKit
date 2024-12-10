@@ -50,7 +50,7 @@ namespace XiaoCao
             Dictionary<string, T2> dic = new Dictionary<string, T2>();
             foreach (var item in array)
             {
-                dic[item.Id] = item;
+                dic[item.Key] = item;
             }
             return dic;
         }
@@ -102,7 +102,7 @@ namespace XiaoCao
             Dictionary<string, T2> dic = new Dictionary<string, T2>();
             foreach (var item in array)
             {
-                dic[item.Id] = item;
+                dic[item.Key] = item;
             }
             return dic;
         }
@@ -115,6 +115,6 @@ namespace XiaoCao
 
     public interface IKey
     {
-        public string Id { get; }
+        public string Key { get; }
     }
 }

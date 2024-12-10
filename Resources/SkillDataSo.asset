@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: SkillDataSo
   m_EditorClassIdentifier: 
   array:
-  - id: Roll
+  - key: roll
     cd: 1.5
-  - id: 0
+  - key: 0
     cd: 4
-  - id: 1
+  - key: 1
     cd: 4
-  - id: 2
+  - key: 2
     cd: 4

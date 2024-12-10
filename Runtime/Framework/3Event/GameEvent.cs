@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using XiaoCao;
-using EventType = XiaoCao.EventType;
+using EGameEvent = XiaoCao.EGameEvent;
 
 namespace TEngine
 {
@@ -14,9 +14,9 @@ namespace TEngine
         {
             //添加监听
             GameEvent.AddEventListener<GameState, GameState>(0, ExampleRecive);
-            GameEvent.AddEventListener<GameState, GameState>(EventType.GameStateChange.Int(), ExampleRecive);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), ExampleRecive);
             //移除监听
-            GameEvent.RemoveEventListener<GameState, GameState>(EventType.GameStateChange.Int(), ExampleRecive);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), ExampleRecive);
             //触发
             GameEvent.Send<GameState, GameState>("EventTag", GameState.Loading, GameState.Running);
 
@@ -610,6 +610,11 @@ namespace TEngine
         }
 
         internal static void AddEventListener<T>(object stopTimeSpeed)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void AddEventListener<T>(int v, object onEnemyDeadEvent)
         {
             throw new NotImplementedException();
         }

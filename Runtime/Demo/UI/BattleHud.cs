@@ -31,7 +31,7 @@ namespace XiaoCao
         public void Init()
         {
             pool = new AssetPool(worldHpBarPrefab);
-            GameEvent.AddEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
+            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
@@ -39,7 +39,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<int, RoleChangeType>(EventType.RoleChange.Int(), OnEntityChange);
+            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
         }
 
         private void Update()
@@ -243,7 +243,7 @@ namespace XiaoCao
 
         public void AnimTargetFixUpdate()
         {
-            Player0 player0 = GameDataCommon.Current.player0;
+            Player0 player0 = GameDataCommon.LocalPlayer;
             if (player0 != null)
             {
                 Role role = player0.roleData.lastEnemy;

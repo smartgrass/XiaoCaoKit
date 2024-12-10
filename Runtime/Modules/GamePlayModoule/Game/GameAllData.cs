@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    public class GameData
+    public class GameAllData
     {
         //不会清空
         public static GameDataCommon commonData = new GameDataCommon();
@@ -25,7 +25,7 @@ namespace XiaoCao
 
     public class GameDataCommon
     {
-        public static GameDataCommon Current => GameData.commonData;
+        public static GameDataCommon Current => GameAllData.commonData;
 
         public PlayMode playMode;
 
@@ -37,10 +37,26 @@ namespace XiaoCao
 
         public int playerId => player0.id;
 
-        public bool IsPlayerId(int id)
+        public bool IsLocalPlayerId(int id)
         {
             if (player0 == null) return false;
             return player0.id == id;
+        }
+
+        public static Player0 LocalPlayer
+        {
+            get
+            {
+                return Current.player0;
+            }
+
+        }
+
+        public static Player0 GetPlayer(int id = 0)
+        {
+            //封装, 方便多玩家时处理
+            return Current.player0;
+
         }
 
         public bool loadMod = false;
@@ -54,7 +70,7 @@ namespace XiaoCao
             CanPlayerControl.AddListener(OnControlChange);
         }
 
-        public static BattleData Current => GameData.battleData;
+        public static BattleData Current => GameAllData.battleData;
         public static bool IsTimeStop { get => Current._isTimeStop; set => Current._isTimeStop = value; }
 
         private bool _isTimeStop;
@@ -138,10 +154,11 @@ namespace XiaoCao
         Exit
     }
 
-    public enum EventType : uint
+    public enum EGameEvent : uint
     {
         None = 0,
         GameStateChange = 1,
+        ///<see cref="GameStartMono"/>
         GameStartFinsh = 2,
         CameraChange = 3,
         RoleChange = 4,
@@ -150,6 +167,7 @@ namespace XiaoCao
         AckingNorAck = 101,
         TimeSpeedStop = 102,
         EnemyDeadEvent = 103,
+        EnemyGroupEndEvent = 104,
     }
 
     public static class BattleFlagNames
@@ -175,7 +193,7 @@ namespace XiaoCao
 
     public static class EventTypeExtend
     {
-        public static int Int(this EventType t)
+        public static int Int(this EGameEvent t)
         {
             return (int)t;
         }

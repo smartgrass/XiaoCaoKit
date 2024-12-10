@@ -39,12 +39,12 @@ namespace XiaoCao
 
         private void Awake()
         {
-            GameEvent.AddEventListener<GameState, GameState>(EventType.GameStateChange.Int(), GameStateChange);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
         }
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<GameState, GameState>(EventType.GameStateChange.Int(), GameStateChange);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
         }
 
         public static XCTaskRunner CreatNew(string skillId, int roleId, TaskInfo info)

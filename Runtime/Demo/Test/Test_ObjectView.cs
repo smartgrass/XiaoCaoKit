@@ -7,7 +7,7 @@ public class Test_ObjectView : MonoBehaviour
 {
     public Object obj;
 
-    public GameData gameData;
+    public GameAllData gameData;
 
     public string inputStr = "GameDataCommon.Current";
 

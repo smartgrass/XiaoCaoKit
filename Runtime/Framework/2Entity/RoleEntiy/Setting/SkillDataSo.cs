@@ -12,11 +12,11 @@ namespace XiaoCao
     [Serializable]
     public class SkillData : IKey
     {
-        public string id;
+        public string key;
 
         public float cd;
 
-        public string Id => id;
+        public string Key => key;
     }
 
 }

@@ -107,7 +107,7 @@ namespace XiaoCao
 
         private void FindPlayerTarget()
         {
-            Role role = GameDataCommon.Current.player0;
+            Role role = GameDataCommon.LocalPlayer;
             if (role != null && role.isBodyCreated)
             {
                 target = role.idRole.GetFollow;

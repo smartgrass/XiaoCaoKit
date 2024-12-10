@@ -149,7 +149,7 @@ namespace XiaoCao
             bool isAutoLockEnmey = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
             bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
 
-            Player0 player0 = GameDataCommon.Current.player0;
+            Player0 player0 = GameDataCommon.LocalPlayer;
             if (player0 != null && !player0.roleData.IsBusy)
             {
                 if (!isAutoLockEnmey)

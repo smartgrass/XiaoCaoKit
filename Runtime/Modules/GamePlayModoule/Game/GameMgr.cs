@@ -18,7 +18,7 @@ namespace XiaoCao
         #region AllMgr
         public GameDataCommon GameData => GameDataCommon.Current;
         public BattleData BattleData => BattleData.Current;
-        public Player0 Player => GameData.player0;
+        public Player0 LocalPlayer => GameDataCommon.GetPlayer();
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
         public CameraMgr cameraMgr;
@@ -53,7 +53,7 @@ namespace XiaoCao
         {
             var oldState = GameDataCommon.Current.gameState;
             GameDataCommon.Current.gameState = gameState;
-            GameEvent.Send<GameState, GameState>(EventType.GameStateChange.Int(), oldState, gameState);
+            GameEvent.Send<GameState, GameState>(EGameEvent.GameStateChange.Int(), oldState, gameState);
         }
 
         #region Scene
