@@ -1,14 +1,16 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace XiaoCao
 {
+    [Serializable]
     public class BuffInfo : PowerModel
     {
         public EBuff buff;
 
-        public int[] AddInfo;
+        public float[] AddInfo;
     }
     public class BuffGroup
     {
