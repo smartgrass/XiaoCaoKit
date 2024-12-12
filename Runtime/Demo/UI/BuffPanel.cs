@@ -19,7 +19,7 @@ namespace XiaoCao
         void Start()
         {
             // 初始化PlayerBuffs数据（这里应该是从玩家数据或其他地方获取的）
-            playerBuffs = new PlayerBuffs();
+            playerBuffs = BattleData.GetPlayerBuff();
             // 为了示例，我们手动添加一些BuffItem到列表中
             playerBuffs.EquippedBuffs.Add(new BuffItem { /* 初始化属性 */ });
             playerBuffs.EquippedBuffs.Add(new BuffItem { /* 初始化属性 */ });

@@ -34,9 +34,10 @@ namespace XiaoCao
 
         public Player0 player0;
 
-        public string NextSceneName;
+        //需要保存
+        public int LocalPlayerId;
 
-        public int playerId => player0.id;
+        public string NextSceneName;
 
         public static Player0 LocalPlayer
         {
@@ -85,8 +86,12 @@ namespace XiaoCao
 
         //角色buff背包
         private PlayerBuffs playerBuffs;
-        public static PlayerBuffs GetPlayerBuff(int id)
+        public static PlayerBuffs GetPlayerBuff(int id = -1)
         {
+            if (id < 0)
+            {
+                return Current.playerBuffs;
+            }
             //暂不区分角色
             return Current.playerBuffs;
         }

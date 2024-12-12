@@ -53,6 +53,7 @@ namespace XiaoCao
             {
                 AddTag(RoleTagCommon.MainPlayer);
                 GameDataCommon.Current.player0 = this;
+                GameDataCommon.Current.LocalPlayerId = this.id;
             }
 
             RoleIn();
