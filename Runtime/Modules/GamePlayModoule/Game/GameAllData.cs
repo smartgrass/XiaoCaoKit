@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace XiaoCao
@@ -36,12 +37,6 @@ namespace XiaoCao
         public string NextSceneName;
 
         public int playerId => player0.id;
-
-        public bool IsLocalPlayerId(int id)
-        {
-            if (player0 == null) return false;
-            return player0.id == id;
-        }
 
         public static Player0 LocalPlayer
         {
@@ -88,6 +83,14 @@ namespace XiaoCao
 
         public bool UIEnter;
 
+        //角色buff背包
+        private PlayerBuffs playerBuffs;
+        public static PlayerBuffs GetPlayerBuff(int id)
+        {
+            //暂不区分角色
+            return Current.playerBuffs;
+        }
+
 
         ///<see cref="BattleFlagNames"/>
         public bool HasFlag(string flag)
@@ -102,6 +105,86 @@ namespace XiaoCao
 
     }
 
+    public static class PlayerHelper
+    {
+        public static bool IsLocalPlayerId(this int id)
+        {
+            var player = GameDataCommon.Current.player0;
+            if (player == null) return false;
+            return player.id == id;
+        }
+
+        public static void AddBuff(int id, BuffItem buff)
+        {
+            BattleData.GetPlayerBuff(id).AddBuff(buff);
+        }
+
+    }
+
+    public class PlayerBuffs
+    {
+        public int MaxEquipped = 4;
+        // 装备中buff
+        public List<BuffItem> EquippedBuffs = new List<BuffItem>();
+        // 未装备buff
+        public List<BuffItem> UnequippedBuffs = new List<BuffItem>();
+
+        public void AddBuff(BuffItem buff)
+        {
+            int nullIndex = UnequippedBuffs.IndexOf(null);
+            if (nullIndex != -1)
+            {
+                UnequippedBuffs[nullIndex] = buff;
+                Debug.Log("Buff已替换未装备列表中的null元素。");
+            }
+            else
+            {
+                // 如果没有null元素，直接添加到列表末尾
+                UnequippedBuffs.Add(buff);
+                Debug.Log("Buff已添加到未装备列表的末尾。");
+            }
+        }
+
+        // 合成: 移除buff2, 将buff2的第一个词条加在buff1上
+        public void SynthesisBuff(BuffItem buff1, BuffItem buff2, bool isBuff2Equipped)
+        {
+            //TODO 星级调整
+
+
+            List<BuffItem> sourceList = isBuff2Equipped ? EquippedBuffs : UnequippedBuffs;
+            sourceList.Remove(buff2);
+            buff1.buffs.Add(buff2.buffs.First());
+        }
+
+        // 移动buff: 将装备中或未装备中的buff移动到任意位置, 如果该位置已存在buff,则交换两buff位置
+        public void MoveBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
+        {
+            List<BuffItem> sourceList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
+            List<BuffItem> targetList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
+
+            if (FromIndex < 0 || FromIndex >= sourceList.Count || ToIndex < 0)
+            {
+                Debug.LogError("索引无效！");
+                return;
+            }
+
+            if (ToIndex >= targetList.Count)
+            {
+                // 如果目标索引超出目标列表长度，则扩展列表（这个逻辑可以根据实际需求调整）
+                for (int i = targetList.Count; i <= ToIndex; i++)
+                {
+                    targetList.Add(null); // 或者创建一个默认的BuffItem实例
+                }
+            }
+
+            BuffItem temp = sourceList[FromIndex];
+            BuffItem temp2 = targetList[ToIndex];
+
+            targetList[FromIndex] = temp2;
+            targetList[ToIndex] = temp;
+            Debug.Log($"--- 交换了");
+        }
+    }
 
 
     public static class GameSetting

@@ -9,6 +9,7 @@ namespace XiaoCao
         [HideInInspector]
         public EnemyKillRewardSo enemyKillRewardSo;
 
+        public string[] rewardPools = { "0", "1", "2" };
 
         public override void OnGameStart()
         {
@@ -20,14 +21,28 @@ namespace XiaoCao
 
         void OnEnemyDeadEvent(int id)
         {
-            Debug.Log($"--- id");
-            //赐予奖励
+            Debug.Log($"--- {id}");
             if (EntityMgr.Inst.FindEntity<Enemy0>(id, out Enemy0 enemy))
             {
                 var deadInfo = enemy.enemyData.deadInfo;
-                 //deadInfo.killerId
-
-
+                // 关卡奖励分等级 && 关卡等级
+                if (deadInfo.killerId.IsLocalPlayerId())
+                {
+                    //获取奖励等级
+                    int rewardLevel = enemy.enemyData.rewardLevel;
+                    //获取奖池id
+                    string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length)];
+                    //获取奖励池
+                    var rewardPool = enemyKillRewardSo.GetOrDefault(rewardPoolId);
+                    //获取一个buff
+                    BuffItem buffItem = rewardPool.GenRandomBuffItem(rewardLevel);
+                    //添加到角色上->BattleData
+                    PlayerHelper.AddBuff(deadInfo.killerId, buffItem);
+                }
+            }
+            else
+            {
+                Debuger.LogError($"--- no enmey {id}");
             }
         }
 
@@ -38,4 +53,6 @@ namespace XiaoCao
             base.OnDestroy();
         }
     }
+
+
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     public class SkillPanel : SubPanel
     {
         public SkillPanelView view;

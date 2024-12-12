@@ -22,7 +22,7 @@ namespace XiaoCao
         MaxHpAdd,
 
         [InspectorName("暴击率提升2.5%")]
-        CritChanceAdd,
+        CritAdd,
 
         [InspectorName("技能冷缩 5%")]
         SkillCDOff,
@@ -41,5 +41,42 @@ namespace XiaoCao
 
         [InspectorName("生命值低于50%时, 攻击力提升8%")]
         AtkAddIfBelowHalfHp
+    }
+
+    public static class BuffSetting
+    {
+        public static EBuffType GetBuffType(this EBuff buff)
+        {
+            switch (buff)
+            {
+                case EBuff.KillRecoverHp:
+                case EBuff.AtkRecoverHp:
+                case EBuff.MaxHpAdd:
+                case EBuff.ShieldOnDamage:
+                    return EBuffType.Def;
+
+                case EBuff.AtkAdd:
+                case EBuff.SkillDamageAdd:
+                case EBuff.CritAdd:
+                case EBuff.AtkAddIfBelowHalfHp:
+                    return EBuffType.Atk;
+                case EBuff.SkillCDOff:
+                case EBuff.MovementSpeedAdd:
+                case EBuff.AttackSpeedAdd:
+                case EBuff.UltimateEnergyRestore:
+                    return EBuffType.Other;
+                default:
+                    return EBuffType.Atk;
+            }
+        }
+    }
+
+
+    //Buff 分类
+    public enum EBuffType
+    {
+        Def,
+        Atk,
+        Other
     }
 }

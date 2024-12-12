@@ -22,6 +22,7 @@ namespace XiaoCao
 
 
             var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
+            var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
 
             skillPanel.Show();
 

@@ -141,6 +141,8 @@ namespace XiaoCao
         public AiSkillCmdSetting AiCmdSetting;
 
         public EnemyDeadInfo deadInfo;
+
+        public int rewardLevel;
     }
 
 

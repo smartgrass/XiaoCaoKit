@@ -6,9 +6,6 @@ namespace XiaoCao
 {
     public class EnemyKillRewardSo : KeyMapSo<EnemyKillBuffReward>
     {
-
-
-
         [Button]
         void AddEach()
         {
@@ -25,7 +22,7 @@ namespace XiaoCao
                 }
                 BuffInfo buffInfo = new BuffInfo();
                 buffInfo.buff = item;
-                buffInfo.AddInfo = new[] { 1f };
+                buffInfo.addInfo = new[] { 1f };
                 buffs.Add(buffInfo);
             }
             reward.buffs = buffs;
@@ -52,9 +49,13 @@ namespace XiaoCao
 
         public List<BuffInfo> buffs;
 
-        public BuffGroup GetBuffGroup(int level)
+        /// <summary>
+        /// 抽取随机BuffItem
+        /// </summary>
+        /// <param name="level">决定词条数量</param>
+        public BuffItem GenRandomBuffItem(int level)
         {
-            return BuffGroupHelper.GetBuffGroup(level, buffs);
+            return BuffItemHelper.GenRandomBuffItem(level, buffs);
         }
     }
 }

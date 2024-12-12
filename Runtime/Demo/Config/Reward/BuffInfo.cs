@@ -6,13 +6,17 @@ using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 namespace XiaoCao
 {
     [Serializable]
+    //词条Buff的最基础单位
     public class BuffInfo : PowerModel
     {
         public EBuff buff;
 
-        public float[] AddInfo;
+        public float[] addInfo;
     }
-    public class BuffGroup
+    /// <summary>
+    /// Buff容器, 可以承载多个词条
+    /// </summary>
+    public class BuffItem
     {
         public int level; //星级
 
@@ -21,18 +25,15 @@ namespace XiaoCao
         public int GetMaxBuffCount => level + 1; // 0级1个词条, 1级两个词条
     }
 
-    public static class BuffGroupHelper
+    public static class BuffItemHelper
     {
-        //随机抽取
-        public static BuffGroup GetBuffGroup(int level, List<BuffInfo> buffs)
+        public static BuffItem GenRandomBuffItem(int level, List<BuffInfo> buffs)
         {
-            BuffGroup group = new BuffGroup();
+            BuffItem group = new BuffItem();
 
             group.buffs = RandomHelper.GetRandomList<BuffInfo>(buffs, level);
 
             return group;
         }
     }
-
-
 }

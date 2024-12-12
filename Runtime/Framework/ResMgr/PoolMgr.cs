@@ -104,4 +104,14 @@ namespace XiaoCao
         }
 
     }
+
+
+    /// <summary>
+    /// 生成代码用
+    /// </summary>
+    public interface IGameObjectPoolExample
+    {
+        public GameObject GetFromPool();
+        public void Release(GameObject obj);
+    }
 }
