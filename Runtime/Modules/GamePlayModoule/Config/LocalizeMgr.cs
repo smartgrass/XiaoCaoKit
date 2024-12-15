@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+    ///<see 配置 cref="LocalizeKey"/>
     public class LocalizeMgr : Singleton<LocalizeMgr>, IClearCache
     {
         private IniFile _localizeData;

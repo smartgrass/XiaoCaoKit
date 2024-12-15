@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-     public class Test_AnimPose : MonoBehaviour
+    public class Test_AnimPose : MonoBehaviour
     {
-        [Range(0,1)]
+        [Range(0, 1)]
         [NaughtyAttributes.OnValueChanged("SetValue")]
         public float time;
 
@@ -16,7 +16,7 @@ namespace XiaoCao
         {
             if (model != null && clip != null)
             {
-                clip.SampleAnimation(model,0);
+                clip.SampleAnimation(model, 0);
                 model.transform.localPosition = Vector3.zero;
             }
         }
@@ -24,7 +24,7 @@ namespace XiaoCao
         public void SetValue()
         {
 
-            if(model!=null && clip != null)
+            if (model != null && clip != null)
             {
                 clip.SampleAnimation(model, time * clip.length);
             }

@@ -197,6 +197,14 @@ namespace XiaoCaoEditor
     /// </summary>
     public static class XCComponentMenu
     {
+        [MenuItem("CONTEXT/MonoExecute/Execute", priority = 10)]
+        private static void Execute(MenuCommand menuCommand)
+        {
+            MonoExecute component = menuCommand.context as MonoExecute;
+            component.Execute();
+        }
+
+
         [MenuItem("CONTEXT/Component/AutoBind", priority = 10)]
         private static void AutoBind(MenuCommand menuCommand)
         {
@@ -277,6 +285,13 @@ namespace XiaoCaoEditor
                 return fields;
             }
         }
+
+
+
     }
+
+
+    //资源预处理
+    ///<see cref="SpriteAssetPostprocessor"/>
 
 }

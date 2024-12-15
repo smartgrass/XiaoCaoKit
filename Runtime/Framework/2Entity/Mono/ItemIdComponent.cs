@@ -1,4 +1,5 @@
 using cfg;
+using NaughtyAttributes;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -11,6 +12,9 @@ public class ItemIdComponent : IdComponent
     public UnityEvent deadEvent;
 
     public AudioClip deadClip;
+
+    [ReadOnly]
+    public DeadInfo deadInfo;
 
     public virtual void OnDamage(AtkInfo atkInfo)
     {

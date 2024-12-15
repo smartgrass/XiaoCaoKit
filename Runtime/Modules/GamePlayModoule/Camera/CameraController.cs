@@ -84,7 +84,7 @@ namespace XiaoCao
             }
             else if (Mode == CameraMode.TowDown)
             {
-                if (!Input.mouseScrollDelta.IsZore())
+                if (!Input.mouseScrollDelta.IsZore() && BattleData.Current.CanPlayerControl)
                 {
                     var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
                         setting_topDown.camDistance - 4, setting_topDown.camDistance + 4);

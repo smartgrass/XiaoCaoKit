@@ -62,7 +62,7 @@ namespace XiaoCao
 
         private bool FristLoad()
         {
-            Debug.Log($"--- ActPoolFSM FristLoad {IsLoaded}");
+            Debuger.Log($"--- ActPoolFSM FristLoad {IsLoaded}");
             if (IsLoaded)
             {
                 return false;
@@ -102,7 +102,6 @@ namespace XiaoCao
                 CurState = GetOne();
                 if (CurState == null)
                 {
-                    Debug.Log($"--- sub end");
                     OnExit();
                     return;
                 }
@@ -152,7 +151,7 @@ namespace XiaoCao
         public override void OnExit()
         {
             State = FSMState.Finish;
-            Debug.Log($"--- All Finish");
+            Debuger.Log($"--- AI All Finish");
         }
     }
 

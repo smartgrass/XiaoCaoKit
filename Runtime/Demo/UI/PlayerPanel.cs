@@ -21,10 +21,11 @@ namespace XiaoCao
             base.Init();
 
 
-            var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
-            var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
 
-            skillPanel.Show();
+            var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
+            var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
+
+            buffPanel.Show();
 
             gameObject.SetActive(false);
             Prefabs.gameObject.SetActive(false);
@@ -38,6 +39,13 @@ namespace XiaoCao
             (GetPanel("Skill") as SkillPanel).UpdateUI();
         }
 
+        private void OnEnable()
+        {
+            if (IsInited)
+            {
+                curPanel?.RefreshUI();
+            }
+        }
 
 
     }

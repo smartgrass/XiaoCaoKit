@@ -37,6 +37,8 @@ namespace XiaoCao
 
         public static CommonSo commonSettingSo;
 
+        public static EnemyKillRewardSo enemyKillRewardSo;
+
         public static List<string> SkinList;
 
         public static void Init()
@@ -45,6 +47,7 @@ namespace XiaoCao
             playerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
             commonSettingSo = ConfigMgr.LoadSoConfig<CommonSo>();
             skillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
+            enemyKillRewardSo = ConfigMgr.LoadSoConfig<EnemyKillRewardSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
         }

@@ -75,8 +75,9 @@ namespace XiaoCao
     //Buff 分类
     public enum EBuffType
     {
-        Def,
-        Atk,
-        Other
+        None = -1,
+        Def = 0,
+        Atk = 1,
+        Other = 2
     }
 }

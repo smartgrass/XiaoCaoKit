@@ -82,7 +82,7 @@ namespace XiaoCao
 
         public override void OnDie(AtkInfo atkInfo)
         {
-            enemyData.deadInfo = new EnemyDeadInfo()
+            enemyData.deadInfo = new DeadInfo()
             {
                 killerId = atkInfo.atker,
             };
@@ -140,13 +140,13 @@ namespace XiaoCao
 
         public AiSkillCmdSetting AiCmdSetting;
 
-        public EnemyDeadInfo deadInfo;
+        public DeadInfo deadInfo;
 
         public int rewardLevel;
     }
 
 
-    public struct EnemyDeadInfo
+    public struct DeadInfo
     {
         //击杀信息
         public int killerId;

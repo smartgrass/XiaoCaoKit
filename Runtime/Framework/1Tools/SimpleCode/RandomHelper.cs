@@ -10,18 +10,18 @@ namespace XiaoCao
     ///<see cref="PowerModel"/>
     public static class RandomHelper
     {
-        public static T GetRandom<T>(this List<T> powerList, out int index) where T : PowerModel
+        public static T GetRandom<T>(this List<T> powerList, out int index) where T : IPower
         {
             index = 0;
             int total = 0;
             foreach (var item in powerList)
             {
-                total += item.power;
+                total += item.Power;
             }
             if (powerList.Count == 0)
             {
                 index = -1;
-                return null;
+                return default;
             }
             if (powerList.Count == 1 || total == 0)
             {
@@ -38,24 +38,24 @@ namespace XiaoCao
             int length = powerList.Count;
             for (int i = 0; i < length; i++)
             {
-                rangeMax += powerList[i].power;
+                rangeMax += powerList[i].Power;
                 //当随机数小于 rangeMax 说明在范围内
-                if (rangeMax > random && powerList[i].power > 0)
+                if (rangeMax > random && powerList[i].Power > 0)
                 {
                     index = i;
                     return powerList[i];
                 }
             }
             Debug.LogError("??? power = 0");
-            return null;
+            return default;
         }
 
-        public static List<T> GetRandomList<T>(this List<T> powerList,int count) where T : PowerModel
+        public static List<T> GetRandomList<T>(this List<T> powerList, int count) where T : IPower
         {
             List<T> list = new List<T>();
             for (int i = 0; i < count; i++)
             {
-                GetRandom(powerList,out int index);
+                GetRandom<T>(powerList, out int index);
                 list.Add(powerList[index]);
             }
             return list;
@@ -93,8 +93,15 @@ namespace XiaoCao
     /// 对于需要配置概率的物品推荐继承它
     /// </summary>
     [System.Serializable]
-    public class PowerModel
+    public class PowerModel : IPower
     {
         public int power = 1; //权重
+
+        int IPower.Power => power;
+    }
+
+    public interface IPower
+    {
+        public int Power { get; }
     }
 }

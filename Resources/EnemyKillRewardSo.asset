@@ -16,50 +16,50 @@ MonoBehaviour:
   - key: 0
     buffs:
     - power: 1
-      buff: 1
-      AddInfo:
+      eBuff: 1
+      addInfo:
       - 1
     - power: 1
-      buff: 2
-      AddInfo:
+      eBuff: 2
+      addInfo:
       - 1
     - power: 1
-      buff: 3
-      AddInfo:
+      eBuff: 3
+      addInfo:
       - 1
     - power: 1
-      buff: 4
-      AddInfo:
+      eBuff: 4
+      addInfo:
       - 1
     - power: 1
-      buff: 5
-      AddInfo:
+      eBuff: 5
+      addInfo:
       - 1
     - power: 1
-      buff: 6
-      AddInfo:
+      eBuff: 6
+      addInfo:
       - 1
     - power: 1
-      buff: 7
-      AddInfo:
+      eBuff: 7
+      addInfo:
       - 1
     - power: 1
-      buff: 8
-      AddInfo:
+      eBuff: 8
+      addInfo:
       - 1
     - power: 1
-      buff: 9
-      AddInfo:
+      eBuff: 9
+      addInfo:
       - 1
     - power: 1
-      buff: 10
-      AddInfo:
+      eBuff: 10
+      addInfo:
       - 1
     - power: 1
-      buff: 11
-      AddInfo:
+      eBuff: 11
+      addInfo:
       - 1
     - power: 1
-      buff: 12
-      AddInfo:
+      eBuff: 12
+      addInfo:
       - 1

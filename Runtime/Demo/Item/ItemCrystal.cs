@@ -5,6 +5,7 @@ using NaughtyAttributes;
 using Newtonsoft.Json.Linq;
 using System.CodeDom.Compiler;
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 
@@ -66,7 +67,8 @@ public class ItemCrystal : ItemIdComponent
 
         if (hp <= 0)
         {
-            OnDead();
+
+            OnDead(ackInfo);
             return;
         }
         else
@@ -93,8 +95,13 @@ public class ItemCrystal : ItemIdComponent
         hpBar.UpdateHealthBar((float)hp / maxHp);
     }
 
-    private void OnDead()
+
+    private void OnDead(AtkInfo ackInfo)
     {
+        deadInfo = new DeadInfo()
+        {
+            killerId = ackInfo.atker,
+        };
         SoundMgr.Inst.PlayClip(deadClip);
         deadEvent?.Invoke();
         isDead = true;
@@ -173,7 +180,7 @@ public class ItemCrystal : ItemIdComponent
         ExplodedPos(explodePos);
     }
 
-    [NewLine("爆炸设定")]
+    [XCHeader("爆炸设定")]
 
     [SerializeField] private float _explosionRadius = 5;
     [SerializeField] private float _explosionForce = 500;
@@ -201,9 +208,10 @@ public class ItemCrystal : ItemIdComponent
         }
         body.gameObject.SetActive(false);
 
-        if (fadeTime > 0 && fadeEffect!= FadeEffect.None )
+        if (fadeTime > 0 && fadeEffect != FadeEffect.None)
         {
-            if (fadeEffect == FadeEffect.Alpha) {
+            if (fadeEffect == FadeEffect.Alpha)
+            {
                 StartCoroutine(IEFadeAlphaAnim());
             }
             else

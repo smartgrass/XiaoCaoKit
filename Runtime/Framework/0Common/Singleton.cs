@@ -59,3 +59,4 @@ public interface IInit
 
 //管理器抽象
 public interface IMgr { }
+public interface IHelper { }

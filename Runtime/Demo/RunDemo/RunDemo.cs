@@ -1,5 +1,4 @@
-﻿#define EnableLog	
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace XiaoCao
 
 
             //这里做点编辑器开关
-            Debuger.LogLevel = LogLevel.Error;
+            Debuger.LogLevel = LogLevel.Info;
 
             ProcedureMgr procedureMgr = ProcedureMgr.Inst;
 

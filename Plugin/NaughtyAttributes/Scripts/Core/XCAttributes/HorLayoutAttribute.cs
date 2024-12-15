@@ -98,9 +98,9 @@ namespace XiaoCao
     /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
 
-    public class NewLineAttribute : MetaAttribute, IXCDrawAttribute
+    public class XCHeaderAttribute : MetaAttribute, IXCDrawAttribute
     {
-        public NewLineAttribute(string header = "") { this.Header = header; }
+        public XCHeaderAttribute(string header = "") { this.Header = header; }
 
         public string Header;
 

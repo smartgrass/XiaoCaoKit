@@ -179,7 +179,14 @@ namespace AssetEditor.Editor
             //TestRole testRole  = GameObject.FindObjectOfType<TestRole>();
             
         }
-
+        [Button("Buff + 10", Line99)]
+        void GetBuffs()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                RewardHelper.RewardBuffFromPool(0, "0", 0);
+            }
+        }
 
         [Button("Test Config", Line99)]
         void TestConfig()

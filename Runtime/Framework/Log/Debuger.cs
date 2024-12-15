@@ -1,8 +1,10 @@
-﻿using System.Reflection;
-using System.Diagnostics;
+﻿	
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 namespace XiaoCao
 {
     /// <summary>
@@ -31,7 +33,7 @@ namespace XiaoCao
         /// <summary>
         /// 日志级别(默认Info)
         /// </summary>
-        public static LogLevel LogLevel = LogLevel.Info;
+        public static LogLevel LogLevel { get;set; }
         /// <summary>
         /// 是否使用Unity打印
         /// </summary>
@@ -84,7 +86,8 @@ namespace XiaoCao
             bool useUnityEngine = UseUnityEngine;
             if (useUnityEngine)
             {
-                UnityEngine.Debug.LogWarning(msg, (UnityEngine.Object)context);
+                //不做Warm
+                UnityEngine.Debug.Log(msg, (UnityEngine.Object)context);
             }
             else
             {
@@ -106,7 +109,7 @@ namespace XiaoCao
         }
 
         #region Info
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(object message)
         {
             if (LogLevel >= LogLevel.Info)
@@ -117,7 +120,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(object message, object context)
         {
             if (LogLevel >= LogLevel.Info)
@@ -128,7 +131,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(string tag, string message)
         {
             if (LogLevel >= LogLevel.Info)
@@ -139,7 +142,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(string tag, string format, params object[] args)
         {
             if (LogLevel >= LogLevel.Info)
@@ -153,7 +156,7 @@ namespace XiaoCao
         #endregion
 
         #region Warn
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogWarning(object message)
         {
             if (LogLevel >= LogLevel.Warn)
@@ -164,7 +167,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogWarning(object message, object context)
         {
             if (LogLevel >= LogLevel.Warn)
@@ -175,7 +178,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogWarning(string tag, string message)
         {
             if (LogLevel >= LogLevel.Warn)
@@ -186,7 +189,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogWarning(string tag, string format, params object[] args)
         {
             if (LogLevel >= LogLevel.Warn)
@@ -200,7 +203,7 @@ namespace XiaoCao
         #endregion
 
         #region Error
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(object message)
         {
             if (LogLevel >= LogLevel.Error)
@@ -211,7 +214,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(object message, object context)
         {
             if (LogLevel >= LogLevel.Error)
@@ -222,7 +225,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(string tag, string message)
         {
             if (LogLevel >= LogLevel.Error)
@@ -233,7 +236,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(string tag, string format, params object[] args)
         {
             if (LogLevel >= LogLevel.Error)
@@ -346,7 +349,7 @@ namespace XiaoCao
     /// </summary>
     public static class DebugerExtension
     {
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(this object obj, string message)
         {
             if (Debuger.LogLevel >= LogLevel.Info)
@@ -355,7 +358,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Log(this object obj, string format, params object[] args)
         {
             if (Debuger.LogLevel >= LogLevel.Info)
@@ -365,7 +368,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void Warning(this object obj, string message)
         {
             if (Debuger.LogLevel >= LogLevel.Warn)
@@ -374,7 +377,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogWarning(this object obj, string format, params object[] args)
         {
             if (Debuger.LogLevel >= LogLevel.Warn)
@@ -384,7 +387,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(this object obj, string message)
         {
             if (Debuger.LogLevel >= LogLevel.Error)
@@ -393,7 +396,7 @@ namespace XiaoCao
             }
         }
 
-        [Conditional("EnableLog")]
+        //[Conditional("EnableLog")]
         public static void LogError(this object obj, string format, params object[] args)
         {
             if (Debuger.LogLevel >= LogLevel.Error)

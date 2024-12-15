@@ -82,7 +82,7 @@ namespace XiaoCao
 
             if (mainDataFSM.State == FSMState.Finish)
             {
-                Debug.Log($"--- all Finish");
+                Debuger.Log($"--- all Finish");
                 mainDataFSM.ResetFSM();
             }
         }

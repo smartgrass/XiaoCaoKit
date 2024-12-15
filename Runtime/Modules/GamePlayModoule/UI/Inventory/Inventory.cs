@@ -93,6 +93,8 @@ namespace XiaoCao
         Green = 1,
         Blue = 2,
         Purple = 3,
+        Orange = 4,
+        Red = 5
     }
 
     public enum EEquipmentSub

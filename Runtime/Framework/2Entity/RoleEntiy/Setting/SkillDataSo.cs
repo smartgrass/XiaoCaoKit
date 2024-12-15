@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     [CreateAssetMenu(menuName = "SO/SkillDataSo",fileName = "SkillDataSo")]
     public class SkillDataSo : KeyMapSo<SkillData>
     {

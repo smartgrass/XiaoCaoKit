@@ -23,19 +23,29 @@ namespace XiaoCao
         public SoundMgr soundMgr;
         public CameraMgr cameraMgr;
         public TimeStopMgr timeStopMgr;
+        public LevelControl levelControl;
 
         //¾²Ì¬
         public SaveMgr saveMgr;
+        public ConfigMgr configMgr;
+
+        //Helper
+        ///<see cref="PlayerHelper"/>
+        ///<see cref="RewardHelper"/>
+        ///<see cref="LevelSettingHelper"/>
+
 
         #endregion
-
-        
-        public GameDataCommon debugGameData;
 
         [Button]
         void DebuggameData()
         {
-            debugGameData = GameDataCommon.Current;
+#if UNITY_EDITOR
+            Debug.Log($"--- DebuggameData");
+            var dataView = gameObject.AddComponent<Test_GameDataView>();
+            dataView.GetCurrentData();
+#endif
+
         }
 
         public override void Init()
@@ -106,7 +116,7 @@ namespace XiaoCao
             {
                 float progress = loadingScene.progress;
 
-                Debug.Log($"Loading: {progress * 100:F2}%"); 
+                Debug.Log($"Loading: {progress * 100:F2}%");
 
                 yield return new WaitForSeconds(0.25f);
             }
@@ -150,7 +160,7 @@ namespace XiaoCao
         public static string Level = "Level";
         public static string Loading = "Loading";
     }
-    
+
 
 
 }

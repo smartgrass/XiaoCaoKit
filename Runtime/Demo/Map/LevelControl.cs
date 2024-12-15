@@ -11,13 +11,21 @@ namespace XiaoCao
 
         public string[] rewardPools = { "0", "1", "2" };
 
+        public int rewardLevel;
+
         public override void OnGameStart()
         {
             base.OnGameStart();
-            enemyKillRewardSo = ConfigMgr.LoadSoConfig<EnemyKillRewardSo>();
+
+            GameMgr.Inst.levelControl = this;
+
+            BattleData.Current.levelRewardData.RewardLevel = rewardLevel;
+
+            enemyKillRewardSo = ConfigMgr.enemyKillRewardSo;
 
             GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
         }
+
 
         void OnEnemyDeadEvent(int id)
         {
@@ -32,12 +40,8 @@ namespace XiaoCao
                     int rewardLevel = enemy.enemyData.rewardLevel;
                     //获取奖池id
                     string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length)];
-                    //获取奖励池
-                    var rewardPool = enemyKillRewardSo.GetOrDefault(rewardPoolId);
-                    //获取一个buff
-                    BuffItem buffItem = rewardPool.GenRandomBuffItem(rewardLevel);
-                    //添加到角色上->BattleData
-                    PlayerHelper.AddBuff(deadInfo.killerId, buffItem);
+
+                    RewardHelper.RewardBuffFromPool(deadInfo.killerId, rewardPoolId, rewardLevel);
                 }
             }
             else

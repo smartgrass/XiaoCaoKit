@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mono.Cecil.Cil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -67,6 +68,8 @@ namespace XiaoCao
         }
 
         public static BattleData Current => GameAllData.battleData;
+
+        public LevelRewardData levelRewardData = new LevelRewardData();
         public static bool IsTimeStop { get => Current._isTimeStop; set => Current._isTimeStop = value; }
 
         private bool _isTimeStop;
@@ -78,14 +81,15 @@ namespace XiaoCao
 
         public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();
 
-        public bool CanPlayerControl1 = true;
-
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
         public bool UIEnter;
 
         //角色buff背包
-        private PlayerBuffs playerBuffs;
+        private PlayerBuffs playerBuffs = new PlayerBuffs();
+
+        public static PlayerBuffs LocalPlayerBuffs => Current.playerBuffs;
+
         public static PlayerBuffs GetPlayerBuff(int id = -1)
         {
             if (id < 0)
@@ -110,6 +114,7 @@ namespace XiaoCao
 
     }
 
+    [XCHelper]
     public static class PlayerHelper
     {
         public static bool IsLocalPlayerId(this int id)
@@ -133,39 +138,53 @@ namespace XiaoCao
         public List<BuffItem> EquippedBuffs = new List<BuffItem>();
         // 未装备buff
         public List<BuffItem> UnequippedBuffs = new List<BuffItem>();
+        public BuffItem GetValue(bool isEquipped, int index)
+        {
+            List<BuffItem> sourceList = isEquipped ? EquippedBuffs : UnequippedBuffs;
+            if (sourceList.Count > index)
+            {
+                return sourceList[index];
+            }
+            return default;
+        }
 
         public void AddBuff(BuffItem buff)
         {
-            int nullIndex = UnequippedBuffs.IndexOf(null);
-            if (nullIndex != -1)
+            int findEmpty = -1;
+            for (int i = 0; i < UnequippedBuffs.Count; i++)
             {
-                UnequippedBuffs[nullIndex] = buff;
-                Debug.Log("Buff已替换未装备列表中的null元素。");
+                if (UnequippedBuffs[i].GetBuffType == EBuffType.None)
+                {
+                    findEmpty = i;
+                    UnequippedBuffs[findEmpty] = buff;
+                    return;
+                }
             }
-            else
-            {
-                // 如果没有null元素，直接添加到列表末尾
-                UnequippedBuffs.Add(buff);
-                Debug.Log("Buff已添加到未装备列表的末尾。");
-            }
+
+            UnequippedBuffs.Add(buff);
+
         }
 
-        // 合成: 移除buff2, 将buff2的第一个词条加在buff1上
-        public void SynthesisBuff(BuffItem buff1, BuffItem buff2, bool isBuff2Equipped)
+        // 合成: 移除buff-from, 将from第一个词条加在to
+        public void SynthesisBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
         {
-            //TODO 星级调整
+            List<BuffItem> fromList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
+            List<BuffItem> toList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
 
+            var toItem = toList[ToIndex];
+            var costItem = fromList[FromIndex]; 
 
-            List<BuffItem> sourceList = isBuff2Equipped ? EquippedBuffs : UnequippedBuffs;
-            sourceList.Remove(buff2);
-            buff1.buffs.Add(buff2.buffs.First());
+            toItem.UpGradeItem(costItem);
+            toList[ToIndex] = toItem;
+            costItem.Clear();
+            fromList[FromIndex] = costItem;
         }
 
         // 移动buff: 将装备中或未装备中的buff移动到任意位置, 如果该位置已存在buff,则交换两buff位置
         public void MoveBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
         {
             List<BuffItem> sourceList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
-            List<BuffItem> targetList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
+            List<BuffItem> baseList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
 
             if (FromIndex < 0 || FromIndex >= sourceList.Count || ToIndex < 0)
             {
@@ -173,20 +192,22 @@ namespace XiaoCao
                 return;
             }
 
-            if (ToIndex >= targetList.Count)
+            if (ToIndex >= baseList.Count)
             {
                 // 如果目标索引超出目标列表长度，则扩展列表（这个逻辑可以根据实际需求调整）
-                for (int i = targetList.Count; i <= ToIndex; i++)
+                for (int i = baseList.Count; i <= ToIndex; i++)
                 {
-                    targetList.Add(null); // 或者创建一个默认的BuffItem实例
+                    var empty = new BuffItem();
+                    empty.Clear();
+                    baseList.Add(empty); // 或者创建一个默认的BuffItem实例
                 }
             }
 
             BuffItem temp = sourceList[FromIndex];
-            BuffItem temp2 = targetList[ToIndex];
+            BuffItem temp2 = baseList[ToIndex];
 
-            targetList[FromIndex] = temp2;
-            targetList[ToIndex] = temp;
+            sourceList[FromIndex] = temp2;
+            baseList[ToIndex] = temp;
             Debug.Log($"--- 交换了");
         }
     }
@@ -196,6 +217,8 @@ namespace XiaoCao
     {
         //目前技能
         public const int SkillCountOnBar = 2;
+        ///<see cref="EQuality"/>
+        public const int MaxBuffLevel = 5;//从0~5
 
         //根据阵营分层级
         public static int GetTeamLayer(int team)

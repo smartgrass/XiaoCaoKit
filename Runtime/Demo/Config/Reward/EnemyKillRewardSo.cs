@@ -1,6 +1,7 @@
 ﻿using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -21,13 +22,14 @@ namespace XiaoCao
                     continue;
                 }
                 BuffInfo buffInfo = new BuffInfo();
-                buffInfo.buff = item;
+                buffInfo.eBuff = item;
+                buffInfo.power = 1;
                 buffInfo.addInfo = new[] { 1f };
                 buffs.Add(buffInfo);
             }
             reward.buffs = buffs;
             list.Add(reward);
-            if (this.array.Length  == 0)
+            if (this.array.Length == 0)
             {
                 this.array = list.ToArray();
             }
@@ -47,6 +49,7 @@ namespace XiaoCao
         public string key;
         public string Key => key;
 
+        [SerializeField]
         public List<BuffInfo> buffs;
 
         /// <summary>
@@ -55,6 +58,7 @@ namespace XiaoCao
         /// <param name="level">决定词条数量</param>
         public BuffItem GenRandomBuffItem(int level)
         {
+            //0级为1个
             return BuffItemHelper.GenRandomBuffItem(level, buffs);
         }
     }

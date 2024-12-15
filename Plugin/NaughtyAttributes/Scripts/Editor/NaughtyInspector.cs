@@ -251,7 +251,7 @@ namespace NaughtyAttributes.Editor
                             });
                         }
 
-                        if (hasHor && xcLayout.GetType() == typeof(NewLineAttribute))
+                        if (hasHor && xcLayout.GetType() == typeof(XCHeaderAttribute))
                         {
                             GUILayout.EndHorizontal();
                             hasHor = false;
