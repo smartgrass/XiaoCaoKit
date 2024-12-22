@@ -108,7 +108,7 @@ namespace XiaoCao
             //显示单个buff
             if (item.GetBuffType != EBuffType.None)
             {
-                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level}";
+                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level+1}";
                 switchBtn.gameObject.SetActive(true);
                 ShowBuffText(item.buffs);
             }
@@ -140,7 +140,7 @@ namespace XiaoCao
             {
                 if (item.IsEnable)
                 {
-                    level += item.level;
+                    level += item.level+1;
                 }
             }
             return level;
