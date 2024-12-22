@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     public class PlayerControl : RoleControl<Player0>
     {
         public PlayerControl(Player0 _owner) : base(_owner) { }

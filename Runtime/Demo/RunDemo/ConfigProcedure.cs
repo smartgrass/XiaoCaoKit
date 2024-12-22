@@ -78,7 +78,8 @@ namespace XiaoCao
         public override bool LoadOnlyOnce => true;
         public override void Start()
         {
-            var inst = CommandFinder.Inst;
+            var inst = XCCommandBinder.Inst;
+            var buff = BuffBinder.Inst;
             XCTaskRunner.PreInitPool();
             var pool = RunTimePoolMgr.Inst;
             IsFinish = true;

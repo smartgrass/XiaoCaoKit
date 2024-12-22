@@ -33,11 +33,15 @@ namespace XiaoCao
         //roleData
         public RoleData roleData;
 
+        public PlayerAttr PlayerAttr => roleData.playerAttr;
+
         public Action<Role> DeadAct;
 
-        public int Level { get => roleData.playerAttr.lv; set => roleData.playerAttr.lv = value; }
-        public override int Hp { get => roleData.playerAttr.hp; set => roleData.playerAttr.hp = value; }
-        public override int MaxHp { get => roleData.playerAttr.MapHp; }
+        public Action<AtkInfo> AtkDamageAct;
+
+        public int Level { get => PlayerAttr.lv; set => PlayerAttr.lv = value; }
+        public override int Hp { get => (int)Math.Round(PlayerAttr.hp); set => PlayerAttr.hp = value; }
+        public override float MaxHp { get => PlayerAttr.MapHp; }
 
         public float ShowArmorPercentage => roleData.breakData.ShowPercentage;
 
@@ -67,7 +71,7 @@ namespace XiaoCao
         internal Animator Anim => idRole.animator;
         public bool isBodyCreated => body != null;
 
-        public RoleMovement Movement=> roleData.movement;
+        public RoleMovement Movement => roleData.movement;
 
         #endregion
 
@@ -110,7 +114,7 @@ namespace XiaoCao
             GameObject.Destroy(body);
             Debug.Log($"--- ChangeBody bodyName");
             CreateRoleBody(bodyName);
-            
+
         }
 
         protected void BaseInit()
@@ -154,6 +158,7 @@ namespace XiaoCao
             roleData.movement.OnDamage(roleData.breakData.IsBreak);
 
             OnDamageAct?.Invoke(ackInfo, roleData.breakData.IsBreak);
+            AfterDamage(ackInfo);
 
             if (roleData.breakData.IsBreak)
             {
@@ -183,6 +188,21 @@ namespace XiaoCao
             }
             //playerMover.SetNoGravityT(setting.NoGravityT);
             HitHelper.ShowHitEffect(transform, ackInfo);
+        }
+
+        public void AfterDamage(AtkInfo ackInfo)
+        {
+            ackInfo.beAtker = id;
+            var role = ackInfo.atker.GetRoleById();
+            if (role != null)
+            {
+                role.OnAtkDamage(ackInfo);
+            }
+        }
+
+        public void ChangeNowValue(ENowAttr eAttr, float delta)
+        {
+            roleData.playerAttr.ChangeNowValue(ENowAttr.Hp, delta);
         }
 
         private void HitTween(AtkInfo ackInfo, SkillSetting setting)
@@ -269,7 +289,7 @@ namespace XiaoCao
             int lv = roleData.playerAttr.lv;
             AttrSetting attr = IsPlayer ? setting.playerSetting : setting.enemySetting;
             roleData.breakData.maxArmor = attr.maxArmor;
-            roleData.playerAttr.Init(lv, attr);
+            roleData.playerAttr.Init(id, lv, attr);
         }
 
         public void RoleIn()
@@ -286,6 +306,17 @@ namespace XiaoCao
             GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.Int(), id, RoleChangeType.Remove);
             GameEvent.RemoveEventListener<bool>(EGameEvent.TimeSpeedStop.Int(), StopTimeSpeed);
             RoleMgr.Inst.roleDic.Remove(id);
+        }
+
+        public virtual void OnAtkDamage(AtkInfo info)
+        {
+            float AtkRecoverHp = PlayerAttr.GetValue(EAttr.AtkRecoverHp);
+            if (AtkRecoverHp > 0)
+            {
+                float recover = info.atk * AtkRecoverHp;
+                PlayerAttr.ChangeNowValue(ENowAttr.Hp, recover);
+            }
+            AtkDamageAct?.Invoke(info);
         }
 
         private void StopTimeSpeed(bool isOn)
@@ -692,6 +723,33 @@ namespace XiaoCao
         Roll,
         Other
     }
+
+    public enum ENowAttr
+    {
+        Hp,
+        Mp,
+    }
+
+    public enum EAttr
+    {
+        MaxHp,
+        MaxMp,
+        Atk,
+        Crit,
+        Def,
+        AtkRecoverHp,
+        //非基础属性 分界线
+
+    }
+
+    public static class EAttrExtend
+    {
+        private static bool IsBaseAttr(this EAttr eAttr)
+        {
+            return (int)eAttr <= (int)EAttr.AtkRecoverHp;
+        }
+    }
+
     /// <summary>
     /// 清除缓存数据, 如输入按键
     /// </summary>

@@ -16,9 +16,11 @@ namespace XiaoCao
     public class GameMgr : MonoSingleton<GameMgr>, IMgr
     {
         #region AllMgr
-        public GameDataCommon GameData => GameDataCommon.Current;
-        public BattleData BattleData => BattleData.Current;
-        public Player0 LocalPlayer => GameDataCommon.GetPlayer();
+        private GameDataCommon GameData => GameDataCommon.Current;
+        private BattleData BattleData => BattleData.Current;
+
+        private Player0 LocalPlayer => GameDataCommon.LocalPlayer;
+
         public EntityMgr entityMgr;
         public SoundMgr soundMgr;
         public CameraMgr cameraMgr;

@@ -7,19 +7,15 @@ namespace XiaoCao
         None = 0,
 
         [InspectorName("击杀回血3% HP")]
-        KillRecoverHp,
+        KillRecoverHpMult,
 
         [InspectorName("吸血1%")]
-        AtkRecoverHp,
+        AtkRecoverHpMult,
 
         [InspectorName("增加攻击力2.5%")]
-        AtkAdd,
-
-        [InspectorName("主动技能伤害5%")]
-        SkillDamageAdd,
-
+        AtkMult,
         [InspectorName("最大生命5%")]
-        MaxHpAdd,
+        MaxHpMult,
 
         [InspectorName("暴击率提升2.5%")]
         CritAdd,
@@ -36,6 +32,10 @@ namespace XiaoCao
         [InspectorName("大招能量恢复 20%")]
         UltimateEnergyRestore,
 
+        //相对的 有大招伤害
+        [InspectorName("主动技能伤害5%")]
+        SkillDamageMult,
+
         [InspectorName("受伤时生成最大生命值5%伤害的护盾,持续5s, cd5秒。")]
         ShieldOnDamage,
 
@@ -49,14 +49,14 @@ namespace XiaoCao
         {
             switch (buff)
             {
-                case EBuff.KillRecoverHp:
-                case EBuff.AtkRecoverHp:
-                case EBuff.MaxHpAdd:
+                case EBuff.KillRecoverHpMult:
+                case EBuff.AtkRecoverHpMult:
+                case EBuff.MaxHpMult:
                 case EBuff.ShieldOnDamage:
                     return EBuffType.Def;
 
-                case EBuff.AtkAdd:
-                case EBuff.SkillDamageAdd:
+                case EBuff.AtkMult:
+                case EBuff.SkillDamageMult:
                 case EBuff.CritAdd:
                 case EBuff.AtkAddIfBelowHalfHp:
                     return EBuffType.Atk;

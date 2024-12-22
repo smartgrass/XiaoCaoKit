@@ -158,7 +158,7 @@ namespace AssetEditor.Editor
 
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
-                GameMgr.Inst.LocalPlayer.PlayerAttr.lv = playerLevel;
+                GameDataCommon.LocalPlayer.PlayerAttr.lv = playerLevel;
             }
 
         }

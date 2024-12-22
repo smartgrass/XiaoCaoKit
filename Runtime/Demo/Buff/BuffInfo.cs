@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
     //词条Buff的最基础单位
     [Serializable]
     public struct BuffInfo : IPower
@@ -41,6 +42,15 @@ namespace XiaoCao
                 return buffs[0].eBuff.GetBuffType();
             }
         }
+
+        public bool IsEnable
+        {
+            get
+            {
+                return GetBuffType != EBuffType.None;
+            }
+        }
+
         public int GetMaxBuffCount => level + 1; // 0级1个词条, 1级两个词条
 
 

@@ -1,4 +1,5 @@
-﻿using XiaoCao.UI;
+﻿using Newtonsoft.Json.Linq;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -14,6 +15,10 @@ namespace XiaoCao
         public static string SkinList = "SkinList"; //锁定视角
         public static string MouseView = "MouseView";//视角跟随鼠标
 
+
+        public static string Buff = "Buff";
+        public static string BuffEffect = "BuffEffect";
+        public static string EquippedBuffEffect = "EquippedBuffEffect";
 
         public static string GetSkillNameKey(int skillId)
         {
@@ -44,18 +49,71 @@ namespace XiaoCao
 
         public static string GetBuffInfoDesc(BuffInfo info)
         {
-            string rawStr = GetGetBuffInfoKey(info.eBuff);
             try
             {
-                string ret = string.Format(rawStr, info.addInfo);
-                return ret; 
+                int len = info.addInfo.Length;
+                if (len == 0)
+                {
+                    return GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
+                }
+
+                if (SpecialBuffInfoDesc(info, out string ret))
+                {
+                    return ret;
+                }
+
+                string rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
+                if (len == 1)
+                {
+                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]));
+                }
+                else if (len == 2)
+                {
+                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]), AutoNumStr(info.addInfo[1]));
+                }
+                else if (len == 3)
+                {
+                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]), AutoNumStr(info.addInfo[1]), AutoNumStr(info.addInfo[2]));
+                }
+                else
+                {
+                    Debuger.LogError($"--- buff desc error {info.eBuff}");
+                }
+
+                return rawStr;
             }
             catch (System.Exception e)
             {
                 Debuger.LogError($"--- buff desc error {e}");
-                return rawStr;
+                return GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
             }
         }
+        //小于1,默认显示百分比
+        private static string AutoNumStr(float num)
+        {
+            if (num < 1)
+            {
+                return num.ToString("0.##");
+            }
+            else
+            {
+                return ((int)num).ToString();
+            }
+        }
+
+        //需要手动处理的描述
+        private static bool SpecialBuffInfoDesc(BuffInfo info, out string rawStr)
+        {
+            if (info.eBuff == EBuff.AtkAddIfBelowHalfHp)
+            {
+                rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
+                return true;
+            }
+
+            rawStr = "";
+            return false;
+        }
+
         #endregion
 
     }

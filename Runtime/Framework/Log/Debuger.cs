@@ -66,7 +66,7 @@ namespace XiaoCao
         //打印格式: {0}-时间 {1}-标签/类名/TAGNAME字段值 {2}-内容
         private static string InfoFormat = "<color=#008000>[Info] {0}<color=#00BFFF>{1}</color> {2}</color>";
         private static string WarnFormat = "<color=#FFFF00>[Warn] {0}<color=#00BFFF>{1}</color> {2}</color>";
-        private static string ErrorFormat = "<color=#FF0000>[Error] {0}<color=#00BFFF>{1}</color> {2}</color>";
+        private static string ErrorFormat = "<color=#FFB6C1>[Error] {0}<color=#00BFFF>{1}</color> {2}</color>";
 
         private static void Internal_Log(string msg, object context = null)
         {
@@ -112,7 +112,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(object message)
         {
-            if (LogLevel >= LogLevel.Info)
+            if (LogLevel <=LogLevel.Info)
             {
                 string msg = string.Format(InfoFormat, GetLogTime(), "", message);
                 Internal_Log(msg, null);
@@ -123,7 +123,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(object message, object context)
         {
-            if (LogLevel >= LogLevel.Info)
+            if (LogLevel <=LogLevel.Info)
             {
                 string msg = string.Format(InfoFormat, GetLogTime(), "", message);
                 Internal_Log(msg, context);
@@ -134,7 +134,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(string tag, string message)
         {
-            if (LogLevel >= LogLevel.Info)
+            if (LogLevel <=LogLevel.Info)
             {
                 string msg = string.Format(InfoFormat, GetLogTime(), tag, message);
                 Internal_Log(msg, null);
@@ -145,7 +145,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(string tag, string format, params object[] args)
         {
-            if (LogLevel >= LogLevel.Info)
+            if (LogLevel <=LogLevel.Info)
             {
                 string msg = string.Format(format, args);
                 msg = string.Format(InfoFormat, GetLogTime(), tag, msg);
@@ -159,7 +159,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogWarning(object message)
         {
-            if (LogLevel >= LogLevel.Warn)
+            if (LogLevel <=LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), "", message);
                 Internal_LogWarning(msg, null);
@@ -170,7 +170,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogWarning(object message, object context)
         {
-            if (LogLevel >= LogLevel.Warn)
+            if (LogLevel <=LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), "", message);
                 Internal_LogWarning(msg, context);
@@ -181,7 +181,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogWarning(string tag, string message)
         {
-            if (LogLevel >= LogLevel.Warn)
+            if (LogLevel <=LogLevel.Warn)
             {
                 string msg = string.Format(WarnFormat, GetLogTime(), tag, message);
                 Internal_LogWarning(msg, null);
@@ -192,7 +192,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogWarning(string tag, string format, params object[] args)
         {
-            if (LogLevel >= LogLevel.Warn)
+            if (LogLevel <=LogLevel.Warn)
             {
                 string msg = string.Format(format, args);
                 msg = string.Format(WarnFormat, GetLogTime(), tag, msg);
@@ -206,7 +206,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(object message)
         {
-            if (LogLevel >= LogLevel.Error)
+            if (LogLevel <=LogLevel.Error)
             {
                 string msg = string.Format(ErrorFormat, GetLogTime(), "", message);
                 Internal_Error(msg, null);
@@ -217,7 +217,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(object message, object context)
         {
-            if (LogLevel >= LogLevel.Error)
+            if (LogLevel <=LogLevel.Error)
             {
                 string msg = string.Format(ErrorFormat, GetLogTime(), "", message);
                 Internal_Error(msg, context);
@@ -228,7 +228,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(string tag, string message)
         {
-            if (LogLevel >= LogLevel.Error)
+            if (LogLevel <=LogLevel.Error)
             {
                 string msg = string.Format(ErrorFormat, GetLogTime(), tag, message);
                 Internal_Error(msg, null);
@@ -239,7 +239,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(string tag, string format, params object[] args)
         {
-            if (LogLevel >= LogLevel.Error)
+            if (LogLevel <=LogLevel.Error)
             {
                 string msg = string.Format(format, args);
                 msg = string.Format(ErrorFormat, GetLogTime(), tag, msg);
@@ -352,7 +352,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(this object obj, string message)
         {
-            if (Debuger.LogLevel >= LogLevel.Info)
+            if (Debuger.LogLevel <=LogLevel.Info)
             {
                 Debuger.Log(GetLogTag(obj), message);
             }
@@ -361,7 +361,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Log(this object obj, string format, params object[] args)
         {
-            if (Debuger.LogLevel >= LogLevel.Info)
+            if (Debuger.LogLevel <=LogLevel.Info)
             {
                 string message = string.Format(format, args);
                 Debuger.Log(GetLogTag(obj), message);
@@ -371,7 +371,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void Warning(this object obj, string message)
         {
-            if (Debuger.LogLevel >= LogLevel.Warn)
+            if (Debuger.LogLevel <=LogLevel.Warn)
             {
                 Debuger.LogWarning(GetLogTag(obj), message);
             }
@@ -380,7 +380,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogWarning(this object obj, string format, params object[] args)
         {
-            if (Debuger.LogLevel >= LogLevel.Warn)
+            if (Debuger.LogLevel <=LogLevel.Warn)
             {
                 string message = string.Format(format, args);
                 Debuger.LogWarning(GetLogTag(obj), message);
@@ -390,7 +390,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(this object obj, string message)
         {
-            if (Debuger.LogLevel >= LogLevel.Error)
+            if (Debuger.LogLevel <=LogLevel.Error)
             {
                 Debuger.LogError(GetLogTag(obj), message);
             }
@@ -399,7 +399,7 @@ namespace XiaoCao
         //[Conditional("EnableLog")]
         public static void LogError(this object obj, string format, params object[] args)
         {
-            if (Debuger.LogLevel >= LogLevel.Error)
+            if (Debuger.LogLevel <=LogLevel.Error)
             {
                 string message = string.Format(format, args);
                 Debuger.LogError(GetLogTag(obj), message);

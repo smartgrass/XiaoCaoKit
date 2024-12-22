@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using TEngine;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
@@ -8,8 +10,6 @@ namespace XiaoCao
 {
     public class Player0 : PlayerBase, IMsgReceiver
     {
-        public PlayerAttr PlayerAttr => roleData.playerAttr;
-
         public override void DataCreat()
         {
             playerData = new PlayerData0();
@@ -43,6 +43,7 @@ namespace XiaoCao
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
+            component.buffControl = new BuffControl(this);
             roleData.roleControl = component.control;
             //component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
@@ -58,6 +59,8 @@ namespace XiaoCao
 
             RoleIn();
         }
+
+
 
         protected override void OnUpdate()
         {
@@ -110,6 +113,7 @@ namespace XiaoCao
         {
             component.control.OnBreak();
         }
+
 
     }
 
@@ -230,7 +234,7 @@ namespace XiaoCao
             KeyCode.K, KeyCode.L , KeyCode.U,KeyCode.I,KeyCode.O
         };
 
-        public void AddInputXY(float x,float y)
+        public void AddInputXY(float x, float y)
         {
             if (x != 0 || y != 0)
             {
@@ -261,39 +265,93 @@ namespace XiaoCao
     {
         public int lv;
         public int maxExp;
-        public int hp; //实时数值
-        public int mp;
 
-        public int MapHp => (int)maxHpAtr.CurrentValue;
-        public int MapMp => (int)maxMpAtr.CurrentValue;
-        public int Atk => (int)atkAtr.CurrentValue;
-        public int Def => (int)defAtr.CurrentValue;
-        public float Crit => critAtr.CurrentValue;
+        public float hp; //实时数值
+        public float mp;
 
+        public float MapHp => GetAttribute(EAttr.MaxHp).CurrentValue;
+        public int MapMp => (int)GetAttribute(EAttr.MaxMp).CurrentValue;
+        public int Atk => (int)GetAttribute(EAttr.Atk).CurrentValue;
+        public int Def => (int)GetAttribute(EAttr.Def).CurrentValue;
+        public float Crit => GetAttribute(EAttr.Crit).CurrentValue;
+        //吸血 
+        public float AtkRecoverHp => GetAttribute(EAttr.AtkRecoverHp).CurrentValue;
 
-        public AttributeValue maxHpAtr = new AttributeValue();
-        public AttributeValue maxMpAtr = new AttributeValue();
-        public AttributeValue atkAtr = new AttributeValue();
-        public AttributeValue defAtr = new AttributeValue();
-        public AttributeValue critAtr = new AttributeValue(); //Float
+        public int RoleId { get; set; }
 
+        public Dictionary<string, AttributeValue> attrDic = new Dictionary<string, AttributeValue>();
 
-        public void Init(int lv, AttrSetting setting)
+        public void Init(int roleId, int lv, AttrSetting setting)
         {
             if (lv < 1)
             {
                 lv = 1;
             }
+            RoleId = roleId;
             this.lv = lv;
             maxExp = 100 + 100 * (lv % 10);
 
-            maxHpAtr.BaseValue = hp = (int)(setting.endHp * lv / setting.maxLevel);
-            maxMpAtr.BaseValue = mp = (int)(setting.endMp * lv / setting.maxLevel);
-            atkAtr.BaseValue = (int)(setting.endAtk * lv / setting.maxLevel);
-            defAtr.BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
-            critAtr.BaseValue = 0;
+            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(setting.endHp * lv / setting.maxLevel);
+            GetAttribute(EAttr.MaxMp).BaseValue = mp = (int)(setting.endMp * lv / setting.maxLevel);
+            GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * lv / setting.maxLevel);
+            GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
+            GetAttribute(EAttr.Crit).BaseValue = 0;
         }
 
+        public AttributeValue GetAttribute(EAttr eAttr, float defaultValue = 0)
+        {
+            string key = eAttr.ToString();
+            if (!attrDic.ContainsKey(key))
+            {
+                attrDic[key] = new AttributeValue()
+                {
+                    BaseValue = defaultValue,
+                };
+            }
+            return attrDic[key];
+        }
+
+        public void ChangeAttrValue(EAttr eAttr, string key, AttributeModifier modifier)
+        {
+            AttributeValue attr = GetAttribute(eAttr);
+            attr.AddModifier(key, modifier);
+        }
+
+        public float GetValue(EAttr eAttr, float defaultValue = 0) //冗余参数
+        {
+            string key = eAttr.ToString();
+            if (!attrDic.ContainsKey(key))
+            {
+                attrDic[key] = new AttributeValue()
+                {
+                    BaseValue = defaultValue,
+                };
+            }
+            return attrDic[key].CurrentValue;
+        }
+
+        public void ChangeNowValue(ENowAttr eAttr, float delta)
+        {
+            bool isSendMsg = RoleId.IsLocalPlayerId();
+            switch (eAttr)
+            {
+                case ENowAttr.Hp:
+                    hp += delta;
+                    break;
+                case ENowAttr.Mp:
+                    mp += delta;
+                    break;
+                default:
+                    //无处理
+                    isSendMsg = false;
+                    return;
+            }
+            if (isSendMsg)
+            {
+                GameEvent.Send<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), eAttr, delta);
+            }
+
+        }
     }
 
     public class PlayerShareData0 : IShareData
@@ -304,6 +362,7 @@ namespace XiaoCao
         public PlayerControl control;
         public RoleMovement movement;
         public PlayerAtkTimer atkTimers;
+        public BuffControl buffControl;
     }
 
 

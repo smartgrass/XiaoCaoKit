@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -15,6 +17,10 @@ namespace XiaoCao
 
         public GameObject buffItemPrefab; // BuffItem的Prefab
         public TextMeshProUGUI buffTextPrefab; // BuffItem的Prefab
+
+        [XCHeader("buff描述")]
+        public Button switchBtn;
+        public TextMeshProUGUI buffTitle;
 
         private PlayerBuffs playerBuffs;
 
@@ -41,7 +47,8 @@ namespace XiaoCao
             TempItemCell.EnableRayCast(false);
 
             prefabsTf.gameObject.SetActive(false);
-            playerBuffs = BattleData.GetPlayerBuff();
+            playerBuffs = PlayerHelper.GetPlayerBuff().playerBuffs;
+            switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
             RefreshUI();
         }
@@ -51,7 +58,7 @@ namespace XiaoCao
             ClearBuffItem(equippedBuffContainer);
             ClearBuffItem(unequippedBuffContainer);
 
-            UpdateBuffTxet();
+            UpdateEquippedBuffsTxet();
 
             // 显示已装备的buff
             for (int i = 0; i < playerBuffs.MaxEquipped; i++)
@@ -78,12 +85,6 @@ namespace XiaoCao
             }
         }
 
-        private void UpdateBuffTxet()
-        {
-            var buffInfoList = playerBuffs.EquippedBuffs.GetBuffInfos().Combine();
-            ShowBuffText(buffInfoList);
-        }
-
         private void ShowBuffText(List<BuffInfo> buffInfoList)
         {
             if (buffInfoList == null)
@@ -106,12 +107,34 @@ namespace XiaoCao
             //显示单个buff
             if (item.GetBuffType != EBuffType.None)
             {
+                buffTitle.text = LocalizeKey.BuffEffect.ToLocalizeStr();
+                switchBtn.gameObject.SetActive(true);
                 ShowBuffText(item.buffs);
             }
             else
             {
-                UpdateBuffTxet();
+                UpdateEquippedBuffsTxet();
             }
+        }
+
+        private void OnBuffChange()
+        {
+            UpdateEquippedBuffsTxet();
+        }
+
+        //显示总效果
+        private void UpdateEquippedBuffsTxet()
+        {
+            buffTitle.text = LocalizeKey.EquippedBuffEffect.ToLocalizeStr();
+            switchBtn.gameObject.SetActive(false);
+            var buffInfoList = playerBuffs.EquippedBuffs.GetBuffInfos().Combine();
+            ShowBuffText(buffInfoList);
+        }
+
+
+        private void OnSwitchBtn()
+        {
+            UpdateEquippedBuffsTxet();
         }
 
         private BuffItemCell InstantiateBuffItem(RectTransform container, BuffItem buffItem)
@@ -125,6 +148,7 @@ namespace XiaoCao
             //刷新时清空监听
             buffItemCell.OnButtonClick = null;
             buffItemCell.OnButtonClick += OnBuffClick;
+            buffItemCell.OnBuffChangeAct += OnBuffChange;
             return buffItemCell;
         }
 

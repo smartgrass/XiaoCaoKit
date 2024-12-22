@@ -1,6 +1,5 @@
 ﻿using NaughtyAttributes;
 using System;
-using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,7 +28,7 @@ namespace XiaoCao
         public bool CanDrag { get; set; }
 
         public Action<Vector2> OnBeginDragAct;
-        public Action<Vector2> OnEndDragAct;
+        public Action OnBuffChangeAct;
         public Action<Vector2> OnDragAct;
 
         public Action<BuffItem> OnButtonClick;
@@ -89,13 +88,12 @@ namespace XiaoCao
             }
 
             TempItemCell.gameObject.SetActive(false);
-            OnEndDragAct?.Invoke(eventData.position);
 
             //判断落点 获取位置的BuffItem
             BuffItemCell nextCell = GetPointBuffItemCell(eventData);
             if (nextCell == null || nextCell == this)
             {
-                Debug.Log($"--- 撤销 {nextCell}"); 
+                Debug.Log($"--- 撤销 {nextCell}");
                 RefreshView();
                 EnableRayCast(true);
                 //撤销移动
@@ -107,15 +105,16 @@ namespace XiaoCao
                 && nextCell.buffItem.CanUpGradeItem(buffItem))
             {
                 //合成
-                BattleData.LocalPlayerBuffs.SynthesisBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+                PlayerHelper.LocalPlayerBuffs.UpgradeBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             }
             else
             {
                 //交换
-                BattleData.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+                PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             }
             ReGetValue();
             nextCell.ReGetValue();
+            OnBuffChangeAct?.Invoke();
         }
 
         public BuffItemCell GetPointBuffItemCell(PointerEventData eventData)
@@ -132,7 +131,7 @@ namespace XiaoCao
 
         public void ReGetValue()
         {
-            buffItem = BattleData.LocalPlayerBuffs.GetValue(IsEquiped, Index);
+            buffItem = PlayerHelper.LocalPlayerBuffs.GetValue(IsEquiped, Index);
             RefreshView();
             EnableRayCast(true);
         }

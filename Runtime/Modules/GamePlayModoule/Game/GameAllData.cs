@@ -85,21 +85,6 @@ namespace XiaoCao
 
         public bool UIEnter;
 
-        //角色buff背包
-        private PlayerBuffs playerBuffs = new PlayerBuffs();
-
-        public static PlayerBuffs LocalPlayerBuffs => Current.playerBuffs;
-
-        public static PlayerBuffs GetPlayerBuff(int id = -1)
-        {
-            if (id < 0)
-            {
-                return Current.playerBuffs;
-            }
-            //暂不区分角色
-            return Current.playerBuffs;
-        }
-
 
         ///<see cref="BattleFlagNames"/>
         public bool HasFlag(string flag)
@@ -117,6 +102,24 @@ namespace XiaoCao
     [XCHelper]
     public static class PlayerHelper
     {
+
+        public static Role GetRoleById(this int id)
+        {
+            EntityMgr.Inst.FindEntity<Role>(id, out Role role);
+            return role;
+        }
+
+        public static Player0 GetPlayerById(this int id)
+        {
+            return GameDataCommon.GetPlayer(id);
+        }
+
+        public static Enemy0 GetEnemyById(this int id)
+        {
+            EntityMgr.Inst.FindEntity<Enemy0>(id, out Enemy0 enemy);
+            return enemy;
+        }
+
         public static bool IsLocalPlayerId(this int id)
         {
             var player = GameDataCommon.Current.player0;
@@ -126,92 +129,34 @@ namespace XiaoCao
 
         public static void AddBuff(int id, BuffItem buff)
         {
-            BattleData.GetPlayerBuff(id).AddBuff(buff);
+            GetPlayerBuff(id).AddBuff(buff);
+        }
+
+        public static PlayerBuffs LocalPlayerBuffs
+        {
+            get
+            {
+                return GetPlayerBuff().playerBuffs;
+            }
+        }
+
+        public static BuffControl GetPlayerBuff(int id = -1)
+        {
+            if (id < 0)
+            {
+                return GameDataCommon.LocalPlayer.component.buffControl;
+            }
+
+            var player = id.GetPlayerById();
+            if (player != null)
+            {
+                return player.component.buffControl;
+            }
+            Debug.LogError($"--- no player {id}");
+            return null;
         }
 
     }
-
-    public class PlayerBuffs
-    {
-        public int MaxEquipped = 4;
-        // 装备中buff
-        public List<BuffItem> EquippedBuffs = new List<BuffItem>();
-        // 未装备buff
-        public List<BuffItem> UnequippedBuffs = new List<BuffItem>();
-        public BuffItem GetValue(bool isEquipped, int index)
-        {
-            List<BuffItem> sourceList = isEquipped ? EquippedBuffs : UnequippedBuffs;
-            if (sourceList.Count > index)
-            {
-                return sourceList[index];
-            }
-            return default;
-        }
-
-        public void AddBuff(BuffItem buff)
-        {
-            int findEmpty = -1;
-            for (int i = 0; i < UnequippedBuffs.Count; i++)
-            {
-                if (UnequippedBuffs[i].GetBuffType == EBuffType.None)
-                {
-                    findEmpty = i;
-                    UnequippedBuffs[findEmpty] = buff;
-                    return;
-                }
-            }
-
-            UnequippedBuffs.Add(buff);
-
-        }
-
-        // 合成: 移除buff-from, 将from第一个词条加在to
-        public void SynthesisBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
-        {
-            List<BuffItem> fromList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
-            List<BuffItem> toList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
-
-            var toItem = toList[ToIndex];
-            var costItem = fromList[FromIndex]; 
-
-            toItem.UpGradeItem(costItem);
-            toList[ToIndex] = toItem;
-            costItem.Clear();
-            fromList[FromIndex] = costItem;
-        }
-
-        // 移动buff: 将装备中或未装备中的buff移动到任意位置, 如果该位置已存在buff,则交换两buff位置
-        public void MoveBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
-        {
-            List<BuffItem> sourceList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
-            List<BuffItem> baseList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
-
-            if (FromIndex < 0 || FromIndex >= sourceList.Count || ToIndex < 0)
-            {
-                Debug.LogError("索引无效！");
-                return;
-            }
-
-            if (ToIndex >= baseList.Count)
-            {
-                // 如果目标索引超出目标列表长度，则扩展列表（这个逻辑可以根据实际需求调整）
-                for (int i = baseList.Count; i <= ToIndex; i++)
-                {
-                    var empty = new BuffItem();
-                    empty.Clear();
-                    baseList.Add(empty); // 或者创建一个默认的BuffItem实例
-                }
-            }
-
-            BuffItem temp = sourceList[FromIndex];
-            BuffItem temp2 = baseList[ToIndex];
-
-            sourceList[FromIndex] = temp2;
-            baseList[ToIndex] = temp;
-            Debug.Log($"--- 交换了");
-        }
-    }
-
 
     public static class GameSetting
     {
@@ -277,8 +222,11 @@ namespace XiaoCao
         PlayerEvent = 100, //分界线
         AckingNorAck = 101,
         TimeSpeedStop = 102,
-        EnemyDeadEvent = 103,
-        EnemyGroupEndEvent = 104,
+        LocalPlayerChangeNowAttr = 103,
+
+        //Enemy
+        EnemyDeadEvent = 200,
+        EnemyGroupEndEvent = 201,
     }
 
     public static class BattleFlagNames

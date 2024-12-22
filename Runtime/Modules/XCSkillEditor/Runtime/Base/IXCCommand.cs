@@ -27,7 +27,7 @@ namespace XiaoCao
     }
 
 
-    public class CommandFinder : Singleton<CommandFinder>
+    public class XCCommandBinder : Singleton<XCCommandBinder>
     {
         private Dictionary<string, Type> commandTypeDic;
 

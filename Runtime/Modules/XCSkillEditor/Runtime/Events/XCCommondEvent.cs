@@ -14,7 +14,7 @@
         public override void OnTrigger(float startOffsetTime)
         {
             base.OnTrigger(startOffsetTime);
-            Cmd = CommandFinder.Inst.GetCommand(eName);
+            Cmd = XCCommandBinder.Inst.GetCommand(eName);
             if (Cmd != null && Cmd.roleType == Info.role.RoleType)
             {
                 HasCmd = true;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TEngine;
 using TMPro;
 using UnityEngine;
+using static XiaoCao.BattleHud;
 using Image = UnityEngine.UI.Image;
 
 namespace XiaoCao
@@ -32,14 +33,15 @@ namespace XiaoCao
         {
             pool = new AssetPool(worldHpBarPrefab);
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
+            GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), LocalPlayerChangeNowAttr);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
         }
-
         private void OnDestroy()
         {
             GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
+            GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), LocalPlayerChangeNowAttr);
         }
 
         private void Update()
@@ -52,6 +54,7 @@ namespace XiaoCao
             }
         }
 
+        #region HpBar
         //每帧都执行, 检查增加
         private void NorHpBarUpdate()
         {
@@ -138,7 +141,7 @@ namespace XiaoCao
                 item.Value.UpdatePostion();
             }
         }
-
+        #endregion
 
 
         //只有变动时才执行, 隐藏多余
@@ -159,6 +162,20 @@ namespace XiaoCao
         }
 
 
+        private void LocalPlayerChangeNowAttr(ENowAttr attr, float num)
+        {
+            if (attr == ENowAttr.Hp)
+            {
+                //显示回血效果
+                //飘字->绿色
+                if (num == 0)
+                {
+                    return;
+                }
+                ETextColor color = num > 0 ? ETextColor.Recover : ETextColor.Injured;
+                ShowDamageText((int)num, GameDataCommon.LocalPlayer.transform.position, ETextColor.Recover);
+            }
+        }
 
         #region DamageText
         public DamageTextSetting DamageUITSetting;
@@ -187,7 +204,7 @@ namespace XiaoCao
             }
         }
 
-        public void ShowDamageText(int num, Vector3 mTarget, bool isBlod = false)
+        public void ShowDamageText(int num, Vector3 mTarget, ETextColor eTextColor = ETextColor.Nor)
         {
             //获取屏幕坐标  
             Vector3 mScreen = Camera.main.WorldToScreenPoint(mTarget);
@@ -220,7 +237,19 @@ namespace XiaoCao
 
                 float randomY = DamageUITSetting.MoveY * Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y);
 
-                t.text = (num).ToString();
+                if (eTextColor == ETextColor.Recover)
+                {
+                    t.text = $"+{num}";
+                }
+                else if (eTextColor == ETextColor.Injured)
+                {
+                    t.text = $"{num}";
+                }
+                else
+                {
+                    t.text = (num).ToString();
+                }
+
 
                 t.transform.position = mScreen + DamageUITSetting.starY * Vector3.one;
                 //tween.SetEase(DamageUITSetting.ease);
@@ -230,16 +259,38 @@ namespace XiaoCao
                 //位置
                 tween.Join(t.transform.DOMoveY(mScreen.y + DamageUITSetting.MoveY, DamageUITSetting.flyTime / 2));
                 //颜色
-                t.color = DamageUITSetting.startColor;
+                t.color = GetStartColor(eTextColor);
 
 
-                var textTween = t.DOColor(DamageUITSetting.endColor, DamageUITSetting.flyTime / 2);
+                var textTween = t.DOColor(GetEndColor(eTextColor), DamageUITSetting.flyTime / 2);
 
                 tween.Join(textTween);
 
                 tween.OnComplete(() => { t.color = Color.white.SetAlpha(0); });
             }
         }
+
+        public Color GetStartColor(ETextColor eTextColor)
+        {
+            switch (eTextColor)
+            {
+                case ETextColor.Nor:
+                    return DamageUITSetting.startColor;
+                case ETextColor.Recover:
+                    return DamageUITSetting.recoverColor;
+                case ETextColor.Injured:
+                    return DamageUITSetting.injuredColor;
+            }
+
+
+            return DamageUITSetting.startColor;
+        }
+
+        public Color GetEndColor(ETextColor eTextColor)
+        {
+            return DamageUITSetting.endColor;
+        }
+
 
         public void AnimTargetFixUpdate()
         {
@@ -297,6 +348,17 @@ namespace XiaoCao
             public Vector2 randomVec2 = new Vector2(25, 40);
             public Vector2 randomScaleVec2 = new Vector2(0.5f, 1);
             public Vector2 offset = new Vector2(60, 100);
+
+            public Color recoverColor = Color.green;
+            public Color injuredColor = Color.red;
+
+        }
+
+        public enum ETextColor
+        {
+            Nor,
+            Recover, //绿
+            Injured, //红
 
         }
 

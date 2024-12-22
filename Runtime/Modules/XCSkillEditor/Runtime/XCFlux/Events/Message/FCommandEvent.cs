@@ -20,7 +20,7 @@ namespace Flux
         {
             get
             {
-                var dic = CommandFinder.Inst.GetAllCommandTypes();
+                var dic = XCCommandBinder.Inst.GetAllCommandTypes();
                 List<string> list = new List<string>();
                 list.Add("");
                 list.AddRange(dic.Keys);
