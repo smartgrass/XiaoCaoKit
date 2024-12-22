@@ -288,6 +288,14 @@ namespace XiaoCao
 
         public Color GetEndColor(ETextColor eTextColor)
         {
+            switch (eTextColor)
+            {
+                case ETextColor.Recover:
+                    return DamageUITSetting.recoverColor.SetAlpha(0.5f);
+                case ETextColor.Injured:
+                    return DamageUITSetting.injuredColor.SetAlpha(0.5f);
+            }
+
             return DamageUITSetting.endColor;
         }
 
