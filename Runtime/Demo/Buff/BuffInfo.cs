@@ -96,13 +96,12 @@ namespace XiaoCao
         public static List<BuffInfo> GetBuffInfos(this List<BuffItem> items)
         {
             List<BuffInfo> list = new List<BuffInfo>();
-            foreach (var item in items)
+            foreach (BuffItem item in items)
             {
                 if (item.GetBuffType != EBuffType.None)
                 {
                     list.AddRange(item.buffs);
                 }
-                return list;
             }
             return list;
         }

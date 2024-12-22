@@ -36,6 +36,9 @@ namespace XiaoCao
         [InspectorName("主动技能伤害5%")]
         SkillDamageMult,
 
+        [InspectorName("特殊buff分界线,buff数值不能直接叠加效果")]
+        SpecialBuffIndex = 100,
+
         [InspectorName("受伤时生成最大生命值5%伤害的护盾,持续5s, cd5秒。")]
         ShieldOnDamage,
 
@@ -47,27 +50,11 @@ namespace XiaoCao
     {
         public static EBuffType GetBuffType(this EBuff buff)
         {
-            switch (buff)
+            if ((int)buff < (int) EBuff.SpecialBuffIndex)
             {
-                case EBuff.KillRecoverHpMult:
-                case EBuff.AtkRecoverHpMult:
-                case EBuff.MaxHpMult:
-                case EBuff.ShieldOnDamage:
-                    return EBuffType.Def;
-
-                case EBuff.AtkMult:
-                case EBuff.SkillDamageMult:
-                case EBuff.CritAdd:
-                case EBuff.AtkAddIfBelowHalfHp:
-                    return EBuffType.Atk;
-                case EBuff.SkillCDOff:
-                case EBuff.MovementSpeedAdd:
-                case EBuff.AttackSpeedAdd:
-                case EBuff.UltimateEnergyRestore:
-                    return EBuffType.Other;
-                default:
-                    return EBuffType.Atk;
+                return EBuffType.Nor;
             }
+            return EBuffType.Other;
         }
     }
 
@@ -76,8 +63,7 @@ namespace XiaoCao
     public enum EBuffType
     {
         None = -1,
-        Def = 0,
-        Atk = 1,
+        Nor = 0,
         Other = 2
     }
 }

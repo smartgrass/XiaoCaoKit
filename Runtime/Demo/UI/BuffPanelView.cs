@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OdinSerializer.Utilities;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -107,7 +108,7 @@ namespace XiaoCao
             //显示单个buff
             if (item.GetBuffType != EBuffType.None)
             {
-                buffTitle.text = LocalizeKey.BuffEffect.ToLocalizeStr();
+                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level}";
                 switchBtn.gameObject.SetActive(true);
                 ShowBuffText(item.buffs);
             }
@@ -125,10 +126,24 @@ namespace XiaoCao
         //显示总效果
         private void UpdateEquippedBuffsTxet()
         {
-            buffTitle.text = LocalizeKey.EquippedBuffEffect.ToLocalizeStr();
+            buffTitle.text = $"{LocalizeKey.EquippedBuffEffect.ToLocalizeStr()} lv{GetEquippedBuffsLevel()}";
             switchBtn.gameObject.SetActive(false);
             var buffInfoList = playerBuffs.EquippedBuffs.GetBuffInfos().Combine();
+            Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedBuffs.GetBuffInfos().Count}");
             ShowBuffText(buffInfoList);
+        }
+
+        private int GetEquippedBuffsLevel()
+        {
+            int level = 0;
+            foreach (var item in playerBuffs.EquippedBuffs)
+            {
+                if (item.IsEnable)
+                {
+                    level += item.level;
+                }
+            }
+            return level;
         }
 
 

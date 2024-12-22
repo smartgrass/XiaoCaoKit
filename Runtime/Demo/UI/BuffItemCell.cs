@@ -7,6 +7,7 @@ using Image = UnityEngine.UI.Image;
 
 namespace XiaoCao
 {
+    ///<see cref="BuffPanelView"/>
     public class BuffItemCell : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
         public Image bg;
