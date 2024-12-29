@@ -9,7 +9,7 @@ public class GenExplodeExec : MonoExecute
 
     public override void Execute()
     {
-        GameObject obj = PoolMgr.Inst.GetFromPrefab(prefab);
+        GameObject obj = PoolMgr.Inst.GetOrCreatPrefabPool(prefab).Get();
         obj.SetActive(true);
         obj.transform.position = transform.position;
         if (clip != null)

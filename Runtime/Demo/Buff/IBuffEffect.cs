@@ -8,18 +8,25 @@ namespace XiaoCao.Buff
 
         public int TargetId { get; set; }
 
+        public bool HasLife { get; }
+
         public void ApplyEffect(string key, BuffInfo buff, int targetId);
 
         void RemoveEffect();
+
+        void Update();
     }
 
     public class XCBuffAttribute : Attribute{ }
+
 
     public  class BaseBuffEffect: IBuffEffect
     {
         public virtual EBuff Buff => EBuff.None;
 
         public int TargetId { get ; set; }
+
+        public virtual bool HasLife => false;
 
         public virtual void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
@@ -29,6 +36,10 @@ namespace XiaoCao.Buff
         public virtual void RemoveEffect()
         {
             
+        }
+
+        public virtual void Update()
+        {
         }
     }
 

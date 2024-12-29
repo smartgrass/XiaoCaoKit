@@ -56,8 +56,8 @@ public class AtkTrigger : IdComponent
                     curTriggerTime++;
                     if (maxTriggerTime != 0 && curTriggerTime >= maxTriggerTime)
                     {
-                        Debug.Log($"--- {transform.parent.name} OnEnd");
-                        ackInfo.objectData.OnEnd();
+                        ackInfo.maxTriggerAct?.Invoke();
+                        OnTriggerEnd();
                     }
                 }
             }
@@ -71,6 +71,11 @@ public class AtkTrigger : IdComponent
             InitHitInfo(other);
             item.OnDamage(ackInfo);
         }
+    }
+
+    public virtual void OnTriggerEnd()
+    {
+
     }
 
     private void InitHitInfo(Collider other)
@@ -99,6 +104,7 @@ public class AtkInfo
     internal Vector3 hitDir;
     internal Vector3 hitPos;
     internal Vector3 ackObjectPos;
+    public Action maxTriggerAct;
     public ObjectData objectData;
 
     private SkillSetting setting;

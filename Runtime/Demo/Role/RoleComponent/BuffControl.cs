@@ -17,7 +17,7 @@ namespace XiaoCao
         private readonly List<IBuffEffect> buffEffectList = new();
 
 
-        public  void AddBuff(BuffItem buff)
+        public void AddBuff(BuffItem buff)
         {
             playerBuffs.AddBuff(buff);
         }
@@ -62,9 +62,21 @@ namespace XiaoCao
                 }
             }
         }
+
+        public override void Update()
+        {
+            foreach (IBuffEffect buff in buffEffectList)
+            {
+                if (buff.HasLife)
+                {
+                    buff.Update();
+                }
+            }
+        }
+
+
+
     }
-
-
     public class PlayerBuffs
     {
         public Action BuffUpdataAct;
@@ -162,7 +174,6 @@ namespace XiaoCao
         {
             BuffUpdataAct.Invoke();
         }
+
     }
-
-
 }

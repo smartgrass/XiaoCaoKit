@@ -21,6 +21,10 @@ namespace XiaoCao
                 {
                     continue;
                 }
+                if (item.GetBuffType() == EBuffType.Other )
+                {
+                    continue;
+                }
                 BuffInfo buffInfo = new BuffInfo();
                 buffInfo.eBuff = item;
                 buffInfo.power = 1;

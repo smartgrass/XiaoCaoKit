@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Microsoft.Win32;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,17 @@ public class XCTime
     internal static float unscaledDeltaTime => Time.unscaledDeltaTime;
 
     public static float timeScale = 1;
+
+    public static Timer DelayTimer(float time, TimerCompleteHandler TimerCompleteHandler)
+    {
+        var timer =  TimerManager.Inst.Register(time, TimerCompleteHandler);
+        //timer.Pause();
+        //timer.onResume 
+        //timer.onDestroy
+        //timer.onPause
+        return timer;
+    }
+
 
     //task.Start(); 启动
     //task.Dispose(); 停止

@@ -5,6 +5,8 @@
 using NaughtyAttributes;
 using NUnit.Framework;
 using System;
+using System.Collections;
+using TEngine;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
@@ -15,7 +17,7 @@ namespace AssetEditor.Editor
 {
     public class XCToolWindow : XiaoCaoWindow
     {
-        [MenuItem(XCEditorTools.XCToolWindow,priority=1)]
+        [MenuItem(XCEditorTools.XCToolWindow, priority = 1)]
         public static XCToolWindow Open()
         {
             return OpenWindow<XCToolWindow>("XiaoCao调试面板");
@@ -24,7 +26,7 @@ namespace AssetEditor.Editor
         public const int Line1 = 1;
         public const int Line2 = 2;
         public const int Line99 = 99;
-        
+
         [HorLayout(true)]
         public bool IsKaiLe = false;
         [HorLayout(false)]
@@ -38,25 +40,36 @@ namespace AssetEditor.Editor
         {
             base.OnEnable();
             EditorApplication.playModeStateChanged += PlayModeStateChanged;
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
         }
 
         private void OnDisable()
         {
             EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
+        }
+
+        private void GameStateChange(GameState state1, GameState state2)
+        {
+            if (state2 == GameState.Running)
+            {
+                if (IsKaiLe)
+                {
+                    "IsKaiLe".SetKeyBool(true);
+                    OnTimeScale();
+                    GetBuffs();
+                }
+            }
         }
 
         private void PlayModeStateChanged(PlayModeStateChange change)
         {
             if (change == PlayModeStateChange.EnteredPlayMode)
             {
-                if (IsKaiLe)
-                {
-                    "IsKaiLe".SetKeyBool(true);
-                    OnTimeScale();
-                }
                 IsShowDebug = DebugSetting.DebugGUI_IsShow.GetKeyBool();
             }
         }
+
 
         private void CheckDebugGo()
         {
@@ -67,8 +80,8 @@ namespace AssetEditor.Editor
                 {
                     debugGo.gameObject.SetActive(IsShowDebug);
                 }
-                
-            }          
+
+            }
         }
 
         [Button("选中角色", Line1)]
@@ -110,7 +123,7 @@ namespace AssetEditor.Editor
             }
         }
 
-        [Button("生成敌人", Line1,enabledMode: EButtonEnableMode.Playmode)]
+        [Button("生成敌人", Line1, enabledMode: EButtonEnableMode.Playmode)]
         void GenEnemy()
         {
             var testRole = GameObject.FindAnyObjectByType<TestRole>();
@@ -133,7 +146,7 @@ namespace AssetEditor.Editor
         {
             XCToolBarMenu.OpenPath_Excel();
         }
-        
+
         [Button("打开生成配置位置", Line2)]
         void OpenGenConfigPath()
         {
@@ -177,14 +190,34 @@ namespace AssetEditor.Editor
         void StopTime()
         {
             //TestRole testRole  = GameObject.FindObjectOfType<TestRole>();
-            
+
         }
+        [Button("清空对象池", Line99)]
+        void ClearPool()
+        {
+            PoolMgr.Inst.ClearAllPool();
+        }
+
         [Button("Buff + 10", Line99)]
         void GetBuffs()
         {
-            for (int i = 0; i < 10; i++)
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+            for (int i = 0; i < 8; i++)
             {
                 RewardHelper.RewardBuffFromPool(0, "0", 0);
+            }
+
+
+            foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
+            {
+                if (item.GetBuffType() == EBuffType.Other)
+                {
+                    var buffItem = BuffItemHelper.CreatOtherBuff(item);
+                    PlayerHelper.AddBuff(0, buffItem);
+                }
             }
         }
 

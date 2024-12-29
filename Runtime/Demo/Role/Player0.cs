@@ -68,6 +68,7 @@ namespace XiaoCao
             component.control.Update();
             component.control.OnTaskUpdate();
             component.movement.Update();
+            component.buffControl.Update();
 
             //考虑增加add模式
             ForDebug();

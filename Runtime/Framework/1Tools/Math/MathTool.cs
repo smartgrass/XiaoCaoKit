@@ -391,6 +391,28 @@ public static class MathTool
             return false;
         }
     }
+    /// <summary>
+    /// 随机球点
+    /// </summary>
+    /// <param name="innerRadius"></param>
+    /// <param name="outerRadius"></param>
+    /// <returns></returns>
+    static Vector3 RandomPointInShell(float innerRadius, float outerRadius)
+    {
+        float radius = Random.Range(innerRadius, outerRadius);
+
+        // 生成两个在 [0, 2π] 之间的随机角度（θ 和 φ）
+        float theta = Random.Range(0, 2 * Mathf.PI);
+
+        // [0, π]
+        float phi = Mathf.Acos(Random.Range(-1f, 1f));
+
+        // 将球坐标转换为笛卡尔坐标
+        float x = radius * Mathf.Sin(phi) * Mathf.Cos(theta);
+        float y = radius * Mathf.Sin(phi) * Mathf.Sin(theta);
+        float z = radius * Mathf.Cos(phi);
+        return new Vector3(x, y, z);
+    }
 
     /// <summary>
     /// 值映射, 比如原本0~1的0.4, 映射到0~100,就是40
@@ -399,6 +421,8 @@ public static class MathTool
     public static float ValueMapping(float value, float from, float to, float newFrom, float newTo)
     {
         float p = (value - from) / (to - from);
+        p = Mathf.Clamp01(p);
+
         float newValue = p * (newTo - newFrom) + newFrom;
         return newValue;
     }

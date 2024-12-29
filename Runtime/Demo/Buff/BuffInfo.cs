@@ -84,6 +84,20 @@ namespace XiaoCao
 
     public static class BuffItemHelper
     {
+        public static BuffItem CreatOtherBuff(EBuff eBuff)
+        {
+            BuffItem buffItem = new BuffItem();
+            buffItem.buffs = new List<BuffInfo>()
+            {
+                new BuffInfo()
+                {
+                    eBuff = eBuff,
+                    addInfo = new float[1]{ 1}
+                }
+            };
+            return buffItem;
+        }
+
         public static BuffItem GenRandomBuffItem(int level, List<BuffInfo> buffs)
         {
             BuffItem item = new BuffItem();

@@ -11,7 +11,7 @@ namespace XiaoCao
     [Serializable]
     public class XCTriggerEvent : XCEvent
     {
-        public static string[] TriggerNames = new[] 
+        public static string[] TriggerNames = new[]
         { "BoxTrigger", "SphereTrigger", "SectorTrigger", "OtherTrigger" };
 
         public int maxTriggerTime = 0;
@@ -112,9 +112,8 @@ namespace XiaoCao
             CurTrigger.maxTriggerTime = maxTriggerTime;
             CurTrigger.curTriggerTime = 0;
 
-            var info =new AtkInfo()
+            var info = new AtkInfo()
             {
-                objectData = task.ObjectData,
                 team = Info.role.team,
                 skillId = Info.skillId,
                 subSkillId = task.ObjectData.index,
@@ -123,15 +122,19 @@ namespace XiaoCao
                 isCrit = isCrit,
                 atker = Info.role.id
             };
+            info.maxTriggerAct += OnMaxTrigger;
+
             info.atk = (int)(baseAtk * info.GetSkillSetting.AckRate);
 
             CurTrigger.ackInfo = info;
-
-
-
             CurTrigger.id = Info.role.id;
         }
 
+        void OnMaxTrigger()
+        {
+            task.ObjectData.OnEnd();
+            Debug.Log($"--- OnMaxTrigger");
+        }
 
         public override void OnFinish()
         {
@@ -164,7 +167,7 @@ namespace XiaoCao
         }
 
         public Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
-        
+
 
         public static GameObject GetTrigger(MeshType meshType)
         {

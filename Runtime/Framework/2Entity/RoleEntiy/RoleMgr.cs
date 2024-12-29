@@ -25,9 +25,16 @@ namespace XiaoCao
                 if (item.team != team && !item.IsDie)
                 {
                     GetAngleAndDistance(self, item.transform, out float curAngle, out float curDis);
-                    
+
+                    float limitDis ;
                     //动态边界, 角度越偏, 边界越短
-                    float limitDis = MathTool.ValueMapping(curAngle, seeAngle, 180, seeR, hearR);
+                    if (seeAngle > 179.9) {
+                        limitDis = seeR;
+                    }
+                    else
+                    {
+                        limitDis = MathTool.ValueMapping(curAngle, seeAngle, 180, seeR, hearR);
+                    }
                     if (curDis > limitDis){
                         //超出距离的排除
                         continue;

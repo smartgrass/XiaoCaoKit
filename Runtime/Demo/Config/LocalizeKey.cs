@@ -104,11 +104,11 @@ namespace XiaoCao
         //需要手动处理的描述
         private static bool SpecialBuffInfoDesc(BuffInfo info, out string rawStr)
         {
-            if (info.eBuff == EBuff.AtkAddIfBelowHalfHp)
-            {
-                rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
-                return true;
-            }
+            //if (info.eBuff == EBuff.AtkAddIfBelowHalfHp)
+            //{
+            //    rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
+            //    return true;
+            //}
 
             rawStr = "";
             return false;

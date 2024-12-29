@@ -43,6 +43,20 @@ namespace XiaoCao
             }
         }
 
+        public void AddKey(string skillIndex,float cd)
+        {
+            if (!dic.ContainsKey(skillIndex))
+            {
+                SkillCdData skillCdData = new SkillCdData();
+                skillCdData.cd = cd;
+                dic[skillIndex] = skillCdData;
+            }
+            else
+            {
+                dic[skillIndex].cd = cd;
+            }
+        }
+
         //public bool IsSkillReady(string skillId)
         //{
         //    int hash = skillId.GetHashCode();

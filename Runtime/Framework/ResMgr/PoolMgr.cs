@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Fantasy.Pool;
+using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 
 namespace XiaoCao
@@ -13,53 +15,13 @@ namespace XiaoCao
 
         private Dictionary<GameObject, AssetPool> prefabPools = new Dictionary<GameObject, AssetPool>();
 
-        public GameObject Get(string path, float releaseTime = 0)
-        {
-            GameObject obj = GetOrCreatPool(path).Get();
-            if (releaseTime > 0)
-            {
-                var task = XCTime.DelayRun(releaseTime, () => { Release(path, obj); });
-            }
-            return obj;
-        }
-
-        public GameObject GetFromPrefab(GameObject prefab)
-        {
-            if (prefab == null)
-            {
-                Debug.LogError("---  prefab null");
-                return null;
-            }
-            return GetOrCreatPrefabPool(prefab).Get();
-        }
-
-        private AssetPool GetOrCreatPrefabPool(GameObject prefab)
-        {
-            var id = prefab.GetInstanceID().ToString();
-
-            if (!dicPools.ContainsKey(id))
-            {
-                AssetPool pool = new AssetPool(prefab);
-                dicPools[id] = pool;
-                return pool;
-            }
-            else
-            {
-                return dicPools[id];
-            }
-        }
-
-        public void Release(string path, GameObject obj)
-        {
-            GetOrCreatPool(path).Release(obj);
-        }
 
         /// <summary>
         /// 可在初始化的时候提前加载
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private AssetPool GetOrCreatPool(string path)
+        public AssetPool GetOrCreatPool(string path)
         {
             if (dicPools.ContainsKey(path))
             {
@@ -72,13 +34,53 @@ namespace XiaoCao
             return assetPool;
         }
 
+        public AssetPool GetOrCreatPrefabPool(GameObject prefab)
+        {
+            //var id = prefab.GetInstanceID().ToString();
+            if (!prefabPools.ContainsKey(prefab))
+            {
+                prefabPools[prefab] = new AssetPool(prefab);
+            }
+            return prefabPools[prefab];
+        }
+
+        public GameObject Get(string path, float releaseTime = 0)
+        {
+            GameObject obj = GetOrCreatPool(path).Get();
+            if (releaseTime > 0)
+            {
+                var task = XCTime.DelayRun(releaseTime, () => { Release(path, obj); });
+            }
+            return obj;
+        }
+
+
+        public void Release(string path, GameObject obj)
+        {
+            GetOrCreatPool(path).Release(obj);
+        }
+
+
+
         public void ClearAllPool()
         {
+            var keys = dicPools.Keys;
             foreach (var pool in dicPools.Values)
             {
-                pool.pool.Clear();
-                dicPools.Remove(pool.path);
+                ClearPool(pool);
             }
+            dicPools.Clear();
+
+            foreach (var pool in prefabPools.Values)
+            {
+                ClearPool(pool);
+            }
+            prefabPools.Clear();
+        }
+
+        private void ClearPool(AssetPool pool)
+        {
+            pool.pool.Clear();
         }
 
 

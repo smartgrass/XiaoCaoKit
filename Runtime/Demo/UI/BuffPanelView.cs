@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao.UI;
+using static XiaoCao.BuffControl;
 
 namespace XiaoCao
 {

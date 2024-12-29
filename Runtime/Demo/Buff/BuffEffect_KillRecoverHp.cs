@@ -4,6 +4,7 @@ using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace XiaoCao.Buff
 {
+
     [XCBuff]
     public class BuffEffect_KillRecoverHp : BaseBuffEffect
     {
@@ -15,7 +16,7 @@ namespace XiaoCao.Buff
         {
             this.TargetId = targetId;
 
-            var player = targetId.GetPlayerById();
+            var player = TargetId.GetPlayerById();
 
             recoverHp = buff.addInfo[0];
 
@@ -160,17 +161,4 @@ namespace XiaoCao.Buff
     {
         public override EBuff Buff => EBuff.UltimateEnergyRestore;
     }
-
-    [XCBuff]
-    public class BuffEffect_ShieldOnDamage : BaseBuffEffect
-    {
-        public override EBuff Buff => EBuff.ShieldOnDamage;
-    }
-
-    [XCBuff]
-    public class BuffEffect_AtkAddIfBelowHalfHp : BaseBuffEffect
-    {
-        public override EBuff Buff => EBuff.AtkAddIfBelowHalfHp;
-    }
-
 }

@@ -39,21 +39,27 @@ namespace XiaoCao
         [InspectorName("特殊buff分界线,buff数值不能直接叠加效果")]
         SpecialBuffIndex = 100,
 
-        [InspectorName("受伤时生成最大生命值5%伤害的护盾,持续5s, cd5秒。")]
-        ShieldOnDamage,
+        [InspectorName("自动召唤魔法导弹,cd{5}s")]
+        MagicMissile,
 
-        [InspectorName("生命值低于50%时, 攻击力提升8%")]
-        AtkAddIfBelowHalfHp
+        [InspectorName("闪避成功,使周围目标陷入时停3s")]
+        LimitDash
     }
 
     public static class BuffSetting
     {
         public static EBuffType GetBuffType(this EBuff buff)
         {
-            if ((int)buff < (int) EBuff.SpecialBuffIndex)
+            int index = (int)buff;
+            if (index < (int)EBuff.SpecialBuffIndex)
             {
                 return EBuffType.Nor;
             }
+            else if (index == (int)EBuff.SpecialBuffIndex)
+            {
+                return EBuffType.None;
+            }
+
             return EBuffType.Other;
         }
     }

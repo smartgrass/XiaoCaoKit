@@ -15,7 +15,8 @@ namespace XiaoCao
         internal GameObject GetHitEffect(int hitEffect)
         {
             string path = XCPathConfig.GetHitEffectPath(hitEffect);
-            return PoolMgr.Inst.Get(path, 3);
+            GameObject hit = PoolMgr.Inst.Get(path, 3);
+            return hit;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using cfg;
+using OdinSerializer;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,21 +39,21 @@ namespace XiaoCao
 
     public static class RewardHelper
     {
-        public static void RewardBuffFromPool(int killerId, string rewardPoolId, int rewardLevel = -1)
+        public static void RewardBuffFromPool(int roleId, string rewardPoolId, int rewardLevel = -1)
         {
             if (rewardLevel < 0)
             {
                 rewardLevel = BattleData.Current.levelRewardData.RewardLevel;
             }
-            Debug.Log($"--- RewardBuffFromPool {killerId} {rewardPoolId}");
+            Debug.Log($"--- RewardBuffFromPool {roleId} {rewardPoolId}");
 
-            EnemyKillRewardSo enemyKillRewardSo = ConfigMgr.enemyKillRewardSo;
+            EnemyKillRewardSo so = ConfigMgr.enemyKillRewardSo;
             //获取奖励池
-            var rewardPool = enemyKillRewardSo.GetOrDefault(rewardPoolId);
+            EnemyKillBuffReward rewardPool = so.GetOrDefault(rewardPoolId);
             //获取一个buff
             BuffItem buffItem = rewardPool.GenRandomBuffItem(rewardLevel);
             //添加到角色上->BattleData
-            PlayerHelper.AddBuff(killerId, buffItem);
+            PlayerHelper.AddBuff(roleId, buffItem);
         }
     }
 }

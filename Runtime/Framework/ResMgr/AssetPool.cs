@@ -35,7 +35,7 @@ namespace XiaoCao
 #if UNITY_EDITOR
                 var obj = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 //编辑器兼容大小写,可能是大小写的问题
-                Debug.LogError($"Editor test has ? {obj!=null}");
+                Debug.LogError($"Editor test has ? {obj != null}");
 #endif
             }
 
