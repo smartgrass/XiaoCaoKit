@@ -215,7 +215,7 @@ namespace AssetEditor.Editor
             {
                 if (item.GetBuffType() == EBuffType.Other)
                 {
-                    var buffItem = BuffItemHelper.CreatOtherBuff(item);
+                    var buffItem = BuffHelper.CreatOtherBuff(item);
                     PlayerHelper.AddBuff(0, buffItem);
                 }
             }

@@ -31,6 +31,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         BreakPower = _buf.ReadFloat();
         HitClip = _buf.ReadString();
         HitEffect = _buf.ReadInt();
+        ActType = (Skill.EActType)_buf.ReadInt();
     }
 
     public static SkillSetting DeserializeSkillSetting(ByteBuf _buf)
@@ -98,12 +99,17 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// 击中特效
     /// </summary>
     public readonly int HitEffect;
+    /// <summary>
+    /// 类型
+    /// </summary>
+    public readonly Skill.EActType ActType;
    
     public const int __ID__ = 633610975;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -139,6 +145,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "breakPower:" + BreakPower + ","
         + "hitClip:" + HitClip + ","
         + "hitEffect:" + HitEffect + ","
+        + "actType:" + ActType + ","
         + "}";
     }
 }

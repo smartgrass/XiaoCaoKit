@@ -16,7 +16,6 @@ namespace XiaoCao
         public string key;
 
         public float cd;
-
         public string Key => key;
     }
 

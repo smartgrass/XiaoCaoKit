@@ -221,7 +221,7 @@ namespace XiaoCao
         RoleChange = 4,
 
         PlayerEvent = 100, //分界线
-        AckingNorAck = 101,
+        PlayerPlaySkill = 101,
         TimeSpeedStop = 102,
         LocalPlayerChangeNowAttr = 103,
 

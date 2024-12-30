@@ -1,7 +1,9 @@
 ﻿using Fantasy.Pool;
 using System;
 using System.Collections;
+using TEngine;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao.Buff
 {
@@ -24,7 +26,7 @@ namespace XiaoCao.Buff
 
         public Player0 player;
 
-        private int _triggerIndex;
+        private int _triggerTime;
 
         private bool hasInit;
 
@@ -34,39 +36,46 @@ namespace XiaoCao.Buff
             Key = key;
             this.TargetId = targetId;
             player = TargetId.GetPlayerById();
-            player.UpdateEvent += Update;
             atkTimers = player.component.atkTimers;
             atkTimers.AddKey(key, buff.addInfo[0]);
-            loopTimer = new LoopTimer(0.5f);
+            loopTimer = new LoopTimer(0.3f);
 
             if (!hasInit)
             {
                 hasInit = true;
                 bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);
             }
+            GameEvent.AddEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(),OnPlaySkill);
         }
-
         public override void RemoveEffect()
         {
-            var player = TargetId.GetPlayerById();
-            player.UpdateEvent += Update;
+            var player = TargetId.GetPlayerById(); ;
+            GameEvent.RemoveEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(), OnPlaySkill);
+        }
+
+        private void OnPlaySkill(int id, string skillId)
+        {
+            if (id != TargetId)
+            {
+                return;
+            }
+            if (!atkTimers.IsSkillReady(Key))
+            {
+                return;
+            }
+
+            if (player.FindEnemy(out Role findRole, angle: 180) && !findRole.IsDie)
+            {
+                //触发
+                atkTimers.SetSkillEnterCD(Key);
+                loopTimer.Reset();
+                _triggerTime = 3;
+            }
         }
 
         public override void Update()
         {
-            //存在Target时启动
-            if (atkTimers.IsSkillReady(Key))
-            {
-                player.FindEnemy(out Role findRole, angle: 180);
-                if (findRole != null && !findRole.IsDie)
-                {
-                    //触发
-                    atkTimers.SetSkillEnterCD(Key);
-                    loopTimer.Reset();
-                    _triggerIndex = 0;
-                }
-            }
-            if (_triggerIndex < 3)
+            if (_triggerTime > 0)
             {
                 //间隔 0.5s 生成一个共3个, 分别发射导弹
                 loopTimer.TickPeriodic(XCTime.deltaTime, out var executePeriodicTick);
@@ -89,7 +98,7 @@ namespace XiaoCao.Buff
             bullet.InitWithPlayer(player);
 
             //位置 & 朝向
-            _triggerIndex++;
+            _triggerTime--;
         }
 
         private AtkInfo GetAtkInfo()

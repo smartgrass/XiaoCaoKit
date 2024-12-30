@@ -10,11 +10,11 @@ namespace XiaoCao
 
     //词条Buff的最基础单位
     [Serializable]
-    public struct BuffInfo : IPower
+    public struct BuffInfo
     {
-        public int Power => power;
+        //public int Power => power;
 
-        public int power;
+        //public int power;
 
         public EBuff eBuff;
 
@@ -82,7 +82,7 @@ namespace XiaoCao
 
     }
 
-    public static class BuffItemHelper
+    public static class BuffHelper
     {
         public static BuffItem CreatOtherBuff(EBuff eBuff)
         {
@@ -102,7 +102,9 @@ namespace XiaoCao
         {
             BuffItem item = new BuffItem();
             item.level = level;
-            item.buffs = RandomHelper.GetRandomList<BuffInfo>(buffs, level+1);
+
+            //TODO
+            //item.buffs = RandomHelper.GetRandomList<BuffInfo>(buffs, level+1);
 
             return item;
         }

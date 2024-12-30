@@ -101,7 +101,7 @@ namespace XiaoCao
                 return;
             }
 
-            
+
 
             //owner.Anim.Play(AnimNames.Jump);
             //JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
@@ -156,8 +156,6 @@ namespace XiaoCao
             if (!IsRoleCanPlaySkill())
                 return;
 
-            GameEvent.Send(EGameEvent.AckingNorAck.Int());
-
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
@@ -177,13 +175,13 @@ namespace XiaoCao
             {
                 Debug.Log($"--- findRole no");
             }
-
         }
 
 
         //执行使用技能, 一般不直接使用
         public override void RcpPlaySkill(string skillId)
         {
+            GameEvent.Send<int, string>(EGameEvent.PlayerPlaySkill.Int(), owner.id, skillId);
             base.RcpPlaySkill(skillId);
         }
 
@@ -191,3 +189,4 @@ namespace XiaoCao
     }
 
 }
+
