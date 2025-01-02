@@ -130,30 +130,75 @@ namespace XiaoCao.Buff
             player.Hp = (int)(player.MaxHp * percent);
         }
 
+
+
     }
 
     [XCBuff]
-    public class BuffEffect_CritAdd : BaseBuffEffect
+    public class BuffEffect_CritAdd : BuffEffect_BaseAttrModify
     {
         public override EBuff Buff => EBuff.CritAdd;
+
+        public override EAttr EAttr => EAttr.Crit;
+
+        public override void ApplyEffect(string key, BuffInfo buff, int targetId)
+        {
+            this.TargetId = targetId;
+            this.Key = key;
+            var player = TargetId.GetPlayerById();
+            AttributeModifier modifier = new AttributeModifier
+            {
+                Add = buff.addInfo[0]
+            };
+            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+        }
     }
 
     [XCBuff]
-    public class BuffEffect_SkillCDOff : BaseBuffEffect
+    public class BuffEffect_SkillCDOff : BuffEffect_BaseAttrModify
     {
         public override EBuff Buff => EBuff.SkillCDOff;
+        public override EAttr EAttr => EAttr.SkillCDOff;
+
+        public override void ApplyEffect(string key, BuffInfo buff, int targetId)
+        {
+            this.TargetId = targetId;
+            this.Key = key;
+            var player = TargetId.GetPlayerById();
+            AttributeModifier modifier = new AttributeModifier
+            {
+                Add = buff.addInfo[0]
+            };
+            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.component.atkTimers.UpdataCdOff();
+        }
+
+        public override void RemoveEffect()
+        {
+            base.RemoveEffect();
+            var player = TargetId.GetPlayerById();
+            player.component.atkTimers.UpdataCdOff();
+        }
     }
 
     [XCBuff]
-    public class BuffEffect_MovementSpeedAdd : BaseBuffEffect
+    public class BuffEffect_MovementSpeedAdd : BuffEffect_BaseAttrModify
     {
-        public override EBuff Buff => EBuff.MovementSpeedAdd;
-    }
+        public override EBuff Buff => EBuff.MoveSpeedMultAdd;
 
-    [XCBuff]
-    public class BuffEffect_AttackSpeedAdd : BaseBuffEffect
-    {
-        public override EBuff Buff => EBuff.AttackSpeedAdd;
+        public override EAttr EAttr => EAttr.MoveSpeedMult;
+
+        public override void ApplyEffect(string key, BuffInfo buff, int targetId)
+        {
+            this.TargetId = targetId;
+            this.Key = key;
+            var player = TargetId.GetPlayerById();
+            AttributeModifier modifier = new AttributeModifier
+            {
+                Add = buff.addInfo[0]
+            };
+            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+        }
     }
 
     [XCBuff]

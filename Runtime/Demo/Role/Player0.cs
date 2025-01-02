@@ -294,6 +294,8 @@ namespace XiaoCao
             GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * lv / setting.maxLevel);
             GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
             GetAttribute(EAttr.Crit).BaseValue = 0;
+            GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
+
         }
 
         public AttributeValue GetAttribute(EAttr eAttr, float defaultValue = 0)

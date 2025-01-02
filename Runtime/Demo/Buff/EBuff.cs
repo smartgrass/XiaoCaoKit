@@ -24,10 +24,7 @@ namespace XiaoCao
         SkillCDOff,
 
         [InspectorName("移速增加 5%")]
-        MovementSpeedAdd,
-
-        [InspectorName("攻速提升5%")]
-        AttackSpeedAdd,
+        MoveSpeedMultAdd,
 
         [InspectorName("大招能量恢复 20%")]
         UltimateEnergyRestore,

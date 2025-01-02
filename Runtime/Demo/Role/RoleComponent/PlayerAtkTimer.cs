@@ -10,6 +10,8 @@ namespace XiaoCao
 
         public Dictionary<string, SkillCdData> dic = new Dictionary<string, SkillCdData>();
 
+        public float GetSkillCDOff => owner.roleData.playerAttr.GetValue(EAttr.SkillCDOff);
+
         public float norAckTimer;
 
         public int GetNextNorAckIndex(bool setTime = true)
@@ -27,6 +29,15 @@ namespace XiaoCao
             return ret;
         }
 
+        public void UpdataCdOff()
+        {
+            float cdOff = GetSkillCDOff;
+            foreach (var item in dic.Values)
+            {
+                item.CdOff = cdOff;
+            }
+        }
+
         public void SetNorAckTime()
         {
             norAckTimer = Time.time + playerSetting.resetNorAckTime;
@@ -38,22 +49,23 @@ namespace XiaoCao
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.cd = ConfigMgr.skillDataSo.GetOrDefault(skillIndex).cd;
+                skillCdData.baseCd = ConfigMgr.skillDataSo.GetOrDefault(skillIndex).cd;
+                skillCdData.CdOff = GetSkillCDOff;
                 dic[skillIndex] = skillCdData;
             }
         }
 
-        public void AddKey(string skillIndex,float cd)
+        public void AddKey(string skillIndex, float cd)
         {
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.cd = cd;
+                skillCdData.baseCd = cd;
                 dic[skillIndex] = skillCdData;
             }
             else
             {
-                dic[skillIndex].cd = cd;
+                dic[skillIndex].baseCd = cd;
             }
         }
 
@@ -93,14 +105,31 @@ namespace XiaoCao
 
         public class SkillCdData
         {
-            public float cd = 1;
+            public float baseCd = 1;
+
+            public float CD
+            {
+                get
+                {
+
+                    float mult = (1 - CdOff);
+                    if (mult < 0.5f)
+                    {
+                        //冷缩上限
+                        mult = 0.5f;
+                    }
+                    return baseCd * mult;
+                }
+            }
 
             public float cdFinishTime { get; set; }
+
+            public float CdOff { get; set; }
 
             public bool IsCd => Time.time < cdFinishTime;
             public void EnterCD()
             {
-                cdFinishTime = Time.time + cd;
+                cdFinishTime = Time.time + baseCd;
             }
 
             //剩余时间 / 总cd -> 百分比
@@ -108,7 +137,7 @@ namespace XiaoCao
             {
                 if (IsCd)
                 {
-                    return (cdFinishTime - Time.time) / cd;
+                    return (cdFinishTime - Time.time) / baseCd;
                 }
                 return 0;
             }

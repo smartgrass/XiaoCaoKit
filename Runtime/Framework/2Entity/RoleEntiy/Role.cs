@@ -622,7 +622,6 @@ namespace XiaoCao
         public float animMoveSpeed = 0;
 
         public Vector3 inputDir = Vector3.zero;// 暂无用处
-        public float MoveMultFinal => moveSpeedMult * moveAnimMult;
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
 
 
@@ -732,7 +731,9 @@ namespace XiaoCao
         Atk,
         Crit,
         Def,
+        SkillCDOff,
         AtkRecoverHp,
+        MoveSpeedMult
         //非基础属性 分界线
 
     }

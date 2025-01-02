@@ -104,7 +104,7 @@ namespace XiaoCao
 
             float baseSpeed = overridBaseMoveSpeed > 0 ? overridBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
 
-            float speed = baseSpeed * Data_R.roleState.MoveMultFinal;
+            float speed = baseSpeed * Data_R.roleState.moveAnimMult * Data_R.playerAttr.GetValue(EAttr.MoveSpeedMult);
 
             Vector3 moveDelta = moveDir * speed * XCTime.fixedDeltaTime;
 
