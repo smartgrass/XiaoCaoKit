@@ -1,8 +1,6 @@
-﻿using Fantasy.Pool;
-using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
+using GG.Extensions;
 namespace XiaoCao
 {
     /// <summary>
@@ -62,7 +60,7 @@ namespace XiaoCao
 
 
 
-        public void ClearAllPool()
+        public void ClearAllPool(bool isDestory)
         {
             var keys = dicPools.Keys;
             foreach (var pool in dicPools.Values)
@@ -76,6 +74,13 @@ namespace XiaoCao
                 ClearPool(pool);
             }
             prefabPools.Clear();
+
+            if (isDestory)
+            {
+                Transform tf = DontDestroyTransfrom.Get(AssetPool.PoolName);
+                tf.DestroyChildrenImmediate();
+            }
+
         }
 
         private void ClearPool(AssetPool pool)

@@ -47,13 +47,61 @@ namespace XiaoCao
             }
             Debug.Log($"--- RewardBuffFromPool {roleId} {rewardPoolId}");
 
-            EnemyKillRewardSo so = ConfigMgr.enemyKillRewardSo;
+            RewardPoolSo so = ConfigMgr.enemyKillRewardSo;
             //获取奖励池
-            EnemyKillBuffReward rewardPool = so.GetOrDefault(rewardPoolId);
-            //获取一个buff
-            BuffItem buffItem = rewardPool.GenRandomBuffItem(rewardLevel);
-            //添加到角色上->BattleData
-            PlayerHelper.AddBuff(roleId, buffItem);
+            BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
+            //背包 pick
+            Item item = rewardPool.GetRewardItem(rewardLevel);
+
+            RewardItem(item);
+        }
+
+        public static void RewardItem(this Item item)
+        {
+            //暂时只有本地玩家
+            switch (item.type)
+            {
+                case ItemType.Consumable:
+                    break;
+                case ItemType.Equipment:
+                    break;
+                case ItemType.Coin:
+                    break;
+                case ItemType.Buff:
+
+                    RewardBuff(item);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        public static void RewardBuff(Item item)
+        {
+            if (string.IsNullOrEmpty(item.id))
+            {
+                Debuger.LogError("--- id = empty");
+                return;
+            }
+            EBuff eBuff;
+            if (item.id[0]=='#')
+            {
+                var valueString = item.id.Substring(1);
+                int.TryParse(valueString, out int num);
+                EBuffType eBuffType = (EBuffType)num;
+                eBuff = BuffHelper.GetRandomBuff(eBuffType);
+            }
+            else
+            {
+                int.TryParse(item.id, out int num);
+                eBuff = (EBuff)num;
+            }
+
+            var buffItem = BuffHelper.CreatBuffItem(eBuff);
+
+            PlayerHelper.AddBuff(GameDataCommon.Current.LocalPlayerId, buffItem);
+            Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
         }
     }
 }

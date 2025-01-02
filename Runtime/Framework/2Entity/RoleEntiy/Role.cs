@@ -541,6 +541,11 @@ namespace XiaoCao
 
         public RoleData Data_R => owner.roleData;
         public RoleState RoleState => Data_R.roleState;
+
+        public virtual void OnDestroy()
+        {
+
+        }
     }
 
 
@@ -713,16 +718,6 @@ namespace XiaoCao
         SkillEnd //后摇
     }
 
-    //行为类型
-    public enum EActType
-    {
-        None,
-        Jump,
-        NorAck,
-        Skill,
-        Roll,
-        Other
-    }
 
     public enum ENowAttr
     {

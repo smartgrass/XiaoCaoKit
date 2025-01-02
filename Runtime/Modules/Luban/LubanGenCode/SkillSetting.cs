@@ -32,6 +32,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         HitClip = _buf.ReadString();
         HitEffect = _buf.ReadInt();
         ActType = (Skill.EActType)_buf.ReadInt();
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Tags = new System.Collections.Generic.HashSet<string>(/*n0 * 3 / 2*/);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); Tags.Add(_e0);}}
     }
 
     public static SkillSetting DeserializeSkillSetting(ByteBuf _buf)
@@ -103,12 +104,14 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// 类型
     /// </summary>
     public readonly Skill.EActType ActType;
+    public readonly System.Collections.Generic.HashSet<string> Tags;
    
     public const int __ID__ = 633610975;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -146,6 +149,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "hitClip:" + HitClip + ","
         + "hitEffect:" + HitEffect + ","
         + "actType:" + ActType + ","
+        + "tags:" + Luban.StringUtil.CollectionToString(Tags) + ","
         + "}";
     }
 }

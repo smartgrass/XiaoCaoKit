@@ -287,7 +287,12 @@ namespace XiaoCaoEditor
         }
 
 
-
+        [MenuItem("CONTEXT/Button/ButtonClick", priority = 10)]
+        private static void ButtonClick(MenuCommand menuCommand)
+        {
+            Button button = menuCommand.context as Button;
+            button.onClick?.Invoke();
+        }
     }
 
 

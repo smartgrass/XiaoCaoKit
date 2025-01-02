@@ -2,11 +2,12 @@
 using System;
 using System.Collections;
 using TEngine;
-using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao.Buff
 {
+
+
     public class BuffEffect_MagicMissile : BaseBuffEffect
     {
         public override EBuff Buff => EBuff.MagicMissile;
@@ -18,6 +19,7 @@ namespace XiaoCao.Buff
         public string Key { get; set; }
 
         public AssetPool bulletPool;
+
         public AssetPool effectPool;
 
         public LoopTimer loopTimer;
@@ -28,8 +30,6 @@ namespace XiaoCao.Buff
 
         private int _triggerTime;
 
-        private bool hasInit;
-
         //自动召唤魔法导弹,cd{5}s
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
@@ -39,13 +39,9 @@ namespace XiaoCao.Buff
             atkTimers = player.component.atkTimers;
             atkTimers.AddKey(key, buff.addInfo[0]);
             loopTimer = new LoopTimer(0.3f);
+            bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);
 
-            if (!hasInit)
-            {
-                hasInit = true;
-                bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);
-            }
-            GameEvent.AddEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(),OnPlaySkill);
+            GameEvent.AddEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(), OnPlaySkill);
         }
         public override void RemoveEffect()
         {
@@ -90,32 +86,11 @@ namespace XiaoCao.Buff
         private void CreatInstant()
         {
             var go = bulletPool.Get();
-            go.SetActive(true);
-
             var bullet = go.GetComponent<Bullet_MagicMissile>();
-
-            bullet.ackInfo = GetAtkInfo();
             bullet.InitWithPlayer(player);
 
             //位置 & 朝向
             _triggerTime--;
-        }
-
-        private AtkInfo GetAtkInfo()
-        {
-            PlayerAttr attr = player.PlayerAttr;
-            bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
-            int baseAtk = attr.Atk;
-            var info = new AtkInfo()
-            {
-                team = player.team,
-                skillId = Buff.ToString(),
-                baseAtk = baseAtk,
-                atk = baseAtk,
-                isCrit = isCrit,
-                atker = player.id,
-            }; 
-            return info;
         }
     }
 

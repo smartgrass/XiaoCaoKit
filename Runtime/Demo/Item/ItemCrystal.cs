@@ -221,7 +221,8 @@ public class ItemCrystal : ItemIdComponent
         }
         else
         {
-            XCTime.DelayRun(4f, HideAll).Forget();
+           var timer = XCTime.DelayTimer(4f, HideAll);
+         
         }
     }
 

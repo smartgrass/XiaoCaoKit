@@ -42,6 +42,9 @@ namespace XiaoCao
         [InspectorName("自动召唤魔法导弹,cd{5}s")]
         MagicMissile,
 
+        [InspectorName(" 普攻时,产生额外剑气")]
+        ExtraSlash,
+
         [InspectorName("闪避成功,使周围目标陷入时停3s")]
         LimitDash
     }

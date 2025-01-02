@@ -12,7 +12,7 @@ namespace XiaoCao
     /// <summary>
     /// 相当于System 无数据,RunTime时构建
     /// </summary>
-    public class XCTaskRunner : MonoBehaviour,IClearCache
+    public class XCTaskRunner : MonoBehaviour, IClearCache
     {
 
         public TaskInfo debugInfo;
@@ -25,7 +25,7 @@ namespace XiaoCao
 
         public bool IsAllStop { get; set; } //全部task结束
 
-        public bool IsTimeStop {  get; set; }
+        public bool IsTimeStop { get; set; }
 
         ///<see cref="Role.OnSkillFinish"/>  主Task结束时执行
         public UnityEvent<XCTaskRunner> onMainEndEvent = new UnityEvent<XCTaskRunner>(); //正常完成时触发
@@ -34,7 +34,7 @@ namespace XiaoCao
         public UnityEvent<XCTaskRunner> onAllTaskEndEvent = new UnityEvent<XCTaskRunner>(); //所有Task不执行时触发
 
 
-        //[StaticCache]
+        [StaticCache]
         public static AssetPool runnerPool;
 
         private void Awake()
@@ -74,11 +74,10 @@ namespace XiaoCao
 
         public static void PreInitPool()
         {
-            if (runnerPool == null)
+            if (runnerPool == null || !runnerPool.prefab)
             {
                 GameObject go = new GameObject($"Runner_Pre");
-                go.AddComponent<XCTaskRunner>();
-                GameObject.DontDestroyOnLoad(go);
+                go.AddComponent<XCTaskRunner>(); 
                 runnerPool = new AssetPool(go);
             }
         }
@@ -104,7 +103,7 @@ namespace XiaoCao
                 return;
             if (IsTimeStop)
                 return;
- 
+
             Task.OnEventUpdate();
         }
 
@@ -185,9 +184,9 @@ namespace XiaoCao
         {
             if (state2 == GameState.Exit)
             {
-                if (Task!= null && Task.State == XCState.Running)
+                if (Task != null && Task.State == XCState.Running)
                 {
-                    if (Task.ObjectData!= null)
+                    if (Task.ObjectData != null)
                     {
                         Debug.Log($"--- ForceClear");
                         Task.ObjectData.ForceClear();
@@ -198,7 +197,8 @@ namespace XiaoCao
         }
     }
 
-    public class TaskInfo
+    ///<see cref="AtkInfo"/>
+    public class TaskInfo 
     {
         public Role role;
         public Transform playerTF;
@@ -214,7 +214,13 @@ namespace XiaoCao
 
         public float speed = 1;
 
-        public XCTaskRunner taskRunner; 
+        public XCTaskRunner taskRunner;
+    }
+
+    public class TaskInfoTags
+    {
+        public static string Slash = "Slash";
+
     }
 
     public class SkillDataMgr : Singleton<SkillDataMgr>, IClearCache
@@ -232,7 +238,8 @@ namespace XiaoCao
 
             //需要表做什么事?  技能类型, 技能图标 ,cd
             byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(raceId.ToString(), skillId).LogStr("--"));
-            if (bytes == null) { 
+            if (bytes == null)
+            {
                 return null;
             }
             XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);

@@ -195,7 +195,7 @@ namespace AssetEditor.Editor
         [Button("清空对象池", Line99)]
         void ClearPool()
         {
-            PoolMgr.Inst.ClearAllPool();
+            PoolMgr.Inst.ClearAllPool(false);
         }
 
         [Button("Buff + 10", Line99)]
@@ -215,7 +215,7 @@ namespace AssetEditor.Editor
             {
                 if (item.GetBuffType() == EBuffType.Other)
                 {
-                    var buffItem = BuffHelper.CreatOtherBuff(item);
+                    var buffItem = BuffHelper.CreatBuffItem(item);
                     PlayerHelper.AddBuff(0, buffItem);
                 }
             }

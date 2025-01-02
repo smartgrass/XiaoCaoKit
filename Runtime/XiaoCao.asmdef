@@ -9,7 +9,8 @@
         "Cinemachine",
         "FancyScrollView",
         "Unity.TextMeshPro",
-        "Fantasy.Unity"
+        "Fantasy.Unity",
+        "GG.Extensions"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -12,11 +12,18 @@ using Debug = UnityEngine.Debug;
 
 public class AtkTrigger : IdComponent
 {
-    public AtkInfo ackInfo;
+    protected AtkInfo ackInfo;
 
     public int maxTriggerTime = 0;
 
     public int curTriggerTime { get; set; }
+
+    public void InitAtkInfo(AtkInfo info)
+    {
+        id = info.atker;
+        ackInfo = info; 
+    }
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -88,6 +95,7 @@ public class AtkTrigger : IdComponent
 
 }
 
+///<see cref="TaskInfo"/>
 [Serializable]
 public class AtkInfo
 {
@@ -105,7 +113,6 @@ public class AtkInfo
     internal Vector3 hitPos;
     internal Vector3 ackObjectPos;
     public Action maxTriggerAct;
-    public ObjectData objectData;
 
     private SkillSetting setting;
 
@@ -128,6 +135,31 @@ public class AtkInfo
             }
             return setting;
         }
+    }
+
+    public void AutoSetAtkValue()
+    {
+        atk = (int)(baseAtk * GetSkillSetting.AckRate);
+    }
+}
+
+public class AtkInfoHelper
+{
+    public static AtkInfo CreatInfo(Role player, string skillId)
+    {
+        PlayerAttr attr = player.PlayerAttr;
+        bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
+        int baseAtk = attr.Atk;
+        var info = new AtkInfo()
+        {
+            team = player.team,
+            skillId = skillId,
+            baseAtk = baseAtk,
+            isCrit = isCrit,
+            atker = player.id,
+        };
+        info.AutoSetAtkValue();
+        return info;
     }
 }
 

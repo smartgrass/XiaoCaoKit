@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 using JetBrains.Annotations;
 using OdinSerializer;
 using System.Text;
+using cfg;
+using TEngine;
+using cfg.Skill;
 
 namespace XiaoCao
 {
@@ -69,7 +72,7 @@ namespace XiaoCao
     public class ObjectData
     {
         public string ObjectPath = "";
-        public int index;
+        public int index;//subSkillId
         public bool isPs;
 
         public int endFrame;
@@ -100,11 +103,27 @@ namespace XiaoCao
 
             if (isPs && instance.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
             {
+                //控制特效播放速度
                 InitPs(ps);
             }
             SetPos();
+
+            CheckAtkMsg(info);
+
             State = XCState.Running;
             HasStart = true;
+        }
+
+        private void CheckAtkMsg(TaskInfo info)
+        {
+            if (info.role.IsPlayer)
+            {
+                var setting = LubanTables.GetSkillSetting(info.skillId, index);
+                if (setting.Tags.Contains(TaskInfoTags.Slash))
+                {
+                    GameEvent.Send<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), this);
+                }
+            }
         }
 
         private void InitPs(ParticleSystem ps)
@@ -161,7 +180,7 @@ namespace XiaoCao
                     //修改起点位置为tf.position
                     if (tf == null)
                     {
-                        Debug.LogError($"--- {otherPointName} = null");
+                        Debug.LogError($"--- otherPointName {otherPointName} = null");
                     }
 
                     var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);

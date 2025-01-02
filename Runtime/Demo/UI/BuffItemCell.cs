@@ -8,7 +8,7 @@ using Image = UnityEngine.UI.Image;
 namespace XiaoCao
 {
     ///<see cref="BuffPanelView"/>
-    public class BuffItemCell : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+    public class BuffItemCell : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
     {
         public Image bg;
 
@@ -36,13 +36,32 @@ namespace XiaoCao
 
         private void Start()
         {
-            transform.GetComponent<Button>().onClick.AddListener(OnButonClick);
+            //transform.GetComponent<Button>().onClick.AddListener(OnButonClick);
         }
 
         public void SetValue(BuffItem BuffItem)
         {
             this.buffItem = BuffItem;
             RefreshView();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Right)
+            {
+                //自动装备
+                RightClick();
+            }
+            else
+            {
+                OnButonClick();
+            }
+
+        }
+
+        void RightClick()
+        {
+
         }
 
         //点击监听
@@ -191,8 +210,6 @@ namespace XiaoCao
         {
             SetBgColor();
         }
-
-
     }
 
 }

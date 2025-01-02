@@ -12,10 +12,6 @@ namespace XiaoCao
     [Serializable]
     public struct BuffInfo
     {
-        //public int Power => power;
-
-        //public int power;
-
         public EBuff eBuff;
 
         public float[] addInfo;
@@ -84,16 +80,28 @@ namespace XiaoCao
 
     public static class BuffHelper
     {
-        public static BuffItem CreatOtherBuff(EBuff eBuff)
+        public static EBuff GetRandomBuff(EBuffType eBuffType)
+        {
+            List<EBuff> list = new List<EBuff>();
+            foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
+            {
+                if (item.GetBuffType() == eBuffType)
+                {
+                    list.Add(item);
+                }
+            }
+            var get = list.GetRandom();
+            return get;
+        }
+
+
+        public static BuffItem CreatBuffItem(EBuff eBuff)
         {
             BuffItem buffItem = new BuffItem();
             buffItem.buffs = new List<BuffInfo>()
             {
-                new BuffInfo()
-                {
-                    eBuff = eBuff,
-                    addInfo = new float[1]{ 1}
-                }
+                //读取配置
+                ConfigMgr.buffConfigSo.GetBuffInfo(eBuff)
             };
             return buffItem;
         }

@@ -46,19 +46,25 @@ namespace XiaoCao
         void CheckNoConfig()
         {
             OnEnable();
+            bool change = false;
             foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
             {
                 if (!_buffDic.ContainsKey(item))
                 {
-
                     buffs.Add(new BuffInfo()
                     {
                         eBuff = item,
                         addInfo = new float[1] { 1 }
                     });
-                    Debug.Log($"--- add {item}");
+                    change = true;
+                    Debug.Log($"--- Add -> {item}");
                 }
             }
+            if (!change)
+            {
+                Debug.Log($"--- All ready");
+            }
+
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.AssetDatabase.SaveAssetIfDirty(this);
@@ -68,20 +74,7 @@ namespace XiaoCao
         [Button]
         void CheckSort()
         {
-            List<BuffInfo> newBuffs  =new List<BuffInfo>(buffs);
-            //?? TODO
-            newBuffs.Sort((a, b) =>
-            {
-                if ((int)a.eBuff > (int)b.eBuff)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return 0;
-                }
-            });
-            buffs = newBuffs;   
+            buffs.Sort((x, y) => x.eBuff.CompareTo(y.eBuff));
 
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);

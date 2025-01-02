@@ -7,11 +7,12 @@ namespace XiaoCao
     public class LevelControl : GameStartMono
     {
         [HideInInspector]
-        public EnemyKillRewardSo enemyKillRewardSo;
+        public RewardPoolSo enemyKillRewardSo;
 
         public string[] rewardPools = { "0", "1", "2" };
 
         public int rewardLevel;
+
 
         public override void OnGameStart()
         {
@@ -26,6 +27,14 @@ namespace XiaoCao
             GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
         }
 
+        public override void RemoveListener()
+        {
+            base.RemoveListener();
+            if (isGameStarted)
+            {
+                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
+            }
+        }
 
         void OnEnemyDeadEvent(int id)
         {
@@ -39,7 +48,8 @@ namespace XiaoCao
                     //获取奖励等级
                     int rewardLevel = enemy.enemyData.rewardLevel;
                     //获取奖池id
-                    string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length)];
+                    string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length-1)];
+
 
                     RewardHelper.RewardBuffFromPool(deadInfo.killerId, rewardPoolId, rewardLevel);
                 }
@@ -51,11 +61,7 @@ namespace XiaoCao
         }
 
 
-        public override void OnDestroy()
-        {
-            GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-            base.OnDestroy();
-        }
+
     }
 
 

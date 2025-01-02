@@ -46,7 +46,7 @@ namespace XiaoCao.Buff
 
         public void InitWithPlayer(Player0 player)
         {
-            id = player.id;
+            InitAtkInfo(AtkInfoHelper.CreatInfo(player, EBuff.MagicMissile.ToString()));
             //random
             Vector3 offset = GetRandomStartPoint(startR);
             Init(player.transform.TransformPoint(offset));

@@ -66,7 +66,7 @@ namespace TEngine
             {
                 if (!_listExist.Remove(handler))
                 {
-                    Debug.LogErrorFormat("Delete handle failed, not exist, EventId: {0}", RuntimeId.ToString(_eventType));
+                    Debug.LogErrorFormat("not exist event, EventId: {0} _delete len :{1}", RuntimeId.ToString(_eventType), _deleteList.Count);
                 }
             }
         }

@@ -608,17 +608,6 @@ namespace TEngine
         {
             _eventMgr.Dispatcher.Send(RuntimeId.ToRuntimeId(eventType), handler);
         }
-
-        internal static void AddEventListener<T>(object stopTimeSpeed)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void AddEventListener<T>(int v, object onEnemyDeadEvent)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
     }
 

@@ -19,10 +19,11 @@ namespace XiaoCao
             Debuger.LogLevel = LogLevel.Info;
 
             ProcedureMgr procedureMgr = ProcedureMgr.Inst;
-
+            //LoadOnce
             procedureMgr.AddTask(new ResProcedure());
             procedureMgr.AddTask(new ConfigProcedure());
             procedureMgr.AddTask(new PreLoadPoolProcedure());
+            //Reload
             procedureMgr.AddTask(new PlayerProcedure());
             procedureMgr.AddTask(new ToRunningStateProcedure());
 

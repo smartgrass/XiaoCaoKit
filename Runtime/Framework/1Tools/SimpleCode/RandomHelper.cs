@@ -10,7 +10,7 @@ namespace XiaoCao
     ///<see cref="PowerModel"/>
     public static class RandomHelper
     {
-        public static T GetRandom<T>(this List<T> powerList, out int index) where T : IPower
+        public static T GetPowerRandom<T>(this List<T> powerList, out int index) where T : IPower
         {
             index = 0;
             int total = 0;
@@ -50,17 +50,24 @@ namespace XiaoCao
             return default;
         }
 
-        public static List<T> GetRandomList<T>(this List<T> powerList, int count) where T : IPower
+        public static List<T> GetPowerRandomList<T>(this List<T> powerList, int count) where T : IPower
         {
             List<T> list = new List<T>();
             for (int i = 0; i < count; i++)
             {
-                GetRandom<T>(powerList, out int index);
+                GetPowerRandom<T>(powerList, out int index);
                 list.Add(powerList[index]);
             }
             return list;
         }
 
+
+        public static T GetRandom<T>(this List<T> list)
+        {
+            int count = list.Count; 
+            int random = UnityEngine.Random.Range(0, count);
+            return list[random];
+        }
 
         /// <summary>
         /// 

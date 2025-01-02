@@ -18,7 +18,7 @@ namespace XiaoCao
         {
             this.prefab = prefab;
             //prefab.SetActive(false); 
-            pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
+            pool = new ObjectPool<GameObject>(OnCreat, OnGet, OnRelease, GetID);
         }
 
         public AssetPool(string path)
@@ -39,13 +39,15 @@ namespace XiaoCao
 #endif
             }
 
-            pool = new ObjectPool<GameObject>(Creat, OnCreat, OnRelease, GetID);
+            pool = new ObjectPool<GameObject>(OnCreat, OnGet, OnRelease, GetID);
         }
-
+        /// <summary>
+        /// get is Active
+        /// </summary>
+        /// <returns></returns>
         public GameObject Get()
         {
             var get = pool.Get();
-            //空检测
             if (get == null)
             {
                 pool.ClearNull();
@@ -63,7 +65,7 @@ namespace XiaoCao
             }
         }
 
-        private GameObject Creat()
+        private GameObject OnCreat()
         {
             Transform transform = DontDestroyTransfrom.Get(PoolName);
             GameObject newObj = Object.Instantiate(prefab, transform);
@@ -80,7 +82,7 @@ namespace XiaoCao
             obj.SetActive(false);
         }
 
-        private void OnCreat(GameObject obj)
+        private void OnGet(GameObject obj)
         {
             obj.SetActive(true);
         }

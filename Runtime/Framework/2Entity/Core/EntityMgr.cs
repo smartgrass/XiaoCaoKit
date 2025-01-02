@@ -12,20 +12,21 @@ namespace XiaoCao
         public Dictionary<int, BehaviorEntity> behaviorEntityDic = new Dictionary<int, BehaviorEntity>();
         public override void Init()
         {
-            base.Init();       
+            base.Init();
         }
 
-        public T CreatEntity<T>() where T : Entity
+        public T CreatEntity<T>(int id = -1) where T : Entity
         {
-            var entity = CreatEntity(typeof(T));
+            var entity = CreatEntity(typeof(T), id);
             return entity as T;
         }
 
-        public Entity CreatEntity(Type entityType)
+        public Entity CreatEntity(Type entityType, int id = -1)
         {
-            int id = IdMgr.GenId();
+            int getId = id >= 0 ? id : IdMgr.GenId();
+
             var entity = Activator.CreateInstance(entityType) as Entity;
-            entity.id = id;
+            entity.id = getId;
             AddEntity(entity);
             return entity;
         }

@@ -5,7 +5,7 @@ using XiaoCao.Buff;
 
 namespace XiaoCao
 {
-    public class BuffControl : RoleControl<Role>
+    public class BuffControl : RoleComponent<Role>
     {
         public PlayerBuffs playerBuffs = new PlayerBuffs();
 
@@ -48,7 +48,7 @@ namespace XiaoCao
                 string key = $"EBuff_{i}";
                 foreach (var buff in EquippedBuffs[i].buffs)
                 {
-                    var instance = BuffBinder.Inst.CreateInstance(buff.eBuff);
+                    var instance = BuffBinder.Inst.GetOrCreateInstance(buff.eBuff);
                     if (instance != null)
                     {
                         buffEffectList.Add(instance);
@@ -74,7 +74,10 @@ namespace XiaoCao
             }
         }
 
-
+        public override void OnDestroy()
+        {
+            RemoveAllEffect();
+        }
 
     }
     public class PlayerBuffs

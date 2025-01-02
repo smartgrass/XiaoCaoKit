@@ -126,8 +126,7 @@ namespace XiaoCao
 
             info.atk = (int)(baseAtk * info.GetSkillSetting.AckRate);
 
-            CurTrigger.ackInfo = info;
-            CurTrigger.id = Info.role.id;
+            CurTrigger.InitAtkInfo(info);
         }
 
         void OnMaxTrigger()

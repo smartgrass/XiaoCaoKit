@@ -131,7 +131,7 @@ namespace XiaoCao
             SubStateData data;
             int index;
             if (poolType == FSMPoolType.Random) {
-                data = PoolInst.GetRandom(out index);
+                data = PoolInst.GetPowerRandom(out index);
             }
             else
             {

@@ -2,6 +2,8 @@
 
 public abstract class MonoSingletonPrefab<T> : MonoBehaviour where T : MonoSingletonPrefab<T>
 {
+    public virtual bool NeedDontDestroy => true;
+
     protected static T _instance = null;
 
     public static T Inst
@@ -13,15 +15,19 @@ public abstract class MonoSingletonPrefab<T> : MonoBehaviour where T : MonoSingl
 
             if (_instance == null)
             {
-                GameObject DDOLGO = GameObject.Find("DontDestroyOnLoadGO");
-                if (DDOLGO == null)
-                {
-                    DDOLGO = new GameObject("DontDestroyOnLoadGO");
-                    DontDestroyOnLoad(DDOLGO);
-                }
                 _instance = LoadMonoSingleton();
                 GameObject go = _instance.gameObject;
-                go.transform.SetParent(DDOLGO.transform, false);
+
+                if (_instance.NeedDontDestroy)
+                {
+                    GameObject DDOLGO = GameObject.Find("DontDestroyOnLoadGO");
+                    if (DDOLGO == null)
+                    {
+                        DDOLGO = new GameObject("DontDestroyOnLoadGO");
+                        DontDestroyOnLoad(DDOLGO);
+                    }
+                    go.transform.SetParent(DDOLGO.transform, false);
+                }
                 _instance.Init();
             }
             return _instance;

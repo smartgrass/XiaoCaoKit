@@ -26,6 +26,11 @@ namespace XiaoCao
 
     }
 
+    public class TempData
+    {
+
+    }
+
     public class GameDataCommon
     {
         public static GameDataCommon Current => GameAllData.commonData;
@@ -141,19 +146,19 @@ namespace XiaoCao
             }
         }
 
-        public static BuffControl GetPlayerBuff(int id = -1)
+        public static BuffControl GetPlayerBuff(int playerId = -1)
         {
-            if (id < 0)
+            if (playerId < 0)
             {
                 return GameDataCommon.LocalPlayer.component.buffControl;
             }
 
-            var player = id.GetPlayerById();
+            var player = playerId.GetPlayerById();
             if (player != null)
             {
                 return player.component.buffControl;
             }
-            Debug.LogError($"--- no player {id}");
+            Debug.LogError($"--- no player {playerId}");
             return null;
         }
 
@@ -224,6 +229,7 @@ namespace XiaoCao
         PlayerPlaySkill = 101,
         TimeSpeedStop = 102,
         LocalPlayerChangeNowAttr = 103,
+        PlayerCreatNorAtk = 104,
 
         //Enemy
         EnemyDeadEvent = 200,

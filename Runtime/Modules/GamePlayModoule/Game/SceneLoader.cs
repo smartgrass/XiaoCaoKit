@@ -21,13 +21,15 @@ public class SceneLoader : MonoBehaviour
     // 开始加载新场景  
     public void LoadScene()  
     {
+        GameMgr.ClearSceneData();
         sceneToLoad = GameDataCommon.Current.NextSceneName;
         StartCoroutine(LoadSceneAsync());  
     }  
   
     // 异步加载场景的协程  
     private IEnumerator LoadSceneAsync()  
-    {  
+    {
+        Debug.Log($"---  LoadSceneAsync  {sceneToLoad}");
         // 开始异步加载场景  
         asyncLoad = SceneManager.LoadSceneAsync(sceneToLoad, LoadSceneMode.Single);  
   

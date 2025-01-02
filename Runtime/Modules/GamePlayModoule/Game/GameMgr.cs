@@ -26,6 +26,7 @@ namespace XiaoCao
         public CameraMgr cameraMgr;
         public TimeStopMgr timeStopMgr;
         public LevelControl levelControl;
+        public PoolMgr poolMgr;
 
         //¾²Ì¬
         public SaveMgr saveMgr;
@@ -46,6 +47,7 @@ namespace XiaoCao
             Debug.Log($"--- DebuggameData");
             var dataView = gameObject.AddComponent<Test_GameDataView>();
             dataView.GetCurrentData();
+            poolMgr = PoolMgr.Inst;
 #endif
 
         }
@@ -78,7 +80,7 @@ namespace XiaoCao
         {
             //curScene = scene.buildIndex;
             curScene = scene.name;
-            Debug.Log($"--- curScene {curScene}");
+            Debug.Log($"--- OnSceneLoaded {curScene}");
         }
 
         public void FinishLevel(int nextScene)
@@ -99,7 +101,8 @@ namespace XiaoCao
             SetGameState(GameState.Loading);
             GameDataCommon.Current.NextSceneName = curScene;
             SceneManager.LoadScene(SceneNames.Loading);
-            StartCoroutine(LoadSceneInBackground(sceneName));
+            ///<see cref="SceneLoader"/>
+            //StartCoroutine(LoadSceneInBackground(sceneName));
         }
 
         public void UnloadActiveScene()
@@ -108,9 +111,9 @@ namespace XiaoCao
             //return SceneManager.UnloadSceneAsync(curScene);
         }
 
+        [Obsolete]
         private IEnumerator LoadSceneInBackground(string NextScene)
         {
-
             curScene = NextScene;
             AsyncOperation loadingScene = SceneManager.LoadSceneAsync(NextScene, LoadSceneMode.Single);
             Debug.Log($"--- LoadSceneInBackground {NextScene}");
@@ -122,7 +125,7 @@ namespace XiaoCao
 
                 yield return new WaitForSeconds(0.25f);
             }
-
+            Debug.Log($"Loading: finish {NextScene}");
 
             // SceneManager.GetSceneByBuildIndex(sceneBuildIndex)
             //SceneManager.SetActiveScene(SceneManager.GetSceneByName(curScene));
@@ -143,7 +146,13 @@ namespace XiaoCao
             UnityEngine.Debug.Log(string.Format($"-- TestFun {tag}: {0} ms", sw.ElapsedMilliseconds));
         }
 
-
+        internal static void ClearSceneData()
+        {
+            Debug.Log($"--- ClearSceneData ");
+            PoolMgr.Inst.ClearAllPool(true);
+            TimerManager.ClearSelf();
+            GameAllData.battleData = new BattleData();
+        }
     }
 
     public class SceneIndex

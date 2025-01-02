@@ -44,8 +44,15 @@ namespace XiaoCao
         private void LoadPlayerData()
         {
             Debuger.Log($" LoadPlayerData");
+            //TODO 重复加载处理...
+            if (IsReload)
+            {
+                //Entity 需要替换, 但同时 id保持不变         
+            }
 
-            Player0 player = EntityMgr.Inst.CreatEntity<Player0>();
+            int playerId = IsReload? GameDataCommon.Current.LocalPlayerId :IdMgr.GetPlayerId();
+
+            Player0 player = EntityMgr.Inst.CreatEntity<Player0>(playerId);
 
             //读取存档数据
             var data0 = SaveMgr.ReadData<PlayerSaveData>(out bool isSuc);
@@ -80,7 +87,6 @@ namespace XiaoCao
         {
             var inst = XCCommandBinder.Inst;
             var buff = BuffBinder.Inst;
-            XCTaskRunner.PreInitPool();
             var pool = RunTimePoolMgr.Inst;
             IsFinish = true;
         }

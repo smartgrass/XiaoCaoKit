@@ -9,6 +9,8 @@ namespace XiaoCao
 
     public class UIMgr : MonoSingletonPrefab<UIMgr>, IMgr
     {
+        public override bool NeedDontDestroy => false;
+
         //UI分类:
         //静态ui ->游戏开始就加载    hud
         //面板,窗口 ->动态加载,需要触发才加载   panel
@@ -39,6 +41,7 @@ namespace XiaoCao
             skillBarHud?.Init();
             settingPanel?.Init();
             playerPanel?.Init();
+            transform.SetParent(null);
         }
 
         public void ShowView(UIPanelType type)

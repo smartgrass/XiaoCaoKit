@@ -32,7 +32,7 @@ namespace XiaoCao
             }
         }
 
-        public IBuffEffect CreateInstance(EBuff eBuff)
+        public IBuffEffect GetOrCreateInstance(EBuff eBuff)
         {
             if (!buffEffectDic.ContainsKey(eBuff))
             {

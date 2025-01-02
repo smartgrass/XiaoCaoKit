@@ -31,7 +31,7 @@ namespace XiaoCao
 
         public void Init()
         {
-            pool = new AssetPool(worldHpBarPrefab);
+            pool = PoolMgr.Inst.GetOrCreatPrefabPool(worldHpBarPrefab);
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
             GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), LocalPlayerChangeNowAttr);
             worldCanvas.worldCamera = Camera.main;

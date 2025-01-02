@@ -85,7 +85,7 @@ namespace XiaoCao
             }
         }
     }
-
+    //int Level
     public enum EQuality
     {
         Null = -1,
@@ -111,6 +111,7 @@ namespace XiaoCao
         public ItemType type;
         public string id;
         public int count;
+        public int level { get; set; }
         public EQuality Quality { get; set; }
 
         public string Key
@@ -125,22 +126,12 @@ namespace XiaoCao
             }
         }
 
-        public Item(ItemType itemType, string itemId, int itemCount)
+        public Item(ItemType itemType, string itemId, int itemCount =1, int level = 0)
         {
             id = itemId;
             type = itemType;
             count = itemCount;
-
-            if (itemType != ItemType.Coin && itemId.Contains("_"))
-            {
-               int qNum =  GetQualityNum(itemId);
-                Quality = (EQuality)qNum;
-            }
-            else
-            {
-                Quality = EQuality.White;
-            }
-
+            Quality = (EQuality)level;
         }
 
 
@@ -167,6 +158,7 @@ namespace XiaoCao
         Consumable = 0, //消耗品
         Equipment = 1, //装备
         Coin = 2, //钱
+        Buff = 3
     }
 
     public enum EquipType

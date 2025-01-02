@@ -107,5 +107,15 @@ public class IdRole : IdComponent
             rb = GetComponent<Rigidbody>();
         if (cc == null)
             cc = GetComponent<CharacterController>();
+        if (triggerCols.Length == 0) {
+            List<Collider> colliders = new List<Collider>();
+            for (int i = 0; i < transform.childCount; i++) {
+                if (transform.GetChild(i).TryGetComponent<Collider>(out Collider col))
+                {
+                    colliders.Add(col);
+                }
+            }
+            triggerCols = colliders.ToArray();  
+        }
     }
 }

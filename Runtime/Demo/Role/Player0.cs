@@ -33,6 +33,9 @@ namespace XiaoCao
             if (isMainPlayer)
             {
                 idRole.bodyName = ConfigMgr.GetSettingSkinName();
+                AddTag(RoleTagCommon.MainPlayer);
+                GameDataCommon.Current.player0 = this;
+                GameDataCommon.Current.LocalPlayerId = this.id;
             }
             CreateRoleBody(idRole.bodyName);
             SetTeam(1);
@@ -49,13 +52,6 @@ namespace XiaoCao
             component.atkTimers = new PlayerAtkTimer(this);
             component.movement = new RoleMovement(this);
             roleData.movement = component.movement;
-
-            if (isMainPlayer)
-            {
-                AddTag(RoleTagCommon.MainPlayer);
-                GameDataCommon.Current.player0 = this;
-                GameDataCommon.Current.LocalPlayerId = this.id;
-            }
 
             RoleIn();
         }
@@ -96,6 +92,7 @@ namespace XiaoCao
         protected override void OnDestroy()
         {
             base.OnDestroy();
+            component.buffControl.OnDestroy();
             RoleOut();
         }
 
