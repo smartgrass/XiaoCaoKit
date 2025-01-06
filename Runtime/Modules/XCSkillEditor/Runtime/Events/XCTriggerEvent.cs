@@ -204,6 +204,7 @@ namespace XiaoCao
                     collider = newObject.AddComponent<MeshCollider>();
                     break;
                 default:
+                    Debug.LogError($"--- unknow {meshType}");
                     break;
             }
             collider.enabled = false;
