@@ -173,6 +173,36 @@ namespace XiaoCao
             }
         }
 
+        public int FindEmptyIndex(bool Equipped)
+        {
+            if (Equipped)
+            {
+                for (int i = 0; i < EquippedBuffs.Count; i++)
+                {
+                    if (!EquippedBuffs[i].IsEnable)
+                    {
+                        return i;
+                    }
+                }
+                if (EquippedBuffs.Count < MaxEquipped)
+                {
+                    return EquippedBuffs.Count;
+                }
+                return MaxEquipped - 1;
+            }
+            else
+            {
+                for (int i = 0; i < UnequippedBuffs.Count; i++)
+                {
+                    if (!UnequippedBuffs[i].IsEnable)
+                    {
+                        return i;
+                    }
+                }
+                return UnequippedBuffs.Count;
+            }
+        }
+
         public void UpdateAttributeValues()
         {
             BuffUpdataAct.Invoke();

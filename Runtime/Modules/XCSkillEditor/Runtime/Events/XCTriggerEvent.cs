@@ -54,6 +54,11 @@ namespace XiaoCao
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
+            var col = CurTrigger.GetComponent<MeshCollider>();
+            CurCol = col;
+            col.convex = true;
+            col.isTrigger = true;
+            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
 
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
@@ -61,47 +66,47 @@ namespace XiaoCao
             tf.localPosition = meshInfo.GetCenter;
             tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = CurTrigger.GetComponent<MeshCollider>();
-            col.convex = true;
-            col.isTrigger = true;
             //TODO 缩放要特殊处理下,暂无
-            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
 
-            CurCol = col;
         }
 
         private void OnSphere()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
+            var col = CurTrigger.GetComponent<SphereCollider>();
+            CurCol = col;
+            CurCol.isTrigger = true;
+            col.radius = 1;
+
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = meshInfo.GetSize;
             tf.localPosition = meshInfo.GetCenter;
             tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = CurTrigger.GetComponent<SphereCollider>();
-            col.radius = 1;
 
-            CurCol = col;
-            CurCol.isTrigger = true;
+
+
         }
 
         private void OnBox()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
             CurTrigger = triggerGo.GetComponent<AtkTrigger>();
+
+            var col = CurTrigger.GetComponent<BoxCollider>();
+            CurCol = col;
+            CurCol.isTrigger = true;
             var tf = triggerGo.transform;
             tf.SetParent(Tran);
             tf.localScale = meshInfo.GetSize;
             tf.localPosition = meshInfo.GetCenter;
             tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
 
-            var col = CurTrigger.GetComponent<BoxCollider>();
             col.center = Vector3.zero;
             col.size = Vector3.one;
-            CurCol = col;
-            CurCol.isTrigger = true;
+
         }
 
         private void SetCurAtkTrigger()
@@ -112,11 +117,13 @@ namespace XiaoCao
             CurTrigger.maxTriggerTime = maxTriggerTime;
             CurTrigger.curTriggerTime = 0;
 
+            int subIndex = task.ObjectData != null ? task.ObjectData.index : 0;
+
             var info = new AtkInfo()
             {
                 team = Info.role.team,
                 skillId = Info.skillId,
-                subSkillId = task.ObjectData.index,
+                subSkillId = subIndex,
                 baseAtk = baseAtk,
                 atk = baseAtk,
                 isCrit = isCrit,
@@ -179,24 +186,29 @@ namespace XiaoCao
 
             newObject.AddComponent<AtkTrigger>();
 
+            Collider collider = null;
+
             //拼接得到一个key
             switch (meshType)
             {
                 case MeshType.Box:
-                    newObject.AddComponent<BoxCollider>();
+                    collider = newObject.AddComponent<BoxCollider>();
                     break;
                 case MeshType.Sphere:
-                    newObject.AddComponent<SphereCollider>();
+                    collider = newObject.AddComponent<SphereCollider>();
                     break;
                 case MeshType.Sector:
-                    newObject.AddComponent<MeshCollider>();
+                    collider = newObject.AddComponent<MeshCollider>();
                     break;
                 case MeshType.Other:
-                    newObject.AddComponent<MeshCollider>();
+                    collider = newObject.AddComponent<MeshCollider>();
                     break;
                 default:
                     break;
             }
+            collider.enabled = false;
+            collider.isTrigger = true;
+            collider.enabled = true;
 
             assetPool = new AssetPool(newObject);
             Inst.dicPool[meshType] = assetPool;

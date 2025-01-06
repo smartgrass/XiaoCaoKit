@@ -47,7 +47,7 @@ namespace XiaoCao
             GameObject obj = GetOrCreatPool(path).Get();
             if (releaseTime > 0)
             {
-                var task = XCTime.DelayTimer(releaseTime, () => { Release(path, obj); });
+                var timer = XCTime.DelayTimer(releaseTime, () => { Release(path, obj); });
             }
             return obj;
         }

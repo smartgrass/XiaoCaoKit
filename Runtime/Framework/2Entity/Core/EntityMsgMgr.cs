@@ -36,6 +36,8 @@ namespace XiaoCao
         AutoDirect = 14,
         [InspectorName("关闭身体间碰撞")]
         NoBodyCollision = 15,
+        [InspectorName("CameraShake-int")]
+        CameraShake,
 
 
     }
@@ -51,7 +53,7 @@ namespace XiaoCao
         public float numMsg;
         public string strMsg;
         [HideInInspector]
-        public int state;  //0 ,1
+        public int state;  //0 ,1 代表进入和退出
     }
 
     [Serializable]

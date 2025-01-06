@@ -377,10 +377,23 @@ namespace XiaoCao
                 case EntityMsgType.NoBodyCollision:
                     NoBodyCollision(msg);
                     break;
+                case EntityMsgType.CameraShake:
+                    OnCameraShake(msg);
+                    break;
                 default:
                     break;
             }
         }
+
+        private void OnCameraShake(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (this.id.IsLocalPlayerId())
+            {
+                CamEffectMgr.Inst.CamShakeEffect((int)baseMsg.numMsg);
+            }
+        }
+
         private void NoBodyCollision(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;

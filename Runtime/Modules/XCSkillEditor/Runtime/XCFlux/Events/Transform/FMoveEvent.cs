@@ -341,7 +341,32 @@ namespace Flux
         [InspectorName("减速")]
         OutQuad,
         [InspectorName("淡入淡出")]
-        InOutQuad
+        InOutQuad,
+        [InspectorName("加速2")]
+        InCubic,
+        [InspectorName("减速2")]
+        OutCubic,
+        InOutCubic,
+        [InspectorName("加速3")]
+        InQuart,
+        [InspectorName("减速3")]
+        OutQuart,
+        InOutQuart,
+        [InspectorName("加速4")]
+        InQuint,
+        [InspectorName("减速4")]
+        OutQuint,
+        InOutQuint,
+        [InspectorName("加速5-1")]
+        InExpo,
+        [InspectorName("减速5-1")]
+        OutExpo,
+        InOutExpo,
+        [InspectorName("加速5-2")]
+        InCirc,
+        [InspectorName("减速5-2")]
+        OutCirc,
+        InOutCirc,
     }
 
 }

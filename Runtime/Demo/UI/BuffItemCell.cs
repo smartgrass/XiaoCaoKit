@@ -34,6 +34,8 @@ namespace XiaoCao
 
         public Action<BuffItem> OnButtonClick;
 
+        public BuffPanelView panelView;
+
         private void Start()
         {
             //transform.GetComponent<Button>().onClick.AddListener(OnButonClick);
@@ -61,7 +63,9 @@ namespace XiaoCao
 
         void RightClick()
         {
-
+            int toIndex = PlayerHelper.LocalPlayerBuffs.FindEmptyIndex(!IsEquiped);
+            PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, !IsEquiped, toIndex);
+            OnBuffChangeAct?.Invoke();
         }
 
         //点击监听
@@ -125,15 +129,24 @@ namespace XiaoCao
                 && nextCell.buffItem.CanUpGradeItem(buffItem))
             {
                 //合成
-                PlayerHelper.LocalPlayerBuffs.UpgradeBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+                UpgradeBuff(nextCell);
             }
             else
             {
                 //交换
-                PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+                ExChange(nextCell);
             }
-            ReGetValue();
-            nextCell.ReGetValue();
+        }
+
+        void ExChange(BuffItemCell nextCell)
+        {
+            PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+            OnBuffChangeAct?.Invoke();
+        }
+
+        void UpgradeBuff(BuffItemCell nextCell)
+        {
+            PlayerHelper.LocalPlayerBuffs.UpgradeBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             OnBuffChangeAct?.Invoke();
         }
 

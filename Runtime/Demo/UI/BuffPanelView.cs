@@ -30,10 +30,9 @@ namespace XiaoCao
         private AssetPool textPool;
         private AssetPool buffCellPool;
 
-        public List<BuffItem> buffItems;
-
         //ShareData
         public BuffItemCell TempItemCell { get; private set; }
+
 
         public void Init()
         {
@@ -121,7 +120,7 @@ namespace XiaoCao
 
         private void OnBuffChange()
         {
-            UpdateEquippedBuffsTxet();
+            RefreshUI();
         }
 
         //显示总效果
@@ -159,11 +158,13 @@ namespace XiaoCao
             newBuffItem.transform.SetParent(container, false);
             var buffItemCell = newBuffItem.GetComponent<BuffItemCell>();
             buffItemCell.TempItemCell = TempItemCell;
+            buffItemCell.panelView = this;
             buffItemCell.SetValue(buffItem);
 
             //刷新时清空监听
             buffItemCell.OnButtonClick = null;
             buffItemCell.OnButtonClick += OnBuffClick;
+            buffItemCell.OnBuffChangeAct = null;
             buffItemCell.OnBuffChangeAct += OnBuffChange;
             return buffItemCell;
         }

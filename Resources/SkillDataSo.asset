@@ -21,3 +21,5 @@ MonoBehaviour:
     cd: 4
   - key: 2
     cd: 4
+  - key: 3
+    cd: 0.5

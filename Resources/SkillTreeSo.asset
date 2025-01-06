@@ -26,11 +26,11 @@ MonoBehaviour:
     pos: {x: 1, y: -1}
     link: {x: 0, y: 0}
     icon: {fileID: 0}
-  - id: 2
+  - id: 3
     pos: {x: 1, y: 1}
     link: {x: 0, y: 0}
     icon: {fileID: 0}
-  - id: 2
+  - id: 4
     pos: {x: 2, y: 0}
     link: {x: 0, y: 0}
     icon: {fileID: 0}

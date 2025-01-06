@@ -10,8 +10,6 @@ namespace XiaoCao.Buff
         public const string BulletPath = "Assets/_Res/SkillPrefab/Buff/B_ExtraSlash.prefab";
 
         public float Speed = 20;
-        
-        public AssetPool bulletPool;
 
         private Player0 player;
 
@@ -20,7 +18,6 @@ namespace XiaoCao.Buff
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
             GameEvent.AddEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), OnPlaySkill);
-            bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);
             player = TargetId.GetPlayerById();
 
         }
@@ -31,7 +28,7 @@ namespace XiaoCao.Buff
 
         private void OnPlaySkill(ObjectData data)
         {
-            GameObject b = bulletPool.Get();
+            GameObject b = PoolMgr.Inst.Get(BulletPath,4);
             b.transform.position = data.Tran.position;
             b.transform.rotation = data.Tran.rotation;
             b.GetComponent<Rigidbody>().linearVelocity = data.Tran.forward * Speed;

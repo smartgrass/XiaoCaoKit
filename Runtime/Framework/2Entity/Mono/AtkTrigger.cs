@@ -12,7 +12,7 @@ using Debug = UnityEngine.Debug;
 
 public class AtkTrigger : IdComponent
 {
-    protected AtkInfo ackInfo;
+    protected AtkInfo ackInfo { get; set; }
 
     public int maxTriggerTime = 0;
 
@@ -43,6 +43,10 @@ public class AtkTrigger : IdComponent
         {
             if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
             {
+                if (ackInfo == null)
+                {
+                    Debug.LogError("---  ackInfo null");
+                }
                 if (entity.team != ackInfo.team && !entity.IsDie)
                 {
                     if (BattleData.IsTimeStop && entity.IsPlayer)
