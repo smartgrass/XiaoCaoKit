@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 10ebc479cc081044d87faf0f7bd87988
+timeCreated: 1586353461
+licenseType: Store
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/Shared/Editor/RotaryHeart.Editor.asmdef
+  uploadId: 711435

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: d002ef982c284e44f8ef33d1048d6371
+timeCreated: 1512874288
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/PhysicsDebugExtension/GLlineZOn.shader
+  uploadId: 711435

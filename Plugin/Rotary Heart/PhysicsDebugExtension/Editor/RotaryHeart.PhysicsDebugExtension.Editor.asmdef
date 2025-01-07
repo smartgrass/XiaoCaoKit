@@ -1,0 +1,10 @@
+{
+    "name": "RotaryHeart.PhysicsDebugExtension.Editor",
+    "references": [
+        "RotaryHeart"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

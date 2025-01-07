@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: af2082e310b0a204b95d3b39758af98f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/PhysicsDebugExtension/DebugExtensions.cs
+  uploadId: 711435

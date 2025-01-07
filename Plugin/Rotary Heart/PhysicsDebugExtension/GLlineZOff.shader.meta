@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9a88049561e09f747aa121eaa34c0864
+timeCreated: 1512874288
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/PhysicsDebugExtension/GLlineZOff.shader
+  uploadId: 711435

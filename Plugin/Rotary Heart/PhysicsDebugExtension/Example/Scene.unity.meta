@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8c09ba92514ca094b8e57d834f8e57d8
+timeCreated: 1491942649
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/PhysicsDebugExtension/Example/Scene.unity
+  uploadId: 711435

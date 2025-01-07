@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 42a4cba5110d8324b903486d6ccff615
+timeCreated: 1515637769
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 88947
+  packageName: Physics Debug Extension
+  packageVersion: 2.0.0
+  assetPath: Assets/Rotary Heart/PhysicsDebugExtension/Documentation.pdf
+  uploadId: 711435
