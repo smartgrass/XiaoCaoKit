@@ -4,19 +4,18 @@ using System.Diagnostics;
 using UnityEngine;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
-/*
- 攻击层级, PLAYER_ATK & Layers.ENEMY_ATK
- 受击中层级:  PLAYER & ENEMY
 
- */
 
-public class AtkTrigger : IdComponent
+///<see cref="MsgTrigger"/>
+public class AtkTrigger : IdComponent, IAtk
 {
-    protected AtkInfo ackInfo { get; set; }
+    public AtkInfo ackInfo { get; set; }
 
     public int maxTriggerTime = 0;
 
     public int curTriggerTime { get; set; }
+
+    public bool UseRayCast { get; set; }
 
     public void InitAtkInfo(AtkInfo info)
     {
@@ -27,6 +26,7 @@ public class AtkTrigger : IdComponent
 
     private void OnTriggerEnter(Collider other)
     {
+
         var rb = other.attachedRigidbody;
         if (rb == null)
         {
@@ -97,6 +97,12 @@ public class AtkTrigger : IdComponent
         ackInfo.hitDir.y = 0;
     }
 
+}
+
+
+public interface IAtk
+{
+    AtkInfo ackInfo { get; set; }
 }
 
 ///<see cref="TaskInfo"/>
