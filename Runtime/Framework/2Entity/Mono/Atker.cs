@@ -1,4 +1,5 @@
 ﻿using cfg;
+using NaughtyAttributes;
 using System;
 using System.Diagnostics;
 using UnityEngine;
@@ -6,77 +7,31 @@ using XiaoCao;
 using Debug = UnityEngine.Debug;
 
 
-///<see cref="MsgTrigger"/>
-public class AtkTrigger : IdComponent, IAtk
+///<see cref="ColliderTrigger"/>
+public class Atker : BaseAtker
 {
     public AtkInfo ackInfo { get; set; }
 
-    public int maxTriggerTime = 0;
-
-    public int curTriggerTime { get; set; }
-
-    public bool UseRayCast { get; set; }
-
-    public void InitAtkInfo(AtkInfo info)
+    public override void ReceiveTriggerEnter(Collider other)
     {
-        id = info.atker;
-        ackInfo = info; 
-    }
-
-
-    private void OnTriggerEnter(Collider other)
-    {
-
         var rb = other.attachedRigidbody;
         if (rb == null)
         {
             return;
         }
+        //只对Trigger造成伤害
         if (!other.isTrigger)
         {
             Debug.LogWarning($"--- other !isTrigger {other.gameObject.name}");
             return;
         }
 
-
-        if (rb.TryGetComponent<IdRole>(out IdRole IdRole))
+        if (TryGetTargetRole(rb, out Role role))
         {
-            if (EntityMgr.Inst.FindEntity<Role>(IdRole.id, out Role entity))
-            {
-                if (ackInfo == null)
-                {
-                    Debug.LogError("---  ackInfo null");
-                }
-                if (entity.team != ackInfo.team && !entity.IsDie)
-                {
-                    if (BattleData.IsTimeStop && entity.IsPlayer)
-                    {
-                        //时停时玩家不受伤害
-                        return;
-                    }
-                    if (ackInfo.IsLocalPlayer)
-                    {
-                        var setting = ackInfo.GetSkillSetting;
-                        CamEffectMgr.Inst.CamShakeEffect(setting.ShakeLevel);
-                    }
-
-                    //击中信息
-                    InitHitInfo(other);
-                    entity.OnDamage(ackInfo);
-
-                    curTriggerTime++;
-                    if (maxTriggerTime != 0 && curTriggerTime >= maxTriggerTime)
-                    {
-                        ackInfo.maxTriggerAct?.Invoke();
-                        OnTriggerEnd();
-                    }
-                }
-            }
+            InitHitInfo(other);
+            OnHitRole(role);
         }
-
-        //EntityType
-
-        if (rb.CompareTag(Tags.ITEM) && GetEntity().HasTag(RoleTagCommon.MainPlayer) &&
+        else if (rb.CompareTag(Tags.ITEM) && GetEntity().HasTag(RoleTagCommon.MainPlayer) &&
             rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
         {
             InitHitInfo(other);
@@ -84,25 +39,76 @@ public class AtkTrigger : IdComponent, IAtk
         }
     }
 
-    public virtual void OnTriggerEnd()
+    public void OnHitRole(Role role)
     {
+        if (BattleData.IsTimeStop && role.IsPlayer)
+        {
+            //时停时玩家不受伤害
+            return;
+        }
 
+        role.OnDamage(ackInfo);
+
+        curTriggerTime++;
+        if (maxTriggerTime != 0 && curTriggerTime >= maxTriggerTime)
+        {
+            OnTriggerTimeOut();
+        }
+    }
+}
+
+
+public abstract class BaseAtker : IdComponent
+{
+    public int maxTriggerTime;
+
+    [ReadOnly]
+    public int curTriggerTime;
+
+    AtkInfo ackInfo { get; set; }
+
+    public virtual void ReceiveTriggerEnter(Collider collider) { }
+
+    //碰撞次数耗光
+    public virtual void OnTriggerTimeOut()
+    {
+        ackInfo.maxTriggerAct?.Invoke();
     }
 
-    private void InitHitInfo(Collider other)
+    public bool TryGetTargetRole(Component component, out Role role)
+    {
+        if (component.TryGetComponent<IdRole>(out IdRole IdComponent))
+        {
+            if (IdComponent.GetEntity() is Role entity)
+            {
+                if (ackInfo == null)
+                {
+                    Debug.LogError("---  ackInfo null");
+                }
+                if (entity.team != ackInfo.team && !entity.IsDie)
+                {
+                    role = entity;
+                    return true;
+                }
+            }
+        }
+        role = null;
+        return false;
+    }
+
+
+    public virtual void InitAtkInfo(AtkInfo info)
+    {
+        id = info.atker;
+        ackInfo = info;
+    }
+    public void InitHitInfo(Collider other)
     {
         ackInfo.ackObjectPos = transform.position;
         ackInfo.hitPos = other.ClosestPointOnBounds(transform.position);
         ackInfo.hitDir = (ackInfo.hitPos - transform.position);
         ackInfo.hitDir.y = 0;
     }
-
-}
-
-
-public interface IAtk
-{
-    AtkInfo ackInfo { get; set; }
 }
 
 ///<see cref="TaskInfo"/>

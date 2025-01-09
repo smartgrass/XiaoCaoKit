@@ -1,4 +1,6 @@
 ﻿using Flux;
+using GG.Extensions;
+using ProtoBuf.Meta;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,12 +25,24 @@ namespace XiaoCao
         public MeshType MeshType => meshInfo.meshType;
 
         public Collider CurCol { get; set; }
-        public AtkTrigger CurTrigger { get; set; }
+
+        public ITrigger trigger { get; set; }
+
+        public BaseAtker AtkCommponent { get; set; }
+
+        public bool UseRayCast { get; set; }    
 
 
         public override void OnTrigger(float startOffsetTime)
         {
             base.OnTrigger(startOffsetTime);
+            UseRayCast = true;
+            if (UseRayCast)
+            {
+                OnRayCastStart();
+                return;
+            }
+
 
             switch (MeshType)
             {
@@ -46,21 +60,56 @@ namespace XiaoCao
                 default:
                     break;
             }
-            SetCurAtkTrigger();
+            SetAtkInfo();
 
         }
 
+
+        public override void OnFinish()
+        {
+            base.OnFinish();
+
+            if (UseRayCast)
+            {
+                trigger.Switch(false);
+                return;
+            }
+
+            if (CurCol)
+            {
+                TriggerCache.Release(MeshType, CurCol.gameObject);
+            }
+            else
+            {
+                Debug.LogError($"--- no col {MeshType}");
+            }
+        }
+
+        void OnRayCastStart()
+        {
+            AtkCommponent = TriggerCache.GetTrigger(MeshType);
+            var trigger = AtkCommponent.GetOrAddComponent<RayCasterTrigger>();
+            trigger.meshInfo = meshInfo;
+            trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
+
+        }
+
+        #region Old
+
         public void OnSector()
         {
-            var triggerGo = TriggerCache.GetTrigger(MeshType);
-            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
-            var col = CurTrigger.GetComponent<MeshCollider>();
+            AtkCommponent = TriggerCache.GetTrigger(MeshType);
+            var col = AtkCommponent.GetComponent<MeshCollider>();
+            var trigger = AtkCommponent.GetOrAddComponent<ColliderTrigger>();
+            trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
+
+
             CurCol = col;
             col.convex = true;
             col.isTrigger = true;
             col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
 
-            var tf = triggerGo.transform;
+            var tf = AtkCommponent.transform;
             tf.SetParent(Tran);
             tf.localScale = Vector3.one;
             tf.localPosition = meshInfo.GetCenter;
@@ -72,14 +121,13 @@ namespace XiaoCao
 
         private void OnSphere()
         {
-            var triggerGo = TriggerCache.GetTrigger(MeshType);
-            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
-            var col = CurTrigger.GetComponent<SphereCollider>();
+            AtkCommponent = TriggerCache.GetTrigger(MeshType);
+            var col = AtkCommponent.GetComponent<SphereCollider>();
             CurCol = col;
             CurCol.isTrigger = true;
             col.radius = 1;
 
-            var tf = triggerGo.transform;
+            var tf = AtkCommponent.transform;
             tf.SetParent(Tran);
             tf.localScale = meshInfo.GetSize;
             tf.localPosition = meshInfo.GetCenter;
@@ -93,9 +141,8 @@ namespace XiaoCao
         private void OnBox()
         {
             var triggerGo = TriggerCache.GetTrigger(MeshType);
-            CurTrigger = triggerGo.GetComponent<AtkTrigger>();
-
-            var col = CurTrigger.GetComponent<BoxCollider>();
+            AtkCommponent = triggerGo.GetComponent<Atker>();
+            var col = AtkCommponent.GetComponent<BoxCollider>();
             CurCol = col;
             CurCol.isTrigger = true;
             var tf = triggerGo.transform;
@@ -108,14 +155,15 @@ namespace XiaoCao
             col.size = Vector3.one;
 
         }
+        #endregion
 
-        private void SetCurAtkTrigger()
+        private void SetAtkInfo()
         {
             PlayerAttr attr = Info.role.PlayerAttr;
             int baseAtk = attr.Atk;
             bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
-            CurTrigger.maxTriggerTime = maxTriggerTime;
-            CurTrigger.curTriggerTime = 0;
+            AtkCommponent.maxTriggerTime = maxTriggerTime;
+            AtkCommponent.curTriggerTime = 0;
 
             int subIndex = task.ObjectData != null ? task.ObjectData.index : 0;
 
@@ -133,7 +181,7 @@ namespace XiaoCao
 
             info.atk = (int)(baseAtk * info.GetSkillSetting.AckRate);
 
-            CurTrigger.InitAtkInfo(info);
+            AtkCommponent.InitAtkInfo(info);
         }
 
         void OnMaxTrigger()
@@ -141,21 +189,6 @@ namespace XiaoCao
             task.ObjectData.OnEnd();
             Debug.Log($"--- OnMaxTrigger");
         }
-
-        public override void OnFinish()
-        {
-            base.OnFinish();
-            if (CurCol)
-            {
-                TriggerCache.Release(MeshType, CurCol.gameObject);
-                //Debug.Log($"--- Release col {MeshType}");
-            }
-            else
-            {
-                Debug.LogError($"--- no col {MeshType}");
-            }
-        }
-
     }
 
 
@@ -175,16 +208,16 @@ namespace XiaoCao
         public Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
 
 
-        public static GameObject GetTrigger(MeshType meshType)
+        public static Atker GetTrigger(MeshType meshType)
         {
             if (Inst.dicPool.TryGetValue(meshType, out AssetPool assetPool))
             {
-                return assetPool.Get();
+                return assetPool.Get().GetComponent<Atker>();
             }
 
             var newObject = new GameObject(XCTriggerEvent.TriggerNames[(int)meshType]);
 
-            newObject.AddComponent<AtkTrigger>();
+            var trigger =  newObject.AddComponent<Atker>();
 
             Collider collider = null;
 
@@ -213,7 +246,7 @@ namespace XiaoCao
 
             assetPool = new AssetPool(newObject);
             Inst.dicPool[meshType] = assetPool;
-            return assetPool.Get();
+            return assetPool.Get().GetComponent<Atker>(); ;
         }
 
         public static void Release(MeshType meshType, GameObject gameObject)

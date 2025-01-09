@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 namespace XiaoCao.Buff
 {
 
-    public class Bullet_MagicMissile : AtkTrigger
+    public class Bullet_MagicMissile : Atker
     {
         public float handleX = 0.2f;
         public float handleR = 4;
@@ -153,8 +153,9 @@ namespace XiaoCao.Buff
             EnterState(EBulletState.Stop);
         }
 
-        public override void OnTriggerEnd()
+        public override void OnTriggerTimeOut()
         {
+            base.OnTriggerTimeOut();
             FinishEnd();
         }
 

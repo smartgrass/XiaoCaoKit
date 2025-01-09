@@ -144,6 +144,12 @@ namespace XiaoCao
             }
 
             var setting = ackInfo.GetSkillSetting;
+
+            if (ackInfo.IsLocalPlayer)
+            {
+                CamEffectMgr.Inst.CamShakeEffect(setting.ShakeLevel);
+            }
+
             //非死亡则往下执行
             if (!BaseDamageCheck(ackInfo))
             {
