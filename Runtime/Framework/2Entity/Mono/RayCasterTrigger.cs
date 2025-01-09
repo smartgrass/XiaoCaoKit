@@ -9,7 +9,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 {
     public MeshInfo meshInfo;
 
-    public int layerMask;
+    public int layerMask = Layers.DEFAULT;
 
     public Action<Collider> TriggerAct { get; set; }
 
@@ -27,6 +27,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     public void InitListener(Action<Collider> action)
     {
+        layerMask = Layers.DEFAULT_MASK | Layers.PLAYER_MASK | Layers.ENEMY_MASK;
         TriggerAct = null;
         TriggerAct += action;
         tempColliders.Clear();
