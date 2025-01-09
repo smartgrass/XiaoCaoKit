@@ -25,6 +25,8 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     Vector3 WorldEulerAngles { get { return transform.eulerAngles + meshInfo.GetEulerAngles; } }
 
+    private Vector3 lastPoint;
+
     public void InitListener(Action<Collider> action)
     {
         layerMask = Layers.DEFAULT_MASK | Layers.PLAYER_MASK | Layers.ENEMY_MASK;
@@ -52,11 +54,13 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
             case MeshType.Sector:
                 OnSector();
                 break;
-            case MeshType.Other:
+            case MeshType.BoxLine:
+                BoxLine();
                 break;
             default:
                 break;
         }
+        lastPoint = WorldCenter;
     }
 
 
@@ -73,6 +77,26 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     private void ClearTemp()
     {
         tempColliders.Clear();
+    }
+
+    private void BoxLine()
+    {
+        //起点->当前位置
+        if (lastPoint.IsZore())
+        {
+            lastPoint = WorldCenter;
+        }
+        Vector3 dir = WorldCenter - lastPoint;
+        float curDistance = dir.magnitude;
+
+        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, meshInfo.GetSize / 2, dir, hits, Quaternion.Euler(WorldEulerAngles), curDistance, layerMask);
+        if (hitCount > 0)
+        {
+            for (int i = 0; i < hitCount; i++)
+            {
+                DoTrigger(hits[i].collider);
+            }
+        }
     }
 
     private void OnBox()

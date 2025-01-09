@@ -30,7 +30,7 @@ namespace XiaoCao
         Sphere = 1,
         [EnumLabel("扇形 (半径,高,角度)")]
         Sector = 2,
-        Other = 3,
+        BoxLine = 3,
     }
 
 }

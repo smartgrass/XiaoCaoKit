@@ -55,7 +55,7 @@ namespace XiaoCao
                 case MeshType.Sector:
                     OnSector();
                     break;
-                case MeshType.Other:
+                case MeshType.BoxLine:
                     break;
                 default:
                     break;
@@ -233,7 +233,7 @@ namespace XiaoCao
                 case MeshType.Sector:
                     collider = newObject.AddComponent<MeshCollider>();
                     break;
-                case MeshType.Other:
+                case MeshType.BoxLine:
                     collider = newObject.AddComponent<MeshCollider>();
                     break;
                 default:
