@@ -1,7 +1,4 @@
-﻿using System;
-using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
-using static UnityEditor.PlayerSettings;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace XiaoCao.Buff
@@ -47,6 +44,7 @@ namespace XiaoCao.Buff
         public void InitWithPlayer(Player0 player)
         {
             InitAtkInfo(AtkInfoHelper.CreatInfo(player, EBuff.MagicMissile.ToString()));
+            TriggerByCollider();
             //random
             Vector3 offset = GetRandomStartPoint(startR);
             Init(player.transform.TransformPoint(offset));

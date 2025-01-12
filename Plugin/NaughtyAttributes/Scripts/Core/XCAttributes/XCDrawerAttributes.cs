@@ -71,7 +71,7 @@ namespace XiaoCao
         }
 
     }
-    
+
 
     public static class EnumLabelExtend
     {
@@ -88,8 +88,9 @@ namespace XiaoCao
         }
     }
 
+}
+/* [Obsolete("使用[InspectorName]代替")]
 #if UNITY_EDITOR
-
 
     [CustomPropertyDrawer(typeof(EnumLabelAttribute))]
     public class EnumLabelDrawer : PropertyDrawer
@@ -99,7 +100,6 @@ namespace XiaoCao
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            Debug.Log($"--- OnGUI {label}");
             SetUpCustomEnumNames(property, property.enumNames);
 
             if (property.propertyType == SerializedPropertyType.Enum)
@@ -203,4 +203,5 @@ namespace XiaoCao
     }
 
 #endif
-}
+
+*/

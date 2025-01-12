@@ -33,7 +33,9 @@ namespace XiaoCao.Buff
             b.transform.rotation = data.Tran.rotation;
             b.GetComponent<Rigidbody>().linearVelocity = data.Tran.forward * Speed;
             var info = AtkInfoHelper.CreatInfo(player, Buff.ToString());
-            b.GetComponent<Atker>().InitAtkInfo(info);
+            var Atker = b.GetComponent<Atker>();
+            Atker.InitAtkInfo(info);
+            Atker.TriggerByCollider();
         }
     }
 

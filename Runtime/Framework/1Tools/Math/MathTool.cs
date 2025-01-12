@@ -479,6 +479,12 @@ public static class MathTool
         return Quaternion.AngleAxis(angle, Vector3.up) * (dir);
     }
 
+    public static Vector3 GetForwordDirection(Quaternion rotation)
+    {
+        //forward 可以自定义,默认是正前方
+        Vector3 forward = rotation * Vector3.forward;
+        return forward;
+    }
 
     /// <summary>
     /// 二维向量旋转

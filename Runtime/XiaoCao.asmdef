@@ -10,7 +10,8 @@
         "FancyScrollView",
         "Unity.TextMeshPro",
         "Fantasy.Unity",
-        "GG.Extensions"
+        "GG.Extensions",
+        "PhysicsExtension"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

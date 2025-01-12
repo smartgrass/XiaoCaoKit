@@ -24,44 +24,47 @@ namespace XiaoCao
 
         public MeshType MeshType => meshInfo.meshType;
 
-        public Collider CurCol { get; set; }
-
-        public ITrigger trigger { get; set; }
+        public ITrigger Trigger { get; set; }
 
         public BaseAtker AtkCommponent { get; set; }
-
-        public bool UseRayCast { get; set; }    
 
 
         public override void OnTrigger(float startOffsetTime)
         {
             base.OnTrigger(startOffsetTime);
-            UseRayCast = true;
-            if (UseRayCast)
-            {
-                OnRayCastStart();
-                return;
-            }
 
+            AtkCommponent = TriggerCache.GetTrigger(MeshType);
+            GetTrigger();
 
-            switch (MeshType)
-            {
-                case MeshType.Box:
-                    OnBox();
-                    break;
-                case MeshType.Sphere:
-                    OnSphere();
-                    break;
-                case MeshType.Sector:
-                    OnSector();
-                    break;
-                case MeshType.BoxLine:
-                    break;
-                default:
-                    break;
-            }
+            var tf = AtkCommponent.transform;
+            tf.SetParent(Tran);
+
+            Trigger.SetMeshInfo(meshInfo);
+            Trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
+            Trigger.Switch(true);
             SetAtkInfo();
+        }
 
+        void GetTrigger()
+        {
+            if (UseRayCast())
+            {
+                Trigger = AtkCommponent.GetOrAddComponent<RayCasterTrigger>();
+            }
+            else
+            {
+                Trigger = AtkCommponent.GetOrAddComponent<ColliderTrigger>();
+            }
+        }
+
+
+        private bool UseRayCast()
+        {
+            if (MeshType == MeshType.Sector)
+            {
+                return false;
+            }
+            return true;
         }
 
 
@@ -69,93 +72,11 @@ namespace XiaoCao
         {
             base.OnFinish();
 
-            if (UseRayCast)
-            {
-                trigger.Switch(false);
-                return;
-            }
+            Trigger.OnFinish();
 
-            if (CurCol)
-            {
-                TriggerCache.Release(MeshType, CurCol.gameObject);
-            }
-            else
-            {
-                Debug.LogError($"--- no col {MeshType}");
-            }
+            TriggerCache.Release(MeshType, AtkCommponent.gameObject);
+            //回收处理?
         }
-
-        void OnRayCastStart()
-        {
-            AtkCommponent = TriggerCache.GetTrigger(MeshType);
-            var trigger = AtkCommponent.GetOrAddComponent<RayCasterTrigger>();
-            trigger.meshInfo = meshInfo;
-            trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
-
-        }
-
-        #region Old
-
-        public void OnSector()
-        {
-            AtkCommponent = TriggerCache.GetTrigger(MeshType);
-            var col = AtkCommponent.GetComponent<MeshCollider>();
-            var trigger = AtkCommponent.GetOrAddComponent<ColliderTrigger>();
-            trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
-
-
-            CurCol = col;
-            col.convex = true;
-            col.isTrigger = true;
-            col.sharedMesh = MathLayoutTool.GetSectorMesh(meshInfo.GetRadian, meshInfo.GetRadius, meshInfo.GetHight, 20);
-
-            var tf = AtkCommponent.transform;
-            tf.SetParent(Tran);
-            tf.localScale = Vector3.one;
-            tf.localPosition = meshInfo.GetCenter;
-            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
-
-            //TODO 缩放要特殊处理下,暂无
-
-        }
-
-        private void OnSphere()
-        {
-            AtkCommponent = TriggerCache.GetTrigger(MeshType);
-            var col = AtkCommponent.GetComponent<SphereCollider>();
-            CurCol = col;
-            CurCol.isTrigger = true;
-            col.radius = 1;
-
-            var tf = AtkCommponent.transform;
-            tf.SetParent(Tran);
-            tf.localScale = meshInfo.GetSize;
-            tf.localPosition = meshInfo.GetCenter;
-            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
-
-
-
-
-        }
-
-        private void OnBox()
-        {
-            var triggerGo = TriggerCache.GetTrigger(MeshType);
-            AtkCommponent = triggerGo.GetComponent<Atker>();
-            var col = AtkCommponent.GetComponent<BoxCollider>();
-            CurCol = col;
-            CurCol.isTrigger = true;
-            var tf = triggerGo.transform;
-            tf.SetParent(Tran);
-            tf.localScale = meshInfo.GetSize;
-            tf.localPosition = meshInfo.GetCenter;
-            tf.localRotation = Quaternion.Euler(meshInfo.GetEulerAngles);
-
-            col.center = Vector3.zero;
-            col.size = Vector3.one;
-
-        }
-        #endregion
 
         private void SetAtkInfo()
         {
@@ -216,34 +137,7 @@ namespace XiaoCao
             }
 
             var newObject = new GameObject(XCTriggerEvent.TriggerNames[(int)meshType]);
-
-            var trigger =  newObject.AddComponent<Atker>();
-
-            Collider collider = null;
-
-            //拼接得到一个key
-            switch (meshType)
-            {
-                case MeshType.Box:
-                    collider = newObject.AddComponent<BoxCollider>();
-                    break;
-                case MeshType.Sphere:
-                    collider = newObject.AddComponent<SphereCollider>();
-                    break;
-                case MeshType.Sector:
-                    collider = newObject.AddComponent<MeshCollider>();
-                    break;
-                case MeshType.BoxLine:
-                    collider = newObject.AddComponent<MeshCollider>();
-                    break;
-                default:
-                    Debug.LogError($"--- unknow {meshType}");
-                    break;
-            }
-            collider.enabled = false;
-            collider.isTrigger = true;
-            collider.enabled = true;
-
+            var trigger = newObject.AddComponent<Atker>();
             assetPool = new AssetPool(newObject);
             Inst.dicPool[meshType] = assetPool;
             return assetPool.Get().GetComponent<Atker>(); ;

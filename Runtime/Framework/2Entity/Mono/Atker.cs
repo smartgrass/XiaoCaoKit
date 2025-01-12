@@ -6,12 +6,10 @@ using UnityEngine;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
 
-
+///<see cref="RayCasterTrigger"/>
 ///<see cref="ColliderTrigger"/>
 public class Atker : BaseAtker
 {
-    public AtkInfo ackInfo { get; set; }
-
     public override void ReceiveTriggerEnter(Collider other)
     {
         var rb = other.attachedRigidbody;
@@ -55,6 +53,12 @@ public class Atker : BaseAtker
             OnTriggerTimeOut();
         }
     }
+
+    internal void TriggerByCollider()
+    {
+        ColliderTrigger colliderTrigger = gameObject.GetOrAddComponent<ColliderTrigger>();
+        colliderTrigger.InitListener(ReceiveTriggerEnter);
+    }
 }
 
 
@@ -65,7 +69,7 @@ public abstract class BaseAtker : IdComponent
     [ReadOnly]
     public int curTriggerTime;
 
-    AtkInfo ackInfo { get; set; }
+    public AtkInfo ackInfo { get; set; }
 
     public virtual void ReceiveTriggerEnter(Collider collider) { }
 
