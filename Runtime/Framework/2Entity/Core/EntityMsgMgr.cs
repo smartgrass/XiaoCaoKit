@@ -38,6 +38,8 @@ namespace XiaoCao
         NoBodyCollision = 15,
         [InspectorName("CameraShake-int")]
         CameraShake,
+        [InspectorName("幻影-flaot")]
+        BodyPhantom,
 
 
     }

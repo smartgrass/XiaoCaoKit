@@ -11,6 +11,7 @@ using UnityEditor.Graphs;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.Animations;
+using XiaoCao.Render;
 using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
@@ -367,6 +368,7 @@ namespace XiaoCao
                     roleData.roleControl.TryPlaySkill(skillId);
                     break;
                 case EntityMsgType.SetNoBusy:
+                    SetNoBusy();
                     break;
                 case EntityMsgType.SetUnMoveTime:
                     SetUnMoveTime(msg);
@@ -386,9 +388,27 @@ namespace XiaoCao
                 case EntityMsgType.CameraShake:
                     OnCameraShake(msg);
                     break;
+                case EntityMsgType.BodyPhantom:
+                    OnBodyPhantom(msg);
+                    break;
                 default:
                     break;
             }
+        }
+
+        private void OnBodyPhantom(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            var p = body.GetOrAddComponent<BodyPhantom>();
+            if (baseMsg.state == 0)
+            {
+                p.StartAnim(baseMsg.numMsg);
+            }
+            else
+            {
+                p.StopAnim();
+            }
+
         }
 
         private void OnCameraShake(object msg)
