@@ -21,7 +21,7 @@ namespace XiaoCao
         [ShowIf(nameof(isBezier))]
         public Vector3 handlePoint;
 
-        public Ease easeType = Ease.Linear;
+        public AnimationCurve curve;
 
         //特殊处理
         public ETriggerCmd command;
@@ -69,7 +69,7 @@ namespace XiaoCao
 
         public Vector3 GetVec3Value(float t)
         {
-            float et = DOVirtual.EasedValue(0, 1, t, easeType);
+            float et = curve == null ? t: curve.Evaluate(t);
 
             if (isBezier)
             {

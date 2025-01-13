@@ -41,6 +41,11 @@ namespace Flux
             int len = fe.msgList.Length;
             for (int i = 0; i < len; i++)
             {
+                if (!fe.enabled)
+                {
+                    Debug.Log($"--- skip {fe.gameObject.name}");
+                    continue;
+                }
                 XCMsgEvent xce = new XCMsgEvent();
                 var msg = fe.msgList[i];
                 xce.eName = "MsgEvent";

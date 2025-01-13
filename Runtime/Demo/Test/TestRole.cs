@@ -9,7 +9,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using XiaoCao;
 using EGameEvent = XiaoCao.EGameEvent;
-
 public class TestRole : GameStartMono,IExecute
 {
     public RoleType roleType = RoleType.Enemy;

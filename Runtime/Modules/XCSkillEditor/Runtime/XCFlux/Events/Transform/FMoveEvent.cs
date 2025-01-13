@@ -19,7 +19,8 @@ namespace Flux
         //n-2 头尾0,1省略
         public List<float> arrivalTimes = new List<float>(); // 存储每个点到达的时间
 
-        public List<FEase> easeType = new List<FEase>();
+
+        public List<AnimationCurve> curves = new List<AnimationCurve>();    
 
         //List<Ease>
         [SerializeField]
@@ -242,7 +243,7 @@ namespace Flux
             //Debug.Log($" {normalizedTime} {timeIndex} {tBetweenPoints}  {curTime} / {curTimeLen}");
 
             //曲线缩放
-            tBetweenPoints = DOVirtual.EasedValue(0, 1, tBetweenPoints, GetEase(timeIndex));
+            tBetweenPoints = Evaluate(timeIndex, tBetweenPoints);
 
             if (IsBezier)
             {
@@ -266,13 +267,22 @@ namespace Flux
             CheckLen();
         }
 
-        public Ease GetEase(int i)
+        public float Evaluate(int i, float t)
         {
-            if (easeType.Count > i)
+            if (curves.Count > i)
             {
-                return easeType[i].FEaseToEase();
+                return curves[i].Evaluate(t);
             }
-            return Ease.Linear;
+            return t;
+        }
+
+        public AnimationCurve GetEase(int i)
+        {
+            if (curves.Count > i)
+            {
+                return curves[i];
+            }
+            return null;
         }
         //对于controlpoint,
         public float GetTime(int index)
@@ -307,7 +317,7 @@ namespace Flux
 
                 xcMove.startVec = start;
                 xcMove.endVec = end;
-                xcMove.easeType = fe.GetEase(i);
+                xcMove.curve = fe.GetEase(i);
 
                 float startTime = fe.GetTime(i - 1);
                 float endTime = fe.GetTime(i);
