@@ -772,9 +772,9 @@ namespace XiaoCao
         Def,
         SkillCDOff,
         AtkRecoverHp,
-        MoveSpeedMult
+        MoveSpeedMult,
         //非基础属性 分界线
-
+        NorAtkSpeedAdd,
     }
 
     public static class EAttrExtend

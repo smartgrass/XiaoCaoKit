@@ -54,7 +54,7 @@ namespace XiaoCao
             {
                 return null;
             }
-            info.speed = data.speed;
+            info.baseSpeed = data.speed;
             info.skillId = skillId;
             return CreatNewByData(data, info);
         }
@@ -77,7 +77,7 @@ namespace XiaoCao
             if (runnerPool == null || !runnerPool.prefab)
             {
                 GameObject go = new GameObject($"Runner_Pre");
-                go.AddComponent<XCTaskRunner>(); 
+                go.AddComponent<XCTaskRunner>();
                 runnerPool = new AssetPool(go);
             }
         }
@@ -198,7 +198,7 @@ namespace XiaoCao
     }
 
     ///<see cref="AtkInfo"/>
-    public class TaskInfo 
+    public class TaskInfo
     {
         public Role role;
         public Transform playerTF;
@@ -212,7 +212,13 @@ namespace XiaoCao
 
         public Vector3 castPos;
 
-        public float speed = 1;
+        public float GetSpeed =>baseSpeed * speedMult;
+ 
+
+        public float baseSpeed;
+
+        public float speedMult = 1;
+
 
         public XCTaskRunner taskRunner;
     }

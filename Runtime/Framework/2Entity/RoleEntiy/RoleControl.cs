@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using cfg;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -13,6 +14,8 @@ namespace XiaoCao
 
         public List<XCTaskRunner> runnerList = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
+
+        public XCTaskRunner
 
         private void AddListener()
         {
@@ -49,7 +52,7 @@ namespace XiaoCao
             int len = runnerList.Count;
             for (int i = len - 1; i > 0; i--)
             {
-                runnerList[i].SetBreak();              
+                runnerList[i].SetBreak();
             }
         }
 
@@ -187,7 +190,14 @@ namespace XiaoCao
                 castEuler = selfTf.eulerAngles,
                 castPos = selfTf.position,
                 playerAnimator = owner.Anim,
+                speedMult = 1,
             };
+
+            if (IsNorAtkId(skillId))
+            {
+                taskInfo.speedMult = 1 + owner.PlayerAttr.GetValue(EAttr.NorAtkSpeedAdd);
+            }
+
             //指定技能目录,
             int skillDirId = owner.raceId;
 
@@ -203,6 +213,11 @@ namespace XiaoCao
             Data_R.skillState.SetValue(ESkillState.Skill);
         }
 
+        private bool IsNorAtkId(string id)
+        {
+            var setting = LubanTables.GetSkillSetting(id, 0);
+            return setting.ActType == cfg.Skill.EActType.NorAtk;
+        }
 
 
         //技能开始前根据输入调整方向 等数据
