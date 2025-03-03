@@ -391,11 +391,58 @@ namespace XiaoCao
                 case EntityMsgType.BodyPhantom:
                     OnBodyPhantom(msg);
                     break;
+                case EntityMsgType.HideRender:
+                    OnHideRender(msg);
+                    break;
+                case EntityMsgType.AnimSpeed:
+                    OnAnimSpeed(msg);
+                    break;
                 default:
                     break;
             }
         }
 
+        private void OnAnimSpeed(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (baseMsg.state == 0)
+            {
+                Anim.speed = baseMsg.numMsg;
+            }
+            else
+            {
+                //TODO 完善
+                Anim.speed = XCTime.timeScale;
+            }
+        }
+
+        private Renderer[] tempRender;
+
+        private void OnHideRender(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (tempRender == null)
+            {
+                tempRender = body.GetComponentsInChildren<Renderer>();
+            }
+
+            if (baseMsg.state == 0)
+            {
+                //body.gameObject.SetActive(false);
+                foreach (Renderer renderer in tempRender)
+                {
+                    renderer.enabled = false;
+                }
+            }
+            else
+            {
+                foreach (Renderer renderer in tempRender)
+                {
+                    renderer.enabled = true;
+                }
+                //body.gameObject.SetActive(true);
+            }
+        }
         private void OnBodyPhantom(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;

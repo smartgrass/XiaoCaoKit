@@ -73,7 +73,7 @@ public class HitStop : MonoSingleton<HitStop>
 
     private Tween shakeTween;
 
-    public void Shake(float time)
+    public void Shake(float time = 0.3f)
     {
         if (null != shakeTween)
         {
@@ -81,6 +81,17 @@ public class HitStop : MonoSingleton<HitStop>
         }
 
         shakeTween = Camera.main.DOShakePosition(time, shakeLength, shakePower);
+    }
+
+    public void ShakeEx(float multi, float time = 0.3f)
+    {
+        //TODO Shake需要手动实现
+        //if (null != shakeTween)
+        //{
+        //    shakeTween.Pause();
+        //}
+
+        //shakeTween = Camera.main.DOShakePosition(time, shakeLength * multi, (int)(shakePower * multi));
     }
 
     public void Cancel()
@@ -130,19 +141,19 @@ public static class HitTween
         float lastT = 0, deltaT = 0;
 
         Tween tween = DOTween.To(x => time = x, 0, 1, duration);
-        
+
 
         tween.SetEase(ease);
 
-        Vector3 endPos = pos;   
+        Vector3 endPos = pos;
         Vector3 startPos = cc.transform.position;
         float distance = Vector3.Distance(startPos, endPos);
-        
+
         tween.OnUpdate(() =>
         {
             deltaT = time - lastT;
             lastT = time;
-            Vector3 dir =(endPos - cc.transform.position).normalized;
+            Vector3 dir = (endPos - cc.transform.position).normalized;
             Vector3 delta = dir * distance * deltaT;
             cc.Move(delta);
         });

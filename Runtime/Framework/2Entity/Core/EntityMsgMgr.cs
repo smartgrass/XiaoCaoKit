@@ -40,6 +40,10 @@ namespace XiaoCao
         CameraShake,
         [InspectorName("幻影-flaot")]
         BodyPhantom,
+        [InspectorName("隐身-flaot")]
+        HideRender,
+        [InspectorName("动画速度-flaot")]
+        AnimSpeed
 
 
     }
