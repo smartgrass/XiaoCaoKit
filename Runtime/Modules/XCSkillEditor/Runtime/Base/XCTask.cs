@@ -80,7 +80,7 @@ namespace XiaoCao
         public void OnEventUpdate()
         {
 
-            float deltaTime = XCTime.deltaTime * Info.speed;
+            float deltaTime = XCTime.deltaTime * Info.GetSpeed;
 
             _curTime += deltaTime;//Mathf.Clamp( time, 0, LengthTime );
             //帧数是用时间累加计算出来的

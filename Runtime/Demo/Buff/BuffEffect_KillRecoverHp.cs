@@ -100,8 +100,31 @@ namespace XiaoCao.Buff
     public class BuffEffect_SkillDamageAdd : BaseBuffEffect
     {
         public override EBuff Buff => EBuff.SkillDamageMult;
-        //TODO
+        //TODO NorAtkSpeedAdd
     }
+
+    [XCBuff]
+    public class BuffEffect_NorAtkSpeedAdd : BuffEffect_BaseAttrModify
+    {
+        public override EBuff Buff => EBuff.NorAtkSpeedAdd;
+
+        public override EAttr EAttr => EAttr.NorAtkSpeedAdd;
+
+
+        public override void ApplyEffect(string key, BuffInfo buff, int targetId)
+        {
+            this.TargetId = targetId;
+            this.Key = key;
+            var player = TargetId.GetPlayerById();
+
+            AttributeModifier modifier = new AttributeModifier
+            {
+                Add = buff.addInfo[0]
+            };
+            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+        }
+    }
+
 
     [XCBuff]
     public class BuffEffect_MaxHpAdd : BuffEffect_BaseAttrModify

@@ -46,7 +46,7 @@ namespace XiaoCao
                 return;
             }
 
-            _animator.speed = task.Info.speed;
+            _animator.speed = task.Info.GetSpeed;
 
             base.OnTrigger(timeSinceTrigger);
 

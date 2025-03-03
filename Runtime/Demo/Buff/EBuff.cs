@@ -33,6 +33,9 @@ namespace XiaoCao
         [InspectorName("主动技能伤害5%")]
         SkillDamageMult,
 
+        [InspectorName("普攻速度增加15%")]
+        NorAtkSpeedAdd,
+
         [InspectorName("特殊buff分界线,buff数值不能直接叠加效果")]
         SpecialBuffIndex = 100,
 

@@ -129,9 +129,9 @@ namespace XiaoCao
         private void InitPs(ParticleSystem ps)
         {
             Ps = ps;
-            if (!Info.speed.IsFEqual(1))
+            if (!Info.GetSpeed.IsFEqual(1))
             {
-                SetPsSpeed(ps, Info.speed);
+                SetPsSpeed(ps, Info.GetSpeed);
             }
             Ps.Play();
         }
@@ -142,7 +142,7 @@ namespace XiaoCao
             foreach (var p in ps.GetComponentsInChildren<ParticleSystem>())
             {
                 var main = p.main;
-                main.simulationSpeed = Info.speed;
+                main.simulationSpeed = Info.GetSpeed;
             }
         }
         public void StopTimeSpeed(bool isOn)
