@@ -10,6 +10,8 @@ public class AddEnemyData: MonoBehaviour
     public int cmdSettingId = -1;
 
     //"Debug View"
+    [XCHeader("当前AI配置,输入aiId刷新")]
+    [Label("")]
     [NaughtyAttributes.ReadOnly]
     public ActPoolFSM CurAi;
 

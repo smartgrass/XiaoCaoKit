@@ -3,14 +3,8 @@ using cfg;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using TEngine;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
-using UnityEditor.Graphs;
-using UnityEditor.Overlays;
 using UnityEngine;
-using UnityEngine.Animations;
 using XiaoCao.Render;
 using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
@@ -49,6 +43,8 @@ namespace XiaoCao
         [ShowNativeProperty]
         public override bool IsDie => roleData.bodyState == EBodyState.Dead;
         public bool IsFree => roleData.IsStateFree;
+
+        public bool IsNoDamage => PlayerAttr.GetAttribute(EAttr.NoDamage).CurrentValue > 0;
 
         public bool IsAnimBreak => Anim.GetCurrentAnimatorStateInfo(0).IsTag("Break");
 
@@ -140,6 +136,11 @@ namespace XiaoCao
         public virtual void OnDamage(AtkInfo ackInfo)
         {
             if (IsDie)
+            {
+                return;
+            }
+
+            if (IsNoDamage)
             {
                 return;
             }
@@ -396,9 +397,26 @@ namespace XiaoCao
                     break;
                 case EntityMsgType.AnimSpeed:
                     OnAnimSpeed(msg);
+                    break;                
+                case EntityMsgType.NoDamage:
+                    OnNoDamage(msg);
                     break;
                 default:
                     break;
+            }
+        }
+
+        private void OnNoDamage(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (baseMsg.state == 0)
+            {
+                AttributeModifier modifier = new AttributeModifier{Add = 1};
+                PlayerAttr.ChangeAttrValue(EAttr.NoDamage, baseMsg.strMsg, modifier);
+            }
+            else
+            {
+                PlayerAttr.RemoveModifier(EAttr.NoDamage, baseMsg.strMsg);
             }
         }
 
@@ -626,7 +644,7 @@ namespace XiaoCao
         }
 
         public RoleData Data_R => owner.roleData;
-        public RoleState RoleState => Data_R.roleState;
+        public RoleMoveData RoleState => Data_R.roleState;
 
         public virtual void OnDestroy()
         {
@@ -667,7 +685,7 @@ namespace XiaoCao
 
         public PlayerAttr playerAttr = new PlayerAttr();
 
-        public RoleState roleState = new RoleState();
+        public RoleMoveData roleState = new RoleMoveData();
 
         public IRoleControl roleControl;
 
@@ -692,7 +710,7 @@ namespace XiaoCao
         //6. 翻滚优先级高, 可以打断普攻 和 技能
     }
 
-    public class RoleState : IUsed
+    public class RoleMoveData : IUsed
     {
         public float moveLockTime; //普通锁定移动, 如技能状态
         public float rotateLockTime; //普通锁定旋转, 如技能状态
@@ -822,6 +840,7 @@ namespace XiaoCao
         MoveSpeedMult,
         //非基础属性 分界线
         NorAtkSpeedAdd,
+        NoDamage, //无伤
     }
 
     public static class EAttrExtend

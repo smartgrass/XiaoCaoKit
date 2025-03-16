@@ -1,14 +1,16 @@
 ﻿using Cysharp.Threading.Tasks;
 using NaughtyAttributes;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using TEngine;
 using UnityEngine;
 using UnityEngine.UIElements;
 using XiaoCao;
 using EGameEvent = XiaoCao.EGameEvent;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class TestRole : GameStartMono,IExecute
 {
     public RoleType roleType = RoleType.Enemy;
@@ -17,7 +19,8 @@ public class TestRole : GameStartMono,IExecute
 
     [Dropdown(nameof(GetDirAllFileName))]
     [Label("")]
-    [Header("Show all Enmey")]
+    //[Header("Show all Enmey")]
+    [MiniBtn(nameof(SetEnemyValue),"选中")]
     public string enmeyBrowse;
 
     public int level = 1;
@@ -29,6 +32,16 @@ public class TestRole : GameStartMono,IExecute
     public bool enableAI = true;
 
     public float circleSize = 1;
+
+    void SetEnemyValue()
+    {
+        Debug.Log($"--- {enmeyBrowse}");
+        enemyIdList = enmeyBrowse;
+#if UNITY_EDITOR
+        var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/Enemy/{enmeyBrowse}.prefab");
+        EditorGUIUtility.PingObject(obj);
+#endif
+    }
 
     private List<string> GetDirAllFileName()
     {

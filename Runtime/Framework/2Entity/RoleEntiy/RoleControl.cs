@@ -15,8 +15,6 @@ namespace XiaoCao
         public List<XCTaskRunner> runnerList = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
 
-        public XCTaskRunner
-
         private void AddListener()
         {
             Data_R.skillState.AddListener(OnStateChange);

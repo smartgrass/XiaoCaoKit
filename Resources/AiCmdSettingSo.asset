@@ -28,5 +28,7 @@ MonoBehaviour:
     cmdSkillList:
     - 201
   - CmdSettingId: 3
-    des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
-    cmdSkillList: []
+    des: "\u5251"
+    cmdSkillList:
+    - 301
+    - 302

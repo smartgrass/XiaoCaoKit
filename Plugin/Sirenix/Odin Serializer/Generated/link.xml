@@ -1,0 +1,3 @@
+<linker>
+       <assembly fullname="OdinAOTSupport" preserve="all"/>
+</linker>

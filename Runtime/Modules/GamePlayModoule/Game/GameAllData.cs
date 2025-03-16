@@ -167,7 +167,7 @@ namespace XiaoCao
     public static class GameSetting
     {
         //目前技能
-        public const int SkillCountOnBar = 2;
+        public const int SkillCountOnBar = 3;
         ///<see cref="EQuality"/>
         public const int MaxBuffLevel = 5;//从0~5
 

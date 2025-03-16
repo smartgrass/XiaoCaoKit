@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using TEngine;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
@@ -295,6 +296,7 @@ namespace XiaoCao
             GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
+            GetAttribute(EAttr.NoDamage).BaseValue = 0;
 
         }
 
@@ -316,6 +318,13 @@ namespace XiaoCao
             AttributeValue attr = GetAttribute(eAttr);
             attr.AddModifier(key, modifier);
         }
+
+        public void RemoveModifier(EAttr eAttr, string key)
+        {
+            AttributeValue attr = GetAttribute(eAttr);
+            attr.RemoveModifier(key);
+        }
+
 
         public float GetValue(EAttr eAttr, float defaultValue = 0) //冗余参数
         {

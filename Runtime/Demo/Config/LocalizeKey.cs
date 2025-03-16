@@ -14,6 +14,7 @@ namespace XiaoCao
         public static string LockCam = "LockCam"; //锁定视角
         public static string SkinList = "SkinList"; //锁定视角
         public static string MouseView = "MouseView";//视角跟随鼠标
+        public static string MobileInput = "MobileInput";//移动端输入
 
 
         public static string Buff = "Buff";

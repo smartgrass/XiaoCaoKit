@@ -1,25 +1,32 @@
 ﻿#if UNITY_EDITOR
-using System.Collections.Generic;
-using System;
-using UnityEditor;
 #endif
-using UnityEngine;
+using TMPro;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
-using UnityEngine.UI;
-using TMPro;
+using Toggle = UnityEngine.UI.Toggle;
 
 public class DebugPanel : SubPanel
 {
     private TMP_Dropdown skinDrop;
-
+    private Toggle toggle;
 
     public override void Init()
     {
         AddSkinDropDown();
-
+        AddMobileInput();
     }
 
+
+    void AddMobileInput()
+    {
+        toggle = AddToggle(LocalizeKey.MobileInput, OnAddMobileInput);
+    }
+
+    void OnAddMobileInput(bool isOn)
+    {
+        var hud = UIMgr.Inst.midCanvas.transform.Find("MobileInputHud");
+        hud.gameObject.SetActive(isOn);
+    }
 
     private void AddSkinDropDown()
     {
