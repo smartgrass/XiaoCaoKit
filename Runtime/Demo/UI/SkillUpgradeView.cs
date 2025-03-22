@@ -20,7 +20,7 @@ namespace XiaoCao
 		private List<GameObject> itemCells = new List<GameObject>();
         private AssetPool itemCellPool;
 		private bool isInit;
-        private int skillId;
+        private string skillId;
         public SkillPanel SkillPanel { get; set; }
 
 
@@ -68,7 +68,7 @@ namespace XiaoCao
 
         }
 
-        public void ShowSkill(int skillId){
+        public void ShowSkill(string skillId){
 			Init();
             this.skillId = skillId;
             gameObject.SetActive(true);

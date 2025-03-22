@@ -53,6 +53,18 @@ public abstract class SubPanel
 
     }
 
+    public TMP_Text AddTextText(string title,string showStr)
+    {
+        GameObject instance = Object.Instantiate(Prefabs.textText, gameObject.transform);
+        TextMeshProUGUI showText = instance.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+        showText.text = showStr;
+
+        TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+        textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
+        return showText;
+    }
+
+
     public Slider AddSlider(string title, UnityAction<float> onValueChange, Vector2 range, float initValue = 1)
     {
         GameObject instance = Object.Instantiate(Prefabs.sliderText, gameObject.transform);

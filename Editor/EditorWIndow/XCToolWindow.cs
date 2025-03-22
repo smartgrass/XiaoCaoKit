@@ -32,8 +32,13 @@ namespace AssetEditor.Editor
         [HorLayout(false)]
         [OnValueChanged(nameof(CheckDebugGo))]
         public bool IsShowDebug = true;
+        [HorLayout(true)]
         [OnValueChanged(nameof(OnLevelChange))]
         public int playerLevel = 5;
+        [HorLayout(false)]
+        [Range(0, 10)]
+        [OnValueChanged(nameof(OnTimeScale))]
+        public float timeScale = 1;
 
 
         public override void OnEnable()
@@ -126,7 +131,7 @@ namespace AssetEditor.Editor
         [Button("生成敌人", Line1, enabledMode: EButtonEnableMode.Playmode)]
         void GenEnemy()
         {
-            var testRole = GameObject.FindAnyObjectByType<TestRole>();
+            var testRole = GameObject.FindAnyObjectByType<EnemyCreator>();
             if (testRole)
             {
                 testRole.Gen();
@@ -171,14 +176,13 @@ namespace AssetEditor.Editor
 
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
-                GameDataCommon.LocalPlayer.PlayerAttr.lv = playerLevel;
+                GameDataCommon.LocalPlayer.roleData.playerAttr.lv = playerLevel;
+                GameDataCommon.LocalPlayer.InitRoleData();
+                HotFlags.PlayerAttrChange = true;
             }
 
         }
 
-        [Range(0, 10)]
-        [OnValueChanged(nameof(OnTimeScale))]
-        public float timeScale = 1;
 
         void OnTimeScale()
         {

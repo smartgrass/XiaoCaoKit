@@ -6,21 +6,27 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using XiaoCao;
 using EGameEvent = XiaoCao.EGameEvent;
+using System;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-public class TestRole : GameStartMono,IExecute
+public class EnemyCreator : GameStartMono, IExecute
 {
+    public bool autoStart;
+
     public RoleType roleType = RoleType.Enemy;
+
+    public GameObject showEffectPrefab;
 
     public string enemyIdList = "1,1";
 
     [Dropdown(nameof(GetDirAllFileName))]
     [Label("")]
     //[Header("Show all Enmey")]
-    [MiniBtn(nameof(SetEnemyValue),"选中")]
+    [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
     public int level = 1;
@@ -33,24 +39,17 @@ public class TestRole : GameStartMono,IExecute
 
     public float circleSize = 1;
 
-    void SetEnemyValue()
-    {
-        Debug.Log($"--- {enmeyBrowse}");
-        enemyIdList = enmeyBrowse;
-#if UNITY_EDITOR
-        var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/Enemy/{enmeyBrowse}.prefab");
-        EditorGUIUtility.PingObject(obj);
-#endif
-    }
 
-    private List<string> GetDirAllFileName()
-    {
-        return PathTool.GetDirAllFileName("Assets/_Res/Role/Enemy");
-    }
+    private int curGenCount;
+    private int deadCount;
+    private List<int> _enemyList = new List<int>();
+    public Action<EnemyCreator> enemyAllDead;
+
 
     public override void OnGameStart()
     {
-        XCTime.DelayRun(delayGen, Gen).ToObservable();
+        if (autoStart)
+            XCTime.DelayRun(delayGen, Gen).ToObservable();
     }
 
     private string[] GetEnemyList()
@@ -78,16 +77,20 @@ public class TestRole : GameStartMono,IExecute
         {
             string[] enemyList = GetEnemyList();
 
-            int pos = 0;
+            int posIndex = 0;
             int posCount = genCount * enemyList.Length;
             for (int i = 0; i < genCount; i++)
             {
                 foreach (string id in enemyList)
                 {
 
-                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id,level);
+                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, level);
 
-                    enemy.enemyData.movement.MoveToImmediate(GetGenPosition(pos, posCount));
+                    var genPos = GetGenPosition(posIndex, posCount);
+
+                    ShowEffect(genPos);
+
+                    enemy.enemyData.movement.MoveToImmediate(genPos);
 
                     enemy.enemyData.movement.LookToDir(transform.forward);
 
@@ -96,37 +99,43 @@ public class TestRole : GameStartMono,IExecute
                     enemy.DeadAct += OnEnemyDead;
 
                     curGenCount++;
-                    
+
                     _enemyList.Add(enemy.id);
-                    
-                    pos++;
+
+                    posIndex++;
                 }
             }
         }
 
     }
 
-    private int curGenCount;
-    private int deadCount;
-    public string groupName;
-    private List<int> _enemyList = new List<int>();
+    void ShowEffect(Vector3 pos)
+    {
+        if (showEffectPrefab)
+        {
+            var pool = PoolMgr.Inst.GetOrCreatPrefabPool(showEffectPrefab);
+            pool.Get().transform.position = pos;
+        }
+    }
 
-    private void OnEnemyDead(Role role){
+    private void OnEnemyDead(Role role)
+    {
         //TODO临时写法 有需求再优化
         deadCount++;
         _enemyList.Remove(role.id);
-        if (deadCount == curGenCount){
-            GameEvent.Send(EGameEvent.EnemyGroupEndEvent.Int(), groupName);
+        if (deadCount == curGenCount)
+        {
+            enemyAllDead?.Invoke(this);
         }
-        GetItemHelper.GetItem(role.transform.position);
+        GetItemEffectHelper.GetItem(role.transform.position);
     }
 
 
-    private Vector3 GetGenPosition(int index,int count)
+    private Vector3 GetGenPosition(int index, int count)
     {
         if (count > 0)
         {
-            float radius = ((count - 2) *0.5f + 2) * circleSize;
+            float radius = ((count - 2) * 0.5f + 2) * circleSize;
             Mathf.Clamp(radius, 2, 5);
             var addVec = MathTool.AngleToVector(index * 360 / count).To3D(); ;
             return transform.position + addVec * radius;
@@ -138,10 +147,20 @@ public class TestRole : GameStartMono,IExecute
     }
 
 
-    //private void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.red;
-    //    Gizmos.DrawSphere(transform.position,0.3f);
-    //}
+    void SetEnemyValue()
+    {
+        Debug.Log($"--- {enmeyBrowse}");
+        enemyIdList = enmeyBrowse;
+#if UNITY_EDITOR
+        var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/Enemy/{enmeyBrowse}.prefab");
+        EditorGUIUtility.PingObject(obj);
+#endif
+    }
+
+    private List<string> GetDirAllFileName()
+    {
+        return PathTool.GetDirAllFileName("Assets/_Res/Role/Enemy");
+    }
+
 
 }

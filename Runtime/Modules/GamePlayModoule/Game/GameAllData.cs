@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using XiaoCao;
+using static Cinemachine.DocumentationSortingAttribute;
 
 namespace XiaoCao
 {
@@ -66,6 +67,15 @@ namespace XiaoCao
 
     }
 
+    /// <summary>
+    /// bool
+    /// </summary>
+    public class HotFlags
+    {
+        public static bool PlayerAttrChange;
+    }
+
+
     public class BattleData
     {
         public BattleData()
@@ -93,10 +103,12 @@ namespace XiaoCao
 
 
         ///<see cref="BattleFlagNames"/>
+        ///使用Map可以更好地清空数据
         public bool HasFlag(string flag)
         {
             return map.Contains(flag);
         }
+
 
         public void OnControlChange(bool v)
         {
@@ -161,6 +173,14 @@ namespace XiaoCao
             Debug.LogError($"--- no player {playerId}");
             return null;
         }
+
+        public static int GetSkillLevel(string skillId)
+        {
+            var dic = PlayerSaveData.Current.skillUnlockDic;
+            dic.TryGetValue(skillId, out int level);
+            return level;
+        }
+
 
     }
 
@@ -234,6 +254,10 @@ namespace XiaoCao
         //Enemy
         EnemyDeadEvent = 200,
         EnemyGroupEndEvent = 201,
+
+        //Map 300
+        MapMsg = 300,
+
     }
 
     public static class BattleFlagNames

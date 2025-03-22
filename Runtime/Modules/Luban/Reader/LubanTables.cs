@@ -61,14 +61,16 @@ namespace cfg
             return ret;
         }
 
-        public static List<XiaoCao.Item> GetSkillUpgradeItems(int skillId)
+        public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId)
         {
-            var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
-            if (ret == null)
-            {
-                return new List<XiaoCao.Item>();
-            }
-            return ret.NeedItems;
+            Debug.LogError("---  TODO");
+            return null;
+            //var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
+            //if (ret == null)
+            //{
+            //    return new List<XiaoCao.Item>();
+            //}
+            //return ret.NeedItems;
         }
 
         #endregion

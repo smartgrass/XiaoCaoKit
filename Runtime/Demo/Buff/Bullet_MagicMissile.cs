@@ -44,7 +44,7 @@ namespace XiaoCao.Buff
         public void InitWithPlayer(Player0 player)
         {
             InitAtkInfo(AtkInfoHelper.CreatInfo(player, EBuff.MagicMissile.ToString()));
-            TriggerByCollider();
+            AddTriggerByCollider();
             //random
             Vector3 offset = GetRandomStartPoint(startR);
             Init(player.transform.TransformPoint(offset));

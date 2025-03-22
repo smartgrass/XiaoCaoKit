@@ -35,7 +35,7 @@ namespace XiaoCao.Buff
             var info = AtkInfoHelper.CreatInfo(player, Buff.ToString());
             var Atker = b.GetComponent<Atker>();
             Atker.InitAtkInfo(info);
-            Atker.TriggerByCollider();
+            Atker.AddTriggerByCollider();
         }
     }
 

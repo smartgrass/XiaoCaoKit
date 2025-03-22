@@ -54,7 +54,7 @@ public class Atker : BaseAtker
         }
     }
 
-    internal void TriggerByCollider()
+    internal void AddTriggerByCollider()
     {
         ColliderTrigger colliderTrigger = gameObject.GetOrAddComponent<ColliderTrigger>();
         colliderTrigger.InitListener(ReceiveTriggerEnter);
@@ -105,6 +105,7 @@ public abstract class BaseAtker : IdComponent
     {
         id = info.atker;
         ackInfo = info;
+        gameObject.layer = GameSetting.GetTeamAtkLayer(info.team);
     }
     public void InitHitInfo(Collider other)
     {

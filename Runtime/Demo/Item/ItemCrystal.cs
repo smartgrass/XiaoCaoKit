@@ -5,13 +5,17 @@ using NaughtyAttributes;
 using Newtonsoft.Json.Linq;
 using System.CodeDom.Compiler;
 using System.Collections;
+using TEngine;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using XiaoCao;
 
-public class ItemCrystal : ItemIdComponent
+public class ItemCrystal : ItemIdComponent, IMapMsgSender
 {
     public AudioClip hitClip;
+
+    public AudioClip unlockClip;
 
     public Transform body;
 
@@ -37,8 +41,9 @@ public class ItemCrystal : ItemIdComponent
 
     private HpBar hpBar;
 
+    public bool noHurt;
 
-
+    public UnityEvent unLockEvent;
 
     private void Start()
     {
@@ -50,11 +55,27 @@ public class ItemCrystal : ItemIdComponent
         hp = maxHp;
         isDead = false;
         startBodyPos = body.localPosition;
+        SetNoHurt(noHurt);
+    }
+
+    public void SetNoHurt(bool isNoHurt)
+    {
+        if (!isNoHurt && isNoHurt != noHurt)
+        {
+            SoundMgr.Inst.PlayClip(unlockClip);
+            unLockEvent?.Invoke();
+        }
+        noHurt = isNoHurt;
     }
 
     public override void OnDamage(AtkInfo ackInfo)
     {
         if (isDead)
+        {
+            return;
+        }
+
+        if (noHurt)
         {
             return;
         }
@@ -67,7 +88,6 @@ public class ItemCrystal : ItemIdComponent
 
         if (hp <= 0)
         {
-
             OnDead(ackInfo);
             return;
         }
@@ -105,6 +125,12 @@ public class ItemCrystal : ItemIdComponent
         SoundMgr.Inst.PlayClip(deadClip);
         deadEvent?.Invoke();
         isDead = true;
+
+        if (!string.IsNullOrEmpty(deadMapMsg))
+        {
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(),deadMapMsg);
+        }
+
         DoExploded();
         //Òþ²ØÔ­body
         HideSelf();
@@ -221,8 +247,8 @@ public class ItemCrystal : ItemIdComponent
         }
         else
         {
-           var timer = XCTime.DelayTimer(4f, HideAll);
-         
+            var timer = XCTime.DelayTimer(4f, HideAll);
+
         }
     }
 

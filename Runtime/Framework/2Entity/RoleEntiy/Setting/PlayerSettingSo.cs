@@ -44,6 +44,8 @@ namespace XiaoCao
 
         public float endDef = 500;
 
+        public float offsetLevel = 10;
+
         public float maxArmor = 4;
 
 

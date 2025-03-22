@@ -9,11 +9,9 @@ namespace XiaoCao
     {
         public SkillPanelView view;
 
-        //public 
-
         public SkillTreeSo setting;
 
-        private List<SkillCell> cells = new List<SkillCell>();
+        private List<SkillItemCell> cells = new List<SkillItemCell>();
 
 
         public override void Init()
@@ -23,40 +21,27 @@ namespace XiaoCao
             Debug.Log($"--- SkillPanel init");
             setting = Resources.Load<SkillTreeSo>("SkillTreeSo");
 
+            Transform cellParent = view.unequippedBuffContainer.transform;
 
-            foreach (var data in setting.datas)
-            {
-                var cell = GameObject.Instantiate(view.cellPrefab, view.Content);
-                SkillCell skillCell = cell.GetComponent<SkillCell>();
-                cells.Add(skillCell);
-            }
+            cells = new List<SkillItemCell>(cellParent.GetComponentsInChildren<SkillItemCell>());
 
-            view.Prefab.gameObject.SetActive(false);
-            view.skillUpgradeView.gameObject.SetActive(false);
-            view.skillUpgradeView.SkillPanel = this;
-            //点亮和熄灭
-            //玩家解锁数据保存
             UpdateUI();
         }
 
         public void UpdateUI()
         {
-            var dic = PlayerSaveData.Current.skillUnlockDic;
+
             for (int i = 0; i < cells.Count; i++)
             {
                 var cell = cells[i];
-                int level = 0;
-                dic.TryGetValue(cell.skillIndex, out level);
-                cell.SetUnlock(level > 0);
+                //1.显示所有技能图标
+                cell.skillId = cell.name;
+                //2.解锁状态
+                int level = PlayerHelper.GetSkillLevel(cell.skillId);
+                cell.IsUnlock = level > 0;
 
-                var data = setting.datas[i];
-                Vector3 pos = new Vector3(data.pos.x * setting.posScale.x, data.pos.y * setting.posScale.y);
-                (cell.transform as RectTransform).localPosition = pos;
+                cell.UpdateUI();
 
-                cell.clickAct +=(() =>
-                {
-                    view.skillUpgradeView.ShowSkill(cell.skillIndex);
-                });
             }
         }
     }

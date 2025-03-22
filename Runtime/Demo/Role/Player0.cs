@@ -137,7 +137,7 @@ namespace XiaoCao
         public string prefabId;
 
         //技能解锁状态
-        public Dictionary<int, int> skillUnlockDic = new Dictionary<int, int>();
+        public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
 
         public SkillBarData skillBarData = new SkillBarData();
 
@@ -161,7 +161,7 @@ namespace XiaoCao
             }
             if (skillUnlockDic == null)
             {
-                skillUnlockDic = new Dictionary<int, int>();
+                skillUnlockDic = new Dictionary<string, int>();
             }
             if (string.IsNullOrEmpty(prefabId))
             {
@@ -169,7 +169,7 @@ namespace XiaoCao
             }
         }
 
-        public void AddSkillLevel(int skillId)
+        public void AddSkillLevel(string skillId)
         {
             if (!skillUnlockDic.ContainsKey(skillId))
             {
@@ -290,10 +290,12 @@ namespace XiaoCao
             this.lv = lv;
             maxExp = 100 + 100 * (lv % 10);
 
-            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(setting.endHp * lv / setting.maxLevel);
-            GetAttribute(EAttr.MaxMp).BaseValue = mp = (int)(setting.endMp * lv / setting.maxLevel);
-            GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * lv / setting.maxLevel);
-            GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * lv / setting.maxLevel);
+            float power = (lv + setting.offsetLevel) / setting.maxLevel;
+
+            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(setting.endHp * power);
+            GetAttribute(EAttr.MaxMp).BaseValue = mp = (int)(setting.endMp * power);
+            GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * power);
+            GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * power);
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
             GetAttribute(EAttr.NoDamage).BaseValue = 0;

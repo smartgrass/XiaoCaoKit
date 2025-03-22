@@ -18,9 +18,13 @@ MonoBehaviour:
     endMp: 1200
     endAtk: 250
     endDef: 500
+    offsetLevel: 10
+    maxArmor: 4
   enemySetting:
     maxLevel: 50
     endHp: 5000
     endMp: 1200
-    endAtk: 100
+    endAtk: 250
     endDef: 500
+    offsetLevel: 10
+    maxArmor: 4

@@ -11,6 +11,8 @@ public class ItemIdComponent : IdComponent
 
     public UnityEvent deadEvent;
 
+    public string deadMapMsg;
+
     public AudioClip deadClip;
 
     [ReadOnly]

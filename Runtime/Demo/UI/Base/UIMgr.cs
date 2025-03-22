@@ -32,6 +32,7 @@ namespace XiaoCao
 
         public PanelBase lastPanel;
 
+        public Transform mobileInputHudTf;
         //懒加载 或 主动加载
 
         public override void Init()
@@ -42,6 +43,7 @@ namespace XiaoCao
             settingPanel?.Init();
             playerPanel?.Init();
             transform.SetParent(null);
+            mobileInputHudTf = midCanvas.transform.Find("MobileInputHud");
         }
 
         public void ShowView(UIPanelType type)

@@ -22,9 +22,10 @@ public class DebugPanel : SubPanel
         toggle = AddToggle(LocalizeKey.MobileInput, OnAddMobileInput);
     }
 
+    ///<see cref="MobileInputHud"/>
     void OnAddMobileInput(bool isOn)
     {
-        var hud = UIMgr.Inst.midCanvas.transform.Find("MobileInputHud");
+        var hud = UIMgr.Inst.mobileInputHudTf;
         hud.gameObject.SetActive(isOn);
     }
 

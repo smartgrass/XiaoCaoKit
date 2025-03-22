@@ -20,9 +20,8 @@ namespace XiaoCao
             }
             base.Init();
 
-
-
             var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
+            var playerShowPanel = AddPanel<PlayerShowPanel>("Role", "PlayerShowPanel");
             var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
 
             buffPanel.Show();

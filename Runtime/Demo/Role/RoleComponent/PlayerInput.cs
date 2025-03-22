@@ -33,6 +33,11 @@ namespace XiaoCao
             if (Input.GetKeyDown(KeyCode.LeftShift))
                 data.inputs[InputKey.LeftShift] = true;
 
+#if PLATFORM_STANDALONE_WIN
+            if (Input.GetKeyDown(KeyCode.Mouse1))
+                data.inputs[InputKey.LeftShift] = true;
+#endif
+
             if (Input.GetKeyDown(KeyCode.Space))
                 data.inputs[InputKey.Space] = true;
 
