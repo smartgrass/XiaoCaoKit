@@ -39,23 +39,6 @@ namespace XiaoCao
 
     public static class RewardHelper
     {
-        public static void RewardBuffFromPool(int roleId, string rewardPoolId, int rewardLevel = -1)
-        {
-            if (rewardLevel < 0)
-            {
-                rewardLevel = BattleData.Current.levelRewardData.RewardLevel;
-            }
-            Debug.Log($"--- RewardBuffFromPool {roleId} {rewardPoolId}");
-
-            RewardPoolSo so = ConfigMgr.enemyKillRewardSo;
-            //获取奖励池
-            BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
-            //背包 pick
-            Item item = rewardPool.GetRewardItem(rewardLevel);
-
-            RewardItem(item);
-        }
-
         public static void RewardItem(this Item item)
         {
             //暂时只有本地玩家
@@ -77,6 +60,27 @@ namespace XiaoCao
 
         }
 
+        public static Item GetItemWithPool(string rewardPoolId, int rewardLevel = -1)
+        {
+            if (rewardLevel < 0)
+            {
+                rewardLevel = BattleData.Current.levelRewardData.RewardLevel;
+            }
+
+            RewardPoolSo so = ConfigMgr.enemyKillRewardSo;
+            //获取奖励池
+            BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
+            //背包 pick
+            Item item = rewardPool.GetRewardItem(rewardLevel);
+
+            return item;
+        }
+
+        /// <summary>
+        /// item.id 的数字直接对应buff
+        /// 如果是#开头,则是根据EBuffType类型抽取
+        /// </summary>
+        /// <param name="item"></param>
         public static void RewardBuff(Item item)
         {
             if (string.IsNullOrEmpty(item.id))
@@ -84,9 +88,11 @@ namespace XiaoCao
                 Debuger.LogError("--- id = empty");
                 return;
             }
+
             EBuff eBuff;
             if (item.id[0]=='#')
             {
+                //根据类型抽取
                 var valueString = item.id.Substring(1);
                 int.TryParse(valueString, out int num);
                 EBuffType eBuffType = (EBuffType)num;
@@ -94,12 +100,12 @@ namespace XiaoCao
             }
             else
             {
+                //直接转数字
                 int.TryParse(item.id, out int num);
                 eBuff = (EBuff)num;
             }
 
             var buffItem = BuffHelper.CreatBuffItem(eBuff);
-
             PlayerHelper.AddBuff(GameDataCommon.Current.LocalPlayerId, buffItem);
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
         }

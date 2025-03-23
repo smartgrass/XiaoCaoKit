@@ -56,6 +56,7 @@ namespace XiaoCao
 
         public void RefreshUI()
         {
+            //先清空
             ClearBuffItem(equippedBuffContainer);
             ClearBuffItem(unequippedBuffContainer);
 

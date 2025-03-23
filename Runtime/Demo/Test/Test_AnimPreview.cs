@@ -111,7 +111,7 @@ public class Test_AnimPreview : MonoBehaviour
             AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(animationFiles[currentAnimationIndex]);
             Debug.Log($"---  clip {clip}");
             animator.runtimeAnimatorController = CreateControllerWithClip(clip);
-            characters[i].GetOrAddComponent<Test_ObjUsing>().obj = clip;
+            characters[i].GetOrAddComponent<Test_ObjUsing>().objects.Add(clip);
             characters[i].gameObject.name = clip.name;
             currentAnimationIndex++;
         }

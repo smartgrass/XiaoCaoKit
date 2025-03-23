@@ -5,6 +5,7 @@ namespace XiaoCao
     [CreateAssetMenu(menuName = "SO/RewardItemConfigSo", fileName = "RewardItemConfigSo")]
     public class RewardItemConfigSo : BaseRewardItemConfigSo
     {
+        public float[] ExRate = new[] { 0.1f, 1 };
         public override Item GetRewardItem(int level)
         {
             EBuffType type = GetRandomBuffType(level);
@@ -17,16 +18,17 @@ namespace XiaoCao
         public EBuffType GetRandomBuffType(int level)
         {
             float p = 0.1f;
-            if (level == 1)
+            if (level <= 0)
             {
-                p = 0.5f;
+                p = ExRate[0];
             }
-            else if (level > 1)
+            else
             {
-                p = 1;
+                p = ExRate[level % ExRate.Length];
             }
+
             bool isOther = RandomHelper.GetRandom(p);
-            return isOther ? EBuffType.Other : EBuffType.Nor;
+            return isOther ? EBuffType.Ex : EBuffType.Nor;
         }
     }
 }

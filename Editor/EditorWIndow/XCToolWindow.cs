@@ -211,13 +211,14 @@ namespace AssetEditor.Editor
             }
             for (int i = 0; i < 8; i++)
             {
-                RewardHelper.RewardBuffFromPool(0, "0", 0);
+                Item item = RewardHelper.GetItemWithPool("0", 0);
+                RewardHelper.RewardItem(item);
             }
 
 
             foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
             {
-                if (item.GetBuffType() == EBuffType.Other)
+                if (item.GetBuffType() == EBuffType.Ex)
                 {
                     var buffItem = BuffHelper.CreatBuffItem(item);
                     PlayerHelper.AddBuff(0, buffItem);

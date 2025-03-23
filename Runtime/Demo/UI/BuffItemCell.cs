@@ -115,18 +115,20 @@ namespace XiaoCao
 
             //判断落点 获取位置的BuffItem
             BuffItemCell nextCell = GetPointBuffItemCell(eventData);
-            if (nextCell == null || nextCell == this)
+
+            bool isNull = nextCell == null;
+
+            if (isNull || nextCell == this)
             {
-                Debug.Log($"--- 撤销 {nextCell}");
+                Debug.Log($"--- 撤销 isNull {isNull}");
                 RefreshView();
                 EnableRayCast(true);
                 //撤销移动
                 return;
             }
 
-
-            if (nextCell.buffItem.GetBuffType != EBuffType.None
-                && nextCell.buffItem.CanUpGradeItem(buffItem))
+            bool canUpgrade = IsCanUgrade(nextCell);
+            if (canUpgrade)
             {
                 //合成
                 UpgradeBuff(nextCell);
@@ -136,6 +138,26 @@ namespace XiaoCao
                 //交换
                 ExChange(nextCell);
             }
+            EnableRayCast(true);
+        }
+
+        private bool IsCanUgrade(BuffItemCell nextCell)
+        {
+            EBuffType type = nextCell.buffItem.GetBuffType;
+            if (type == EBuffType.None)
+            {
+                return false;
+            }
+            //Ex只有相同EBuff才可升级
+            if (type == EBuffType.Ex)
+            {
+                if (buffItem.GetFirstEBuff == nextCell.buffItem.GetFirstEBuff)
+                {
+                    return true;
+                }
+                return false;
+            }
+            return nextCell.buffItem.CanUpGradeItem(buffItem);
         }
 
         void ExChange(BuffItemCell nextCell)

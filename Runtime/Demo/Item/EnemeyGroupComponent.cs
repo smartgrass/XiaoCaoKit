@@ -13,7 +13,7 @@ public class EnemeyGroupComponent : GameStartMono
 
     public UnityEvent allKillEvent;
 
-    public string groupName;
+    public string mapMsg;
 
     private int triggerTimer;
 
@@ -37,7 +37,7 @@ public class EnemeyGroupComponent : GameStartMono
         triggerTimer++;
         if (triggerTimer >= maxTriggerTime)
         {
-            GameEvent.Send<string>(EGameEvent.EnemyGroupEndEvent.Int(), groupName);
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), mapMsg);
             allKillEvent?.Invoke();
         }
     }
@@ -46,7 +46,7 @@ public class EnemeyGroupComponent : GameStartMono
     {
         if (GameDataCommon.Current.gameState == GameState.Running)
         {
-            if (GameDataCommon.LocalPlayer != null)
+            if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
             {
                 float dis = Vector3.Distance(transform.position, GameDataCommon.LocalPlayer.transform.position);
                 if (dis < radus)

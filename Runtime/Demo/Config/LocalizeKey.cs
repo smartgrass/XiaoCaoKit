@@ -94,11 +94,11 @@ namespace XiaoCao
         {
             if (num < 1)
             {
-                return num.ToString("0.##");
+                return ((num * 100)).ToString("#.##");
             }
             else
             {
-                return ((int)num).ToString();
+                return num.ToString("#.##");
             }
         }
 

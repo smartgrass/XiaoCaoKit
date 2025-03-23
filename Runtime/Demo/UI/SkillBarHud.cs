@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace XiaoCao
@@ -8,7 +9,7 @@ namespace XiaoCao
     public class SkillBarHud : MonoBehaviour
     {
         public GameObject prefab;
-        public SkillBarData BarData => PlayerSaveData.Current.skillBarData;
+        public LocalRoleSetting LocalRoleSetting => ConfigMgr.LocalRoleSetting;
 
         public CachePool<SkillSlot> cachePool;
 
@@ -42,6 +43,7 @@ namespace XiaoCao
         }
 
 
+
         private void CheckImg()
         {
             ////atkTimer = GameDataCommon.Current.player0.component.atkTimers;
@@ -49,7 +51,7 @@ namespace XiaoCao
             for (int i = 0; i < SkillCount; i++)
             {
                 var solt = cachePool.cacheList[i];
-                string skillndex = BarData.onSkill[i];
+                string skillndex = LocalRoleSetting.GetBarSkillId(i);
                 solt.transform.SetParent(slotParent);
                 solt.gameObject.name = "slot_" + i;
                 solt.image.sprite = SpriteResHelper.LoadSkillIcon(skillndex);
@@ -68,7 +70,7 @@ namespace XiaoCao
             for (int i = 0; i < SkillCount; i++)
             {
                 var solt = cachePool.cacheList[i];
-                float process = AtkTimer.GetWaitTimeProccess(BarData.onSkill[i]);
+                float process = AtkTimer.GetWaitTimeProccess(LocalRoleSetting.GetBarSkillId(i));
 
                 bool isCd = process != 0;
                 if (solt.isColdLastFrame && !isCd)

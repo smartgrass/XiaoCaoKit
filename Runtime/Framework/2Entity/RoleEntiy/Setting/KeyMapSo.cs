@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,9 @@ namespace XiaoCao
     //Key Map
     public abstract class KeyMapSo<T> : ScriptableObject where T : IKey
     {
+        [Label("描述")]
+        public string Des;
+
         public Dictionary<string, T> map;
 
         public T[] array;

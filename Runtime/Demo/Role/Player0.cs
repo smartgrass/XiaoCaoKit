@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
+﻿using System.Collections.Generic;
 using TEngine;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 namespace XiaoCao
 {
@@ -139,8 +134,6 @@ namespace XiaoCao
         //技能解锁状态
         public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
 
-        public SkillBarData skillBarData = new SkillBarData();
-
         //ItemUI
         public Inventory inventory = new Inventory();
         //持有物
@@ -151,10 +144,6 @@ namespace XiaoCao
         {
             // ConfigMgr.LocalSetting.GetBoolValue 暂时不用
 
-            //if (skillBarData == null || skillBarData.onSkill == null)
-            //{
-            skillBarData = SkillBarData.GetDefault();
-            //}
             if (inventory == null)
             {
                 inventory = new Inventory();
@@ -222,7 +211,7 @@ namespace XiaoCao
         public float y;
         //InputKey
         public bool[] inputs = new bool[8];
-        public int skillInput;
+        public string skillInput;
 
         public KeyCode[] CheckKeyCode = new KeyCode[] {
             KeyCode.Alpha0, KeyCode.Alpha1
@@ -246,7 +235,7 @@ namespace XiaoCao
         {
             for (int i = 0; i < inputs.Length; i++)
                 inputs[i] = false;
-            skillInput = 0;
+            skillInput = "";
             x = 0;
             y = 0;
         }

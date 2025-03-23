@@ -2,12 +2,16 @@
 using UnityEngine.Events;
 using XiaoCao.Buff;
 using XiaoCao;
+using NaughtyAttributes;
 
-public class MapMsgReciver : MonoExecute, IMapMsgReciver
+
+
+public class MapMsgReciverExec : MonoExecute, IMapMsgReciver
 {
     public string msg;
 
     public UnityEvent reciverEvent;
+
 
     private void Start()
     {
@@ -19,14 +23,14 @@ public class MapMsgReciver : MonoExecute, IMapMsgReciver
         GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
     }
 
-    public void OnReciveMsg(string msg)
+    public virtual void OnReciveMsg(string reciveMsg)
     {
-        if (msg == "")
+        if (reciveMsg == "")
         {
             return;
         }
 
-        if (this.msg == msg)
+        if (this.msg == reciveMsg)
         {
             Execute();
         }
@@ -37,8 +41,9 @@ public class MapMsgReciver : MonoExecute, IMapMsgReciver
         reciverEvent.Invoke();
     }
 }
-interface IMapMsgReciver {
-    void OnReciveMsg(string msg);
+interface IMapMsgReciver
+{
+    void OnReciveMsg(string reciveMsg);
 }
 
-interface IMapMsgSender { }
+interface IMapMsgTrigger { }

@@ -46,6 +46,8 @@ namespace XiaoCao
         AnimSpeed = 19,
         [InspectorName("无敌-string")]
         NoDamage = 20,
+        [InspectorName("时停")]
+        TheWorld = 21
 
 
     }

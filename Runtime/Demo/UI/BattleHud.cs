@@ -173,7 +173,17 @@ namespace XiaoCao
                     return;
                 }
                 ETextColor color = num > 0 ? ETextColor.Recover : ETextColor.Injured;
-                ShowDamageText((int)num, GameDataCommon.LocalPlayer.transform.position, ETextColor.Recover);
+                string numStr;
+                if (-1 < num && num < 1)
+                {
+                    numStr = num.ToString("0.#");
+                }
+                else
+                {
+                    numStr = ((int)num).ToString();
+                }
+
+                ShowDamageText(numStr, GameDataCommon.LocalPlayer.transform.position, color);
             }
         }
 
@@ -204,7 +214,7 @@ namespace XiaoCao
             }
         }
 
-        public void ShowDamageText(int num, Vector3 mTarget, ETextColor eTextColor = ETextColor.Nor)
+        public void ShowDamageText(string num, Vector3 mTarget, ETextColor eTextColor = ETextColor.Nor)
         {
             //获取屏幕坐标  
             Vector3 mScreen = Camera.main.WorldToScreenPoint(mTarget);
@@ -241,13 +251,9 @@ namespace XiaoCao
                 {
                     t.text = $"+{num}";
                 }
-                else if (eTextColor == ETextColor.Injured)
-                {
-                    t.text = $"{num}";
-                }
                 else
                 {
-                    t.text = (num).ToString();
+                    t.text = num;
                 }
 
 

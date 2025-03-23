@@ -54,7 +54,7 @@ namespace XiaoCao
                     buffs.Add(new BuffInfo()
                     {
                         eBuff = item,
-                        addInfo = new float[1] { 1 }
+                        addInfo = new float[1] { 0.1f }
                     });
                     change = true;
                     Debug.Log($"--- Add -> {item}");

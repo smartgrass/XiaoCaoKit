@@ -22,9 +22,17 @@ public class SoulTrailTween : MonoBehaviour
     public Vector3 startPoint;
     [ReadOnly]
     public Transform targetTf;
+
+    private Vector3 tempVec3;
     public Vector3 GetEndPoint
     {
-        get { return targetTf.position + endOffset; }
+        get {
+            if (targetTf)
+            {
+                tempVec3 = targetTf.position + endOffset;
+            }
+            return tempVec3;
+        }
     }
 
 

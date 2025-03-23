@@ -2,6 +2,9 @@
 
 namespace XiaoCao
 {
+    /// <summary>
+    /// 序号需要保持不变
+    /// </summary>
     public enum EBuff
     {
         None = 0,
@@ -40,10 +43,10 @@ namespace XiaoCao
         SpecialBuffIndex = 100,
 
         [InspectorName("自动召唤魔法导弹,cd{5}s")]
-        MagicMissile,
+        MagicMissile = 101,
 
-        [InspectorName(" 普攻时,产生额外剑气")]
-        ExtraSlash,
+        [InspectorName("普攻时,产生额外剑气")]
+        ExtraSlash = 102,
 
         [InspectorName("闪避成功,使周围目标陷入时停3s")]
         LimitDash
@@ -53,6 +56,10 @@ namespace XiaoCao
     {
         public static EBuffType GetBuffType(this EBuff buff)
         {
+            if (buff == EBuff.None)
+            {
+                return EBuffType.None;
+            }
             int index = (int)buff;
             if (index < (int)EBuff.SpecialBuffIndex)
             {
@@ -63,7 +70,7 @@ namespace XiaoCao
                 return EBuffType.None;
             }
 
-            return EBuffType.Other;
+            return EBuffType.Ex;
         }
     }
 
@@ -73,6 +80,6 @@ namespace XiaoCao
     {
         None = -1,
         Nor = 0,
-        Other = 2
+        Ex = 2
     }
 }

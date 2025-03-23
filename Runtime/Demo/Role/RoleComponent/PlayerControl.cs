@@ -32,7 +32,7 @@ namespace XiaoCao
                 return;
             }
 
-            if (InputData.skillInput != 0)
+            if (!string.IsNullOrEmpty(InputData.skillInput))
             {
                 TryCastSkill(InputData.skillInput.ToString());
             }
@@ -42,6 +42,7 @@ namespace XiaoCao
                 TryNorAck();
             }
 
+            //Editor Debug用
             if (InputData.inputs[InputKey.Tab])
             {
                 if (BattleData.IsTimeStop)
@@ -50,7 +51,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    TimeStopMgr.Inst.StopTimeSpeed(5);
+                    TimeStopMgr.Inst.StopTimeSpeed();
                 }
             }
             if (InputData.inputs[InputKey.Focus])

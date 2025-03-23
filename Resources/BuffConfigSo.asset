@@ -18,25 +18,25 @@ MonoBehaviour:
     - 1
   - eBuff: 1
     addInfo:
-    - 3
+    - 0.03
   - eBuff: 2
     addInfo:
-    - 1
+    - 0.01
   - eBuff: 3
     addInfo:
-    - 1
+    - 0.025
   - eBuff: 4
     addInfo:
-    - 1
+    - 0.05
   - eBuff: 5
     addInfo:
-    - 1
+    - 0.025
   - eBuff: 6
     addInfo:
-    - 1
+    - 0.05
   - eBuff: 7
     addInfo:
-    - 1
+    - 0.05
   - eBuff: 8
     addInfo:
     - 1
@@ -45,7 +45,7 @@ MonoBehaviour:
     - 1
   - eBuff: 10
     addInfo:
-    - 1
+    - 0.15
   - eBuff: 100
     addInfo:
     - 1

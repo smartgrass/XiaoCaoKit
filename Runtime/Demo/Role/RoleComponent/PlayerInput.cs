@@ -51,7 +51,7 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                 {
-                    data.skillInput = i;
+                    data.skillInput = ConfigMgr.LocalRoleSetting.GetBarSkillId(i);
                 }
             }
 
@@ -59,7 +59,7 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(data.CheckKeyCode2[i]))
                 {
-                    data.skillInput = i;
+                    data.skillInput = ConfigMgr.LocalRoleSetting.GetBarSkillId(i);
                 }
             }
 

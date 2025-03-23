@@ -11,7 +11,7 @@ namespace XiaoCao
 
         public Coroutine coroutine;
 
-        public void StopTimeSpeed(float time)
+        public void StopTimeSpeed(float time = 5)
         {
             if (BattleData.IsTimeStop)
             {

@@ -1,19 +1,10 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.XR;
-using XiaoCao;
 using OdinSerializer;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 using System.Collections.Generic;
 using System.IO;
-using static OdinPlayerPrefs;
-using static UnityEngine.LightProbeProxyVolume;
 using DataFormat = OdinSerializer.DataFormat;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
-
-
-
-
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -27,9 +18,9 @@ namespace XiaoCao
     {
         private static IniFile mainConfig;
 
-        private static InitArrayFile soundCfg;
+        private static InitArrayFile _soundCfg;
 
-        private static LocalSetting localSetting;
+        private static LocalSetting _localSetting;
 
         public static PlayerSettingSo playerSettingSo;
 
@@ -135,13 +126,13 @@ namespace XiaoCao
         {
             get
             {
-                if (soundCfg == null)
+                if (_soundCfg == null)
                 {
                     InitArrayFile ini = new InitArrayFile();
                     ini.LoadFromFile("sound.ini");
-                    soundCfg = ini;
+                    _soundCfg = ini;
                 }
-                return soundCfg;
+                return _soundCfg;
             }
         }
 
@@ -149,14 +140,65 @@ namespace XiaoCao
         {
             get
             {
-                if (localSetting == null)
+                if (_localSetting == null)
                 {
-                    localSetting = LocalSetting.Load();
+                    _localSetting = LocalSetting.Load();
                 }
-                return localSetting;
+                return _localSetting;
             }
         }
 
+        private static LocalRoleSetting _localRoleSetting;
+        public static LocalRoleSetting LocalRoleSetting
+        {
+            get
+            {
+                if (_localRoleSetting == null)
+                {
+                    _localRoleSetting = LocalRoleSetting.Load();
+                }
+                return _localRoleSetting;
+            }
+        }
+
+    }
+
+    //角色相关的本地设置 , 随时清空, 比如技能图标,按键设置
+    public class LocalRoleSetting
+    {
+        public bool saveSkillBar;
+
+        public List<string> skillBarSetting;
+
+        public string GetBarSkillId(int index)
+        {
+            if (skillBarSetting.Count > index)
+            {
+                return skillBarSetting[index];
+            }
+            return "";
+        }
+
+        public static LocalRoleSetting Load()
+        {
+            var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
+            if (!isSuc)
+            {
+
+            }
+            //修改时, 需要修改saveSkillBar ,恢复默认则清除saveSkillBar
+            if (!ret.saveSkillBar)
+            {
+                ret.skillBarSetting = ConfigMgr.LoadSoConfig<SkillDataSo>().playerDefaultSkills;
+            }
+            return ret;
+        }
+
+        //TODO
+        public static void SaveSetting()
+        {
+            SaveMgr.SaveData<LocalRoleSetting>(ConfigMgr.LocalRoleSetting);
+        }
     }
 
     public class LocalSetting

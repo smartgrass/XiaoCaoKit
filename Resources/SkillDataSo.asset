@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fca41f2cbb13c0348afa4b7ffb43e007, type: 3}
   m_Name: SkillDataSo
   m_EditorClassIdentifier: 
+  Des: "\u6280\u80FDcd, 0\u4E3A\u9ED8\u8BA4\u914D\u7F6E"
   array:
-  - key: roll
-    cd: 1.5
   - key: 0
     cd: 4
   - key: 1
@@ -23,3 +22,12 @@ MonoBehaviour:
     cd: 4
   - key: 3
     cd: 4
+  - key: 4
+    cd: 30
+  - key: roll
+    cd: 1.5
+  playerDefaultSkills:
+  - 1
+  - 2
+  - 3
+  - 4

@@ -87,7 +87,7 @@ namespace XiaoCao
                 {
                     ShowView(UIPanelType.SettingPanel);
                 }
-                else if (Input.GetKeyDown(KeyCode.C))
+                else if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.F1))
                 {
                     ShowView(UIPanelType.PlayerPanel);
                 }
@@ -144,7 +144,7 @@ namespace XiaoCao
         }
         public void PlayDamageText(int atk, Vector3 textPos)
         {
-            battleHud.ShowDamageText(atk, textPos);
+            battleHud.ShowDamageText(atk.ToString(), textPos);
         }
 
         public static void PopToast(string str, float time = 1)

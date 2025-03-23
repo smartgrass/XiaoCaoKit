@@ -318,7 +318,7 @@ namespace XiaoCao
 
         public virtual void OnAtkDamage(AtkInfo info)
         {
-            float AtkRecoverHp = PlayerAttr.GetValue(EAttr.AtkRecoverHp);
+            float AtkRecoverHp = PlayerAttr.AtkRecoverHp;
             if (AtkRecoverHp > 0)
             {
                 float recover = info.atk * AtkRecoverHp;
@@ -397,9 +397,12 @@ namespace XiaoCao
                     break;
                 case EntityMsgType.AnimSpeed:
                     OnAnimSpeed(msg);
-                    break;                
+                    break;
                 case EntityMsgType.NoDamage:
                     OnNoDamage(msg);
+                    break;
+                case EntityMsgType.TheWorld:
+                    TimeStopMgr.Inst.StopTimeSpeed();
                     break;
                 default:
                     break;
@@ -411,7 +414,7 @@ namespace XiaoCao
             BaseMsg baseMsg = (BaseMsg)msg;
             if (baseMsg.state == 0)
             {
-                AttributeModifier modifier = new AttributeModifier{Add = 1};
+                AttributeModifier modifier = new AttributeModifier { Add = 1 };
                 PlayerAttr.ChangeAttrValue(EAttr.NoDamage, baseMsg.strMsg, modifier);
             }
             else

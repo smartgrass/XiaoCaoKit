@@ -48,10 +48,12 @@ namespace XiaoCao
                     //获取奖励等级
                     int rewardLevel = enemy.enemyData.rewardLevel;
                     //获取奖池id
-                    string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length-1)];
+                    string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length - 1)];
 
 
-                    RewardHelper.RewardBuffFromPool(deadInfo.killerId, rewardPoolId, rewardLevel);
+                    Item item = RewardHelper.GetItemWithPool(rewardPoolId, rewardLevel);
+
+                    RewardHelper.RewardItem(item);
                 }
             }
             else

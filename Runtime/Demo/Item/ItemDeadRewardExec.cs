@@ -1,12 +1,21 @@
-﻿using UnityEngine;
+﻿using NaughtyAttributes;
+using UnityEngine;
 using XiaoCao;
 
 public class ItemDeadRewardExec : MonoExecute
 {
+    public bool usePool;
+
+    [HideIf(nameof(usePool))]
+    public Item item;
+    
+
+    [ShowIf(nameof(usePool))]
+    [Tooltip("奖池配置->RewardPoolSo")]
     public string rewardPoolId = "0";
 
-    [XCHeader("奖励等级: -1时为关卡配置")]
-    public int rewardLevel = -1;
+    //[XCHeader("奖励等级: -1时为关卡配置,等级决定稀有率")]
+    //public int rewardLevel = -1;
 
     public bool noGetEffect;
 
@@ -14,17 +23,15 @@ public class ItemDeadRewardExec : MonoExecute
 
     public override void Execute()
     {
-        if (transform.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
+        if (transform.TryGetComponent<ItemIdComponent>(out ItemIdComponent itemCom))
         {
-            int killerId = item.deadInfo.killerId;
-            //if (killerId.IsLocalPlayerId())
+            int killerId = itemCom.deadInfo.killerId;
+
+            if (usePool)
             {
-                if (rewardLevel < 0)
-                {
-                    rewardLevel = BattleData.Current.levelRewardData.RewardLevel;
-                }
-                RewardHelper.RewardBuffFromPool(killerId, rewardPoolId, rewardLevel);
+                item = RewardHelper.GetItemWithPool(rewardPoolId);
             }
+            RewardHelper.RewardItem(item);
         }
 
         if (!noGetEffect)
@@ -32,7 +39,6 @@ public class ItemDeadRewardExec : MonoExecute
             ShowEffect();
         }
     }
-
     void ShowEffect()
     {
         GetItemEffectHelper.GetItem(transform.position + effectOffset);

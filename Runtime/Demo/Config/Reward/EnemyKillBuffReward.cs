@@ -31,7 +31,7 @@ namespace XiaoCao
                 p = 1;
             }
             bool isOther = RandomHelper.GetRandom(p);
-            return isOther ? EBuffType.Other : EBuffType.Nor;
+            return isOther ? EBuffType.Ex : EBuffType.Nor;
         }
     }
 }

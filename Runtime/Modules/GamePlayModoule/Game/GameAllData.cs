@@ -1,10 +1,6 @@
-﻿using Mono.Cecil.Cil;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using XiaoCao;
-using static Cinemachine.DocumentationSortingAttribute;
 
 namespace XiaoCao
 {
@@ -187,7 +183,7 @@ namespace XiaoCao
     public static class GameSetting
     {
         //目前技能
-        public const int SkillCountOnBar = 3;
+        public const int SkillCountOnBar = 4;
         ///<see cref="EQuality"/>
         public const int MaxBuffLevel = 5;//从0~5
 

@@ -1,4 +1,6 @@
-﻿namespace XiaoCao
+﻿using UnityEngine;
+
+namespace XiaoCao
 {
     /// <summary>
     /// eName 为 IXCCommand 的子类类名

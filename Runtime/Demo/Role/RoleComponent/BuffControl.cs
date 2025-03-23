@@ -166,7 +166,7 @@ namespace XiaoCao
 
             sourceList[FromIndex] = temp2;
             baseList[ToIndex] = temp;
-            Debug.Log($"--- 交换了");
+            Debug.Log($"--- 交换了 From{FromIndex} to{ToIndex}");
             if (!NoUpdateAtrribute)
             {
                 UpdateAttributeValues();

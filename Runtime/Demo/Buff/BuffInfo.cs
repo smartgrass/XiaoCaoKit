@@ -1,8 +1,5 @@
-﻿using NUnit.Framework;
-using OdinSerializer;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 
 namespace XiaoCao
@@ -36,6 +33,19 @@ namespace XiaoCao
                     return EBuffType.None;
                 }
                 return buffs[0].eBuff.GetBuffType();
+            }
+        }
+
+        public EBuff GetFirstEBuff
+        {
+            get
+
+            {
+                if (buffs == null || buffs.Count == 0)
+                {
+                    return EBuff.None;
+                }
+                return buffs[0].eBuff;
             }
         }
 

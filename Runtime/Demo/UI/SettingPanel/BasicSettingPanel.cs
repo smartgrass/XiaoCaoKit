@@ -20,14 +20,14 @@ public class BasicSettingPanel : SubPanel
 
         toggle = AddToggle(LocalizeKey.LockCam, OnToggleLockCam);
         toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
-        toggle3 = AddToggle(LocalizeKey.MouseView, OnToggleMouseView);
+        //toggle3 = AddToggle(LocalizeKey.MouseView, OnToggleMouseView); 
     }
 
     public override void RefreshUI()
     {
         toggle.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
         toggle2.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
-        toggle3.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
+        //toggle3.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
     }
 
     private void OnToggleMouseView(bool isOn)

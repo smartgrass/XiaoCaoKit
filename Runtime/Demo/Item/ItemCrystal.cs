@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
 
-public class ItemCrystal : ItemIdComponent, IMapMsgSender
+public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
 {
     public AudioClip hitClip;
 

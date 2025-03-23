@@ -1,7 +1,7 @@
 ﻿using TEngine;
 using XiaoCao;
 
-public class MapMsgTrigger : MonoExecute, IMapMsgSender
+public class MapMsgTriggerExec : MonoExecute, IMapMsgTrigger
 {
     public string msg;
     public override void Execute()

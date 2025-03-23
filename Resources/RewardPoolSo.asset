@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68a448614362dd24d9a658323d72f1ff, type: 3}
   m_Name: RewardPoolSo
   m_EditorClassIdentifier: 
+  Des: "\u5956\u6C60"
   array:
   - {fileID: 11400000, guid: 7932f9f00e6553440b56a58cc24c61f7, type: 2}

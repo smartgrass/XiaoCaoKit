@@ -77,6 +77,15 @@ namespace XiaoCao
         }
         public void OnUpdate()
         {
+            //if (ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.MouseView))
+            //{
+            //    Mode = CameraMode.ThirdPerson;
+            //}
+            //else
+            //{
+            //    Mode = CameraMode.TowDown;
+            //}
+
             if (Mode == CameraMode.ThirdPerson)
             {
                 _inputLook.x = Input.GetAxis("Mouse X");
@@ -84,12 +93,17 @@ namespace XiaoCao
             }
             else if (Mode == CameraMode.TowDown)
             {
-                if (!Input.mouseScrollDelta.IsZore() && BattleData.Current.CanPlayerControl)
+                if (BattleData.Current.CanPlayerControl)
                 {
-                    var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
-                        setting_topDown.camDistance - 4, setting_topDown.camDistance + 6);
-                    CFT.m_CameraDistance = distance;
+                    if (!Input.mouseScrollDelta.IsZore())
+                    {
+                        var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
+                            setting_topDown.camDistance - 4, setting_topDown.camDistance + 6);
+                        CFT.m_CameraDistance = distance;
+                    }
                 }
+
+
             }
 
 
@@ -135,7 +149,6 @@ namespace XiaoCao
         }
         void TopDownFixedUpdate()
         {
-
             CheckPlayer();
             UIMgr.Inst.battleHud.AnimTargetFixUpdate();
             vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
