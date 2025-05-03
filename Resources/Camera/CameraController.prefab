@@ -131,6 +131,8 @@ MonoBehaviour:
     aimSafeAngle: 15
     seeR: 9
     seeAngle: 45
+  shakeIntensity: 1
+  test_shakeTime: 0.5
   _cft: {fileID: 830844990511132214}
   _mode: 0
   curAngleX: 25
@@ -146,6 +148,7 @@ GameObject:
   - component: {fileID: 633758639611485821}
   - component: {fileID: 1876952828367048163}
   - component: {fileID: 830844990511132214}
+  - component: {fileID: 3754713827691733960}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -223,3 +226,20 @@ MonoBehaviour:
   m_MaximumFOV: 60
   m_MinimumOrthoSize: 1
   m_MaximumOrthoSize: 5000
+--- !u!114 &3754713827691733960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3808544436358944514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  m_PivotOffset: {x: 0, y: 0, z: 0}
+  m_AmplitudeGain: 0
+  m_FrequencyGain: 1
+  mNoiseOffsets: {x: 0, y: 0, z: 0}

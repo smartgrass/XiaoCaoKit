@@ -51,6 +51,8 @@ MonoBehaviour:
   shakeLevel: 0
   indensity: -0.05
   blurRadius: 0.25
+  shakeTimeBig: 0.3
+  shakeTimeSmall: 0
 --- !u!114 &196217543779594431
 MonoBehaviour:
   m_ObjectHideFlags: 0

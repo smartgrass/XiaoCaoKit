@@ -42,13 +42,12 @@ MonoBehaviour:
     - 1
   - eBuff: 9
     addInfo:
-    - 1
+    - 0.05
   - eBuff: 10
     addInfo:
     - 0.15
   - eBuff: 100
-    addInfo:
-    - 1
+    addInfo: []
   - eBuff: 101
     addInfo:
     - 2
@@ -57,4 +56,4 @@ MonoBehaviour:
     - 1
   - eBuff: 103
     addInfo:
-    - 1
+    - 3

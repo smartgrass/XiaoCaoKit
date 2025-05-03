@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerSetting:
     maxLevel: 50
-    endHp: 5000
+    endHp: 6000
     endMp: 1200
     endAtk: 250
     endDef: 500
@@ -22,9 +22,9 @@ MonoBehaviour:
     maxArmor: 4
   enemySetting:
     maxLevel: 50
-    endHp: 5000
+    endHp: 7000
     endMp: 1200
-    endAtk: 250
+    endAtk: 180
     endDef: 500
     offsetLevel: 10
     maxArmor: 4
