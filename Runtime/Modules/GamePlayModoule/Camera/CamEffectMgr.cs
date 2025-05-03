@@ -62,6 +62,7 @@ namespace XiaoCao
 
     public interface ICamShake
     {
+        ///<see cref="PostProcessCamShake.SetLevel(int)"/>
         void SetLevel(int level);
     }
 

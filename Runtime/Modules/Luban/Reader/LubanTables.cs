@@ -126,17 +126,10 @@ namespace cfg
         private static string GetLubanPath(string file)
         {
             string path;
-            if (Application.isEditor)
+            path = $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
+            if (!File.Exists(path))
             {
-                path = $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
-                if (!File.Exists(path))
-                {
-                    Debug.LogError($"--- 找不到数据,先生成luban");
-                }
-            }
-            else
-            {
-                path = $"{XCPathConfig.GetGameConfigDir()}/Luban/bytes/{file}.bytes";
+                Debug.LogError($"--- 找不到数据,先生成luban");
             }
             return path;
         }

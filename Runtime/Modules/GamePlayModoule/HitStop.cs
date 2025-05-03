@@ -9,8 +9,7 @@ public class HitStop : MonoSingleton<HitStop>
 {
     //和顿帧时间的相关倍数
     public float shakeTimeFactor = 0.25f;
-    public float shakeLength = 0.25f;
-    public int shakePower = 10;
+
 
     public Coroutine currentDo;
 
@@ -71,28 +70,13 @@ public class HitStop : MonoSingleton<HitStop>
         waiting = false;
     }
 
-    private Tween shakeTween;
 
-    public void Shake(float time = 0.3f)
+
+    private void Shake(float time = 0.3f)
     {
-        if (null != shakeTween)
-        {
-            shakeTween.Pause();
-        }
-
-        shakeTween = Camera.main.DOShakePosition(time, shakeLength, shakePower);
+        CameraMgr.Inst.controller.ShakeCamera(time);
     }
 
-    public void ShakeEx(float multi, float time = 0.3f)
-    {
-        //TODO Shake需要手动实现
-        //if (null != shakeTween)
-        //{
-        //    shakeTween.Pause();
-        //}
-
-        //shakeTween = Camera.main.DOShakePosition(time, shakeLength * multi, (int)(shakePower * multi));
-    }
 
     public void Cancel()
     {

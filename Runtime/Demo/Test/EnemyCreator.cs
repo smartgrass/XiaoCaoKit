@@ -152,6 +152,7 @@ public class EnemyCreator : GameStartMono, IExecute
         Debug.Log($"--- {enmeyBrowse}");
         enemyIdList = enmeyBrowse;
 #if UNITY_EDITOR
+        EditorUtility.SetDirty(this);
         var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/Enemy/{enmeyBrowse}.prefab");
         EditorGUIUtility.PingObject(obj);
 #endif

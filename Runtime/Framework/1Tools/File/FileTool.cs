@@ -85,14 +85,14 @@ public static class FileTool
 
     public static void SerializeWrite<T>(string path, T data)
     {
-        byte[] bytes = SerializationUtility.SerializeValue<T>(data, DataFormat.Binary);
+        byte[] bytes = SerializationUtility.SerializeValue<T>(data, XCPathConfig.RawFileFormat);
         FileTool.WriteAllBytes(path, bytes, true);
     }
 
     public static T DeserializeRead<T>(string path)
     {
         byte[] bytes = File.ReadAllBytes(path);
-        T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.Binary);
+        T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, XCPathConfig.RawFileFormat);
         return data;
     }
 

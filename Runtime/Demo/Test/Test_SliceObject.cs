@@ -1,15 +1,18 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
-using EzySlice;
 using Plane = EzySlice.Plane;
-using OdinSerializer.Utilities;
+#if UNITY_EDITOR
 using UnityEditor;
+using EzySlice;
+#endif
 
 namespace XiaoCao
 {
     public class Test_SliceObject : MonoBehaviour
     {
+#if UNITY_EDITOR
+
         public GameObject game;
 
         public Material crossSectionMaterial;
@@ -209,5 +212,6 @@ namespace XiaoCao
             UnityEditor.AssetDatabase.CreateAsset(mesh, path);
             meshFilter.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
         }
+#endif
     }
 }

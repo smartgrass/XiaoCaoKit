@@ -147,6 +147,11 @@ namespace XiaoCao
             battleHud.ShowDamageText(atk.ToString(), textPos);
         }
 
+        void PopToastInst(string str, float time = 1)
+        {
+            PopToast(str, time); ;
+        }
+
         public static void PopToast(string str, float time = 1)
         {
             Toast.Show(str, time);

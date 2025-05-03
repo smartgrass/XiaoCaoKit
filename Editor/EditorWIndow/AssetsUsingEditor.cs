@@ -15,6 +15,7 @@ public  class AssetsUsingEditor :ScriptableObject
 [Serializable]
 public class ObjectList
 {
+    //ValidateInput
     public string name;
     public List<Object> list;
 }

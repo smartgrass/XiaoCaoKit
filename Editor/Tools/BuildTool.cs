@@ -26,11 +26,11 @@ namespace XiaoCaoEditor
 
         static private void CopyDir()
         {
-            string copyDir = XCPathConfig.GetGameConfigDir();
-            string newDirName = Path.GetDirectoryName(copyDir);
+            //string copyDir = XCPathConfig.GetGameConfigDir();
+            //string newDirName = Path.GetDirectoryName(copyDir);
 
-            string tgtDir = Path.Combine(buildPath, newDirName);
-            FileTool.CopyDirAll(copyDir, tgtDir);
+            //string tgtDir = Path.Combine(buildPath, newDirName);
+            //FileTool.CopyDirAll(copyDir, tgtDir);
         }
 
     }

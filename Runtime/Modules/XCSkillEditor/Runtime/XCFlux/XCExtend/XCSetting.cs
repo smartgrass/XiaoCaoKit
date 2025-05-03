@@ -1,8 +1,5 @@
-﻿using DG.Tweening.Plugins.Core.PathCore;
-using System;
-using System.IO;
+﻿using OdinSerializer;
 using UnityEngine;
-using Path = System.IO.Path;
 
 namespace XiaoCao
 {
@@ -24,6 +21,8 @@ namespace XiaoCao
         public static readonly string SpriteDir = "Assets/_Res/Sprite";
 
         public static readonly string AnimControllerDir = "Assets/_Res/Role/AnimController";
+        public const string RawFileExtend = ".bytes";
+        public const DataFormat RawFileFormat = DataFormat.Binary;
 
 
         public static string GetSkillIconPath(string skillId)
@@ -50,7 +49,12 @@ namespace XiaoCao
             }
             else
             {
-                return $"{Application.dataPath}/ExtraPackage";
+                if (!Application.isMobilePlatform)
+                {
+                    return $"{PathTool.GetProjectPath()}/ExtraPackage";
+                }
+
+                return $"{Application.streamingAssetsPath}/yoo/ExtraPackage";
             }
         }
         //BuildTool.AfterBuild 在打包后将复制配置
@@ -62,7 +66,7 @@ namespace XiaoCao
             }
             else
             {
-                return $"{Application.dataPath}/GameConfig";
+                return $"{PathTool.GetProjectPath()}/GameConfig";
             }
         }
 
@@ -72,7 +76,7 @@ namespace XiaoCao
         }
         public static string GetSkillDataPath(string dir, string skillId)
         {
-            return $"{DataDir}/{dir.ToString()}/{skillId}.bytes";
+            return $"{DataDir}/{dir.ToString()}/{skillId}{RawFileExtend}";
         }
 
         public static string GetRoleBodyPath(string prefabName, RoleType roleType)
@@ -125,9 +129,17 @@ namespace XiaoCao
         {
             get
             {
+                //return true;
                 if (Application.isEditor)
                 {
                     return DebugGUI_IsShow.GetKeyBool();
+                }
+                else
+                {
+                    if (ConfigMgr.MainCfg.GetValue("Setting", "DebugLog", "0") == "1")
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }

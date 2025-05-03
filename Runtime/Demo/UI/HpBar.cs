@@ -75,6 +75,12 @@ namespace XiaoCao
 
         public void UpdateHealthBar(float healthPercentage)
         {
+            if (healthPercentage <= 0)
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
             fillImage.fillAmount = healthPercentage;
 
             if (healthPercentage > 2f / 3f)

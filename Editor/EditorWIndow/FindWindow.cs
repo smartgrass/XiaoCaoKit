@@ -10,7 +10,7 @@ using XiaoCaoEditor;
 
 namespace AssetEditor.Editor
 {
-    public class FindWindow: XiaoCaoWindow
+    public class FindWindow : XiaoCaoWindow
     {
         [MenuItem(XCEditorTools.XCFindWindow)]
         public static FindWindow Open()
@@ -27,6 +27,19 @@ namespace AssetEditor.Editor
         public void IsFileExist()
         {
             Debug.Log($"--- IsFileExist {FileTool.IsFileExist(str)} {str}"); ;
+        }
+
+        [Button("查询Gui", Line1)]
+        void FindGuid()
+        {
+            var path = AssetDatabase.GUIDToAssetPath(str);
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.LogError("--- no find");
+                return;
+            }
+            var find = AssetDatabase.LoadAssetAtPath<Object>(path);
+            Selection.activeObject = find;  
         }
 
     }

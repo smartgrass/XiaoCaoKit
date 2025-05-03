@@ -143,6 +143,8 @@ namespace XiaoCao
         public void OnUpdate();
         public void OnFixedUpdate();
 
+        void ShakeCamera(float shakeTime);
+
     }
 
 }

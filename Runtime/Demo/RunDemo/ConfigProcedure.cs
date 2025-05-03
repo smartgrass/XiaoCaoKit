@@ -124,12 +124,6 @@ namespace XiaoCao
 
             var sound = SoundMgr.Inst;
             Debug.Log($"--- SoundMgr Init");
-
-            if (DebugSetting.IsDebug)
-            {
-                var prefab = Resources.Load<GameObject>("IngameDebugConsole");
-                var con = GameObject.Instantiate(prefab);
-            }
         }
     }
 

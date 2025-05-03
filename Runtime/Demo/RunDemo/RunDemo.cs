@@ -1,10 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using TEngine;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
 
 namespace XiaoCao
 {
@@ -14,7 +9,11 @@ namespace XiaoCao
         public async UniTask Run()
         {
 
-
+            if (DebugSetting.IsDebug)
+            {
+                var prefab = Resources.Load<GameObject>("IngameDebugConsole");
+                var con = GameObject.Instantiate(prefab);
+            }
             //这里做点编辑器开关
             Debuger.LogLevel = LogLevel.Info;
 

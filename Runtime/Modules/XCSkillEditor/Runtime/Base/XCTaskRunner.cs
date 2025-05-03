@@ -212,8 +212,8 @@ namespace XiaoCao
 
         public Vector3 castPos;
 
-        public float GetSpeed =>baseSpeed * speedMult;
- 
+        public float GetSpeed => baseSpeed * speedMult;
+
 
         public float baseSpeed;
 
@@ -248,7 +248,7 @@ namespace XiaoCao
             {
                 return null;
             }
-            XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, DataFormat.Binary);
+            XCTaskData task = OdinSerializer.SerializationUtility.DeserializeValue<XCTaskData>(bytes, XCPathConfig.RawFileFormat);
             Inst.dataCache.Add(idKey, task);
             return task;
         }

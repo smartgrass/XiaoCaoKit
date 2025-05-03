@@ -1,6 +1,7 @@
 ﻿using Cinemachine;
 using NaughtyAttributes;
 using System;
+using TreeEditor;
 using UnityEngine;
 using static UnityEngine.UI.GridLayoutGroup;
 
@@ -14,6 +15,9 @@ namespace XiaoCao
         public CamData3rd setting_3rd;
         public CamDataTopDown setting_topDown;
 
+        public float shakeIntensity = 1;
+        private float shakeTimer = 0;
+        public float test_shakeTime = 0.5f;
 
         private Transform _curLookAt;
         private Transform _curFollow;
@@ -44,6 +48,19 @@ namespace XiaoCao
                 }
                 return _cft;
 
+            }
+        }
+
+        private CinemachineBasicMultiChannelPerlin _cPerlin;
+        public CinemachineBasicMultiChannelPerlin CPerlin
+        {
+            get
+            {
+                if (_cPerlin == null)
+                {
+                    _cPerlin = vcam_topDown.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+                }
+                return _cPerlin;
             }
         }
 
@@ -85,6 +102,15 @@ namespace XiaoCao
             //{
             //    Mode = CameraMode.TowDown;
             //}
+            if (shakeTimer > 0)
+            {
+                shakeTimer -= Time.deltaTime;
+            }
+            else
+            {
+                CPerlin.m_AmplitudeGain = 0;
+            }
+
 
             if (Mode == CameraMode.ThirdPerson)
             {
@@ -234,9 +260,9 @@ namespace XiaoCao
             else
             {
                 float addX = 0;
-                if (distance > 0 && distance  < 10)
+                if (distance > 0 && distance < 10)
                 {
-                    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0 , distance /10);
+                    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0, distance / 10);
                 }
 
                 curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x + addX, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
@@ -307,6 +333,20 @@ namespace XiaoCao
             if (lfAngle > 360f) lfAngle -= 360f;
             return Mathf.Clamp(lfAngle, lfMin, lfMax);
         }
+
+
+        [Button]
+        void testShake()
+        {
+            ShakeCamera(test_shakeTime);
+        }
+
+        public void ShakeCamera(float shakeTime)
+        {
+            CPerlin.m_AmplitudeGain = shakeIntensity;
+            shakeTimer = Mathf.Max(shakeTimer, shakeTime);
+        }
+
     }
     [Serializable]
     public class CamData3rd

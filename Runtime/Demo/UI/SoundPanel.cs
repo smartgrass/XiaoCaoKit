@@ -78,7 +78,7 @@ public class SoundPanel : SubPanel
     }
     private float MusicVolumeGetter()
     {
-        return ConfigMgr.LocalSetting.GetValue(MusicVolumeKey, 1);
+        return ConfigMgr.LocalSetting.GetValue(MusicVolumeKey, 0.5f);
     }
     private float SFXVolumeGetter()
     {

@@ -113,6 +113,12 @@ public class SaveXCTask
         {
             return;
         }
+
+        if (string.IsNullOrEmpty(Sequence._skillId))
+        {
+            return;
+        }
+
         Debug.Log($"--- SavaOneSeq {Sequence.name} ");
         fSeqSetting = Sequence.SeqSetting;
         curSequence = Sequence;
@@ -196,7 +202,7 @@ public class SaveXCTask
     [MenuItem(ReadSkillDataName)]
     private static void Read()
     {
-        if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(".bytes"))
+        if (!AssetDatabase.GetAssetPath(Selection.activeObject).EndsWith(XCPathConfig.RawFileExtend))
         {
             Debug.Log($" no .data file {AssetDatabase.GetAssetPath(Selection.activeObject)}");
             return;

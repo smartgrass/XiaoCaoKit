@@ -229,9 +229,8 @@ namespace AssetEditor.Editor
         [Button("Test Config", Line99)]
         void TestConfig()
         {
-            LocalizeMgr.ClearCache();
-            LocalizeMgr t = LocalizeMgr.Inst;
-            LocalizeMgr.Localize("Key").LogStr();
+            Debug.Log($"{Application.dataPath}" +
+                $"{Application.consoleLogPath} {PathTool.GetProjectPath()}");
         }
 
     }

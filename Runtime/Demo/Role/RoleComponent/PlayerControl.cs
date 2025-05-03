@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using EasyUI.Helpers;
 using TEngine;
 using UnityEngine;
 
@@ -138,6 +139,7 @@ namespace XiaoCao
             if (!AtkTimers.IsSkillReady(AnimNames.Roll))
             {
                 Debug.Log($"rollId cd {AtkTimers.GetWaitTime(AnimNames.Roll)}");
+                UIMgr.PopToast($"rollId is in cd {AtkTimers.GetWaitTime(AnimNames.Roll).ToString("N2")}s");
                 return;
             }
 

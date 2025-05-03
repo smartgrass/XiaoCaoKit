@@ -50,7 +50,7 @@ namespace XiaoCao
         //MoveSetting  通用配置->直接拽得了
 
 
-        public const string README = "技能最好使用数字 \r\n普通技能 1,2,3,4\n" +
+        public const string README = "一般技能使用数字 \r\n普通技能 1,2,3,4\n" +
             "为防止重名,每个RaceId增加100,如RaceId=2,技能则为201,202\n";
 
 

@@ -281,6 +281,7 @@ namespace FluxEditor
             {
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("编辑界面代码"), false, this.EditorCode);
+                menu.AddItem(new GUIContent("创建新配置工具"), false, this.CreateSetting);
                 menu.AddItem(new GUIContent("切换模型"), false, this.SwitchModel);
                 menu.AddItem(new GUIContent("帮助文档"), false, this.ShowHelp);
                 menu.ShowAsContext();
@@ -397,6 +398,11 @@ namespace FluxEditor
         private void SwitchModel()
         {
             FSequenceSubEditor.Show(FSequenceSubEditor.FSequenceSubType.SwitchModel);
+        }
+
+        void CreateSetting()
+        {
+            FSequenceSubEditor.Show(FSequenceSubEditor.FSequenceSubType.CreateSetting);
         }
 
         void EditorCode()

@@ -173,8 +173,10 @@ public class ResMgr
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var par = new OfflinePlayModeParameters();
-            initializationOperation = package.InitializeAsync(par);
+            var buildinFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var initParameters = new OfflinePlayModeParameters();
+            initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
+            initializationOperation = package.InitializeAsync(initParameters);
         }
 
         // 联机运行模式
@@ -309,7 +311,7 @@ public class ResMgr
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinRawFileSystemParameters();
             var initParameters = new OfflinePlayModeParameters();
             initParameters.BuildinFileSystemParameters = buildinFileSystem;
             initializationOperation = package.InitializeAsync(initParameters);

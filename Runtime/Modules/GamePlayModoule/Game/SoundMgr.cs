@@ -25,11 +25,24 @@ namespace XiaoCao
             AudioSource prefab = prefabGO.AddComponent<AudioSource>();
 
             asPool = new LoopPool<AudioSource>(prefab, 5, transform);
-            hitAsPool = new LoopPool<AudioSource>(prefab, 5,transform);
+            hitAsPool = new LoopPool<AudioSource>(prefab, 5, transform);
             musicAs = Instantiate(prefab, transform);
             musicAs.outputAudioMixerGroup = mixerGroups[1];
             musicAs.loop = true;
+            ReadSettting();
             PlaySettingBgm();
+        }
+
+        void ReadSettting()
+        {
+            ReadGroupSetting(SoundPanel.MainVolumeKey);
+            ReadGroupSetting(SoundPanel.MusicVolumeKey, 0.5f);
+            ReadGroupSetting(SoundPanel.SFXVolumeKey);
+        }
+
+        void ReadGroupSetting(string group,float defaultValue = 1)
+        {
+            SetVolume(group, ConfigMgr.LocalSetting.GetValue(group, defaultValue));
         }
 
         ///<see cref="SoundPanel.MainVolumeKey"/>
