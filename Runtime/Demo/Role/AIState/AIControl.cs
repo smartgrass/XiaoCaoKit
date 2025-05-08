@@ -43,14 +43,14 @@ namespace XiaoCao
         public Vector3 idlePos;
 
 
-        public AIControl Init(int aiId)
+        public AIControl Init(string aiId)
         {
             string configPath = XCPathConfig.GetAIPath(aiId).LogStr("--");
             var so = ResMgr.LoadAseet(configPath) as MainDataFSM;
             if (so == null)
             {
                 Debug.LogError($"--- no aiId {aiId}");
-                configPath = XCPathConfig.GetAIPath(0).LogStr("--");
+                configPath = XCPathConfig.GetAIPath("0").LogStr("--");
                 so = ResMgr.LoadAseet(configPath) as MainDataFSM;
             }
             mainDataFSM = ScriptableObject.Instantiate(so);

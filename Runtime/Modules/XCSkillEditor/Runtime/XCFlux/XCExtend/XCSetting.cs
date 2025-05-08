@@ -89,7 +89,7 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/{roleType}/{prefabId}.prefab";
         }
 
-        public static string GetAIPath(int aiId)
+        public static string GetAIPath(string aiId)
         {
             return $"{ResMgr.RESDIR}/Role/AI/AI_{aiId}.asset";
         }

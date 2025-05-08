@@ -104,7 +104,7 @@ namespace XiaoCao
             switch (actType)
             {
                 case ActMsgType.Skill:
-                    int msgNum = int.Parse(actMsg);
+                    int.TryParse(actMsg, out int msgNum);
                     component.aiControl.TryPlaySkill(enemyData.AiCmdSetting.GetCmdSkillByIndex(msgNum));
                     break;
                 case ActMsgType.OtherSkill:

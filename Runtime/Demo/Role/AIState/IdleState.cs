@@ -52,14 +52,14 @@ namespace XiaoCao
 
             if (enterRandom > 0)
             {
-                float startValue = Mathf.Lerp(hideTime, --sleepTimeWhenLoop, enterRandom);
+                float startValue = Mathf.Lerp(hideTime, -sleepTimeWhenLoop, enterRandom);
                 Timer = RandomHelper.RangeFloat(startValue, hideTime);
             }
 
             if (_isEnterIdle)
             {
                 _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
-                _idleDir = (_tempTargetPos - transform.position).ToY0(); 
+                _idleDir = (_tempTargetPos - transform.position).ToY0();
                 Timer = hideTime;
             }
 
@@ -102,7 +102,6 @@ namespace XiaoCao
                 {
                     IdleMove(Setting.walkSR, Setting.walkAnimSR);
                 }
-
             }
 
             if (Timer <= -sleepTimeWhenLoop)
@@ -171,7 +170,7 @@ namespace XiaoCao
                 _isEnterIdle = true;
             }
 
-            control.owner.AIMoveDir(_idleDir.normalized * speedRate *0.8f, animSpeedRate , true);
+            control.owner.AIMoveDir(_idleDir.normalized * speedRate * 0.8f, animSpeedRate, true);
         }
 
     }

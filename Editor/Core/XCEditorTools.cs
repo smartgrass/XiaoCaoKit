@@ -205,10 +205,10 @@ namespace XiaoCaoEditor
             if (!int.TryParse(skillIdStr, out skillIdNum))
             {
                 skillIdNum = skillIdStr.GetHashCode() % 1000;
-                Debug.Log($"--- GetHashCode {skillIdNum %1000}");
+                Debug.Log($"--- GetHashCode {skillIdNum % 1000}");
             }
-            
- 
+
+
             AnimatorController ac = runtimeAnim as AnimatorController;
             if (ac.layers.Length < 1)
             {
@@ -344,16 +344,56 @@ namespace XiaoCaoEditor
                 Debug.Log($"---  len {importer.clipAnimations.Length} {importer.defaultClipAnimations.Length} ");
                 if (importer.defaultClipAnimations.Length == 1)
                 {
-                    Debug.Log($"--- importer.name {new FileInfo(path).Name} {item.name}");
+                    string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(path);
                     ModelImporterClipAnimation clip = importer.defaultClipAnimations[0];
-                    clip.name = new FileInfo(path).Name;
-                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip};
+                    clip.name = fileNameWithoutExtension;
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip };
                 }
                 importer.SaveAndReimport();
             }
         }
 
-        [MenuItem(XCEditorTools.AssetCheck + "Fbx Clip Bake To Pose(Orig-Feet-Orig)")]
+
+
+        [MenuItem(XCEditorTools.AssetCheck + "Fbx Bake No(Orig-Feet-Orig)不带位移")]
+        private static void NoBakeToPose()
+        {
+            foreach (var item in Selection.gameObjects)
+            {
+                string path = AssetDatabase.GetAssetPath(item);
+                ModelImporter importer = ModelImporter.GetAtPath(path) as ModelImporter;
+                if (importer == null)
+                {
+                    return;
+                }
+
+                if (importer.defaultClipAnimations.Length == 1 && importer.clipAnimations.Length == 0)
+                {
+                    Debug.Log($"--- importer.name {new FileInfo(path).Name} {item.name}");
+                    ModelImporterClipAnimation clip = importer.defaultClipAnimations[0];
+                    clip.name = new FileInfo(path).Name;
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip };
+                }
+
+                if (importer.clipAnimations.Length == 1)
+                {
+                    var clip = importer.clipAnimations[0];
+                    clip.keepOriginalOrientation = true;
+                    clip.heightFromFeet = true;
+                    clip.keepOriginalPositionXZ = true;
+                    clip.keepOriginalPositionY = false;
+                    clip.lockRootHeightY = true;
+                    clip.lockRootRotation = true;
+                    clip.lockRootPositionXZ = false;
+
+                    importer.clipAnimations = new ModelImporterClipAnimation[1] { clip };
+                }
+                importer.SaveAndReimport();
+            }
+        }
+
+
+        [MenuItem(XCEditorTools.AssetCheck + "Fbx Bake Pose(Orig-Feet-Orig)带位移")]
         private static void BakeToPose()
         {
             foreach (var item in Selection.gameObjects)
@@ -388,6 +428,40 @@ namespace XiaoCaoEditor
                 }
                 importer.SaveAndReimport();
             }
+        }
+
+        [MenuItem(XCEditorTools.AssetCheck + "Fbx Clip Remove All Evnets")]
+        private static void RemoveEventsFromSelectedModels()
+        {
+            // 获取所有选中的资产
+            Object[] selectedAssets = Selection.GetFiltered(typeof(Object), SelectionMode.Assets);
+            foreach (Object asset in selectedAssets)
+            {
+                string assetPath = AssetDatabase.GetAssetPath(asset);
+                if (Path.GetExtension(assetPath).ToLower() == ".fbx" ||
+                    Path.GetExtension(assetPath).ToLower() == ".obj" ||
+                    Path.GetExtension(assetPath).ToLower() == ".blend")
+                {
+                    ModelImporter importer = AssetImporter.GetAtPath(assetPath) as ModelImporter;
+                    if (importer != null)
+                    {
+                        // 获取模型导入器中的所有动画剪辑
+                        ModelImporterClipAnimation[] clips = importer.clipAnimations;
+
+                        // 遍历所有动画剪辑
+                        foreach (var clip in clips)
+                        {
+                            if (clip != null)
+                            {
+                                clip.events = new AnimationEvent[0] { };
+                            }
+                        }
+                        importer.clipAnimations = clips;
+                        importer.SaveAndReimport();
+                    }
+                }
+            }
+            AssetDatabase.SaveAssets();
         }
 
     }

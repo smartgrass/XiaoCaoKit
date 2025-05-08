@@ -54,7 +54,7 @@ namespace AssetEditor.Editor
                 SaveXCTask.SavaAll();
             }
 
-            Debug.Log($"--- Do");
+            Debug.Log($"--- 替换成功");
         }
 
     }

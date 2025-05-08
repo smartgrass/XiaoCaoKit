@@ -82,7 +82,7 @@ namespace FluxEditor
         {
             base.OnInspectorGUI();
 
-            if (Event.IsBezier && GUILayout.Button("ResetHandles"))
+            if (GUILayout.Button("Reset"))
             {
                 ResethandlePonts();
             }

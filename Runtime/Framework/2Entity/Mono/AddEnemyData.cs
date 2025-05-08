@@ -7,7 +7,7 @@ public class AddEnemyData: MonoBehaviour
 #if UNITY_EDITOR
     [OnValueChanged(nameof(Check))]
 #endif
-    public int aiId = 0;
+    public string aiId = "0";
     [XCLabel("出招表配置,默认走raceId")]
     public int cmdSettingId = -1;
 
