@@ -212,7 +212,10 @@ namespace XiaoCao
 
         public Vector3 castPos;
 
-        public float GetSpeed => baseSpeed * speedMult;
+        //计算帧数速度
+        public float GetTimeSpeed => baseSpeed * speedMult;
+
+        public float GetAnimSpeed => baseSpeed * speedMult * XCTime.timeScale;
 
 
         public float baseSpeed;

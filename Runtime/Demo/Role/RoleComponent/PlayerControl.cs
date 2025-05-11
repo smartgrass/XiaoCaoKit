@@ -166,19 +166,10 @@ namespace XiaoCao
             RcpPlaySkill($"{AnimNames.NorAck}{nextNorAckIndex}");
         }
 
-        public override void DefaultAutoDirect()
-        {
-            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3.5f, 30, out float maxScore, owner.team);
-            if (findRole != null)
-            {
-                owner.transform.RotaToPos(findRole.transform.position, 0.4f);
-                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
-            }
-            else
-            {
-                Debug.Log($"--- findRole no");
-            }
-        }
+        //public override void DefaultAutoDirect()
+        //{
+
+        //}
 
 
         //执行使用技能, 一般不直接使用

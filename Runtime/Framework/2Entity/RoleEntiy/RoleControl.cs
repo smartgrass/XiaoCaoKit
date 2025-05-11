@@ -225,7 +225,16 @@ namespace XiaoCao
 
         public virtual void DefaultAutoDirect()
         {
-
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3.5f, 30, out float maxScore, owner.team);
+            if (findRole != null)
+            {
+                owner.transform.RotaToPos(findRole.transform.position, 0.4f);
+                Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
+            }
+            else
+            {
+                Debug.Log($"--- findRole no");
+            }
         }
 
         private float _lastAnimSpeed = 1;
