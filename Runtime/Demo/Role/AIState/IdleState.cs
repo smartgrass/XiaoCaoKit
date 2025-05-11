@@ -33,7 +33,7 @@ namespace XiaoCao
         //Temp
         private HideDir _tempHideDir;
         private Vector3 _tempTargetPos;
-        private bool isHideToFar;
+        private bool isFarToNear;
         private int _hasLoopTime;
         private bool hasNoTarget;
 
@@ -42,7 +42,7 @@ namespace XiaoCao
         {
             if (getFromSetting)
             {
-                hideTime = Setting.hideTime;
+                hideTime = Setting.idleTime;
                 sleepTimeWhenLoop = Setting.sleepTime;
                 idleExitRate = Setting.idleExitRate;
             }
@@ -67,15 +67,15 @@ namespace XiaoCao
 
         private void GetHideDir()
         {
-            if (!HasTarget)
+            if (HasTarget)
             {
-                control.tempTargetDis = Vector3.Distance(transform.position, control.transform.position);
+                control.tempTargetDis = Vector3.Distance(TargetRole.transform.position, control.transform.position);
                 //远-> 靠近 内心圆   近->远离 外心圆
-                isHideToFar = control.tempTargetDis > control.tempActDis / 0.75f;
+                isFarToNear = control.tempTargetDis > control.tempActDis;
             }
             else
             {
-                isHideToFar = false;
+                isFarToNear = false;
             }
 
             //处于玩家 偏左边 就左转
@@ -132,29 +132,30 @@ namespace XiaoCao
         }
 
 
-
+        /// <summary>
+        /// TargetRole no null
+        /// </summary>
         private void HideMove(float speedRate, float animSpeedRate)
         {
+            control.owner.AISetLookTarget(TargetRole.transform);
+
             _isEnterIdle = false;
 
             _tempTargetPos = TargetRole.transform.position;
 
-            float targetAngle = isHideToFar ? 90 : 110;
+            //TODO 配置化
+            float targetAngle = isFarToNear ? 90 : RandomHelper.RangeFloat(120, 180);
 
             targetAngle = _tempHideDir == HideDir.MoveLeft ? targetAngle : -targetAngle;
 
-            Vector3 dir = _tempTargetPos - transform.position;
-            dir.y = 0;
+            Vector3 dir = (_tempTargetPos - transform.position).SetY(0);
 
-            var targetDir = MathTool.RotateY(dir, targetAngle);
+            var moveDir = MathTool.RotateY(dir, targetAngle);
 
-            control.owner.AIMoveDir(targetDir.normalized * speedRate, animSpeedRate, !Setting.isLookAtTargetOnHide);
+            bool isLookAtTargetOnHide = Setting.isLookAtTargetOnHide;
 
-            if (Setting.isLookAtTargetOnHide)
-            {
-                control.owner.AISetLookTarget(_tempTargetPos);
-                //TODO 需要兼容
-            }
+            control.owner.AIMoveDir(moveDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
+
         }
 
         private bool _isEnterIdle;

@@ -8,6 +8,7 @@ namespace XiaoCao
     /// <summary>
     /// 行为池
     /// </summary>
+    ///<see cref="SequenceFSM"/>
     [CreateAssetMenu(fileName = "ActPoolFSM", menuName = "SO/AI/ActPoolFSM", order = 1)]
     public class ActPoolFSM : MainDataFSM
     {
@@ -24,22 +25,22 @@ namespace XiaoCao
 
         public AIFSMBase CurState { get; set; }
         public AIFSMBase IdleStateInst { get; set; }
-        public List<SubStateData> PoolInst { get; set; }
-        public List<SubStateData> CurPool { get; set; }
+        public List<SubStateData> PrefabPool { get; set; }
+        public List<SubStateData> InstancePool { get; set; }
 
         public int UseTime { get; set; }
 
-        public bool IsCheckUseTime => UseTime > 0;
+        public bool IsCheckUseTime => MaxUseTime > 0;
 
         public override void OnStart()
         {
-            bool isFrist =  FristLoad();
-            CurPool.Clear();
+            bool isFrist = FristLoad();
+            InstancePool.Clear();
             UseTime = 0;
 
             State = FSMState.Update;
 
-            if (IdleStateInst != null )
+            if (IdleStateInst != null)
             {
                 IdleStateInst.ResetFSM();
             }
@@ -52,11 +53,11 @@ namespace XiaoCao
                 CurState = IdleStateInst;
                 return;
             }
-
-            foreach (var data in this.PoolInst)
+            Debug.Log($"--- ActPoolFSM OnStart");
+            foreach (var data in this.PrefabPool)
             {
                 data.Reset();
-                CurPool.Add(data);
+                InstancePool.Add(data);
             }
         }
 
@@ -69,21 +70,24 @@ namespace XiaoCao
             }
             IsLoaded = true;
 
-            PoolInst = new List<SubStateData>();
-            CurPool = new List<SubStateData>();
+            PrefabPool = new List<SubStateData>();
+            InstancePool = new List<SubStateData>();
 
             foreach (var data in this.pool)
             {
                 SubStateData subState = new SubStateData();
                 subState.maxTime = data.maxTime;
-                MainFSM so = ScriptableObject.Instantiate(data.state) as MainFSM; 
+                Debug.Log($"--- SubStateData {data.maxTime} ");
+                var so = ScriptableObject.Instantiate(data.state); //as MainFSM;
+                so.name = data.state.name;
                 so.InitReset(control);
                 subState.state = so;
-                PoolInst.Add(subState);
+                PrefabPool.Add(subState);
             }
             if (idleState != null)
             {
-                IdleStateInst = ScriptableObject.Instantiate(idleState) ;
+                IdleStateInst = ScriptableObject.Instantiate(idleState);
+                IdleStateInst.name = idleState.name;
                 IdleStateInst.InitReset(control);
             }
             return true;
@@ -105,7 +109,6 @@ namespace XiaoCao
                     OnExit();
                     return;
                 }
-                Debug.Log($"--- CurState {CurState.GetType()}");
             }
             if (CurState.State != FSMState.Finish)
             {
@@ -122,27 +125,27 @@ namespace XiaoCao
         private AIFSMBase GetOne()
         {
             bool IsUseTimeLess = IsCheckUseTime && UseTime >= MaxUseTime;
-
-            if (CurPool.Count == 0 || IsUseTimeLess)
+            if (InstancePool.Count == 0 || IsUseTimeLess)
             {
                 return null;
             }
 
             SubStateData data;
             int index;
-            if (poolType == FSMPoolType.Random) {
-                data = PoolInst.GetPowerRandom(out index);
+            if (poolType == FSMPoolType.Random)
+            {
+                data = InstancePool.GetPowerRandom(out index);
             }
             else
             {
                 index = 0;
-                data = PoolInst[0];
+                data = InstancePool[0];
             }
 
             data.HasUseTime++;
             if (data.HasUseTime >= data.maxTime)
             {
-                CurPool.RemoveAt(index);
+                InstancePool.RemoveAt(index);
             }
             UseTime++;
             return data.state;
@@ -153,6 +156,18 @@ namespace XiaoCao
             State = FSMState.Finish;
             Debuger.Log($"--- AI All Finish");
         }
+
+        public override string GetStatePath()
+        {
+            if (CurState == null)
+            {
+                return name;
+            }
+            string subPath = CurState.GetStatePath();
+            string path = $"{name}/{subPath}";
+            return path;
+        }
+
     }
 
 

@@ -29,7 +29,7 @@ namespace XiaoCao
         public float overridBaseMoveSpeed = 0;
 
         public CharacterController cc => owner.idRole.cc;
-        public Transform tf => owner.idRole.transform;
+        public Transform transform => owner.idRole.transform;
 
         public MoveSettingSo moveSetting => Data_R.moveSetting;
 
@@ -38,12 +38,14 @@ namespace XiaoCao
         public Vector3 inputDir;
         public Vector3 lastInputDir;
 
-        public bool isLookDir;
+        public bool isLookMoveDir = true;
 
         protected bool isGrounded = true;
 
         //用于控制当前帧是否移动
         public bool isMovingThisFrame = true;
+
+        private Transform tempLookAt;
 
         public void Init()
         {
@@ -62,25 +64,22 @@ namespace XiaoCao
 
         protected virtual void FixedUpdateMove()
         {
-            OnMoveing(inputDir,true);
+            OnMoveing(inputDir, isLookMoveDir);
         }
 
         public void SetMoveDir(Vector3 moveDir, float speedRate = 1, bool isLookDir = true)
         {
             inputDir = moveDir;
-            this.isLookDir = isLookDir;
+            isLookMoveDir = isLookDir;
             maxAnimMoveSpeed = speedRate;
         }
 
-        public void SetLookTarget(Vector3 target)
+        public void SetLookTarget(Transform target)
         {
-            Debug.Log($"--- SetLookTarget TODO");
-            //需要缓存变量
-            //transform.RoateY_Slow(, Data_R.moveSetting.angleSpeed, 8); 
-
+            tempLookAt = target;
         }
 
-        public void OnMoveing(Vector3 moveDir, bool isLookDir)
+        public void OnMoveing(Vector3 moveDir, bool isLookMoveDir)
         {
             if (RoleState.IsMoveLock)
             {
@@ -93,14 +92,20 @@ namespace XiaoCao
 
             bool isInput = (Mathf.Abs(moveDir.x) + Mathf.Abs(moveDir.z)) > 0;
 
-            ComputeMoveValue(isInput);
+            bool lookMoveDir = isLookMoveDir || (!tempLookAt);
 
-            CheckBackToIdle(isInput);
+            ComputeMoveValue(isInput, lookMoveDir, moveDir);
 
-            if (isLookDir)
+            if (lookMoveDir)
             {
                 RotateByMoveDir(moveDir, moveSetting.rotationLerp * RoleState.angleSpeedMult);
             }
+            else
+            {
+                RotateLootAtWithAnim(tempLookAt, moveSetting.rotationLerp * RoleState.angleSpeedMult);
+            }
+
+            CheckBackToIdle(isInput);
 
             float baseSpeed = overridBaseMoveSpeed > 0 ? overridBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
 
@@ -141,8 +146,6 @@ namespace XiaoCao
                 isMovingThisFrame = true;
             }
 
-            owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
-
             FixUpdateLockTime();
 
             Used();
@@ -152,7 +155,7 @@ namespace XiaoCao
         {
             lastInputDir = inputDir;
             inputDir = Vector3.zero;
-            isLookDir = false;
+            isLookMoveDir = false;
         }
 
         public void MoveToImmediate(Vector3 pos)
@@ -173,11 +176,7 @@ namespace XiaoCao
             }
         }
 
-        public void AimToPos(Vector3 pos)
-        {
-            Vector3 dir = pos - cc.transform.position;
-            RotateByMoveDir(dir, 1);
-        }
+
 
         public void RotateByMoveDir(Vector3 worldMoveDir, float lerp = 1)
         {
@@ -185,16 +184,30 @@ namespace XiaoCao
                 return;
             worldMoveDir.y = 0;
             var targetRotation = MathTool.ForwardToRotation(worldMoveDir);
-            var startRotation = tf.rotation;
+            var startRotation = transform.rotation;
             var rotation = Quaternion.Lerp(startRotation, targetRotation, lerp);
-            tf.rotation = rotation;
+            transform.rotation = rotation;
         }
 
-        
+        private void RotateLootAtWithAnim(Transform lookAtTf, float lerp = 1)
+        {
+            if (lookAtTf)
+            {
+                Vector3 dir = lookAtTf.position - transform.position;
+                RotateByMoveDir(dir, lerp);
+            }
+        }
+
+        public void RotateByTargetPos(Vector3 pos, float lerp = 1)
+        {
+            Vector3 dir = pos - cc.transform.position;
+            RotateByMoveDir(dir, lerp);
+        }
+
         public void LookToDir(Vector3 worldDir)
         {
             worldDir.y = 0;
-            tf.rotation = MathTool.ForwardToRotation(worldDir);
+            transform.rotation = MathTool.ForwardToRotation(worldDir);
         }
 
         private void FixUpdateLockTime()
@@ -218,7 +231,7 @@ namespace XiaoCao
         }
 
         //计算移动动画速度, 同时会影响移速倍率
-        void ComputeMoveValue(bool isInput)
+        void ComputeMoveValue(bool isInput, bool lookMoveDir, Vector3 moveDir)
         {
             float inputTotal = isInput ? 1 : 0;
 
@@ -232,14 +245,42 @@ namespace XiaoCao
                 moveSmooth = moveSmooth / XCTime.timeScale;
             }
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, inputTotal, ref _tempAnimMoveSmooth, moveSmooth);
+            float targetAnimMoveSpeed = inputTotal;
+            if (!lookMoveDir && tempLookAt)
+            {
+                Vector3 lookDir = tempLookAt.position - transform.position;
+                float angle = MathTool.GetDirectionSinAngle(lookDir, moveDir);
+
+                float angleCos = Mathf.Cos(angle * Mathf.Deg2Rad); //angleCos>0 前
+                if (!owner.IsPlayer)
+                {
+                    DebugGUI.Log("angle", angle.ToString("N2"), angleCos.ToString("N2"));
+                }
+
+                //float angleSin = Mathf.Sin(angle); //左到右 1到-1
+                if (Mathf.Abs(angle) > 120)
+                {
+                    if (targetAnimMoveSpeed > 0)
+                    {
+                        targetAnimMoveSpeed = -targetAnimMoveSpeed;
+                    }
+                }
+                //owner.Anim.SetFloat(AnimNames.MoveDirect, angleSin * RoleState.animMoveSpeed);
+            }
+
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, targetAnimMoveSpeed, ref _tempAnimMoveSmooth, moveSmooth);
+
+            float absAnimMoveSpeed = Mathf.Abs(RoleState.animMoveSpeed);
 
             //影响移速倍率
-            RoleState.moveAnimMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 1, 1.5f);
+            RoleState.moveAnimMult = MathTool.ValueMapping(absAnimMoveSpeed, 0, 1, 1, 1.5f);
 
             //起始转速偏慢
-            RoleState.angleSpeedMult = MathTool.ValueMapping(RoleState.animMoveSpeed, 0, 1, 0f, 2);
+            RoleState.angleSpeedMult = MathTool.ValueMapping(absAnimMoveSpeed, 0, 1, 0f, 2);
             RoleState.angleSpeedMult = Mathf.Min(1, RoleState.angleSpeedMult);
+
+
+            owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
         }
 
         public void OnDamage(bool isBreak)
@@ -266,7 +307,7 @@ namespace XiaoCao
             float GroundedOffset = -0.14f;
             float GroundedRadius = 0.28f;
             // set sphere position, with offset
-            Vector3 spherePosition = new Vector3(tf.position.x, tf.position.y - GroundedOffset, tf.position.z);
+            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
 
             isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK, QueryTriggerInteraction.Ignore);
 
@@ -332,7 +373,7 @@ namespace XiaoCao
             }
             Vector3 addVec = camForward * 15;
             //if (addVec.y < 3) {
-                addVec.y = 5;
+            addVec.y = 5;
             //}
             Vector3 targetPos = cc.transform.position + addVec;
             owner.idRole.StartCoroutine(grappling.Grappling(targetPos));
@@ -340,7 +381,8 @@ namespace XiaoCao
     }
 
     //钩锁
-    public class RoleGrappling {
+    public class RoleGrappling
+    {
         public RoleGrappling(RoleMovement roleMovement)
         {
             this.movement = roleMovement;
@@ -349,7 +391,7 @@ namespace XiaoCao
 
         private RoleMovement movement;
         public Player0 owner;
-        public CharacterController cc=>movement.cc;
+        public CharacterController cc => movement.cc;
         public bool grappling;
         public float speed = 10;
 
@@ -357,7 +399,7 @@ namespace XiaoCao
         public System.Collections.IEnumerator Grappling(Vector3 pos)
         {
             //1 跳起
-            movement.AimToPos(pos);
+            movement.RotateByTargetPos(pos);
             owner.Anim.Play(AnimNames.Jump);
             movement.SetNoGravityT(10);
             movement.SetUnMoveTime(10);
@@ -371,13 +413,13 @@ namespace XiaoCao
             CameraMgr.Inst.aimer.SetMainWeight(0.7f);
 
             float moveTime = Vector3.Distance(cc.transform.position, pos) / speed;
-            moveTime =Mathf.Clamp(moveTime,0.1f,3);
+            moveTime = Mathf.Clamp(moveTime, 0.1f, 3);
 
 
             //匀速运动 到终点, TODO 改为FixUpdate?
             movement.cc.DoMoveTo(pos, moveTime);
 
-            yield return new WaitForSeconds(moveTime) ;
+            yield return new WaitForSeconds(moveTime);
             //落地动画
             movement.noGravityTimer = 0.0f;
             movement.SetUnMoveTime(-1);

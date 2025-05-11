@@ -39,6 +39,7 @@ namespace XiaoCaoEditor
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
         public const string ShatterTool = "XiaoCao/ShatterTool";
+        public const string AddAnimParamWindow = "XiaoCao/AddAnimParamWindow";
 
         //其他
         ///打包相关 <see cref="BuildTool"/>

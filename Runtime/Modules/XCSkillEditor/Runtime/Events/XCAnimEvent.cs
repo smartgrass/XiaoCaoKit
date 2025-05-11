@@ -86,6 +86,8 @@ namespace XiaoCao
         public static readonly int IsDead = AnimNames.IsDead.AnimHash();
         public static readonly int RollTree = AnimNames.RollTree.AnimHash();
         public static readonly int IsGround = AnimNames.IsGround.AnimHash();
+        public static readonly int MoveSpeed = AnimNames.MoveSpeed.AnimHash();
+        public static readonly int MoveDirect = AnimNames.MoveDirect.AnimHash();
     }
     public static class AnimNames
     {
@@ -100,6 +102,7 @@ namespace XiaoCao
         public const string Jump = "Jump";
 
         public const string MoveSpeed = "MoveSpeed";
+        public const string MoveDirect = "MoveDirect"; //左右1 -1
 
         public static string IsGround = "IsGround"; //bool
 

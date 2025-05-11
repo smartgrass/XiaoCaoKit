@@ -46,7 +46,6 @@ namespace XiaoCao
 
         private void Update()
         {
-            DebugGUI.Log("gameState", GameDataCommon.Current.gameState);
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 NorHpBarUpdate();

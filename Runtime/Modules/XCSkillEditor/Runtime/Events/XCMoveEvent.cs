@@ -54,7 +54,6 @@ namespace XiaoCao
 
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
-            DebugGUI.Log($"move frame",frame,task._events.Count);
             float t = timeSinceTrigger / LengthTime;
 
 

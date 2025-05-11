@@ -28,6 +28,8 @@ public class DebugGUI : MonoBehaviour
     private float lineHeight;
     private float startY;
 
+    public static bool IsShowing => DebugSetting.DebugGUI_IsShow.GetKeyBool();
+
     // 单例实例
     private static DebugGUI instance;
 

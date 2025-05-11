@@ -68,9 +68,15 @@ namespace XiaoCao
 
         void ForDebug()
         {
-            DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
-            DebugGUI.Log("Anim", Anim.speed);
-            DebugGUI.Log("breakArmor", roleData.breakData.armor);
+            if (Time.timeScale >1) 
+            {
+                DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
+            }
+            if (Anim.speed > 1)
+            {
+                DebugGUI.Log("Anim", Anim.speed);
+            }
+
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using System.Text;
 using UnityEngine;
 using XiaoCao;
 
@@ -9,6 +10,8 @@ public class Test_EnemyCmd : MonoBehaviour
     [MiniBtn(nameof(SetAct))]
     public string actCmd = "0";
 
+    [Header("DebugView")]
+    public AIControl control;
 
     private Enemy0 enemy;
 
@@ -16,6 +19,7 @@ public class Test_EnemyCmd : MonoBehaviour
     {
         enemy = GetComponent<IdRole>().GetEntity() as Enemy0;
         isAI = enemy.IsAiOn;
+        control = enemy.component.aiControl;
     }
 
 
@@ -29,6 +33,24 @@ public class Test_EnemyCmd : MonoBehaviour
     void SetAct()
     {
         enemy.AIMsg(ActMsgType.Skill, actCmd);
+    }
+
+    private void Update()
+    {
+        if (DebugGUI.IsShowing)
+        {
+            ActPoolFSM poolFSM = control.mainDataFSM as ActPoolFSM;
+
+            if (poolFSM.CurState != null)
+            {
+                DebugGUI.Log("AIState", GetStatePath(poolFSM.CurState));
+            }
+        }
+    }
+
+    private string GetStatePath(AIFSMBase state)
+    {
+        return state.GetStatePath();
     }
 
 }

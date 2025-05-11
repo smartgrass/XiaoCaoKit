@@ -10,7 +10,7 @@ namespace XiaoCao
     {
         public string des;
 
-        public float hideTime = 2f;
+        public float idleTime = 2f;
 
         public float sleepTime = 0.5f;
 

@@ -46,6 +46,11 @@ namespace XiaoCao
         {
             throw new System.NotImplementedException();
         }
+
+        public virtual string GetStatePath()
+        {
+            return name;
+        }
     }
 
 

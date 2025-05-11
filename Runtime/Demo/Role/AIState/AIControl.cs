@@ -54,6 +54,7 @@ namespace XiaoCao
                 so = ResMgr.LoadAseet(configPath) as MainDataFSM;
             }
             mainDataFSM = ScriptableObject.Instantiate(so);
+            mainDataFSM.name = so.name;
             mainDataFSM.InitReset(this);
             Movement.overridBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
             idlePos = transform.position;

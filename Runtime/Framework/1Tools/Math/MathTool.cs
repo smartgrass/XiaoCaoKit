@@ -109,7 +109,7 @@ public static class MathLayoutTool
                 else
                 {
                     int delta = index - (XLen * 2);
-                    if (delta < (ZLen-2) * 1)
+                    if (delta < (ZLen - 2) * 1)
                     {
                         //+1 排除前面
                         return (0, pY, delta + 1);
@@ -460,6 +460,22 @@ public static class MathTool
         return v == Vector3.zero || float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z); ;
     }
 
+    public static Vector3 SetY(this Vector3 v, float value)
+    {
+        return new Vector3(v.x, value, v.z);
+    }
+
+    public static Vector3 SetX(this Vector3 v, float value)
+    {
+        return new Vector3(value, v.y, v.z);
+    }
+
+    public static Vector3 SetZ(this Vector3 v, float value)
+    {
+        return new Vector3(v.x, v.y, value);
+    }
+
+
     //排除y的距离计算
     public static float GetHorDistance(Vector3 a, Vector3 b)
     {
@@ -539,9 +555,25 @@ public static class MathTool
     //计算两向量夹角, 有正负号, 正顺时针
     public static float SignedAngleY(Vector3 from, Vector3 to)
     {
-        return Vector2.SignedAngle(from.To2D(), to.To2D());
+        return Vector2.SignedAngle(from.ToXZ(), to.ToXZ());
     }
 
+
+    /// <summary>
+    /// 获取两向量的夹角 （角度范围：-180~180度）
+    /// 左正右负, 锐角为前,钝角为后
+    /// </summary>
+    public static float GetDirectionSinAngle(Vector3 playerForward, Vector3 direction)
+    {
+        // 计算与玩家前方的夹角
+        float angle = Vector3.Angle(playerForward, direction);
+
+        // 判断左右方向
+        Vector3 cross = Vector3.Cross(playerForward, direction);
+        if (cross.y < 0) angle = -angle;
+
+        return angle;
+    }
 
     public static Quaternion ForwardToRotation(Vector3 forward)
     {

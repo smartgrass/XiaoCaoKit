@@ -550,9 +550,9 @@ namespace XiaoCao
             roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
-        public void AISetLookTarget(Vector3 target)
+        public void AISetLookTarget(Transform target)
         {
-            roleData.movement.SetMoveDir(target);
+            roleData.movement.SetLookTarget(target);
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -746,7 +746,7 @@ namespace XiaoCao
         public float maxArmor = 4;
         public float recoverWait_t = 0.8f;  //进入破防后,多久启动恢复
         public float recoverFinish_t = 0.5f; //恢复满需要时间
-        public float recoverSpeedInner = 0; //被动恢复,没陷入破防时的恢复速度,boss用,小怪一般为0 
+        public float recoverEnterBreak = 0; //击破恢复 boss可以是0.7
         public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
         //死亡处理
         public float deadTimer = 0;
@@ -756,6 +756,11 @@ namespace XiaoCao
 
         public bool isHover { get; set; }//是否滞空
         public bool IsBreak => armor <= 0;
+
+        public bool IsBreakTime => IsBreak && recoverWait_t <= 0;
+
+        //TODO
+        private bool IsBreakFrame;
 
         public bool HasHit { get; set; }
 
@@ -779,13 +784,23 @@ namespace XiaoCao
             armor -= hitArmor;
             _lastHitTime = Time.time;
             HasHit = true;
+
+            if (armor <= 0)
+            {
+                IsBreakFrame = true;
+            }
         }
 
         public void OnUpdate(float deltaTime)
         {
-            if (recoverSpeedInner > 0)
+
+            if (IsBreakFrame)
             {
-                armor += deltaTime * recoverSpeedInner;
+                IsBreakFrame = false;
+                if (recoverEnterBreak > 0)
+                {
+                    armor = Mathf.Max(armor, recoverEnterBreak * maxArmor);
+                }
             }
 
             if (_lastHitTime + recoverWait_t < Time.time)

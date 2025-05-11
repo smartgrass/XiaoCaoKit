@@ -7,7 +7,7 @@ namespace XiaoCao
     /// <summary>
     /// 顺序池
     /// </summary>
-    [CreateAssetMenu(fileName = "SequenceFSM", menuName = "SO/AI/SequenceFSM",order =1)]  
+    [CreateAssetMenu(fileName = "SequenceFSM", menuName = "SO/AI/SequenceFSM", order = 1)]
     public class SequenceFSM : MainFSM
     {
         //顺序保证执行,
@@ -40,6 +40,7 @@ namespace XiaoCao
             foreach (var fs in subFsms)
             {
                 var so = ScriptableObject.Instantiate(fs);
+                so.name = fs.name;
                 so.InitReset(control);
                 SubFsmsInst.Add(so);
             }
@@ -74,7 +75,29 @@ namespace XiaoCao
 
         public override void OnExit()
         {
+            Debug.Log($"--- SequenceFSM Finish");
             State = FSMState.Finish;
+        }
+
+        public override string GetStatePath()
+        {
+            var curState = GetCurState();
+            if (curState == null)
+            {
+                return name;
+            }
+            string subPath = curState.GetStatePath();
+            string path = $"{name}/{subPath}";
+            return path;
+        }
+
+        private AIFSMBase GetCurState()
+        {
+            if (Index < SubFsmsInst.Count)
+            {
+                return SubFsmsInst[Index];
+            }
+            return null;
         }
     }
 }
