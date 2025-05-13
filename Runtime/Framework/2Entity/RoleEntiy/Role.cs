@@ -358,15 +358,14 @@ namespace XiaoCao
             roleData.roleControl.StopTimeSpeed(isOn);
         }
 
-
+        ///<see cref="BaseMsg"/>
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             Debuger.Log($"--- Receive {type} fromId: {fromId}");
             switch (type)
             {
                 case EntityMsgType.PlayNextSkill:
-                    string skillId = (string)msg;
-                    roleData.roleControl.TryPlaySkill(skillId);
+                    PlayNextSkill(msg);
                     break;
                 case EntityMsgType.SetNoBusy:
                     SetNoBusy();
@@ -407,6 +406,15 @@ namespace XiaoCao
                 default:
                     break;
             }
+        }
+        private void PlayNextSkill(object msg)
+        {
+            string skillId = ((BaseMsg)msg).strMsg;
+            if (roleData.roleControl.IsBusy())
+            {
+                SetNoBusy();
+            }
+            roleData.roleControl.TryPlaySkill(skillId);
         }
 
         private void OnNoDamage(object msg)
@@ -539,6 +547,12 @@ namespace XiaoCao
 
         }
 
+        /// <summary>
+        /// 移动
+        /// </summary>
+        /// <param name="dir">长度有效</param>
+        /// <param name="speedFactor">影响移动动画的最大值</param>
+        /// <param name="isLookDir">是否根据移动方向旋转</param>
         public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
         {
             roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);

@@ -21,6 +21,9 @@ namespace XiaoCao
         [XCLabel("受击计时延迟")]
         public float damageInterrupt = 0.1f;
 
+        [XCLabel("前摇索敌")]
+        public bool isAutoLock = true;
+
         private float Timer { get; set; }
         private bool IsInited { get; set; }
 
@@ -78,6 +81,13 @@ namespace XiaoCao
             if (curAtkState == 0)
             {
                 Timer += Time.deltaTime;
+                if (isAutoLock)
+                {
+                    control.Lock(true);
+                    //control.owner.AISetLookTarget(TargetRole.transform);
+                    ////control.owner.AIMsg(ActMsgType.AutoLock, atkMsg);
+
+                }
                 if (Timer > beforeAtk)
                 {
                     AtkStart();

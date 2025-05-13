@@ -70,8 +70,8 @@ namespace XiaoCao
         public void SetMoveDir(Vector3 moveDir, float speedRate = 1, bool isLookDir = true)
         {
             inputDir = moveDir;
+            maxAnimMoveSpeed = Mathf.Abs(speedRate);
             isLookMoveDir = isLookDir;
-            maxAnimMoveSpeed = speedRate;
         }
 
         public void SetLookTarget(Transform target)
@@ -266,7 +266,9 @@ namespace XiaoCao
                     }
                 }
                 //owner.Anim.SetFloat(AnimNames.MoveDirect, angleSin * RoleState.animMoveSpeed);
+                //Debug.Log($"--- angle {angle} {targetAnimMoveSpeed} {moveDir} ");
             }
+
 
             RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, targetAnimMoveSpeed, ref _tempAnimMoveSmooth, moveSmooth);
 

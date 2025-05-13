@@ -124,7 +124,7 @@ namespace XiaoCao
             if (InputData.x != 0 || InputData.y != 0)
             {
                 var dir = owner.component.movement.inputDir;
-                this.Data_P.movement.RotateByMoveDir(dir, 1);
+                this.Data_R.movement.RotateByMoveDir(dir, 1);
             }
 
             if (AnimNames.Roll != skillId)

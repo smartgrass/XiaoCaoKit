@@ -31,6 +31,12 @@ namespace XiaoCao
             {
                 return cmdSkillList[index];
             }
+            else
+            {
+                Debug.LogError("--- auto skill");
+                return (CmdSettingId * 100 + index).ToString();
+            }
+
             if (cmdSkillList.Count == 0)
             {
                 throw new Exception(" cmdSkillList count 0");

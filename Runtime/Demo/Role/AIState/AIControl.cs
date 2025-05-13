@@ -147,6 +147,34 @@ namespace XiaoCao
 
             owner.AIMoveDir(dir, speedRate);
         }
+        public void Lock(bool isMoveBack = false)
+        {
+            if (targetRole == null)
+            {
+                OnSearchTarget(targetRole);
+            }
+
+            if (targetRole == null)
+            {
+                return;
+            }
+
+
+            Vector3 dir = (targetRole.transform.position - transform.position).normalized;
+            owner.AISetLookTarget(targetRole.transform);
+
+            if (isMoveBack)
+            {
+                float deltaAngle = Vector3.Angle(dir, transform.forward);
+                float sin = -1 * Mathf.Sin(deltaAngle * Mathf.Deg2Rad); ;
+                owner.AIMoveDir(dir * sin, 1, false);
+            }
+            else
+            {
+                Data_R.movement.RotateByMoveDir(dir, 0.08f);
+            }
+        }
+
         public void CheckDistance()
         {
             tempTargetDis = GetDistance(targetRole.transform);

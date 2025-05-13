@@ -113,6 +113,9 @@ namespace XiaoCao
                     break;
                 case ActMsgType.Idle:
                     break;
+                case ActMsgType.AutoLock:
+                    component.aiControl.DefaultAutoDirect();
+                    break;
                 default:
                     break;
             }
@@ -125,7 +128,8 @@ namespace XiaoCao
     {
         Skill,
         OtherSkill,
-        Idle
+        Idle,
+        AutoLock
     }
 
     public class EnemyData0 : RoleData

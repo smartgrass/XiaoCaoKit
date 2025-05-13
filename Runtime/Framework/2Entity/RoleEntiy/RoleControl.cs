@@ -223,9 +223,13 @@ namespace XiaoCao
         {
         }
 
+        private float defaultSeeAngle = 30;
+        private float defaultSeeRadous = 6f;
+
+
         public virtual void DefaultAutoDirect()
         {
-            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, 3.5f, 30, out float maxScore, owner.team);
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, defaultSeeRadous, defaultSeeAngle, out float maxScore, owner.team);
             if (findRole != null)
             {
                 owner.transform.RotaToPos(findRole.transform.position, 0.4f);
