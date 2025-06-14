@@ -136,6 +136,12 @@ namespace XiaoCao
             }
 
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
+#if UNITY_EDITOR
+            if (DebugSetting.PauseFrame +1 == Time.frameCount)
+            {
+                isMovingThisFrame = true;
+            }
+#endif
             if (isMovingThisFrame)
             {
                 cc.Move(moveDelta);

@@ -104,14 +104,14 @@ namespace XiaoCao
             base.ReceiveMsg(type, fromId, msg);
 
             if (type is EntityMsgType.PlayNextNorAck)
-            {
+            {   
                 component.control.TryNorAck();
             }
         }
 
         public override void OnBreak()
         {
-            component.control.OnBreak();
+            component.control.BreakAllBusy();
         }
 
 
@@ -189,6 +189,11 @@ namespace XiaoCao
 
         public int curNorAckIndex;
 
+        public float lastNorAckTime;
+
+        //平a缓存
+        public bool norAckCache;
+
         public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格
 
         public PlayerSetting playerSetting;
@@ -218,6 +223,7 @@ namespace XiaoCao
         //InputKey
         public bool[] inputs = new bool[8];
         public string skillInput;
+        
 
         public KeyCode[] CheckKeyCode = new KeyCode[] {
             KeyCode.Alpha0, KeyCode.Alpha1

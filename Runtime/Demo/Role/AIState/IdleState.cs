@@ -1,5 +1,6 @@
 ﻿using NaughtyAttributes;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 namespace XiaoCao
 {
@@ -14,55 +15,56 @@ namespace XiaoCao
          并且,进入攻击状态,需要攻击欲望的判定,以及目标存在的判定
          */
 
-        public bool getFromSetting = true;
-
-        [HideIf(nameof(getFromSetting))] public float hideTime = 2;
-        [HideIf(nameof(getFromSetting))] public float sleepTimeWhenLoop = 1f;
-        [HideIf(nameof(getFromSetting))] public float idleExitRate = 0.5f;
-
-        //将修改Timer的时间, 1表示随机范围为 (-sleepTimeWhenLoop ,hideTime)
-        //0.1表示为  (Mathf.Lerp(hideTime, --sleepTimeWhenLoop, enterRandom) , hideTime)
-        [Header("随机start时间, 1表示start时间为idleTime结尾,直接退出第一次循环")]
-        public float enterRandom = 0.5f;
-
+        public float timeRandom = 0.5f;
         public int maxLoop = 3;
 
+        public bool getFromSetting = true;
+        [Foldout("getFromSetting")]
+        public float baseHideTime = 2.5f;
+        [Foldout("getFromSetting")]
+        public float baseSleepTime = 1.5f; //发呆时间
+        [Foldout("getFromSetting")]
+        [Range(0, 1)]
+        public float idleExitRate = 0.3f;
 
         public float Timer { get; set; }
 
         //Temp
-        private HideDir _tempHideDir;
         private Vector3 _tempTargetPos;
+        private Vector3 _tempHideDir;
         private bool isFarToNear;
         private int _hasLoopTime;
         private bool hasNoTarget;
-
+        private float curSleepTime;
+        private float curHideTime;
 
         public override void OnStart()
         {
             if (getFromSetting)
             {
-                hideTime = Setting.idleTime;
-                sleepTimeWhenLoop = Setting.sleepTime;
+                baseHideTime = Setting.idleTime;
+                baseSleepTime = Setting.sleepTime;
                 idleExitRate = Setting.idleExitRate;
             }
-            Timer = hideTime;
+
             State = FSMState.Update;
+            curSleepTime = RandomHelper.RangeFloat(baseSleepTime * (1 + timeRandom), baseSleepTime * (1 - timeRandom));
+            curHideTime = RandomHelper.RangeFloat(baseHideTime * (1 + timeRandom), baseHideTime * (1 - timeRandom));
+            Timer = curHideTime;
             GetHideDir();
 
-            if (enterRandom > 0)
+            //第一次启动
+            if (!_isEnterIdle)
             {
-                float startValue = Mathf.Lerp(hideTime, -sleepTimeWhenLoop, enterRandom);
-                Timer = RandomHelper.RangeFloat(startValue, hideTime);
+                Timer = RandomHelper.RangeFloat(curSleepTime, curHideTime);
             }
-
-            if (_isEnterIdle)
+            else
             {
+                //后续启动
                 _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
                 _idleDir = (_tempTargetPos - transform.position).ToY0();
-                Timer = hideTime;
+                Timer = curHideTime;
             }
-
         }
 
         private void GetHideDir()
@@ -79,7 +81,17 @@ namespace XiaoCao
             }
 
             //处于玩家 偏左边 就左转
-            _tempHideDir = (HideDir)(RandomHelper.Range(0, 2)); //随机取一个方向
+            HideDirType hideDirType = (HideDirType)(RandomHelper.Range(0, 2)); //随机取一个方向
+
+            if (HasTarget) {
+                _isEnterIdle = false;
+                _tempTargetPos = TargetRole.transform.position;
+                float targetAngle = isFarToNear ? 45 : RandomHelper.RangeFloat(90, 90+45);
+                targetAngle = hideDirType == HideDirType.MoveLeft ? targetAngle : -targetAngle;
+                Vector3 dir = (_tempTargetPos - transform.position).SetY(0);
+                _tempHideDir = MathTool.RotateY(dir, targetAngle);
+                control.owner.AISetLookTarget(TargetRole.transform);
+            }
         }
 
 
@@ -90,12 +102,13 @@ namespace XiaoCao
                 OnStart();
                 return;
             }
-
             Timer -= XCTime.deltaTime;
+            // Timer > 0 移动, 小于0发呆
             if (Timer > 0)
             {
                 if (control.HasTarget)
                 {
+                    
                     HideMove(Setting.walkSR, Setting.walkAnimSR);
                 }
                 else
@@ -104,7 +117,7 @@ namespace XiaoCao
                 }
             }
 
-            if (Timer <= -sleepTimeWhenLoop)
+            if (Timer <= -curSleepTime)
             {
                 if (CheckLoopTimeEnd())
                 {
@@ -137,24 +150,9 @@ namespace XiaoCao
         /// </summary>
         private void HideMove(float speedRate, float animSpeedRate)
         {
-            control.owner.AISetLookTarget(TargetRole.transform);
-
-            _isEnterIdle = false;
-
-            _tempTargetPos = TargetRole.transform.position;
-
-            //TODO 配置化
-            float targetAngle = isFarToNear ? 90 : RandomHelper.RangeFloat(120, 180);
-
-            targetAngle = _tempHideDir == HideDir.MoveLeft ? targetAngle : -targetAngle;
-
-            Vector3 dir = (_tempTargetPos - transform.position).SetY(0);
-
-            var moveDir = MathTool.RotateY(dir, targetAngle);
-
             bool isLookAtTargetOnHide = Setting.isLookAtTargetOnHide;
 
-            control.owner.AIMoveDir(moveDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
+            control.owner.AIMoveDir(_tempHideDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
 
         }
 
@@ -176,7 +174,7 @@ namespace XiaoCao
 
     }
 
-    public enum HideDir
+    public enum HideDirType
     {
         MoveLeft, //左移
         MoveRight, //右移

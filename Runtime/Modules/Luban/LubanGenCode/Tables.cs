@@ -16,6 +16,7 @@ public partial class Tables
     public SkillSettingReader SkillSettingReader {get; }
     public LevelSettingReader LevelSettingReader {get; }
     public ChapterSettingReader ChapterSettingReader {get; }
+    public CreateEnemyGroupsReader CreateEnemyGroupsReader {get; }
     public SkillUpgradeSettingReader SkillUpgradeSettingReader {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
@@ -23,6 +24,7 @@ public partial class Tables
         SkillSettingReader = new SkillSettingReader(loader("skillsettingreader"));
         LevelSettingReader = new LevelSettingReader(loader("levelsettingreader"));
         ChapterSettingReader = new ChapterSettingReader(loader("chaptersettingreader"));
+        CreateEnemyGroupsReader = new CreateEnemyGroupsReader(loader("createenemygroupsreader"));
         SkillUpgradeSettingReader = new SkillUpgradeSettingReader(loader("skillupgradesettingreader"));
         ResolveRef();
     }
@@ -32,6 +34,7 @@ public partial class Tables
         SkillSettingReader.ResolveRef(this);
         LevelSettingReader.ResolveRef(this);
         ChapterSettingReader.ResolveRef(this);
+        CreateEnemyGroupsReader.ResolveRef(this);
         SkillUpgradeSettingReader.ResolveRef(this);
     }
 }

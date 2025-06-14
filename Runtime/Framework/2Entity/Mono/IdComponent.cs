@@ -12,16 +12,16 @@ public class IdComponent : MonoBehaviour
 
     public virtual EEntityType EntityType { get; }
 
-    public BehaviorEntity entity;
+    protected BehaviorEntity _entity;
 
     public BehaviorEntity GetEntity()
     {
-        if (entity == null)
+        if (_entity == null)
         {
             EntityMgr.Inst.FindEntity<BehaviorEntity>(id, out BehaviorEntity entity);
-            this.entity = entity;
+            this._entity = entity;
         }
-        return entity;
+        return _entity;
     }
 
     //[Button(enabledMode: EButtonEnableMode.Playmode)]

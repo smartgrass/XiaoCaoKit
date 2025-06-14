@@ -26,7 +26,7 @@ namespace XiaoCao
 
         public static SkillDataSo skillDataSo;
 
-        public static CommonSo commonSettingSo;
+        public static AttrSettingSo commonSettingSo;
 
         public static RewardPoolSo enemyKillRewardSo;
 
@@ -38,7 +38,7 @@ namespace XiaoCao
         {
             var init = MainCfg;
             playerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
-            commonSettingSo = ConfigMgr.LoadSoConfig<CommonSo>();
+            commonSettingSo = ConfigMgr.LoadSoConfig<AttrSettingSo>();
             skillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             enemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
             buffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();

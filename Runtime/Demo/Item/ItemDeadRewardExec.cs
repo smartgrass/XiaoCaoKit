@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using System;
 using UnityEngine;
 using XiaoCao;
 
@@ -17,11 +18,25 @@ public class ItemDeadRewardExec : MonoExecute
     //[XCHeader("奖励等级: -1时为关卡配置,等级决定稀有率")]
     //public int rewardLevel = -1;
 
+    //rewardAfterEffect
     public bool noGetEffect;
 
     public Vector3 effectOffset = Vector3.zero;
 
     public override void Execute()
+    {
+        if (!noGetEffect)
+        {
+            ShowEffectAndReward();
+        }
+        else
+        {
+            GetReward();
+        }
+
+    }
+
+    private void GetReward()
     {
         if (transform.TryGetComponent<ItemIdComponent>(out ItemIdComponent itemCom))
         {
@@ -33,21 +48,17 @@ public class ItemDeadRewardExec : MonoExecute
             }
             RewardHelper.RewardItem(item);
         }
-
-        if (!noGetEffect)
-        {
-            ShowEffect();
-        }
     }
-    void ShowEffect()
+
+    void ShowEffectAndReward()
     {
-        GetItemEffectHelper.GetItem(transform.position + effectOffset);
+        GetItemEffectHelper.PlayRewardEffect(transform.position + effectOffset, GetReward);
     }
 }
 
 public class GetItemEffectHelper
 {
-    public static void GetItem(Vector3 pos)
+    public static void PlayRewardEffect(Vector3 pos, Action effectEndAct)
     {
         GameObject trailGo = PoolMgr.Inst.Get("Assets/_Res/Item/SoulTrail.prefab");
         var trail = trailGo.GetComponent<SoulTrailTween>();
@@ -55,5 +66,6 @@ public class GetItemEffectHelper
         trail.startPoint = trailGo.transform.position;
         trail.targetTf = GameDataCommon.GetPlayer().transform;
         trail.Play();
+        trail.rewardAct = effectEndAct;
     }
 }

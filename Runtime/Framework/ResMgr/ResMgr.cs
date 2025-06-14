@@ -41,7 +41,7 @@ public class ResMgr
         return GameObject.Instantiate(LoadPrefab(path, type));
     }
 
-    public static GameObject TryShorKeyInst(string shortKey,string failBackPath)
+    public static GameObject TryShorKeyInst(string shortKey, string failBackPath)
     {
         if (ResMgr.ShortKeyDic.ContainsKey(shortKey))
         {
@@ -73,9 +73,12 @@ public class ResMgr
         //}
     }
 
+    public static AssetHandle LoadPrefabAsyncHandle(string path)
+    {
+        return Loader.LoadAssetAsync<GameObject>(path);
+    }
 
-
-    public static T LoadAseetOrDefault<T>(string path,string fallBackPath) where T : Object
+    public static T LoadAseetOrDefault<T>(string path, string fallBackPath) where T : Object
     {
         T ret = LoadAseet<T>(path);
         if (ret)
@@ -240,7 +243,7 @@ public class ResMgr
                 Debug.Log("资源包初始化成功！");
             else
                 Debug.LogError($"资源包初始化失败：{initOperation.Error}");
-    
+
             var versionTask = package.RequestPackageVersionAsync();
             await versionTask;
             var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
@@ -260,7 +263,7 @@ public class ResMgr
                     package = package,
                     path = kv.Value
                 };
-            }  
+            }
         }
     }
 
@@ -339,7 +342,7 @@ public class ResMgr
 
     private static string GetExtraPackageUrl(string packName, out bool hasManifest)
     {
-        string path =  $"{XCPathConfig.GetExtraPackageDir()}/{packName}/";
+        string path = $"{XCPathConfig.GetExtraPackageDir()}/{packName}/";
 
         hasManifest = HasManifest(path, packName);
 

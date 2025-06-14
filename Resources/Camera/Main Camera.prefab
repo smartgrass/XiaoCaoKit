@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   profile: {fileID: 11400000, guid: 37761faaf7f54fa4498eee879ad008f1, type: 2}
-  time: 0.2
+  time: 0.25
   Timer: 0
   shakeLevel: 0
   indensity: -0.05

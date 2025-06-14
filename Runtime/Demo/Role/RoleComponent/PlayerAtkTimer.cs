@@ -14,18 +14,21 @@ namespace XiaoCao
 
         public float norAckTimer;
 
-        public int GetNextNorAckIndex(bool setTime = true)
+        public int GetNextNorAckIndex()
         {
-            int ret = 0;
+            int ret;
             if (Time.time < norAckTimer)
             {
                 int len = playerSetting.norAtkCount;// norAtkIds.Count;
                 ret = (Data_P.curNorAckIndex + 1) % len;
             }
-            if (setTime)
+            else
             {
-                SetNorAckTime();
+                //若时间超过，则重置为0
+                ret = 0;
             }
+
+            SetNorAckTimer();
             return ret;
         }
 
@@ -38,7 +41,7 @@ namespace XiaoCao
             }
         }
 
-        public void SetNorAckTime()
+        public void SetNorAckTimer()
         {
             norAckTimer = Time.time + playerSetting.resetNorAckTime;
         }

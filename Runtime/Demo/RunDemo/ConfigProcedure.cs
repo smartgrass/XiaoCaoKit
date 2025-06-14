@@ -50,7 +50,7 @@ namespace XiaoCao
                 //Entity 需要替换, 但同时 id保持不变         
             }
 
-            int playerId = IsReload? GameDataCommon.Current.LocalPlayerId :IdMgr.GetPlayerId();
+            int playerId = IsReload ? GameDataCommon.Current.LocalPlayerId : IdMgr.GetPlayerId();
 
             Player0 player = EntityMgr.Inst.CreatEntity<Player0>(playerId);
 
@@ -97,6 +97,7 @@ namespace XiaoCao
     {
         public override void Start()
         {
+            MapMgr.Inst.SetPlayerStartPos();
 
             GameMgr.Inst.SetGameState(GameState.Running);
 
@@ -127,6 +128,19 @@ namespace XiaoCao
         }
     }
 
+    public class MapProcedure : ProcedureBase
+    {
+        public override void Start()
+        {
+            Run().Forget();
+        }
 
+        public async UniTask Run()
+        {
+            await MapMgr.Inst.LoadLevelObject();
+            IsFinish = true;
+            Debuger.Log("==== MapProcedure Finish ====");
+        }
+    }
 }
 

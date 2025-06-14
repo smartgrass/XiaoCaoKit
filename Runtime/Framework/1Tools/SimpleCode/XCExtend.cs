@@ -10,7 +10,7 @@ using TMPro;
 
 public static class XCExtend
 {
-    public static bool TryPlayAnim(this Animator animator , int hash ,int layer = 0)
+    public static bool TryPlayAnim(this Animator animator, int hash, int layer = 0)
     {
         if (animator.HasState(layer, hash))
         {
@@ -112,9 +112,21 @@ public static class XCExtend
         return t;
     }
 
-    public static Color SetAlpha(this Color color, float alpha) {
+    public static Color SetAlpha(this Color color, float alpha)
+    {
         color.a = alpha;
         return color;
+    }
+
+    //自动检测长度
+    public static float GetArrayValue(this float[] array, int index)
+    {
+        if(array.Length > 0)
+        {
+            return array[index % array.Length];
+        }
+        Debug.LogError("--- array len 0");
+        return 0;
     }
 
 }

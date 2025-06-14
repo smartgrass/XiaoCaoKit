@@ -30,15 +30,18 @@ namespace XiaoCao
             if (InputData.inputs[InputKey.LeftShift])
             {
                 TryRoll();
+                Data_P.norAckCache = false;
                 return;
             }
 
             if (!string.IsNullOrEmpty(InputData.skillInput))
             {
-                TryCastSkill(InputData.skillInput.ToString());
+                ///<see cref="SkillDataSo"/>
+                TryCastSkill(InputData.skillInput);
+                Data_P.norAckCache = false;
             }
 
-            if (InputData.inputs[InputKey.NorAck])
+            if (InputData.inputs[InputKey.NorAck] || Data_P.norAckCache)
             {
                 TryNorAck();
             }
@@ -102,20 +105,12 @@ namespace XiaoCao
             {
                 return;
             }
+            //暂时关闭
+            //Data_R.movement.Startgrappling();
 
-
-
-            //owner.Anim.Play(AnimNames.Jump);
-            //JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
-            //Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
-
-            Data_R.movement.Startgrappling();
-
-            //if (FindEnemy(out Role findRole))
-            //{
-            //    Debug.Log($"--- Find Role {findRole.transform.name}");
-            //    owner.idRole.StartCoroutine(IEJumpTo(findRole.transform.position));
-            //} 
+            owner.Anim.Play(AnimNames.Jump);
+            JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
+            Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
         }
 
 
@@ -148,22 +143,76 @@ namespace XiaoCao
             //停止&打断当前动作
             if (IsBusy())
             {
-                SetNoBusy();
+                BreakAllBusy();
             }
 
             RcpPlaySkill(AnimNames.Roll);
         }
 
+        public override void SetNoBusy(int runnerId)
+        {
+            foreach (var item in runnerList)
+            {
+                if (item.GetInstanceID() == runnerId)
+                {
+                    item.OnNoBusy();
+                }
+            }
+        }
+
         public void TryNorAck()
         {
-            if (!IsRoleCanPlaySkill())
+            if (!Data_R.IsStateFree)
+            {
                 return;
+            }
+            //如处于busy中,排除处于平a中
+            if (IsBusy() && !IsOnNorAck())
+            {
+                return;
+            }
+            float norAckCdTime = Data_P.playerSetting.norAckCdTimes.GetArrayValue(Data_P.curNorAckIndex) / XCTime.timeScale;
+            bool isNorAckCdFinsh = Time.time - Data_P.lastNorAckTime > norAckCdTime;
+            if (!isNorAckCdFinsh)
+            {
+                if (IsOnNorAck() && Time.time - Data_P.lastNorAckTime > norAckCdTime * 0.5f)
+                {
+                    Data_P.norAckCache = true;
+                }
+                return;
+            }
 
+            if (IsOnNorAck() && norAckTaskRunner.IsBusy)
+            {
+                norAckTaskRunner.OnNoBusy();
+            }
+            NorAck();
+        }
+
+        private XCTaskRunner norAckTaskRunner;
+
+        private void NorAck()
+        {
             int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 
+            Data_P.lastNorAckTime = Time.time;
+
+            Data_P.norAckCache = false;
+
             RcpPlaySkill($"{AnimNames.NorAck}{nextNorAckIndex}");
+
+            Debug.Log($"--- NorAck {AnimNames.NorAck}{nextNorAckIndex}");
+
+            norAckTaskRunner = runnerList[runnerList.Count - 1];
+
+            Debug.Log($"--- runner {norAckTaskRunner.gameObject.GetInstanceID()}");
+        }
+
+        private bool IsOnNorAck()
+        {
+            return Data_R.curSkillId.StartsWith(AnimNames.NorAck);
         }
 
         //public override void DefaultAutoDirect()

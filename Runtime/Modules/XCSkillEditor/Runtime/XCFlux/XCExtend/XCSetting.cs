@@ -145,5 +145,6 @@ namespace XiaoCao
             }
         }
 
+        public static int PauseFrame;
     }
 }

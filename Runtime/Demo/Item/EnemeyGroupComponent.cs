@@ -1,4 +1,5 @@
-﻿using NaughtyAttributes;
+﻿using cfg;
+using NaughtyAttributes;
 using System;
 using TEngine;
 using UnityEngine;
@@ -21,13 +22,15 @@ public class EnemeyGroupComponent : GameStartMono
 
     private EnemyCreator[] creators;
 
+    public bool IsPreLoad;
+
     private void Awake()
     {
         creators = transform.GetComponentsInChildren<EnemyCreator>();
         foreach (var creator in creators)
         {
             creator.enemyAllDead += OnEnemyDeadEvent;
-            creator.gameObject.SetActive(false);
+            //creator.gameObject.SetActive(false);
         }
         maxTriggerTime = creators.Length;
     }
@@ -75,5 +78,26 @@ public class EnemeyGroupComponent : GameStartMono
     }
 
 
-    //GameEvent.RemoveEventListener<string>(EGameEvent.EnemyGroupEndEvent.Int(), OnEnemyDeadEvent);
+    public void GetCreateEnemyInfoFromConfig(string key)
+    {
+        var group = LubanTables.GetCreateEnemyGroups(key);
+        if (group == null)
+        {
+            return;
+        }
+        for (int i = 0; i < creators.Length; i++)
+        {
+            if (i < group.EnemyInfos.Count)
+            {
+                creators[i].enemyIdList = group.EnemyInfos[i].Enemys;
+                creators[i].genCount = group.EnemyInfos[i].Count;
+            }
+            else
+            {
+                creators[i].enemyIdList = group.EnemyInfos[0].Enemys;
+                creators[i].genCount = group.EnemyInfos[0].Count;
+            }
+        }
+    }
+
 }

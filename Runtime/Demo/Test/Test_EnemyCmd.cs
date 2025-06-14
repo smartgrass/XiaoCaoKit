@@ -1,4 +1,6 @@
 ﻿using NaughtyAttributes;
+using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using XiaoCao;
@@ -8,7 +10,10 @@ public class Test_EnemyCmd : MonoBehaviour
     [OnValueChanged(nameof(SetAI))]
     public bool isAI;
     [MiniBtn(nameof(SetAct))]
-    public string actCmd = "0";
+    public string actIndexCmd = "0";
+
+    [MiniBtn(nameof(SetActCombol))]
+    public string actCombolCmd = "0,1";
 
     [Header("DebugView")]
     public AIControl control;
@@ -32,8 +37,30 @@ public class Test_EnemyCmd : MonoBehaviour
 
     void SetAct()
     {
-        enemy.AIMsg(ActMsgType.Skill, actCmd);
+        enemy.AIMsg(ActMsgType.Skill, actIndexCmd);
     }
+
+    void SetActCombol()
+    {
+        string[] array = actCombolCmd.Split(",");
+        StartCoroutine(IEActCombol(array));
+    }
+
+    IEnumerator IEActCombol(string[] cmdList)
+    {
+        foreach (string cmd in cmdList)
+        {
+            enemy.AIMsg(ActMsgType.Skill, cmd);
+            yield return null;
+            yield return new WaitUntil(NoBusy);
+        }
+    }
+
+    private bool NoBusy()
+    {
+        return !enemy.roleData.IsBusy;
+    }
+
 
     private void Update()
     {

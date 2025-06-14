@@ -15,6 +15,10 @@ namespace XiaoCao
 
         public GameObject itemCellPrefab;
 
+        public SimpleImageTween btnGlowEffect;
+
+        public GameObject btnRedDot;
+
         private AssetPool popupUIPool;
 
         public AssetPool PopupUIPool

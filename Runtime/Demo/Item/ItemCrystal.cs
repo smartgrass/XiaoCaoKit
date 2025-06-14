@@ -10,6 +10,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
+using static HideMatTweenExec;
 
 public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
 {
@@ -45,6 +46,11 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
 
     public UnityEvent unLockEvent;
 
+    [XCHeader("bodyRenderer")]
+    public EMatColorName colorName;
+    public Color norColor;
+    public Color lockColor;
+
     private void Start()
     {
         Init();
@@ -66,6 +72,12 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
             unLockEvent?.Invoke();
         }
         noHurt = isNoHurt;
+        if (colorName != EMatColorName.None)
+        {
+            var renderer = body.GetComponent<Renderer>();
+            var color = isNoHurt ? lockColor : norColor;
+            renderer.material.DoColorTween(colorName.ToString(), color, 0.5f);
+        }
     }
 
     public override void OnDamage(AtkInfo ackInfo)
@@ -128,7 +140,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
 
         if (!string.IsNullOrEmpty(deadMapMsg))
         {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(),deadMapMsg);
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), deadMapMsg);
         }
 
         DoExploded();
@@ -139,60 +151,11 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
         ExecuteHelper.DoExecute(transform);
     }
 
-    [Button("检查")]
-    void Check()
+    [Button("TestDead", enabledMode: EButtonEnableMode.Playmode)]
+    void TestDead()
     {
-        Debug.Log($"--- set Layer and Tag");
-        gameObject.layer = Layers.WALL;
-        gameObject.tag = Tags.ITEM;
-
-        Debug.Log($"--- 子物体col");
-        bool find = false;
-        int childCount = transform.childCount;
-        for (int i = 0; i < childCount; i++)
-        {
-            Transform t = transform.GetChild(i);
-            Collider col = t.GetComponent<Collider>();
-            if (col != null)
-            {
-                find = true;
-                col.isTrigger = true;
-            }
-
-            if (t.TryGetComponent<MeshRenderer>(out MeshRenderer mr) && t.childCount > 0)
-            {
-                foreach (Transform item in t)
-                {
-                    item.gameObject.SetActive(false);
-                }
-            }
-
-
-        }
-
-        if (!find)
-        {
-            Debug.LogError("--- need trigger in child");
-        }
-
-        if (transform.GetComponent<Rigidbody>() == null)
-        {
-            Debug.LogError($"--- need rig body");
-        }
-
-        if (transform.GetComponent<Collider>() == null)
-        {
-            Debug.LogError($"--- need col");
-        }
-
-        if (explodePoint == null)
-        {
-            explodePoint = new GameObject("explodePoint").transform;
-            explodePoint.SetParent(transform);
-        }
-
+        OnDead(new AtkInfo());
     }
-
 
     #region 爆炸动画
 
@@ -295,6 +258,61 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
     }
 
     #endregion
+
+    [Button("组件检查/绑定")]
+    void Check()
+    {
+        Debug.Log($"--- set Layer and Tag");
+        gameObject.layer = Layers.WALL;
+        gameObject.tag = Tags.ITEM;
+
+        Debug.Log($"--- 子物体col");
+        bool find = false;
+        int childCount = transform.childCount;
+        for (int i = 0; i < childCount; i++)
+        {
+            Transform t = transform.GetChild(i);
+            Collider col = t.GetComponent<Collider>();
+            if (col != null)
+            {
+                find = true;
+                col.isTrigger = true;
+            }
+
+            if (t.TryGetComponent<MeshRenderer>(out MeshRenderer mr) && t.childCount > 0)
+            {
+                foreach (Transform item in t)
+                {
+                    item.gameObject.SetActive(false);
+                }
+            }
+
+
+        }
+
+        if (!find)
+        {
+            Debug.LogError("--- need trigger in child");
+        }
+
+        if (transform.GetComponent<Rigidbody>() == null)
+        {
+            Debug.LogError($"--- need rig body");
+        }
+
+        if (transform.GetComponent<Collider>() == null)
+        {
+            Debug.LogError($"--- need col");
+        }
+
+        if (explodePoint == null)
+        {
+            explodePoint = new GameObject("explodePoint").transform;
+            explodePoint.SetParent(transform);
+        }
+
+    }
+
 
     public enum FadeEffect
     {

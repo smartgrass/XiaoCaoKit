@@ -15,7 +15,7 @@ using UnityEditor;
 
 public class EnemyCreator : GameStartMono, IExecute
 {
-    public bool autoStart;
+    public EnemyCreateMode createMode;
 
     public RoleType roleType = RoleType.Enemy;
 
@@ -29,13 +29,13 @@ public class EnemyCreator : GameStartMono, IExecute
     [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
-    public int level = 1;
+    public int baseLv = 0;
 
     public int genCount = 1;
 
-    public float delayGen = 0.5f;
+    public bool isForceFollow;
 
-    public bool enableAI = true;
+    public float delayGen = 0.5f;
 
     public float circleSize = 1;
 
@@ -48,14 +48,16 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public override void OnGameStart()
     {
-        if (autoStart)
+        if (createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI)
+        {
             XCTime.DelayRun(delayGen, Gen).ToObservable();
+        }
     }
 
-    private string[] GetEnemyList()
+    private string[] GetEnemyNameList()
     {
         List<string> list = new List<string>();
-        string[] ids = enemyIdList.Split(',');
+        string[] ids = enemyIdList.Split('&');
         if (ids.Length == 0)
         {
             list.Add(enemyIdList);
@@ -70,21 +72,34 @@ public class EnemyCreator : GameStartMono, IExecute
     }
 
     //需要一个生成敌人预制体
-    [Button("生成", enabledMode: EButtonEnableMode.Playmode)]
+    [Button("生成/激活已生成AI", enabledMode: EButtonEnableMode.Playmode)]
     public void Gen()
+    {
+        if (createMode == EnemyCreateMode.LoadNoAI && curGenCount > 0)
+        {
+            ActiveEnemyAI();
+        }
+        else
+        {
+            GenEnemy();
+        }
+    }
+
+
+
+    private void GenEnemy()
     {
         if (roleType == RoleType.Enemy)
         {
-            string[] enemyList = GetEnemyList();
+            string[] enemyNameList = GetEnemyNameList();
 
             int posIndex = 0;
-            int posCount = genCount * enemyList.Length;
+            int posCount = genCount * enemyNameList.Length;
             for (int i = 0; i < genCount; i++)
             {
-                foreach (string id in enemyList)
+                foreach (string id in enemyNameList)
                 {
-
-                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, level);
+                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv));
 
                     var genPos = GetGenPosition(posIndex, posCount);
 
@@ -94,7 +109,15 @@ public class EnemyCreator : GameStartMono, IExecute
 
                     enemy.enemyData.movement.LookToDir(transform.forward);
 
-                    enemy.IsAiOn = enableAI;
+                    enemy.IsAiOn = createMode is EnemyCreateMode.AI or EnemyCreateMode.LoadAI;
+                    if (createMode == EnemyCreateMode.LoadNoAI)
+                    {
+                        enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
+                    }
+                    if (isForceFollow)
+                    {
+                        enemy.AddTag(RoleTagCommon.ForceFollow);
+                    }
 
                     enemy.DeadAct += OnEnemyDead;
 
@@ -106,9 +129,18 @@ public class EnemyCreator : GameStartMono, IExecute
                 }
             }
         }
-
     }
 
+    void ActiveEnemyAI()
+    {
+        foreach (var enemyId in _enemyList)
+        {
+            if (EntityMgr.Inst.FindEntity<Enemy0>(enemyId, out Enemy0 enemy))
+            {
+                enemy.IsAiOn = true;
+            }
+        }
+    }
     void ShowEffect(Vector3 pos)
     {
         if (showEffectPrefab)
@@ -127,7 +159,9 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             enemyAllDead?.Invoke(this);
         }
-        GetItemEffectHelper.GetItem(role.transform.position);
+        ///<see cref="LevelControl.OnEnemyDeadEvent"/> 并行触发
+        Debug.Log($"--- 无奖励");
+        //GetItemEffectHelper.PlayRewardEffect(role.transform.position, null);
     }
 
 
@@ -164,4 +198,13 @@ public class EnemyCreator : GameStartMono, IExecute
     }
 
 
+}
+
+
+public enum EnemyCreateMode
+{
+    AI,
+    LoadNoAI,
+    LoadAI,
+    NoAI,
 }

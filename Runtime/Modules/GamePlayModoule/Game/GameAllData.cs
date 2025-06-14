@@ -1,5 +1,7 @@
-﻿using System;
+﻿using cfg;
+using System;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 
 namespace XiaoCao
@@ -43,6 +45,8 @@ namespace XiaoCao
 
         public string NextSceneName;
 
+        public string MapName = "level1";
+
         public static Player0 LocalPlayer
         {
             get
@@ -81,7 +85,7 @@ namespace XiaoCao
 
         public static BattleData Current => GameAllData.battleData;
 
-        public LevelRewardData levelRewardData = new LevelRewardData();
+        public LevelData levelData = new LevelData();
         public static bool IsTimeStop { get => Current._isTimeStop; set => Current._isTimeStop = value; }
 
         private bool _isTimeStop;
@@ -144,6 +148,7 @@ namespace XiaoCao
         public static void AddBuff(int id, BuffItem buff)
         {
             GetPlayerBuff(id).AddBuff(buff);
+            GameEvent.Send<UIPanelType,bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel,true);
         }
 
         public static PlayerBuffs LocalPlayerBuffs
@@ -180,6 +185,9 @@ namespace XiaoCao
 
     }
 
+    ///<see cref="LevelSettingHelper"/>
+
+    [XCHelper]
     public static class GameSetting
     {
         //目前技能
@@ -217,6 +225,8 @@ namespace XiaoCao
         }
     }
 
+    
+
 
     public enum PlayMode
     {
@@ -240,12 +250,15 @@ namespace XiaoCao
         GameStartFinsh = 2,
         CameraChange = 3,
         RoleChange = 4,
+        UIPanelBtnGlow = 5,
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,
         TimeSpeedStop = 102,
         LocalPlayerChangeNowAttr = 103,
         PlayerCreatNorAtk = 104,
+        PlayerGetBuffItem = 105,
+
 
         //Enemy
         EnemyDeadEvent = 200,

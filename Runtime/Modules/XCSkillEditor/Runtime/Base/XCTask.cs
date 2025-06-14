@@ -223,6 +223,7 @@ namespace XiaoCao
 
         public void SetBreak()
         {
+            Debug.Log($"--- SetBreak {Info.skillId}");
             //主技能中断
             StopMain();
             foreach (var e in _events)

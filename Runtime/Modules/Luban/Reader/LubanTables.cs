@@ -14,6 +14,8 @@ namespace cfg
         private static ChapterSettingReader ChapterSettingReader => LubanTables.Inst.Tables.ChapterSettingReader;
         private static SkillUpgradeSettingReader SkillUpgradeSettingReader => LubanTables.Inst.Tables.SkillUpgradeSettingReader;
 
+        private static CreateEnemyGroupsReader CreateEnemyGroupsReader => LubanTables.Inst.Tables.CreateEnemyGroupsReader;
+
         public static ChapterSetting GetChapterSetting(int key)
         {
             var ret = ChapterSettingReader.GetOrDefault(key);
@@ -25,7 +27,18 @@ namespace cfg
             return ret;
         }
 
-        public static LevelSetting GetLevelSetting(int key)
+        public static CreateEnemyGroups GetCreateEnemyGroups(string key)
+        {
+            var ret = CreateEnemyGroupsReader.GetOrDefault(key);
+            if (ret == null)
+            {
+                //默认值
+                ret = CreateEnemyGroupsReader.DataList[0];
+            }
+            return ret;
+        }
+
+        public static LevelSetting GetLevelSetting(string key)
         {
             var ret = LevelSettingReader.GetOrDefault(key);
             if (ret == null)
@@ -45,12 +58,12 @@ namespace cfg
             return GetSkillSetting(subKey, mainKey);
         }
 
-        public static SkillSetting GetSkillSetting(string key,string fallback)
+        public static SkillSetting GetSkillSetting(string key, string fallback)
         {
             var ret = SkillSettingReader.GetOrDefault(key);
-            if(ret == null)
+            if (ret == null)
             {
-                 ret = SkillSettingReader.GetOrDefault(fallback);
+                ret = SkillSettingReader.GetOrDefault(fallback);
             }
             if (ret == null)
             {

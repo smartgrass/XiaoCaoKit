@@ -1,4 +1,5 @@
-﻿using TEngine;
+﻿using System;
+using TEngine;
 
 namespace XiaoCao
 {
@@ -84,7 +85,6 @@ namespace XiaoCao
             GameEvent.Send(EGameEvent.EnemyDeadEvent.Int(), id);
         }
 
-
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
             base.ReceiveMsg(type, fromId, msg);
@@ -121,6 +121,10 @@ namespace XiaoCao
             }
         }
 
+        //internal void AddTag(object forceFollow)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 
 

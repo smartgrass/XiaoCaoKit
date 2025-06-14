@@ -15,7 +15,7 @@ MonoBehaviour:
   Des: "\u6280\u80FDcd, 0\u4E3A\u9ED8\u8BA4\u914D\u7F6E"
   array:
   - key: 0
-    cd: 4
+    cd: 1
   - key: 1
     cd: 4
   - key: 2

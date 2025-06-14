@@ -9,6 +9,7 @@ public class HitStop : MonoSingleton<HitStop>
 {
     //和顿帧时间的相关倍数
     public float shakeTimeFactor = 0.25f;
+    public float stopTimeRate = 1;
 
 
     public Coroutine currentDo;
@@ -55,7 +56,7 @@ public class HitStop : MonoSingleton<HitStop>
     IEnumerator Wait(float time, float ShakeTime = 0)
     {
         waiting = true;
-        waitingTime = Time.unscaledTime + time;
+        waitingTime = Time.unscaledTime + time * stopTimeRate;
 
         while (waitingTime > Time.unscaledTime)
         {

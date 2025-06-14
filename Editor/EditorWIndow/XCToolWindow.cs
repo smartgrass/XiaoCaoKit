@@ -45,12 +45,14 @@ namespace AssetEditor.Editor
         {
             base.OnEnable();
             EditorApplication.playModeStateChanged += PlayModeStateChanged;
+            EditorApplication.pauseStateChanged += PauseStateChanged;
             GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
         }
 
         private void OnDisable()
         {
             EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            EditorApplication.pauseStateChanged -= PauseStateChanged;
             GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
         }
 
@@ -75,6 +77,9 @@ namespace AssetEditor.Editor
             }
         }
 
+        private void PauseStateChanged(PauseState state)
+        {
+        }
 
         private void CheckDebugGo()
         {

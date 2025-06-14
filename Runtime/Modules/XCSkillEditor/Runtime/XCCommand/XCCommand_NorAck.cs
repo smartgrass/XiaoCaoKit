@@ -1,4 +1,7 @@
-﻿namespace XiaoCao
+﻿
+using UnityEngine;
+
+namespace XiaoCao
 {
 
     internal class XCCommand_NorAck : IXCCommand
@@ -9,16 +12,18 @@
 
         private Player0 player0;
 
-        public int inputState;
+        public XCState state;
 
         public float minSwitchTime = 0.8f;
 
         public void Init(BaseMsg baseMsg)
         {
+            state = XCState.Sleep;
             if (baseMsg.numMsg > 0)
             {
                 minSwitchTime = baseMsg.numMsg;
             }
+
         }
 
         public void OnTrigger()
@@ -30,19 +35,20 @@
         public void OnUpdate(int frame, float timeSinceTrigger)
         {
             //检测触发
-            if (inputState == 0)
+            if (state == XCState.Sleep)
             {
                 if (player0.playerData.inputData.inputs[InputKey.NorAck])
                 {
-                    inputState = 1;
+                    state = XCState.Running;
                 }
             }
 
             //等待触发
-            if (inputState == 1)
+            if (state == XCState.Running)
             {
                 if (timeSinceTrigger > curEvent.LengthTime * minSwitchTime)
                 {
+                    Debug.Log($"--- timeSinceTrigger {timeSinceTrigger} {curEvent.LengthTime * minSwitchTime}");
                     CallNext();
                 }
             }
@@ -58,9 +64,10 @@
         //执行触发
         private void CallNext()
         {
-            if (inputState == 1)
+            if (state == XCState.Running)
             {
-                inputState = 2;
+                //如果触发成功,需要关闭检测
+                state = XCState.Stopped;
                 task.SetNoBusy();
                 player0.ReceiveMsg(EntityMsgType.PlayNextNorAck, task.Info.entityId, null);
             }

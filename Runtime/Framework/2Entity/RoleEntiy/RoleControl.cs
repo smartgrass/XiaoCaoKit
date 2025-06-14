@@ -45,7 +45,7 @@ namespace XiaoCao
             //
             //curTaskData.Remove(runner);
         }
-        public void OnBreak()
+        public void BreakAllBusy()
         {
             int len = runnerList.Count;
             for (int i = len - 1; i > 0; i--)
@@ -55,9 +55,10 @@ namespace XiaoCao
         }
 
         //主动打断和被动打断是不一样...需要区分
-        public void SetNoBusy()
+        public virtual void SetNoBusy(int runnerId)
         {
-            OnBreak();
+            //OnBreak();
+            Debug.Log($"--- SetNoBusy");
         }
 
         public void OnDeadUpdate()
@@ -99,7 +100,6 @@ namespace XiaoCao
                     {
                         //资源回收
                         XCTaskRunner.AllEnd2(runner);
-                        Debug.Log($"--- RemoveAt {i}");
                         runnerList.RemoveAt(i);
                     }
                 }
@@ -262,6 +262,7 @@ namespace XiaoCao
             }
 
         }
+
     }
 
     public interface IRoleControl
@@ -269,7 +270,8 @@ namespace XiaoCao
         public void TryPlaySkill(string skillId);
 
         public bool IsBusy(int level = 0);
-        public void SetNoBusy();
+        //占用当前
+        public void BreakAllBusy();
 
         public void DefaultAutoDirect();
         void StopTimeSpeed(bool isOn);

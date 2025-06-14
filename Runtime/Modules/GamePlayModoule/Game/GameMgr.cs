@@ -151,6 +151,7 @@ namespace XiaoCao
             Debug.Log($"--- ClearSceneData ");
             PoolMgr.Inst.ClearAllPool(true);
             TimerManager.ClearSelf();
+            MapMgr.ClearSelf();
             GameAllData.battleData = new BattleData();
         }
     }

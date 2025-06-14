@@ -9,6 +9,11 @@ public class HideMatTweenExec : DelayMonoExecute
     public EMatColorName fieldName;
     public override void ExecuteOnTime()
     {
+        if (fieldName == EMatColorName.None)
+        {
+            return;
+        }
+
         var renderers = transform.GetComponentsInChildren<MeshRenderer>();
 
         int id = Shader.PropertyToID(fieldName.ToString());
@@ -23,6 +28,7 @@ public class HideMatTweenExec : DelayMonoExecute
 
     public enum EMatColorName
     {
+        None = 0,
         _EmissionColor
     }
 }

@@ -14,6 +14,7 @@ namespace XiaoCao
     /// </summary>
     public class XCTaskRunner : MonoBehaviour, IClearCache
     {
+        public string debugSkillId;
 
         public TaskInfo debugInfo;
 
@@ -95,6 +96,7 @@ namespace XiaoCao
             Task.StartRun();
 
             this.debugInfo = info;
+            this.debugSkillId = info.skillId;
         }
 
         public void OnUpdate()
@@ -111,13 +113,15 @@ namespace XiaoCao
         {
             OnEnd();
             IsAllStop = true;
+            Debuger.Log($"--- AllEnd skill {Task.Info.skillId} ");
             Task = null;
             gameObject.SetActive(false);
-            Debuger.Log($"--- AllEnd {gameObject} ");
+
         }
 
         public static void AllEnd2(XCTaskRunner runner)
         {
+
             runnerPool.Release(runner.gameObject);
         }
 

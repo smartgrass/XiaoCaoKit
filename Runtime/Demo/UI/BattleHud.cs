@@ -23,11 +23,16 @@ namespace XiaoCao
 
         public HpBar playerBar;
 
+        public TextMeshProUGUI lvText;
+
         public Canvas worldCanvas;
 
         private AssetPool pool;
 
         private readonly Vector3 hidePos = new Vector3(0, -999, 0);
+
+        private HashSet<int> dataChange = new HashSet<int>();
+
 
         public void Init()
         {
@@ -79,6 +84,11 @@ namespace XiaoCao
             {
                 playerBar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
                 playerBar.UpdateArmorBar(role.ShowArmorPercentage);
+                if (!dataChange.Contains((int)ENowAttr.Level))
+                {
+                    UpdateLvText(GameDataCommon.LocalPlayer.Level);
+                    dataChange.Add((int)ENowAttr.Level);
+                }
             }
         }
         private void UpdataEnemyHpBar(Role role)
@@ -184,6 +194,12 @@ namespace XiaoCao
 
                 ShowDamageText(numStr, GameDataCommon.LocalPlayer.transform.position, color);
             }
+
+        }
+
+        void UpdateLvText(int lv)
+        {
+            lvText.text = $"Lv {lv}";
         }
 
         #region DamageText

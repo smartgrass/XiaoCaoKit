@@ -33,15 +33,14 @@ namespace XiaoCao
             }
             else
             {
-                Debug.LogError("--- auto skill");
-                return (CmdSettingId * 100 + index).ToString();
-            }
+                if (cmdSkillList.Count == 0)
+                {
+                    throw new Exception(" cmdSkillList count 0");
+                }
 
-            if (cmdSkillList.Count == 0)
-            {
-                throw new Exception(" cmdSkillList count 0");
+                Debug.LogError("--- auto skill");
+                return cmdSkillList[index % cmdSkillList.Count];
             }
-            return cmdSkillList[0];
         }
     }
 

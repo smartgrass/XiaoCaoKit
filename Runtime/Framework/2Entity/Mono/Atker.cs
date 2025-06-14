@@ -1,4 +1,5 @@
 ﻿using cfg;
+using DG.Tweening;
 using NaughtyAttributes;
 using System;
 using System.Diagnostics;
@@ -12,6 +13,7 @@ public class Atker : BaseAtker
 {
     public override void ReceiveTriggerEnter(Collider other)
     {
+        //?
         var rb = other.attachedRigidbody;
         if (rb == null)
         {
@@ -111,8 +113,27 @@ public abstract class BaseAtker : IdComponent
     {
         ackInfo.ackObjectPos = transform.position;
         ackInfo.hitPos = other.ClosestPointOnBounds(transform.position);
-        ackInfo.hitDir = (ackInfo.hitPos - transform.position);
+        //hitDir
+        //ackInfo.hitDir = transform.right;
+        ackInfo.hitDir = transform.parent.forward;
+
+        // Deubg Dir
+        //var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        //cube.transform.position = other.transform.position;
+        //cube.transform.DOMove(cube.transform.position + ackInfo.hitDir * 5, 3f);
         ackInfo.hitDir.y = 0;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (transform.parent)
+        {
+            var oldColor = Gizmos.color;
+            Gizmos.color = Color.red;
+            var dir = transform.parent.forward;
+            Gizmos.DrawLine(transform.position, transform.position + dir * 5);
+            Gizmos.color = oldColor;
+        }  
     }
 }
 

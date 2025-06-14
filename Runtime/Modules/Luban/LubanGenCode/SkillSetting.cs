@@ -22,7 +22,6 @@ public sealed partial class SkillSetting : Luban.BeanBase
         AckRate = _buf.ReadFloat();
         AddY = _buf.ReadFloat();
         AddHor = _buf.ReadFloat();
-        MaxY2 = _buf.ReadFloat();
         HitTime = _buf.ReadFloat();
         NoGTime = _buf.ReadFloat();
         HorForward = _buf.ReadFloat();
@@ -64,10 +63,6 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// 水平推力
     /// </summary>
     public readonly float AddHor;
-    /// <summary>
-    /// 击飞限高, 防止超过角色高度
-    /// </summary>
-    public readonly float MaxY2;
     /// <summary>
     /// 上升时间
     /// </summary>
@@ -127,7 +122,6 @@ public sealed partial class SkillSetting : Luban.BeanBase
         
         
         
-        
     }
 
     public override string ToString()
@@ -139,7 +133,6 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "ackRate:" + AckRate + ","
         + "addY:" + AddY + ","
         + "addHor:" + AddHor + ","
-        + "maxY2:" + MaxY2 + ","
         + "HitTime:" + HitTime + ","
         + "NoGTime:" + NoGTime + ","
         + "horForward:" + HorForward + ","

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - id: 0
-    norAtkCount: 3
+    norAtkCount: 4
     resetNorAckTime: 1.5
+    norAckCdTime: 0.55
     JumpY: 2
     JumpNoGravityT: 0.35

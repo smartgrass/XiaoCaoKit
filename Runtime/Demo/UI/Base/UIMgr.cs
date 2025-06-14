@@ -2,6 +2,7 @@
 using EasyUI.Toast;
 using System;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 
 namespace XiaoCao
@@ -46,6 +47,11 @@ namespace XiaoCao
             mobileInputHudTf = midCanvas.transform.Find("MobileInputHud");
         }
 
+        private void OnDestroy()
+        {
+
+        }
+
         public void ShowView(UIPanelType type)
         {
             PanelBase panel = GetPanel(type);
@@ -57,6 +63,7 @@ namespace XiaoCao
             showingPanels.Add(panel);
             lastPanel = panel;
             CheckPlayInputAble();
+            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), type, false);
         }
 
         public void HideView(UIPanelType type)
@@ -157,6 +164,15 @@ namespace XiaoCao
             Toast.Show(str, time);
         }
 
+        public static void PopRewardItem(Item item)
+        {
+            //TODO
+        }
+
+        public static void PopRewardBuffItem()
+        {
+
+        }
     }
 }
 

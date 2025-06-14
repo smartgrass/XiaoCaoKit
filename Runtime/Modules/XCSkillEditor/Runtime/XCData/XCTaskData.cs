@@ -234,7 +234,7 @@ namespace XiaoCao
             {
                 Ps.Stop();
             }
-
+            Debug.Log($"--- Release {Tran.gameObject}");
             Tran.gameObject.SetActive(false);
             PoolMgr.Inst.Release(ObjectPath, Tran.gameObject);
             State = XCState.Stopped;

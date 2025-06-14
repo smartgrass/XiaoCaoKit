@@ -8,6 +8,9 @@ namespace XiaoCao
 {
     public class EntityMgr : MonoSingleton<EntityMgr>, IMgr
     {
+        public bool EnableWhenRuning = true; //  运行时启用
+        public bool IsGameRuning => EnableWhenRuning && GameDataCommon.Current.gameState == GameState.Running;
+
         private Dictionary<int, Entity> entityDic = new Dictionary<int, Entity>();
         public Dictionary<int, BehaviorEntity> behaviorEntityDic = new Dictionary<int, BehaviorEntity>();
         public override void Init()
@@ -73,6 +76,10 @@ namespace XiaoCao
 
         void Update()
         {
+            if (!IsGameRuning)
+            {
+                return;
+            }
             foreach (var item in behaviorEntityDic)
             {
                 var entity = item.Value;
@@ -97,6 +104,10 @@ namespace XiaoCao
 
         void FixedUpdate()
         {
+            if (!IsGameRuning)
+            {
+                return;
+            }
             foreach (var item in behaviorEntityDic)
             {
                 var entity = item.Value;

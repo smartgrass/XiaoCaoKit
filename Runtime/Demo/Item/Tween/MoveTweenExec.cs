@@ -11,6 +11,8 @@ public class MoveTweenExec : MonoExecute
 
     public bool isRelative = true;
 
+    public bool hideOnFinish = false;
+
     public override void Execute()
     {
         var tween = transform.DOMove(moveVec, duration);
@@ -18,5 +20,15 @@ public class MoveTweenExec : MonoExecute
         {
             tween.SetRelative();
         }
+        tween.onComplete += OnFinsh;
     }
+
+    public void OnFinsh()
+    {
+        if (hideOnFinish)
+        {
+            gameObject.SetActive(false);
+        }
+    }
+
 }

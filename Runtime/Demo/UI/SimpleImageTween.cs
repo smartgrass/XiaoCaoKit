@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace XiaoCao
 {
+    //TODO 最好用gameobject激活控制
     public class SimpleImageTween : MonoBehaviour
     {
         public float time = 0.3f;
@@ -15,25 +16,36 @@ namespace XiaoCao
 
         public Gradient colorGradient;
 
-        [CurveRange(0,0,1,1)]
-        public AnimationCurve scaleCurve;
+        public bool isLoop;
 
-        private float _timer = 0f;
+        [CurveRange(0, 0, 1, 1)]
+        public AnimationCurve scaleCurve;
 
         private Coroutine _coroutine;
 
-        [Button(enabledMode:EButtonEnableMode.Playmode)]
+        [Button(enabledMode: EButtonEnableMode.Playmode)]
         public void Play()
         {
-            if (_timer == 0)
+            if (_coroutine == null)
             {
-                StartCoroutine(TweenAnimation());
+                _coroutine = StartCoroutine(TweenAnimation());
             }
         }
+        [Button(enabledMode: EButtonEnableMode.Playmode)]
+        public void Stop()
+        {
+            if (_coroutine != null)
+            {
+                StopCoroutine(_coroutine);
+                _coroutine = null;
+                image.color = image.color.SetAlpha(0);
+            }
+        }
+
         // 协程来执行动画  
         private IEnumerator TweenAnimation()
         {
-            _timer = 0;
+            float _timer = 0;
             while (_timer < time)
             {
                 float t = _timer / time;
@@ -46,6 +58,12 @@ namespace XiaoCao
             image.color = colorGradient.Evaluate(1);
             image.rectTransform.localScale = scaleCurve.Evaluate(1) * scaleMult * Vector2.one;
             _timer = 0;
+
+            if (isLoop)
+            {
+                _coroutine = null;
+                Play();
+            }
         }
 
     }

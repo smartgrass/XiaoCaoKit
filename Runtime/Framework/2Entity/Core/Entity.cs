@@ -28,6 +28,7 @@ namespace XiaoCao
 
         public HashSet<int> TagHash = new HashSet<int>();
 
+        ///<see cref="RoleTagCommon"/>
         public void AddTag(int tag)
         {
             TagHash.Add(tag);

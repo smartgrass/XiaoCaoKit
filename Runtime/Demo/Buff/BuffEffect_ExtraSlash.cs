@@ -13,7 +13,9 @@ namespace XiaoCao.Buff
 
         private Player0 player;
 
-
+        public int maxSlashCount = 10;
+        public int triggerCount = 5; //10次内,有5次能触发
+        public int curSlashCount = 0;
 
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
@@ -28,7 +30,21 @@ namespace XiaoCao.Buff
 
         private void OnPlaySkill(ObjectData data)
         {
-            GameObject b = PoolMgr.Inst.Get(BulletPath,4);
+            curSlashCount++;
+            if (curSlashCount >= triggerCount)
+            {
+                //cd刷新
+                if (curSlashCount >= triggerCount * 2)
+                {
+                    curSlashCount = 0;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            GameObject b = PoolMgr.Inst.Get(BulletPath, 4);
             b.transform.position = data.Tran.position;
             b.transform.rotation = data.Tran.rotation;
             b.GetComponent<Rigidbody>().linearVelocity = data.Tran.forward * Speed;

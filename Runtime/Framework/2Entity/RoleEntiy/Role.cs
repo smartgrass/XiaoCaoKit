@@ -156,22 +156,34 @@ namespace XiaoCao
             if (!BaseDamageCheck(ackInfo))
             {
                 SoundMgr.Inst.PlayHitAudio("Dead");
-                HitTween(ackInfo, setting);
+                HitTween(ackInfo, setting, true);
                 return;
             }
 
+
             SoundMgr.Inst.PlayHitAudio(setting.HitClip);
+            //TODO 暴击音效
+            if (ackInfo.isCrit)
+            {
+
+            }
 
             roleData.breakData.OnHit((int)setting.BreakPower);
+            //TODO 累计血量的BreakPower加成
+
             roleData.movement.OnDamage(roleData.breakData.IsBreak);
 
             OnDamageAct?.Invoke(ackInfo, roleData.breakData.IsBreak);
             AfterDamage(ackInfo);
 
+            if (!BattleData.IsTimeStop)
+            {
+                HitStop.Do(setting.HitStop);
+            }
+            HitTween(ackInfo, setting, roleData.breakData.IsBreak);
+
             if (roleData.breakData.IsBreak)
             {
-                HitTween(ackInfo, setting);
-
                 //无重力时间
                 roleData.movement.SetNoGravityT(setting.NoGTime);
 
@@ -181,13 +193,12 @@ namespace XiaoCao
                 {
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
                     Anim.TryPlayAnim(AnimHash.Break);
-                    HitStop.Do(setting.HitStop);
                 }
                 Debug.Log($"--- AnimHash.Break");
             }
             else
             {
-                if (!BattleData.IsTimeStop)
+                if (!BattleData.IsTimeStop && !roleData.IsBusy)
                 {
                     Anim.TryPlayAnim(AnimHash.Hit);
                 }
@@ -213,40 +224,38 @@ namespace XiaoCao
             roleData.playerAttr.ChangeNowValue(ENowAttr.Hp, delta);
         }
 
-        private void HitTween(AtkInfo ackInfo, SkillSetting setting)
+        //击退处理
+        private void HitTween(AtkInfo ackInfo, SkillSetting setting, bool isBreak)
         {
-            //击飞处理
-            Vector3 horDir = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * setting.AddHor;
-
-            Vector3 targetHorVec = ackInfo.ackObjectPos + horDir * setting.AddHor;
-
-            float horDistance = MathTool.GetHorDistance(targetHorVec, transform.position);
+            float deltaXZ = MathTool.GetHorDistance(ackInfo.ackObjectPos, transform.position);
+            float horMoveDistance = GetBalanceValue(setting.AddHor, deltaXZ);
+            Vector3 horMoveVec = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * horMoveDistance;
 
             float deltaY = ackInfo.ackObjectPos.y - transform.position.y;
-
-            float addY = setting.AddY;
-
-            //限制高
-            if (deltaY < 0)
+            float addY = GetBalanceValue(setting.AddY, deltaY);
+            if (!isBreak)
             {
-                addY = setting.AddY + deltaY;
+                addY = 0;
             }
 
             if (!BattleData.IsTimeStop)
             {
-                float w = idRole.weight;
-                idRole.cc.DOHit(addY / w, horDir * horDistance / w, setting.HitTime / w);
+                float w = idRole.moveSetting.weight;
+                idRole.cc.DOHit(addY / w, horMoveVec / w, setting.HitTime / w);
             }
         }
+
+        //利用除法公式, 计算平衡数值
+        private float GetBalanceValue(float target, float delta)
+        {
+            return target * target / (delta + target);
+        }
+
 
         public virtual void OnBreak()
         {
         }
 
-        public virtual void SetNoBusy()
-        {
-            roleData.roleControl.SetNoBusy();
-        }
 
         public void CheckBreakUpdate()
         {
@@ -295,8 +304,19 @@ namespace XiaoCao
         {
             var setting = ConfigMgr.commonSettingSo;
             int lv = roleData.playerAttr.lv;
-            AttrSetting attr = IsPlayer ? setting.playerSetting : setting.enemySetting;
-            roleData.breakData.maxArmor = attr.maxArmor;
+            int attrSettingId = 0;
+            if (!IsPlayer)
+            {
+                AddEnemyData aiData = idRole.gameObject.GetComponent<AddEnemyData>();
+                attrSettingId = aiData.attSettingId;
+            }
+            if (!setting.ContainsKey(attrSettingId))
+            {
+                Debug.LogError($"--- attrSettingId no {attrSettingId}");
+            }
+            AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
+
+            roleData.breakData.SetAttr(attr);
             roleData.playerAttr.Init(id, lv, attr);
         }
 
@@ -368,7 +388,7 @@ namespace XiaoCao
                     PlayNextSkill(msg);
                     break;
                 case EntityMsgType.SetNoBusy:
-                    SetNoBusy();
+                    //无需处理
                     break;
                 case EntityMsgType.SetUnMoveTime:
                     SetUnMoveTime(msg);
@@ -412,7 +432,7 @@ namespace XiaoCao
             string skillId = ((BaseMsg)msg).strMsg;
             if (roleData.roleControl.IsBusy())
             {
-                SetNoBusy();
+                roleData.roleControl.BreakAllBusy();
             }
             roleData.roleControl.TryPlaySkill(skillId);
         }
@@ -690,7 +710,7 @@ namespace XiaoCao
     public class RoleData
     {
 
-        public string curSkillId;
+        public string curSkillId = "";
 
         public EBodyState bodyState;
 
@@ -754,31 +774,56 @@ namespace XiaoCao
 
     }
 
+    public enum BreakCdState
+    {
+        None,
+        Break,
+    }
+
     public class BreakData
     {
-        public float armor = 4;  //虽说有小数, 实际用整数
+
         public float maxArmor = 4;
-        public float recoverWait_t = 0.8f;  //进入破防后,多久启动恢复
-        public float recoverFinish_t = 0.5f; //恢复满需要时间
-        public float recoverEnterBreak = 0; //击破恢复 boss可以是0.7
-        public float maxBreakTime = 0;  //最大连续受击时间,默认0为无
+
+        public float recoverCdOnBreak = 4; //进入Break后多久触发恢复/眩晕时间
+
+        public float recoverCdIfOnHurt = 4; //角色未受伤后多久触发恢复
+
+        public float actionRecover = 0.1f; //攻击时恢复
+
+        public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
+
+
         //死亡处理
         public float deadTimer = 0;
         public float deadTime = 3f;//结束时回收
 
-        public float recoverSpeed => maxArmor / recoverFinish_t; //每秒回复多少
+        #region runtimeData
+        public float armor = 4;  //虽说有小数, 实际用整数
 
-        public bool isHover { get; set; }//是否滞空
-        public bool IsBreak => armor <= 0;
+        private float _recoverCdTimer = 0;
 
-        public bool IsBreakTime => IsBreak && recoverWait_t <= 0;
-
-        //TODO
-        private bool IsBreakFrame;
+        private float _lastHitTime;
 
         public bool HasHit { get; set; }
 
+        public bool isHover { get; set; }//是否滞空
+        public bool IsBreak => armor <= 0;
         public float ShowPercentage => armor / maxArmor;
+
+        private BreakCdState _state;
+        public BreakCdState SetState
+        {
+            set
+            {
+                if (_state != value)
+                {
+                    OnBreakStateChange(_state, value);
+                }
+                _state = value;
+            }
+        }
+        #endregion
 
         public bool UpdateDeadEnd()
         {
@@ -792,7 +837,8 @@ namespace XiaoCao
                 return false;
             }
         }
-        private float _lastHitTime;
+
+
         public void OnHit(int hitArmor)
         {
             armor -= hitArmor;
@@ -801,33 +847,51 @@ namespace XiaoCao
 
             if (armor <= 0)
             {
-                IsBreakFrame = true;
+                SetState = BreakCdState.Break;
             }
         }
 
         public void OnUpdate(float deltaTime)
         {
-
-            if (IsBreakFrame)
+            if (_state == BreakCdState.Break)
             {
-                IsBreakFrame = false;
-                if (recoverEnterBreak > 0)
+                _recoverCdTimer -= deltaTime;
+                if (_recoverCdTimer <= 0)
                 {
-                    armor = Mathf.Max(armor, recoverEnterBreak * maxArmor);
+                    armor = maxArmor;
+                    SetState = BreakCdState.None;
                 }
             }
 
-            if (_lastHitTime + recoverWait_t < Time.time)
+            if (_lastHitTime + recoverCdIfOnHurt < Time.time)
             {
-                armor += deltaTime * recoverSpeed;
+                armor += deltaTime * noHurtRecoverSpeed * maxArmor;
+
+                if (armor >= maxArmor)
+                {
+                    armor = maxArmor;
+                }
             }
 
-
-            if (armor >= maxArmor)
-            {
-                armor = maxArmor;
-            }
             HasHit = false;
+        }
+
+
+        private void OnBreakStateChange(BreakCdState old, BreakCdState newState)
+        {
+            if (newState == BreakCdState.Break)
+            {
+                _recoverCdTimer = recoverCdOnBreak;
+            }
+        }
+
+        internal void SetAttr(AttrSetting attr)
+        {
+            maxArmor = attr.maxArmor;
+            recoverCdOnBreak = attr.recoverCdOnBreak;
+            recoverCdIfOnHurt = attr.recoverCdIfOnHurt;
+            actionRecover = attr.actionRecover;
+            noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
         }
     }
     #endregion
@@ -838,6 +902,8 @@ namespace XiaoCao
         public const int NoHpBar = 0;
         public const int MainPlayer = 1;
         public const int Boss = 2;
+        public const int EnableAiIfHurt = 100;
+        public const int ForceFollow = 101;
     }
     public enum EBodyState
     {
@@ -858,6 +924,7 @@ namespace XiaoCao
     {
         Hp,
         Mp,
+        Level,
     }
 
     public enum EAttr

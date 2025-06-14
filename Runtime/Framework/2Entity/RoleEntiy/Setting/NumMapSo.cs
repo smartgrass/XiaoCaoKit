@@ -53,6 +53,15 @@ namespace XiaoCao
             }
         }
 
+        public bool ContainsKey(int key)
+        {
+            if (!hasInited)
+            {
+                InitMap(array);
+            }
+            return map.ContainsKey(key);
+        }
+
         public T GetOnArray(int arrayIndex)
         {
             if (array.Length > arrayIndex)

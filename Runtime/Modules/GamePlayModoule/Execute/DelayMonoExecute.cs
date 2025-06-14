@@ -2,7 +2,10 @@
 using UnityEngine;
 using XiaoCao;
 
-public class DelayMonoExecute : MonoExecute
+/// <summary>
+/// 延迟执行-抽象类
+/// </summary>
+public abstract class DelayMonoExecute : MonoExecute
 {
     public float delay = 0;
     public override void Execute()

@@ -10,10 +10,26 @@ namespace XiaoCao
     [XCHelper]
     public class LevelSettingHelper
     {
-
-        internal static string GetText(int v)
+        public static int GetEnemyLevel(int baseLevel, string levelName = "")
         {
-            return LubanTables.GetLevelSetting(v).Title;
+            if (string.IsNullOrEmpty(levelName))
+            {
+                levelName = BattleData.Current.levelData.LevelName;
+            }
+
+            var setting = LubanTables.GetLevelSetting(levelName);
+            if (baseLevel < setting.EnemyLvList.Count)
+            {
+                return setting.EnemyLvList[baseLevel];
+            }
+            else
+            {
+                return setting.EnemyLvList[~1];
+            }
+        }
+        internal static string GetText(string levelName)
+        {
+            return LubanTables.GetLevelSetting(levelName).Title;
             //return $"level{v}";
         }
 
@@ -28,15 +44,23 @@ namespace XiaoCao
 
     }
 
-    public class LevelRewardData
+    public class LevelData
     {
         //默认奖励等级
         public int RewardLevel { get; set; }
 
+        //关卡分支 默认0
+        public string LevelBranch { get; set; }
 
+        public string LevelName { get => GameDataCommon.Current.MapName; }
 
+        public string GetLevelEnemyInfoKey(string groupName)
+        {
+            return $"{LevelName}/{groupName}/{LevelBranch}";
+        }
     }
 
+    [XCHelper]
     public static class RewardHelper
     {
         public static void RewardItem(this Item item)
@@ -64,7 +88,7 @@ namespace XiaoCao
         {
             if (rewardLevel < 0)
             {
-                rewardLevel = BattleData.Current.levelRewardData.RewardLevel;
+                rewardLevel = BattleData.Current.levelData.RewardLevel;
             }
 
             RewardPoolSo so = ConfigMgr.enemyKillRewardSo;
@@ -90,7 +114,7 @@ namespace XiaoCao
             }
 
             EBuff eBuff;
-            if (item.id[0]=='#')
+            if (item.id[0] == '#')
             {
                 //根据类型抽取
                 var valueString = item.id.Substring(1);

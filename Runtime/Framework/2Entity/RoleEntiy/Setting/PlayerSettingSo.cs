@@ -25,14 +25,21 @@ namespace XiaoCao
         //平a重置时间
         public float resetNorAckTime = 1.5f;
 
+        public float[] norAckCdTimes = { 0.5f, 0.5f, 0.5f, 0.5f};
+
         public float JumpY = 2.5f;
 
         public float JumpNoGravityT = 0.4f;
     }
 
     [Serializable]
-    public class AttrSetting
+    public class AttrSetting:IIndex
     {
+        public string desc = "备注";
+
+        public int id = 0;
+        public int Id => id;
+
         public int maxLevel = 50;
 
         //线性增长 设定50级
@@ -48,6 +55,13 @@ namespace XiaoCao
 
         public float maxArmor = 4;
 
+        public float recoverCdOnBreak = 4; //进入Break后多久触发恢复/眩晕时间
+
+        public float recoverCdIfOnHurt = 4; //角色未受伤后多久触发恢复
+
+        public float actionRecover = 0.1f; //攻击时恢复
+
+        public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
 
     }
 

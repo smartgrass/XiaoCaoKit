@@ -12,6 +12,7 @@ public class SoulTrailTween : MonoBehaviour
     public float ySpeed = 0.5f;
     public Vector3 endOffset = Vector3.up;
     public UnityEvent endEvnet;
+    public Action rewardAct;
 
     private float timer;
     private float angle;
@@ -98,6 +99,7 @@ public class SoulTrailTween : MonoBehaviour
         }
 
         endEvnet?.Invoke();
+        rewardAct?.Invoke();
         gameObject.SetActive(false);
 
     }

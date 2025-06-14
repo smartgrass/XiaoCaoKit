@@ -23,7 +23,9 @@ namespace XiaoCao
             procedureMgr.AddTask(new ConfigProcedure());
             procedureMgr.AddTask(new PreLoadPoolProcedure());
             //Reload
+            procedureMgr.AddTask(new MapProcedure());
             procedureMgr.AddTask(new PlayerProcedure());
+
             procedureMgr.AddTask(new ToRunningStateProcedure());
 
             await procedureMgr.Run();

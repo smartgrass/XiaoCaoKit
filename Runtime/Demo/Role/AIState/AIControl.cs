@@ -9,7 +9,7 @@ namespace XiaoCao
     /// <summary>
     /// 敌人AI
     /// </summary>
-    public partial class AIControl : RoleControl<Role>
+    public partial class AIControl : RoleControl<Role>, IDisposable
     {
         public AIControl(Role _owner) : base(_owner) { }
         /*
@@ -41,6 +41,7 @@ namespace XiaoCao
         public float tempActDis = 1.5f;
         public float tempTargetDis;
         public Vector3 idlePos;
+        private bool HasAddAction;
 
 
         public AIControl Init(string aiId)
@@ -58,7 +59,29 @@ namespace XiaoCao
             mainDataFSM.InitReset(this);
             Movement.overridBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
             idlePos = transform.position;
+            //只添加一次
+            if (!HasAddAction)
+            {
+                HasAddAction = true;
+                owner.OnDamageAct += OnDamageAct;
+            }
             return this;
+        }
+
+        public void Dispose()
+        {
+            if (HasAddAction && owner != null)
+            {
+                owner.OnDamageAct -= OnDamageAct;
+            }
+        }
+        private void OnDamageAct(AtkInfo info, bool arg2)
+        {
+            if (!owner.IsAiOn && owner.HasTag(RoleTagCommon.EnableAiIfHurt))
+            {
+                owner.RemoveTag(RoleTagCommon.EnableAiIfHurt);
+                owner.IsAiOn = true;
+            }
         }
 
         public override void Update()
@@ -68,11 +91,19 @@ namespace XiaoCao
                 OnDeadUpdate();
                 return;
             }
+
             owner.CheckBreakUpdate();
 
             if (!owner.IsAiOn) return;
             if (!IsAIFree) return;
 
+
+            if (owner.HasTag(RoleTagCommon.ForceFollow))
+            {
+                targetRole = GameDataCommon.LocalPlayer;
+                ForceFollowTagerUpdate();
+                return;
+            }
 
             CheckTarget();
 
@@ -86,6 +117,16 @@ namespace XiaoCao
                 Debuger.Log($"--- all Finish");
                 mainDataFSM.ResetFSM();
             }
+        }
+
+        void ForceFollowTagerUpdate()
+        {
+            CheckDistance();
+            if (tempTargetDis < mainDataFSM.setting.seeR)
+            {
+                owner.RemoveTag(RoleTagCommon.ForceFollow);
+            }
+            owner.AIMoveTo(targetRole.transform.position ,1);
         }
 
         #region CheckTarget
@@ -121,7 +162,7 @@ namespace XiaoCao
         {
             searchTimer = 0;
 
-            float seeR = mainDataFSM.setting.seeR; ;
+            float seeR = mainDataFSM.setting.seeR; 
 
             float seeAngle = mainDataFSM.setting.seeAngle;
 
@@ -183,6 +224,7 @@ namespace XiaoCao
         {
             return Vector3.Distance(transform.position, tf.position);
         }
+
         #endregion
 
     }

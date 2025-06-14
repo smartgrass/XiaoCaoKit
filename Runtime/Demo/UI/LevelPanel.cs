@@ -85,7 +85,8 @@ namespace XiaoCao
         {
             ChapterSetting chapterSetting = LubanTables.GetChapterSetting(1);
             CurLevel = chapterSetting.Levels[index];
-            var levelSetting = LubanTables.GetLevelSetting(CurLevel);
+            string levelName = $"level{CurLevel}";
+            var levelSetting = LubanTables.GetLevelSetting(levelName);
             //TODO 加载图片
             string spritePath = XCPathConfig.GetLevelImage(CurLevel);
             mainImage.sprite = ResMgr.LoadAseet(spritePath) as Sprite;
