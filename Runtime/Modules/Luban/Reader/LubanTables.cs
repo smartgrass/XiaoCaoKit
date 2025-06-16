@@ -29,13 +29,12 @@ namespace cfg
 
         public static CreateEnemyGroups GetCreateEnemyGroups(string key)
         {
-            var ret = CreateEnemyGroupsReader.GetOrDefault(key);
-            if (ret == null)
+            if (!CreateEnemyGroupsReader.DataMap.ContainsKey(key))
             {
-                //默认值
-                ret = CreateEnemyGroupsReader.DataList[0];
+                Debug.LogError($"--- no find group {key}");
             }
-            return ret;
+
+            return CreateEnemyGroupsReader.GetOrDefault(key);
         }
 
         public static LevelSetting GetLevelSetting(string key)
@@ -142,7 +141,7 @@ namespace cfg
             path = $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
             if (!File.Exists(path))
             {
-                Debug.LogError($"--- 找不到数据,先生成luban");
+                Debug.LogError($"--- 找不到数据,先生成luban {path}");
             }
             return path;
         }

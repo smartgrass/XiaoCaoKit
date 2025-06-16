@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using YooAsset;
 
 namespace XiaoCao
@@ -8,6 +9,10 @@ namespace XiaoCao
     //与CameraController类似是在Scene里面预配置的
     public class MapMgr : MonoSingleton<MapMgr>, IMgr
     {
+        public bool dontLoadMap;
+
+        public string testLevelName = "";
+
         public string MapName
         {
             get => GameDataCommon.Current.MapName;
@@ -26,7 +31,11 @@ namespace XiaoCao
 
         public IEnumerator LoadLevelObject()
         {
-            GetEditorSetting();
+            GetSetting();
+
+            if (dontLoadMap) {
+                yield break;
+            }
 
             if (string.IsNullOrEmpty(MapName))
             {
@@ -38,6 +47,7 @@ namespace XiaoCao
             if (tf != null)
             {
                 levelControl = tf.GetComponent<LevelControl>();
+                tf.gameObject.SetActive(true);
                 yield break;
             }
             Debug.Log($"--- load map {MapName}");
@@ -49,21 +59,28 @@ namespace XiaoCao
             levelControl = obj.GetComponent<LevelControl>();
         }
 
-        private void GetEditorSetting()
+        private void GetSetting()
         {
-#if UNITY_EDITOR
-            var cfg = ConfigMgr.MainCfg;
-            string getLevelName = cfg.GetValue("Setting", "LevelName", "");
-            if (!string.IsNullOrEmpty(getLevelName))
+
+            if (DebugSetting.IsSkillEditor || DebugSetting.IsDebug)
             {
-                MapName = getLevelName;
+                var cfg = ConfigMgr.MainCfg;
+                string getLevelBranch = cfg.GetValue("Setting", "LevelBranch", "");
+                if (!string.IsNullOrEmpty(getLevelBranch))
+                {
+                    LevelData.LevelBranch = getLevelBranch;
+                }
+
+                string levelName = cfg.GetValue("Setting", "DebugLevelName", "");
+                if (!string.IsNullOrEmpty(levelName)) {
+                    MapName = levelName;
+                }
+
+                if (Application.isEditor && !string.IsNullOrEmpty(testLevelName))
+                {
+                    MapName = testLevelName;
+                }
             }
-            string getLevelBranch = cfg.GetValue("Setting", "LevelBranch", "");
-            if (!string.IsNullOrEmpty(getLevelBranch))
-            {
-                LevelData.LevelBranch = getLevelBranch;
-            }
-#endif
         }
 
         public void SetPlayerStartPos()

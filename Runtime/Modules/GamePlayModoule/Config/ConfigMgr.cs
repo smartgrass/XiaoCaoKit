@@ -187,10 +187,16 @@ namespace XiaoCao
 
             }
             //修改时, 需要修改saveSkillBar ,恢复默认则清除saveSkillBar
+            SkillDataSo dataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             if (!ret.saveSkillBar)
             {
-                ret.skillBarSetting = ConfigMgr.LoadSoConfig<SkillDataSo>().playerDefaultSkills;
+                ret.skillBarSetting = dataSo.playerDefaultSkills;
             }
+            if (dataSo.UseTestSkill)
+            {
+                ret.skillBarSetting = dataSo.testSkills;
+            }
+
             return ret;
         }
 

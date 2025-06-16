@@ -6,7 +6,7 @@ namespace XiaoCao
     public class LocalizeKey
     {
         //与枚举1,1对应
-        public static string[] LanguageShowNames = { "English", "中文" };
+        public static string[] LanguageShowNames = { "中文", "English" };
         public static string Language = "Language";
         public static string Bgm = "Bgm";
         public static string NoEnough = "NoEnough";

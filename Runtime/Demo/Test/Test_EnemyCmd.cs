@@ -7,6 +7,7 @@ using XiaoCao;
 
 public class Test_EnemyCmd : MonoBehaviour
 {
+#if UNITY_EDITOR
     [OnValueChanged(nameof(SetAI))]
     public bool isAI;
     [MiniBtn(nameof(SetAct))]
@@ -79,5 +80,5 @@ public class Test_EnemyCmd : MonoBehaviour
     {
         return state.GetStatePath();
     }
-
+#endif
 }

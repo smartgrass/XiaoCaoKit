@@ -160,7 +160,7 @@ public class SaveXCTask
 
         SortData(mainData);
 
-        string savaPath = XCPathConfig.GetSkillDataPath(fSeqSetting.raceId, Sequence._skillId);
+        string savaPath = XCPathConfig.GetSkillDataPath(Sequence._skillId);
 
         Debug.Log($"FLog sava skill{Sequence._skillId} to {savaPath}");
 

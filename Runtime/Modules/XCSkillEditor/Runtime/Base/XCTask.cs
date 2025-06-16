@@ -31,6 +31,19 @@ namespace XiaoCao
 
         public bool IsBusy => State == XCState.Running && !IsNoBusyFlag;
 
+        public Transform GetBindTranfrom()
+        {
+            if (IsMainTask)
+            {
+                return  Info.playerTF;
+            }
+            else
+            {
+                return ObjectData.Tran;
+            }
+        }
+
+
         public TaskInfo Info;
 
         public int _endFrame = 0;

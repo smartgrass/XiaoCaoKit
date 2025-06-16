@@ -8,23 +8,41 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+    /* 复制模板
+    internal class XCCommand_XXXX : IXCCommand
+    {
+        public XCTask task { get; set; }
+        public XCCommondEvent curEvent { get; set; }
+        public RoleType roleType { get => RoleType.Player; }
+
+        private Player0 Player0 => task.Info.role as Player0;
+
+        public float minSwitchTime = 0.8f;
+        public void Init(BaseMsg baseMsg){ }
+
+        public void OnFinish(bool hasTrigger){ }
+
+        public void OnTrigger(){}
+
+        public void OnUpdate(int frame, float timeSinceTrigger) {}
+    }
+    */
+
     /// <summary>
-    /// 给技能做自定义操作, 比如输入检测
+    /// 给技能做自定义操作, 比如输入检测, 模板见上方注释
     /// </summary>
     public interface IXCCommand
     {
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
-
-        public RoleType roleType { get; }
-
         public void OnTrigger();
-
         public void OnUpdate(int frame, float timeSinceTrigger);
-
         public void OnFinish(bool hasTrigger);
         void Init(BaseMsg baseMsg);
+        bool IsTargetRoleType(RoleType roleType);
     }
+
+
 
 
     public class XCCommandBinder : Singleton<XCCommandBinder>

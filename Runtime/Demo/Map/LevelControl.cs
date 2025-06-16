@@ -1,4 +1,5 @@
-﻿using OdinSerializer.Utilities;
+﻿using NaughtyAttributes;
+using OdinSerializer.Utilities;
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine;
 namespace XiaoCao
 {
     //控制敌人生成, 地图生成, 敌人奖励等等
-    public class LevelControl : GameStartMono
+    public class LevelControl : GameStartMono, IMapMsgReciver
     {
         public Transform startPoint;
 
@@ -32,8 +33,17 @@ namespace XiaoCao
             //enemyKillRewardSo = ConfigMgr.enemyKillRewardSo;
 
             GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
         }
-
+        public override void RemoveListener()
+        {
+            base.RemoveListener();
+            if (isGameStarted)
+            {
+                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
+                GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+            }
+        }
         private void SetEnmeys()
         {
             if (string.IsNullOrEmpty(LevelData.LevelBranch))
@@ -63,14 +73,6 @@ namespace XiaoCao
             }
         }
 
-        public override void RemoveListener()
-        {
-            base.RemoveListener();
-            if (isGameStarted)
-            {
-                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-            }
-        }
 
         void OnEnemyDeadEvent(int id)
         {
@@ -87,7 +89,7 @@ namespace XiaoCao
                     //获取奖池id
                     string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length - 1)];
 
-                    if  (string.IsNullOrEmpty(rewardPoolId))
+                    if (string.IsNullOrEmpty(rewardPoolId))
                     {
                         return;
                     }
@@ -115,6 +117,29 @@ namespace XiaoCao
                 return startPoint.position;
             }
 
+        }
+
+
+
+        [Button("引爆所有机关")]
+        void TestTriggerAllLevelGroup()
+        {
+            var groups = transform.GetComponentsInChildren<ItemCrystal>();
+            foreach (var group in groups)
+            {
+                if (!group.isDead)
+                {
+                    group.TestDead();
+                }
+            }
+        }
+
+        public void OnReciveMsg(string reciveMsg)
+        {
+            if (reciveMsg == "BreakAll")
+            {
+                TestTriggerAllLevelGroup();
+            }
         }
     }
 }

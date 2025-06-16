@@ -45,7 +45,7 @@ namespace XiaoCao
 
         public string NextSceneName;
 
-        public string MapName = "level1";
+        public string MapName = "level0";
 
         public static Player0 LocalPlayer
         {

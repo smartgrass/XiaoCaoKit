@@ -17,7 +17,7 @@ namespace XiaoCao
         {
             base.OnTrigger(startOffsetTime);
             Cmd = XCCommandBinder.Inst.GetCommand(eName);
-            if (Cmd != null && Cmd.roleType == Info.role.RoleType)
+            if (Cmd != null && Cmd.IsTargetRoleType(Info.role.RoleType))
             {
                 HasCmd = true;
                 Cmd.task = this.task;

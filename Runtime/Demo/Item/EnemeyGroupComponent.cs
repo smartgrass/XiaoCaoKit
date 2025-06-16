@@ -1,12 +1,13 @@
 ﻿using cfg;
 using NaughtyAttributes;
 using System;
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
 
-public class EnemeyGroupComponent : GameStartMono
+public class EnemeyGroupComponent : GameStartMono, IMapMsgSender
 {
     public UnityEvent enterEvent;
 
@@ -20,19 +21,29 @@ public class EnemeyGroupComponent : GameStartMono
 
     private int maxTriggerTime;
 
-    private EnemyCreator[] creators;
+    private List<EnemyCreator> creators = new List<EnemyCreator>();
 
     public bool IsPreLoad;
 
     private void Awake()
     {
-        creators = transform.GetComponentsInChildren<EnemyCreator>();
+        //有顺序要求
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.TryGetComponent<EnemyCreator>(out EnemyCreator creator))
+            {
+                creators.Add(creator);
+            }
+        }
+
+
         foreach (var creator in creators)
         {
             creator.enemyAllDead += OnEnemyDeadEvent;
             //creator.gameObject.SetActive(false);
         }
-        maxTriggerTime = creators.Length;
+        maxTriggerTime = creators.Count;
     }
 
     private void OnEnemyDeadEvent(EnemyCreator creator)
@@ -40,9 +51,14 @@ public class EnemeyGroupComponent : GameStartMono
         triggerTimer++;
         if (triggerTimer >= maxTriggerTime)
         {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), mapMsg);
+            SendMapMsg();
             allKillEvent?.Invoke();
         }
+    }
+
+    public void SendMapMsg()
+    {
+        GameEvent.Send<string>(EGameEvent.MapMsg.Int(), mapMsg);
     }
 
     private void Update()
@@ -81,11 +97,7 @@ public class EnemeyGroupComponent : GameStartMono
     public void GetCreateEnemyInfoFromConfig(string key)
     {
         var group = LubanTables.GetCreateEnemyGroups(key);
-        if (group == null)
-        {
-            return;
-        }
-        for (int i = 0; i < creators.Length; i++)
+        for (int i = 0; i < creators.Count; i++)
         {
             if (i < group.EnemyInfos.Count)
             {

@@ -50,7 +50,7 @@ namespace XiaoCao
         public int RewardLevel { get; set; }
 
         //关卡分支 默认0
-        public string LevelBranch { get; set; }
+        public string LevelBranch = "0";
 
         public string LevelName { get => GameDataCommon.Current.MapName; }
 

@@ -11,6 +11,7 @@ namespace XiaoCao
 
         private const string DirName = "Localize/";
         private const string CurLangKey = "CurLang";
+        private static ELanguage DefaultLang = ELanguage.Cn; //枚举顺序第一个
         public static ELanguage CurLanguage;
 
         protected override void Init()
@@ -45,7 +46,8 @@ namespace XiaoCao
         private static void LoadLangData(ELanguage lang)
         {
             var ini = new IniFile();
-            ini.LoadFromFile($"{DirName}{lang}.ini", $"{DirName}{ELanguage.En}.ini");
+            //默认语言
+            ini.LoadFromFile($"{DirName}{lang}.ini", $"{DirName}{DefaultLang}.ini");
             _instance._localizeData = ini;
         }
 
@@ -65,7 +67,7 @@ namespace XiaoCao
 
     public enum ELanguage
     {
+        Cn,
         En,
-        Cn
     }
 }

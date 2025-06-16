@@ -8,7 +8,10 @@ namespace XiaoCao
     {
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
-        public RoleType roleType { get => RoleType.Player; }
+        public bool IsTargetRoleType(RoleType roleType)
+        {
+            return roleType == RoleType.Player;
+        }
 
         private Player0 player0;
 

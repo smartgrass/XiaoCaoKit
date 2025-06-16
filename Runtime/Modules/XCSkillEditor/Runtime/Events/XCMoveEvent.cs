@@ -19,8 +19,6 @@ namespace XiaoCao
 
         public AnimationCurve curve;
 
-        //特殊处理
-        public ETriggerCmd command;
         public string triggerMsg;
 
         #region private
@@ -30,32 +28,20 @@ namespace XiaoCao
 
         private float lastTime = 0;
 
+        public bool IsWorldTransfromMode { get; set; }
+
         #endregion
         public override void OnTrigger(float startOffsetTime)
         {
             m4 = Info.playerTF.localToWorldMatrix;
             cc = Info.role.idRole.cc;
-            if (command!= ETriggerCmd.None)
-            {
-                //利用中间类执行,解耦
-                //TriggerCommondHelper.AddCommond(command, triggerMsg, this);
-            }
             base.OnTrigger(startOffsetTime);
-        }
-
-        public void ResetStartEnd(Vector3 startVec,Vector3 endVec)
-        {
-            //空判断
-            Debug.Log($"--- ResetStartEnd");
-            this.startVec = startVec;
-            this.endVec = endVec;
         }
 
 
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
             float t = timeSinceTrigger / LengthTime;
-
 
             var detalMove = GetVec3Value(t) - GetVec3Value(lastTime);
             lastTime = t;
@@ -64,7 +50,7 @@ namespace XiaoCao
 
         public Vector3 GetVec3Value(float t)
         {
-            float et = curve == null ? t: curve.Evaluate(t);
+            float et = curve == null ? t : curve.Evaluate(t);
 
             if (isBezier)
             {
@@ -82,25 +68,17 @@ namespace XiaoCao
             {
                 return;
             }
-            if (cc != null && task.IsMainTask)
+            //m4.MultiplyVector 等价与 Quaternion.Euler(Info.castEuler) * position;
+            Vector3 move = IsWorldTransfromMode ? detalMove : m4.MultiplyVector(detalMove);
+
+            if (task.IsMainTask && cc != null)
             {
-                // 等价与 Quaternion.Euler(Info.castEuler) * position;
-                cc.Move(m4.MultiplyVector(detalMove));
+                cc.Move(move);
             }
             else
             {
-                var getDelta = m4.MultiplyVector(detalMove);
-                Tran.Translate(getDelta, Space.World);
-                //Tran.position = Tran.position + getDelta;
+                Tran.Translate(move, Space.World);
             }
-
-            //if (lookForward) //TODO
-            //{
-            //    Tf.forward = m4.MultiplyVector(detalMove);
-            //}
-
         }
-
     }
-
 }

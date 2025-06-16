@@ -12,6 +12,10 @@ namespace XiaoCao
     {
         [Label("角色技能栏默认技能")]
         public List<string> playerDefaultSkills;
+
+        public bool UseTestSkill = false;
+
+        public List<string> testSkills;
     }
 
 

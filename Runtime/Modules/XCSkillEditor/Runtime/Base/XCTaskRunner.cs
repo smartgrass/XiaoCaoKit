@@ -50,7 +50,7 @@ namespace XiaoCao
 
         public static XCTaskRunner CreatNew(string skillId, int roleId, TaskInfo info)
         {
-            XCTaskData data = SkillDataMgr.Get(skillId, roleId);
+            XCTaskData data = SkillDataMgr.Get(skillId);
             if (data == null)
             {
                 return null;
@@ -240,17 +240,17 @@ namespace XiaoCao
     {
         public Dictionary<string, XCTaskData> dataCache = new Dictionary<string, XCTaskData>();
 
-        public static XCTaskData Get(string skillId, int raceId)
+        public static XCTaskData Get(string skillId)
         {
 
-            string idKey = $"{raceId}_{skillId}";
+            string idKey = $"{skillId}";
             if (Inst.dataCache.TryGetValue(idKey, out XCTaskData data))
             {
                 return data;
             }
 
             //需要表做什么事?  技能类型, 技能图标 ,cd
-            byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(raceId.ToString(), skillId).LogStr("--"));
+            byte[] bytes = ResMgr.LoadRawByte(XCPathConfig.GetSkillDataPath(skillId).LogStr("--"));
             if (bytes == null)
             {
                 return null;

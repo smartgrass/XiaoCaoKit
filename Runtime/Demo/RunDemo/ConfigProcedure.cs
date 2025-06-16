@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using TEngine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace XiaoCao
 {
@@ -64,6 +65,19 @@ namespace XiaoCao
             if (Application.isEditor && "IsKaiLe".GetKeyBool())
             {
                 data0.lv = PlayerPrefs.GetInt("playerLv");
+            }
+
+            if (DebugSetting.IsSkillEditor && ConfigMgr.MainCfg.TryGetValue("Setting", "PlayerStartLevel", out string lvStr))
+            {
+                if (!string.IsNullOrEmpty(lvStr))
+                {
+                    data0.lv = int.Parse(lvStr);
+                }
+                Debug.Log($"--- PlayerStartLevel {lvStr}");
+            }
+            else
+            {
+                Debug.Log($"--- scene {SceneManager.GetActiveScene().name}");
             }
 
             GameAllData.playerSaveData = data0;

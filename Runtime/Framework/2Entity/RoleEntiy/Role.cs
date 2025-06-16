@@ -34,7 +34,7 @@ namespace XiaoCao
 
         public Action<AtkInfo> AtkDamageAct;
 
-        public int Level { get => PlayerAttr.lv; set => PlayerAttr.lv = value; }
+        public int Level { get => PlayerAttr.lv; }
         public override int Hp { get => (int)Math.Round(PlayerAttr.hp); set => PlayerAttr.hp = value; }
         public override float MaxHp { get => PlayerAttr.MapHp; }
 
@@ -423,11 +423,15 @@ namespace XiaoCao
                 case EntityMsgType.TheWorld:
                     TimeStopMgr.Inst.StopTimeSpeed();
                     break;
+                case EntityMsgType.NoBreakTime:
+                    OnNoBreakTime(msg);
+                    break;
                 default:
                     break;
             }
         }
-        private void PlayNextSkill(object msg)
+
+        private void OnNoBreakTime(object msg)
         {
             string skillId = ((BaseMsg)msg).strMsg;
             if (roleData.roleControl.IsBusy())
@@ -435,6 +439,20 @@ namespace XiaoCao
                 roleData.roleControl.BreakAllBusy();
             }
             roleData.roleControl.TryPlaySkill(skillId);
+        }
+
+        private void PlayNextSkill(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            float time = baseMsg.numMsg;
+            if (baseMsg.state == 0)
+            {
+                roleData.breakData.SetNoBreakTime(time);
+            }
+            else
+            {
+                roleData.breakData.SetNoBreakTime(0,false);
+            }
         }
 
         private void OnNoDamage(object msg)
@@ -805,6 +823,8 @@ namespace XiaoCao
 
         private float _lastHitTime;
 
+        private float _noBreakTimer;
+
         public bool HasHit { get; set; }
 
         public bool isHover { get; set; }//是否滞空
@@ -841,6 +861,11 @@ namespace XiaoCao
 
         public void OnHit(int hitArmor)
         {
+            if (_noBreakTimer > 0)
+            {
+                return;
+            }
+
             armor -= hitArmor;
             _lastHitTime = Time.time;
             HasHit = true;
@@ -873,6 +898,12 @@ namespace XiaoCao
                 }
             }
 
+
+            if (_noBreakTimer > 0)
+            {
+                _noBreakTimer -= deltaTime;
+            }
+
             HasHit = false;
         }
 
@@ -888,10 +919,24 @@ namespace XiaoCao
         internal void SetAttr(AttrSetting attr)
         {
             maxArmor = attr.maxArmor;
+            armor = attr.maxArmor;
             recoverCdOnBreak = attr.recoverCdOnBreak;
             recoverCdIfOnHurt = attr.recoverCdIfOnHurt;
             actionRecover = attr.actionRecover;
             noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
+        }
+
+        public void SetNoBreakTime(float time, bool isForce = false)
+        {
+            if (_noBreakTimer >= time && !isForce)
+            {
+                return;
+            }
+            _noBreakTimer = time;
+            if (armor <= 0)
+            {
+                armor = 0.1f *  maxArmor;
+            }
         }
     }
     #endregion

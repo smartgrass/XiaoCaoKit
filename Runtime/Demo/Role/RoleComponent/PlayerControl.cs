@@ -134,7 +134,7 @@ namespace XiaoCao
             if (!AtkTimers.IsSkillReady(AnimNames.Roll))
             {
                 Debug.Log($"rollId cd {AtkTimers.GetWaitTime(AnimNames.Roll)}");
-                UIMgr.PopToast($"rollId is in cd {AtkTimers.GetWaitTime(AnimNames.Roll).ToString("N2")}s");
+                //UIMgr.PopToast($"rollId is in cd {AtkTimers.GetWaitTime(AnimNames.Roll).ToString("N2")}s");
                 return;
             }
 

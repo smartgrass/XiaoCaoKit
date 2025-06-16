@@ -4,7 +4,10 @@
     {
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
-        public RoleType roleType { get => RoleType.Player; }
+        public bool IsTargetRoleType(RoleType roleType)
+        {
+            return roleType == RoleType.Player;
+        }
 
         public void Init(BaseMsg baseMsg)
         {

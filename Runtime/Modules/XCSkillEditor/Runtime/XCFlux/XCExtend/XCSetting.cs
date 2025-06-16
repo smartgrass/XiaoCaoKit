@@ -1,5 +1,6 @@
 ﻿using OdinSerializer;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace XiaoCao
 {
@@ -60,23 +61,20 @@ namespace XiaoCao
         //BuildTool.AfterBuild 在打包后将复制配置
         public static string GetGameConfigDir()
         {
-            if (Application.isEditor)
+            if (!Application.isMobilePlatform)
             {
                 return $"{PathTool.GetProjectPath()}/GameConfig";
             }
-            else
-            {
-                return $"{PathTool.GetProjectPath()}/GameConfig";
-            }
+            return $"{Application.streamingAssetsPath}/GameConfig";
         }
 
         public static string GetSkillPrefabDir(string raceId)
         {
             return $"{PerfabDir}/{raceId.ToString()}";
         }
-        public static string GetSkillDataPath(string dir, string skillId)
+        public static string GetSkillDataPath(string skillId)
         {
-            return $"{DataDir}/{dir.ToString()}/{skillId}{RawFileExtend}";
+            return $"{DataDir}/{skillId}{RawFileExtend}";
         }
 
         public static string GetRoleBodyPath(string prefabName, RoleType roleType)
@@ -143,6 +141,12 @@ namespace XiaoCao
                 }
                 return false;
             }
+        }
+
+        //Demo专用配置
+        public static bool IsSkillEditor
+        {
+            get => SceneManager.GetActiveScene().name.StartsWith("SkillEditor");
         }
 
         public static int PauseFrame;

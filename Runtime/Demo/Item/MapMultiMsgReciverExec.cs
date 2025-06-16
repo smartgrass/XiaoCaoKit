@@ -7,7 +7,7 @@ using XiaoCao;
 /// <summary>
 /// 与门逻辑
 /// </summary>
-public class MapMultiMsgReciverExec : MapMsgReciverExec, IMapMsgTrigger
+public class MapMultiMsgReciverExec : MapMsgReciverExec, IMapMsgSender
 {
     [Header("msgList全部接收后转发为msg")]
     public List<string> msgList = new List<string>();

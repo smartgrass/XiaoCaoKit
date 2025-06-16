@@ -27,18 +27,7 @@ namespace XiaoCao
         public XCTask task;
         public XCState State { get; set; }
         public TaskInfo Info => task.Info;
-        public Transform Tran
-        {
-            get
-            {
-                if (task.IsMainTask)
-                {
-                    return Info.playerTF;
-                }
-                return task.ObjectData.Tran;
-            }
-        }
-
+        public Transform Tran => task.GetBindTranfrom();
 
         #region TODO
         [NonSerialized]

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   array:
   - CmdSettingId: 0
-    des: "\u654C\u4EBA\u9ED8\u8BA4"
+    des: "\u9ED8\u8BA4"
     cmdSkillList:
     - NorAck0
     - NorAck1

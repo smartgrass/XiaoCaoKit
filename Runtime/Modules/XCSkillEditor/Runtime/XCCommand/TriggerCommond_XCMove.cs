@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+
+    /*     [Obsolete]
     public class TriggerCommond_XCMove
     {
         public XCMoveEvent moveEvent;
@@ -29,6 +31,7 @@ namespace XiaoCao
         }
     }
 
+    ///<see cref="TriggerCommond_XCMove"/>
     public static class TriggerCommondHelper
     {
         public static void AddCommond(ETriggerCmd type, string msg, XCEvent xcEvent)
@@ -48,5 +51,5 @@ namespace XiaoCao
         MoveTrigger = 1,
     }
 
-
+    */
 }

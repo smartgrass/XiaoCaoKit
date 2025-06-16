@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using XiaoCao;
 using static HideMatTweenExec;
 
-public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
+public class ItemCrystal : ItemIdComponent, IMapMsgSender
 {
     public AudioClip hitClip;
 
@@ -78,6 +78,11 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
             var color = isNoHurt ? lockColor : norColor;
             renderer.material.DoColorTween(colorName.ToString(), color, 0.5f);
         }
+        Transform lockEffect = transform.Find("LockEffect");
+        if (lockEffect)
+        {
+            lockEffect.gameObject.SetActive(isNoHurt);
+        }
     }
 
     public override void OnDamage(AtkInfo ackInfo)
@@ -138,10 +143,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
         deadEvent?.Invoke();
         isDead = true;
 
-        if (!string.IsNullOrEmpty(deadMapMsg))
-        {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), deadMapMsg);
-        }
+        SendMapMsg();
 
         DoExploded();
         //Òþ²ØÔ­body
@@ -151,8 +153,16 @@ public class ItemCrystal : ItemIdComponent, IMapMsgTrigger
         ExecuteHelper.DoExecute(transform);
     }
 
+    public void SendMapMsg()
+    {
+        if (!string.IsNullOrEmpty(deadMapMsg))
+        {
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), deadMapMsg);
+        }
+    }
+
     [Button("TestDead", enabledMode: EButtonEnableMode.Playmode)]
-    void TestDead()
+    public void TestDead()
     {
         OnDead(new AtkInfo());
     }

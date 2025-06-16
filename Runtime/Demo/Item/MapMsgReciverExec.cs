@@ -46,4 +46,8 @@ interface IMapMsgReciver
     void OnReciveMsg(string reciveMsg);
 }
 
-interface IMapMsgTrigger { }
+interface IMapMsgSender {
+
+
+
+}

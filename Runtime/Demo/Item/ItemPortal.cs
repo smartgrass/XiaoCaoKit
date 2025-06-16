@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using XiaoCao;
 
 //单向传送门
-public class ItemPortal : MonoBehaviour, IMapMsgTrigger
+public class ItemPortal : MonoBehaviour, IMapMsgSender
 {
     public float stayTime = 1.2f;
 

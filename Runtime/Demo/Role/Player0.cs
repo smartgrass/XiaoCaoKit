@@ -289,6 +289,11 @@ namespace XiaoCao
             }
             RoleId = roleId;
             this.lv = lv;
+            if (setting.id == 0)
+            {
+                Debug.Log($"--- set player level {lv}");
+            }
+
             maxExp = 100 + 100 * (lv % 10);
 
             float power = (lv + setting.offsetLevel) / setting.maxLevel;
