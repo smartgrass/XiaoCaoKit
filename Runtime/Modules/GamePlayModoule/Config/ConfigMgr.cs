@@ -257,6 +257,21 @@ namespace XiaoCao
             //TODO
         }
     }
+
+
+    public class StaticSetting
+    {
+        public VersionType version;
+
+
+
+        public enum VersionType
+        {
+            Office,//正式
+            Demo,//试玩
+            Debug //开发
+        }
+    }
 }
 
 
