@@ -114,7 +114,6 @@ namespace XiaoCao
 
             if (mainDataFSM.State == FSMState.Finish)
             {
-                Debuger.Log($"--- all Finish");
                 mainDataFSM.ResetFSM();
             }
         }

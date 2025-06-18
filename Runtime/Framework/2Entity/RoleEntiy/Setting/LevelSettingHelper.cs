@@ -91,7 +91,7 @@ namespace XiaoCao
                 rewardLevel = BattleData.Current.levelData.RewardLevel;
             }
 
-            RewardPoolSo so = ConfigMgr.enemyKillRewardSo;
+            RewardPoolSo so = ConfigMgr.EnemyKillRewardSo;
             //获取奖励池
             BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
             //背包 pick

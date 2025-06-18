@@ -13,7 +13,10 @@ namespace XiaoCao
     {
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
-        public RoleType roleType { get => RoleType.Player; }
+        public bool IsTargetRoleType(RoleType roleType)
+        {
+            return true;
+        }
 
         private Player0 Player0 => task.Info.role as Player0;
 

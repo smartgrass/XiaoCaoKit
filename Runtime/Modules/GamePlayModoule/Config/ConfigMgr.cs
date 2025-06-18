@@ -5,6 +5,10 @@ using SerializationUtility = OdinSerializer.SerializationUtility;
 using System.Collections.Generic;
 using System.IO;
 using DataFormat = OdinSerializer.DataFormat;
+using System.Text;
+using Newtonsoft.Json;
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,55 +16,82 @@ using UnityEditor;
 namespace XiaoCao
 {
     ///<see cref="MoveSettingSo"/>
-    ///<see cref="PlayerSettingSo"/>
+    ///<see cref="XiaoCao.PlayerSettingSo"/>
     ///<see cref="LocalizeMgr"/>
     public class ConfigMgr
     {
-        private static IniFile mainConfig;
+        #region  public
+        public static PlayerSettingSo PlayerSettingSo;
+
+        public static SkillDataSo SkillDataSo;
+
+        public static AttrSettingSo CommonSettingSo;
+
+        public static RewardPoolSo EnemyKillRewardSo;
+
+        public static BuffConfigSo BuffConfigSo;
+
+        public static List<string> SkinList;
+
+        #endregion
+
+        #region  private
+
+        private static StaticSetting _staticSetting;
+
+        private static IniFile _mainConfig;
 
         private static InitArrayFile _soundCfg;
 
         private static LocalSetting _localSetting;
 
-        public static PlayerSettingSo playerSettingSo;
+        #endregion
 
-        public static SkillDataSo skillDataSo;
 
-        public static AttrSettingSo commonSettingSo;
-
-        public static RewardPoolSo enemyKillRewardSo;
-
-        public static BuffConfigSo buffConfigSo;
-
-        public static List<string> SkinList;
 
         public static void Init()
         {
+            LoadStaticSetting();
             var init = MainCfg;
-            playerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
-            commonSettingSo = ConfigMgr.LoadSoConfig<AttrSettingSo>();
-            skillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
-            enemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
-            buffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
+            PlayerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
+            CommonSettingSo = ConfigMgr.LoadSoConfig<AttrSettingSo>();
+            SkillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
+            EnemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
+            BuffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
+        }
+
+        public static StaticSetting LoadStaticSetting()
+        {
+            string filePath = XCPathConfig.GetGameConfigFile("static.info");
+            if (!File.Exists(filePath))
+            {
+                _staticSetting = new StaticSetting();
+                return _staticSetting;
+            }
+            _staticSetting = FileTool.DeserializeRead<StaticSetting>(filePath);
+            return _staticSetting;
         }
 
         private static void GetSkinList()
         {
             List<string> skinList = new List<string>();
-            IniSection section = ConfigMgr.MainCfg.GetSection(ResMgr.DefaultPackage);
-            string str = section.GetValue("SkinList", "");
-            string[] array = str.Split(',');
-            if (array.Length != 0)
+            foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
             {
-                skinList.AddRange(str.Split(','));
-            }
-            else
-            {
-                skinList.Add(str);
+                if (section.SectionName.StartsWith("Mod"))
+                {
+                    foreach (var key in section.Dic.Keys)
+                    {
+                        if (key.StartsWith("Body_"))
+                        {
+                            skinList.Add(key);
+                        }
+                    }
+                }
             }
             SkinList = skinList;
+
         }
 
         public static string GetSettingSkinName()
@@ -107,18 +138,29 @@ namespace XiaoCao
             }
             return ret;
         }
+        public static StaticSetting StaticSetting
+        {
+            get
+            {
+                if (_staticSetting == null)
+                {
+                    LoadStaticSetting();
+                }
+                return _staticSetting;
+            }
+        }
 
         public static IniFile MainCfg
         {
             get
             {
-                if (mainConfig == null)
+                if (_mainConfig == null)
                 {
                     IniFile ini = new IniFile();
                     ini.LoadFromFile("main.ini");
-                    mainConfig = ini;
+                    _mainConfig = ini;
                 }
-                return mainConfig;
+                return _mainConfig;
             }
         }
 
@@ -259,18 +301,16 @@ namespace XiaoCao
     }
 
 
+    [Serializable]
     public class StaticSetting
     {
-        public VersionType version;
-
-
-
-        public enum VersionType
-        {
-            Office,//正式
-            Demo,//试玩
-            Debug //开发
-        }
+        public GameVersionType versionType;
+    }
+    public enum GameVersionType
+    {
+        Office,//正式
+        Demo,//试玩
+        Debug //开发
     }
 }
 

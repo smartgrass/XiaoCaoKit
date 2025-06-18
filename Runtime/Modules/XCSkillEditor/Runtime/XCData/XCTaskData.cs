@@ -183,10 +183,13 @@ namespace XiaoCao
                         Debug.LogError($"--- otherPointName {otherPointName} = null");
                     }
 
-                    var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);
-                    Tran.eulerAngles = anglePos.Item1;
-                    Tran.position = anglePos.Item2;
-                    Debug.Log($"--- reset Start pos {tf.name} {tf.position} add {position} = {anglePos.Item2}");
+                    //var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);
+                    //Tran.eulerAngles = anglePos.Item1;
+
+                    Tran.eulerAngles = PlayerTF.eulerAngles + eulerAngle;
+                    //由于MoveEvent是用差值移动的, 所以可以直接设置位置
+                    Tran.position = tf.position + Quaternion.Euler(Info.castEuler) * position;
+                    Debug.Log($"--- reset Start pos {tf.name} {tf.position} add {position}");
                 }
             }
 

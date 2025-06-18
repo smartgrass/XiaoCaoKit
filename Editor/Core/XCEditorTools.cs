@@ -32,6 +32,8 @@ namespace XiaoCaoEditor
         public const string OpenPath_Sava = XiaoCaoPath + "存档位置";
         public const string OpenPath_LuabnExcel = XiaoCaoPath + "配置表格文件夹";
         public const string OpenPath_GenConfigPath = XiaoCaoPath + "打开生成配置位置";
+
+        public const string XCBuildWindow = "XiaoCao/Build/XCBuildWindow";
         public const string BuildAll  = "XiaoCao/Build/0.一键打包(全量)";
         public const string BuildYooRes  = "XiaoCao/Build/1.YooAsset资源打包";
         public const string JustBuild  = "XiaoCao/Build/2.打包";
@@ -44,6 +46,7 @@ namespace XiaoCaoEditor
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string XCToolWindow = "XiaoCao/XiaoCao调试面板";
         public const string XCFindWindow = "XiaoCao/查询面板";
+
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
         public const string ShatterTool = "XiaoCao/ShatterTool";

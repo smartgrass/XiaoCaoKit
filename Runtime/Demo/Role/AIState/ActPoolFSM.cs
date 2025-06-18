@@ -53,7 +53,7 @@ namespace XiaoCao
                 CurState = IdleStateInst;
                 return;
             }
-            Debug.Log($"--- ActPoolFSM OnStart");
+            Debug.Log($"--- ActPoolFSM OnStart {name}");
             foreach (var data in this.PrefabPool)
             {
                 data.Reset();
@@ -147,14 +147,16 @@ namespace XiaoCao
             {
                 InstancePool.RemoveAt(index);
             }
+            //Debug.Log($"--- GetOne {data.state.name} {data.HasUseTime}/{data.maxTime} InstancePoolCount {InstancePool.Count}");
             UseTime++;
+            data.state.ResetFSM();
             return data.state;
         }
 
         public override void OnExit()
         {
             State = FSMState.Finish;
-            Debuger.Log($"--- AI All Finish");
+            Debuger.Log($"--- AIFSM All Finish");
         }
 
         public override string GetStatePath()
@@ -175,9 +177,9 @@ namespace XiaoCao
     [Serializable]
     public class SubStateData : PowerModel
     {
+        public AIFSMBase state;
         //配置最大次数
         public int maxTime = 1;
-        public AIFSMBase state;
 
         //Runtime
         public int HasUseTime { get; set; }

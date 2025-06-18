@@ -89,7 +89,7 @@ namespace XiaoCao
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRole.gameObject);
 #if UNITY_EDITOR
-            var testDraw = idRoleGo.AddComponent<Test_GroundedDrawGizmos>();
+            var testDraw = idRoleGo.AddComponent<Test_PlayerCmd>();
             if (RoleType == RoleType.Enemy)
             {
                 idRoleGo.AddComponent<Test_EnemyCmd>();
@@ -111,7 +111,6 @@ namespace XiaoCao
             GameObject.Destroy(body);
             Debug.Log($"--- ChangeBody bodyName");
             CreateRoleBody(bodyName);
-
         }
 
         protected void BaseInit()
@@ -122,10 +121,10 @@ namespace XiaoCao
             roleData.moveSetting = idRole.moveSetting;
         }
 
-        protected void SetTeam(int team)
+        public void SetTeam(int team)
         {
             this.team = team;
-            var layer = GameSetting.GetTeamLayer(team);
+            var layer = XCSetting.GetTeamLayer(team);
             foreach (var item in idRole.triggerCols)
             {
                 item.gameObject.layer = layer;
@@ -194,7 +193,6 @@ namespace XiaoCao
                     transform.RotaToPos(ackInfo.hitPos, 0.5f);
                     Anim.TryPlayAnim(AnimHash.Break);
                 }
-                Debug.Log($"--- AnimHash.Break");
             }
             else
             {
@@ -302,7 +300,7 @@ namespace XiaoCao
 
         public void InitRoleData()
         {
-            var setting = ConfigMgr.commonSettingSo;
+            var setting = ConfigMgr.CommonSettingSo;
             int lv = roleData.playerAttr.lv;
             int attrSettingId = 0;
             if (!IsPlayer)

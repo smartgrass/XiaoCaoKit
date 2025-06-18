@@ -20,33 +20,39 @@ namespace XiaoCao
 
         public Image barImgSlow;
 
+        //public ColorSettingSo settingSo;
+
+        public Color[] barColors = new Color[3];
 
         //Color Setting
         public static Color White = Color.white;
-        public static Color Red = Color.red;
-        public static Color Green = Color.green;
-        public static Color Orange = new Color(1, 128f / 255, 0);
-        //public static Color PlayerColor = new Color(0, 0.3f, 1);
-        //public static Color EnemyColor = new Color(1, 0, 0);
+
 
         private Transform _targetTF;
         private Vector3 _offset;
 
 
-        public void InitColor(RoleType roleType)
+        public void InitColor(Role role)
         {
-            fillImage.color = White;
-            //if (roleType == RoleType.Player)
-            //{
-
-            //}
-            //else
-            //{
-            //    fillImage.color = EnemyColor;
-            //}
-
+            //&& !role.HasTag(RoleTagCommon.MainPlayer);
+            bool isBlue = role.team == XCSetting.PlayerTeam; 
+            SetBarColors(isBlue);
         }
 
+        public void SetBarColors(bool isBlue)
+        {
+            fillImage.color = White;
+            ColorSettingSo settingSo = UIPrefabMgr.Inst.hpBarColorSettingSo;
+            var colorArray = settingSo.values;
+            int startIndex = 0;
+
+            //友方单位
+            if (isBlue)
+            {
+                startIndex = 3;
+            }
+            barColors = new[] { colorArray[startIndex], colorArray[startIndex + 1], colorArray[startIndex + 2] };
+        }
 
         public void SetFollow(Transform tf, Vector3 offset)
         {
@@ -85,15 +91,15 @@ namespace XiaoCao
 
             if (healthPercentage > 2f / 3f)
             {
-                fillImage.color = Green;
+                fillImage.color = barColors[0];
             }
             else if (healthPercentage > 1 / 3f)
             {
-                fillImage.color = Orange;
+                fillImage.color = barColors[1];
             }
             else
             {
-                fillImage.color = Red;
+                fillImage.color = barColors[2];
             }
         }
 
@@ -103,40 +109,6 @@ namespace XiaoCao
         }
 
 
-
-        /*
-        //根据视场角和目标到相机的距离计算缩放因子
-        private float CalculateScaleFactor(float cameraFOV, Vector3 targetPosition, Vector3 camPos)
-        {
-
-            if (gameObject == null) return;
-            // 获取目标的世界坐标
-            Vector3 targetWorldPosition = gameObject.transform.position;
-
-            // 将目标的世界坐标转换为屏幕坐标
-            Vector3 targetScreenPosition = mainCamera.WorldToScreenPoint(targetWorldPosition);
-
-            // 将血条的屏幕坐标设置为目标的屏幕坐标
-            healthBarRectTransform.position = targetScreenPosition;
-
-            // 计算缩放因子
-            float scaleFactor = CalculateScaleFactor(mainCamera.fieldOfView, targetWorldPosition, mainCamera.transform.position);
-
-            // 根据缩放因子调整血条的大小
-            healthBarRectTransform.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
-
-            // 获取目标到相机的距离
-            float distanceToCamera = Vector3.Distance(targetPosition, camPos);
-
-            // 计算相机的透视缩放因子
-            float perspectiveScale = referenceDistance / Mathf.Tan(Mathf.Deg2Rad * (cameraFOV * 0.5f));
-
-            // 计算实际的缩放因子
-            float scaleFactor = perspectiveScale / distanceToCamera;
-
-            return scaleFactor;
-        }
-        */
 
     }
 

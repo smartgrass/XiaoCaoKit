@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace XiaoCao
 {
@@ -16,14 +17,36 @@ namespace XiaoCao
         //由玩家缓存数据读取 , 不需要初始值
         public static PlayerSaveData playerSaveData = null;
 
-        [RuntimeInitializeOnLoadMethod]
-        public static void Init()
+        [RuntimeInitializeOnLoadMethod( )]
+        private static void GameAllDataInit()
         {
+            Debug.Log($"-- RuntimeInitializeOnLoadMethod GameAllDataInit");
             commonData = new GameDataCommon();
             battleData = new BattleData();
+            GameSetting.GetGameVersion();
         }
 
     }
+
+    [XCHelper]
+    public static class GameSetting
+    {
+        public static void GetGameVersion()
+        {
+            VersionType = ConfigMgr.StaticSetting.versionType;
+
+        }
+        public static GameVersionType VersionType;
+
+        //目前技能
+        public const int SkillCountOnBar = 4;
+        ///<see cref="EQuality"/>
+        public const int MaxBuffLevel = 5;//从0~5
+
+        ///<see cref="LevelSettingHelper"/>
+        ///<see cref="XCSetting"/>
+    }
+
 
     public class TempData
     {
@@ -95,7 +118,7 @@ namespace XiaoCao
 
         public HashSet<string> map = new HashSet<string>();
 
-        public Dictionary<string, int> tempIntDic = new Dictionary<string, int>();
+        public Dictionary<string, float> tempNumDic = new Dictionary<string, float>();
 
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
@@ -109,12 +132,25 @@ namespace XiaoCao
             return map.Contains(flag);
         }
 
-
         public void OnControlChange(bool v)
         {
             Debug.Log($"--- OnControlChange {v}");
         }
 
+        public float GetDamageFactor(int Team)
+        {
+            float mult = 1;
+            if (Team == XCSetting.PlayerTeam)
+            {
+                tempNumDic.TryGetValue(BattleNumKeys.DamageMult_P, out mult);
+                return mult;
+            }
+            else
+            {
+                tempNumDic.TryGetValue(BattleNumKeys.DamageMult_E, out mult);
+                return mult;
+            }
+        }
     }
 
     [XCHelper]
@@ -185,49 +221,6 @@ namespace XiaoCao
 
     }
 
-    ///<see cref="LevelSettingHelper"/>
-
-    [XCHelper]
-    public static class GameSetting
-    {
-        //目前技能
-        public const int SkillCountOnBar = 4;
-        ///<see cref="EQuality"/>
-        public const int MaxBuffLevel = 5;//从0~5
-
-        //根据阵营分层级
-        public static int GetTeamLayer(int team)
-        {
-            if (team == 1)
-            {
-                return Layers.PLAYER;
-            }
-            return Layers.ENEMY;
-        }
-
-        public static int GetTeamAtkLayer(int team)
-        {
-            if (team == 1)
-            {
-                return Layers.PLAYER_ATK;
-            }
-            return Layers.ENEMY_ATK;
-        }
-
-
-        public static int GetTeamGroundCheckMash(int team)
-        {
-            if (team == 1)
-            {
-                return Layers.ENEMY_MASK;
-            }
-            return Layers.PLAYER_MASK;
-        }
-    }
-
-    
-
-
     public enum PlayMode
     {
         Nor
@@ -274,6 +267,11 @@ namespace XiaoCao
 
     }
 
+    public static class BattleNumKeys
+    { 
+        public const string DamageMult_P = "DamageMult_P"; //伤害倍率
+        public const string DamageMult_E = "DamageMult_E";
+    }
 
     public static class TeamTag
     {

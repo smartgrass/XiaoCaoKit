@@ -7,6 +7,7 @@ public class SkillEditorLuncher : MonoBehaviour
 {
     private void Awake()
     {
+        Debug.Log($"--- SkillEditorLuncher Awake");
         RunDemo demo = new RunDemo();
         demo.Run().Forget();
     }

@@ -89,6 +89,12 @@ public static class FileTool
         FileTool.WriteAllBytes(path, bytes, true);
     }
 
+    public static void SerializeWriteJson<T>(string path, T data)
+    {
+        byte[] bytes = SerializationUtility.SerializeValue<T>(data, DataFormat.JSON);
+        FileTool.WriteAllBytes(path, bytes, true);
+    }
+
     public static T DeserializeRead<T>(string path)
     {
         byte[] bytes = File.ReadAllBytes(path);

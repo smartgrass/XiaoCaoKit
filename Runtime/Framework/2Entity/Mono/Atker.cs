@@ -46,7 +46,7 @@ public class Atker : BaseAtker
             //时停时玩家不受伤害
             return;
         }
-
+        ProcessAtkInfo(ackInfo);
         role.OnDamage(ackInfo);
 
         curTriggerTime++;
@@ -54,6 +54,12 @@ public class Atker : BaseAtker
         {
             OnTriggerTimeOut();
         }
+    }
+    //伤害修正
+    private void ProcessAtkInfo(AtkInfo ackInfo)
+    {
+        float GetDamageFactor = BattleData.Current.GetDamageFactor(ackInfo.team);
+        ackInfo.atk = (int)(ackInfo.atk * GetDamageFactor);
     }
 
     internal void AddTriggerByCollider()
@@ -107,7 +113,7 @@ public abstract class BaseAtker : IdComponent
     {
         id = info.atker;
         ackInfo = info;
-        gameObject.layer = GameSetting.GetTeamAtkLayer(info.team);
+        gameObject.layer = XCSetting.GetTeamAtkLayer(info.team);
     }
     public void InitHitInfo(Collider other)
     {
@@ -133,7 +139,7 @@ public abstract class BaseAtker : IdComponent
             var dir = transform.parent.forward;
             Gizmos.DrawLine(transform.position, transform.position + dir * 5);
             Gizmos.color = oldColor;
-        }  
+        }
     }
 }
 

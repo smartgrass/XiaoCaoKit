@@ -6,7 +6,7 @@ using NaughtyAttributes;
 /// <summary>
 /// 调节地面射线检查用
 /// </summary>
-public class Test_GroundedDrawGizmos : MonoBehaviour
+public class Test_PlayerCmd : MonoBehaviour
 {
     private bool isGrounded;
     public float GroundedOffset = -0.14f;
@@ -36,4 +36,14 @@ public class Test_GroundedDrawGizmos : MonoBehaviour
         // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
         Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
     }
+
+
+#if UNITY_EDITOR
+    [MiniBtn(nameof(ChangeToTestBody))]
+    public string testChangeBodyName = "Body_E_2_Gun";
+    void ChangeToTestBody()
+    {
+        GameAllData.commonData.player0.ChangeBody(testChangeBodyName);
+    }
+#endif
 }

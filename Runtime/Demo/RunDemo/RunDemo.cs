@@ -9,6 +9,7 @@ namespace XiaoCao
         public async UniTask Run()
         {
 
+            GameSetting.GetGameVersion();
             if (DebugSetting.IsDebug)
             {
                 var prefab = Resources.Load<GameObject>("IngameDebugConsole");

@@ -111,7 +111,7 @@ namespace XiaoCao
             if (!runner.IsBreak)
             {
                 Data_R.skillState.SetValue(ESkillState.SkillEnd);
-                Debug.Log($"---  OnSkillFinish ");
+                Debug.Log($"---  OnSkillFinish {runner.debugSkillId}");
             }
             else
             {

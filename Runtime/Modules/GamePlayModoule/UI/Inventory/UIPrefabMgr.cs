@@ -15,6 +15,8 @@ namespace XiaoCao
 
         public GameObject itemCellPrefab;
 
+        public ColorSettingSo hpBarColorSettingSo;
+
         public SimpleImageTween btnGlowEffect;
 
         public GameObject btnRedDot;

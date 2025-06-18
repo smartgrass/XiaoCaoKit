@@ -42,6 +42,7 @@ namespace XiaoCao
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
+            playerBar.SetBarColors(false);
         }
         private void OnDestroy()
         {
@@ -100,7 +101,7 @@ namespace XiaoCao
                 {
                     GameObject newBarGo = pool.Get();
                     bar = newBarGo.GetComponent<HpBar>();
-                    bar.InitColor(role.RoleType);
+                    bar.InitColor(role);
                     barDic[role.id] = bar;
                     bar.transform.SetParent(worldHpBarParent, false);
                     bar.SetFollowRole(role);
@@ -362,6 +363,9 @@ namespace XiaoCao
         }
 
 
+        /// <summary>
+        /// 伤害数字
+        /// </summary>
         [System.Serializable]
         public class DamageTextSetting
         {

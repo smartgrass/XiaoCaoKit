@@ -17,11 +17,11 @@ public class EnemyCreator : GameStartMono, IExecute
 {
     public EnemyCreateMode createMode;
 
-    public RoleType roleType = RoleType.Enemy;
+    public bool IsPlayerTeam;
 
     public GameObject showEffectPrefab;
 
-    public string enemyIdList = "1,1";
+    public string enemyIdList = "E_0";
 
     [Dropdown(nameof(GetDirAllFileName))]
     [Label("")]
@@ -89,45 +89,49 @@ public class EnemyCreator : GameStartMono, IExecute
 
     private void GenEnemy()
     {
-        if (roleType == RoleType.Enemy)
+
+        string[] enemyNameList = GetEnemyNameList();
+
+        int posIndex = 0;
+        int posCount = genCount * enemyNameList.Length;
+        for (int i = 0; i < genCount; i++)
         {
-            string[] enemyNameList = GetEnemyNameList();
-
-            int posIndex = 0;
-            int posCount = genCount * enemyNameList.Length;
-            for (int i = 0; i < genCount; i++)
+            foreach (string id in enemyNameList)
             {
-                foreach (string id in enemyNameList)
+                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv));
+
+                var genPos = GetGenPosition(posIndex, posCount);
+
+                ShowEffect(genPos);
+
+                enemy.enemyData.movement.MoveToImmediate(genPos);
+
+                enemy.enemyData.movement.LookToDir(transform.forward);
+
+                enemy.IsAiOn = createMode is EnemyCreateMode.AI or EnemyCreateMode.LoadAI;
+                if (createMode == EnemyCreateMode.LoadNoAI)
                 {
-                    Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv));
-
-                    var genPos = GetGenPosition(posIndex, posCount);
-
-                    ShowEffect(genPos);
-
-                    enemy.enemyData.movement.MoveToImmediate(genPos);
-
-                    enemy.enemyData.movement.LookToDir(transform.forward);
-
-                    enemy.IsAiOn = createMode is EnemyCreateMode.AI or EnemyCreateMode.LoadAI;
-                    if (createMode == EnemyCreateMode.LoadNoAI)
-                    {
-                        enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
-                    }
-                    if (isForceFollow)
-                    {
-                        enemy.AddTag(RoleTagCommon.ForceFollow);
-                    }
-
-                    enemy.DeadAct += OnEnemyDead;
-
-                    curGenCount++;
-
-                    _enemyList.Add(enemy.id);
-
-                    posIndex++;
+                    enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
                 }
+                if (isForceFollow)
+                {
+                    enemy.AddTag(RoleTagCommon.ForceFollow);
+                }
+
+                if (IsPlayerTeam)
+                {
+                    enemy.SetTeam(XCSetting.PlayerTeam);
+                }
+
+                enemy.DeadAct += OnEnemyDead;
+
+                curGenCount++;
+
+                _enemyList.Add(enemy.id);
+
+                posIndex++;
             }
+
         }
     }
 

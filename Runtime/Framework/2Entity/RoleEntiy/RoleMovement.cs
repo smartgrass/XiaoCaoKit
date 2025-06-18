@@ -327,7 +327,7 @@ namespace XiaoCao
 
             if (!isGrounded)
             {
-                int layerMask = GameSetting.GetTeamGroundCheckMash(owner.team);
+                int layerMask = XCSetting.GetTeamGroundCheckMash(owner.team);
                 Collider[] cols = Physics.OverlapSphere(spherePosition, GroundedRadius * 2f, layerMask);
                 if (cols.Length > 0)
                 {
@@ -365,7 +365,7 @@ namespace XiaoCao
         }
         public void SetNoGravityT(float time)
         {
-            Debug.Log($"--- SetNoGravityT {time} ");
+            //Debug.Log($"--- SetNoGravityT {time} ");
             if (time > noGravityTimer)
             {
                 noGravityTimer = time;

@@ -9,6 +9,38 @@ namespace XiaoCao
     {
         public static readonly int FrameRate = 30;
         public static readonly float FramePerSec = 1f / FrameRate;
+
+
+        public const int PlayerTeam = 1;
+        public const int EnmeyTeam = 0;
+        //根据阵营分层级
+        public static int GetTeamLayer(int team)
+        {
+            if (team == PlayerTeam)
+            {
+                return Layers.PLAYER;
+            }
+            return Layers.ENEMY;
+        }
+
+        public static int GetTeamAtkLayer(int team)
+        {
+            if (team == 1)
+            {
+                return Layers.PLAYER_ATK;
+            }
+            return Layers.ENEMY_ATK;
+        }
+
+        public static int GetTeamGroundCheckMash(int team)
+        {
+            if (team == 1)
+            {
+                return Layers.ENEMY_MASK;
+            }
+            return Layers.PLAYER_MASK;
+        }
+
     }
 
     ///<see cref="PathTool"/>
@@ -142,6 +174,8 @@ namespace XiaoCao
                 return false;
             }
         }
+
+
 
         //Demo专用配置
         public static bool IsSkillEditor

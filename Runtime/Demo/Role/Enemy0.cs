@@ -22,7 +22,7 @@ namespace XiaoCao
         {
             CreateIdRole(prefabId);
             CreateRoleBody(idRole.bodyName);
-            SetTeam(0);
+            SetTeam(XCSetting.EnmeyTeam);
             roleData.playerAttr.lv = level;
             InitRoleData();
 
@@ -96,7 +96,7 @@ namespace XiaoCao
 
         public override void AIMsg(ActMsgType actType, string actMsg)
         {
-            Debuger.Log($"--- {actType} {actMsg}");
+            Debuger.Log($"--- AIMsg {actType} {actMsg}");
             if (string.IsNullOrEmpty(actMsg))
             {
                 return;

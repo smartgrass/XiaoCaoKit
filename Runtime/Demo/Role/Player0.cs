@@ -34,9 +34,9 @@ namespace XiaoCao
                 GameDataCommon.Current.LocalPlayerId = this.id;
             }
             CreateRoleBody(idRole.bodyName);
-            SetTeam(1);
+            SetTeam(XCSetting.PlayerTeam);
 
-            playerData.playerSetting = ConfigMgr.playerSettingSo.GetOrDefault(raceId, 0);
+            playerData.playerSetting = ConfigMgr.PlayerSettingSo.GetOrDefault(raceId, 0);
             roleData.playerAttr.lv = savaData.lv;
             InitRoleData();
 
@@ -113,7 +113,6 @@ namespace XiaoCao
         {
             component.control.BreakAllBusy();
         }
-
 
     }
 

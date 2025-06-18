@@ -24,6 +24,7 @@ namespace XiaoCao
         #region private
         private CharacterController cc;
 
+        ///<see cref="ObjectData.otherPointName"/>
         private Matrix4x4 m4;
 
         private float lastTime = 0;
@@ -78,6 +79,21 @@ namespace XiaoCao
             else
             {
                 Tran.Translate(move, Space.World);
+            }
+        }
+
+
+        public Vector3 GetEndWoldPos()
+        {
+            if (!IsWorldTransfromMode)
+            {
+                Vector3 detalMove = endVec - startVec;
+                Vector3 worldDetalMove = m4.MultiplyVector(detalMove);
+                return task.GetBindTranfrom().position + worldDetalMove;
+            }
+            else
+            {
+                return endVec;
             }
         }
     }

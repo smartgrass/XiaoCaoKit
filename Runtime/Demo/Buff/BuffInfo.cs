@@ -111,7 +111,7 @@ namespace XiaoCao
             buffItem.buffs = new List<BuffInfo>()
             {
                 //读取配置
-                ConfigMgr.buffConfigSo.GetBuffInfo(eBuff)
+                ConfigMgr.BuffConfigSo.GetBuffInfo(eBuff)
             };
             return buffItem;
         }

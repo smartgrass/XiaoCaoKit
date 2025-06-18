@@ -107,8 +107,10 @@ namespace XiaoCao
 
         void OnMaxTrigger()
         {
-            task.ObjectData.OnEnd();
+            //击中后停止运行
             Debug.Log($"--- OnMaxTrigger");
+            task.ObjectData.OnEnd();
+            task.SetBreak();
         }
     }
 

@@ -41,7 +41,7 @@ namespace XiaoCao
         #endregion
 
         [Button]
-        void DebuggameData()
+        void DebugGameData()
         {
 #if UNITY_EDITOR
             Debug.Log($"--- DebuggameData");

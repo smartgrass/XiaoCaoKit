@@ -151,8 +151,9 @@ namespace FluxEditor
 							newFrameRange.Length = _evt.GetMinLength();
 					}
 
-//					FUtility.Resize( _evt, newFrameRange );
-					FSequenceEditorWindow.instance.GetSequenceEditor().MoveEvent( _evt, newFrameRange );
+					//					FUtility.Resize( _evt, newFrameRange );
+					var seqEditor = FSequenceEditorWindow.instance.GetSequenceEditor();
+                    seqEditor.MoveEvent( _evt, newFrameRange );
 					FEventEditor.FinishMovingEventEditors();
 				}
 			}
