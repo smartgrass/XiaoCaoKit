@@ -168,11 +168,12 @@ namespace Flux
 		ContainsEnd			/// @brief overlaps and contains the end of the range passed
 	}
 
-	/**
+    /**
 	 * @brief Base class for Events
 	 * @sa FSequence, FTimeline, FTrack.
 	 */
-	public class FEvent : FObject
+    ///<see cref="FEventInspector"/>
+    public class FEvent : FObject
 	{
 		public const string UnUsing = "UnUsing/";
 

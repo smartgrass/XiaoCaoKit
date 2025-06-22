@@ -8,6 +8,12 @@ using OdinSerializer;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 using UnityEngine.XR;
 using XiaoCao;
+using UnityEngine.Networking;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
+
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -104,7 +110,7 @@ public static class FileTool
 
     public static T DeserializeReadJson<T>(string path)
     {
-        byte[] bytes = File.ReadAllBytes(path);
+        byte[] bytes = WWWReadByteSync(path);
         T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.JSON);
         return data;
     }
@@ -112,6 +118,50 @@ public static class FileTool
     public static byte[] ReadByte(string filePath)
     {
         return File.ReadAllBytes(filePath);
+    }
+
+    public static byte[] WWWReadByteSync(string path)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(path))
+        {
+            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+
+            //阻塞线程
+            while (!operation.isDone)
+            {
+
+            }
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                // 获取文件内容
+                return request.downloadHandler.data;
+            }
+            else
+            {
+                Debug.LogError($"无法加载文件: {request.error}");
+                return null;
+            }
+        }
+    }
+
+    public static string WWWAllTextsSync(string path)
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(path))
+        {
+            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+            //阻塞线程
+            while (!operation.isDone){ }
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                // 获取文件内容
+                return request.downloadHandler.text;
+            }
+            else
+            {
+                Debug.LogError($"无法加载文件: {request.error}");
+                return null;
+            }
+        }
     }
 
     public static List<string> ReadFileLines(string filePath)
@@ -200,9 +250,10 @@ public static class FileTool
     }
 
 
-
+    //将目录的文件复制到新目录, 不包括根文件夹
     public static void CopyDirAll(string srcDir, string destDir)
     {
+        Debug.Log($"--- CopyDirAll {srcDir} {destDir}");
         DirectoryInfo diSource = new DirectoryInfo(srcDir);
         DirectoryInfo diTarget = new DirectoryInfo(destDir);
         CopyDirAll(diSource, diTarget);

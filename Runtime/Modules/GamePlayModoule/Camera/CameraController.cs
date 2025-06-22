@@ -187,7 +187,7 @@ namespace XiaoCao
             bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
 
             Player0 player0 = GameDataCommon.LocalPlayer;
-            if (player0 != null && !player0.roleData.IsBusy)
+            if (player0 != null && !player0.data_R.IsBusy)
             {
                 if (!isAutoLockEnmey)
                 {
@@ -202,14 +202,14 @@ namespace XiaoCao
 
                 if (findEnmeyTime + remindEnmeyTime < Time.time)
                 {
-                    player0.roleData.lastEnemy = null;
+                    player0.data_R.lastEnemy = null;
                 }
-                Role findRole = player0.roleData.lastEnemy;
+                Role findRole = player0.data_R.lastEnemy;
                 if (findRole == null || findRole.IsDie)
                 {
                     if (player0.FindEnemy(out findRole, setting_topDown.seeR, setting_topDown.seeAngle))
                     {
-                        player0.roleData.lastEnemy = findRole;
+                        player0.data_R.lastEnemy = findRole;
                         findEnmeyTime = Time.time;
                         hasEnmey = true;
                     }
@@ -235,7 +235,7 @@ namespace XiaoCao
                     {
                         distance = 0;
 
-                        AimToDIr(player0.transform.forward, player0.roleData.movement.lastInputDir.IsZore());
+                        AimToDIr(player0.transform.forward, player0.data_R.movement.lastInputDir.IsZore());
                     }
                 }
             }

@@ -31,6 +31,8 @@ namespace XiaoCao
             musicAs.loop = true;
             ReadSettting();
             PlaySettingBgm();
+
+
         }
 
         void ReadSettting()
@@ -138,10 +140,6 @@ namespace XiaoCao
             }
             string filePath = $"{XCPathConfig.GetGameConfigDir()}/Bgm/{fileName}";
 
-            if (!FileTool.IsFileExist(filePath))
-            {
-                return;
-            }
             StartCoroutine(LoadAndPlayMP3(filePath));
         }
 
@@ -168,13 +166,33 @@ namespace XiaoCao
             }
         }
 
+        // 从Android平台的StreamingAssets加载BGM
+        IEnumerator LoadBgmFromAndroid(string dirName)
+        {
+            // 注意：在Android上，StreamingAssets路径需要使用"jar:file://"前缀
+            string url = "jar:file://" + dirName;
+
+            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            {
+                yield return www.SendWebRequest();
+
+                if (www.result == UnityWebRequest.Result.Success)
+                {
+                    // 处理成功获取的文件
+                    Debug.Log("成功获取BGM目录内容");
+                    // 注意：这里返回的是整个目录的内容，需要进一步解析
+                    //ProcessBgmFiles(www.downloadHandler.text);
+                }
+                else
+                {
+                    Debug.LogError("获取BGM目录失败: " + www.error);
+                }
+            }
+        }
+
 
         private IEnumerator LoadAndPlayMP3(string filePath)
         {
-            if (!FileTool.IsFileExist(filePath))
-            {
-                Debug.LogError($"---  no file {filePath}");
-            }
             Debug.Log($"--- LoadAndPlayMP3 {filePath}");
 
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + filePath, AudioType.MPEG))
@@ -201,6 +219,14 @@ namespace XiaoCao
 
             }
 
+        }
+
+        internal void OnReloadScene()
+        {
+            if (musicAs.isPlaying) {
+                musicAs.Stop();
+                musicAs.Play();
+            }
         }
     }
 

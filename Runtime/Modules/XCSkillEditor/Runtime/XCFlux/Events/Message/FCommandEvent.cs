@@ -52,5 +52,14 @@ namespace Flux
             xce.baseMsg = baseMsg;
             return xce;
         }
+#if UNITY_EDITOR
+        [Button]
+        void SelectCmdCode()
+        {
+
+            string path = "Assets/XiaoCaoKit/Runtime/Modules/XCSkillEditor/Runtime/XCCommand/XCCommand_MoveToTargetPos.cs";
+            UnityEditor.Selection.activeObject = UnityEditor.AssetDatabase.LoadAssetAtPath(path, typeof(Object));
+        }
+#endif
     }
 }

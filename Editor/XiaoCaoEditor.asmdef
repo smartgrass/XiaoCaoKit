@@ -5,7 +5,9 @@
         "XiaoCao",
         "NaughtyAttributes.Core",
         "Unity.TextMeshPro",
-        "NaughtyAttributes.Editor"
+        "NaughtyAttributes.Editor",
+        "YooAsset.Editor",
+        "YooAsset"
     ],
     "includePlatforms": [
         "Editor"

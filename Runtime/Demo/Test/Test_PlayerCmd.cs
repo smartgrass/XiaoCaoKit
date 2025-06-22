@@ -8,6 +8,7 @@ using NaughtyAttributes;
 /// </summary>
 public class Test_PlayerCmd : MonoBehaviour
 {
+#if UNITY_EDITOR
     private bool isGrounded;
     public float GroundedOffset = -0.14f;
     public float GroundedRadius = 0.28f;
@@ -38,12 +39,21 @@ public class Test_PlayerCmd : MonoBehaviour
     }
 
 
-#if UNITY_EDITOR
+
     [MiniBtn(nameof(ChangeToTestBody))]
     public string testChangeBodyName = "Body_E_2_Gun";
     void ChangeToTestBody()
     {
         GameAllData.commonData.player0.ChangeBody(testChangeBodyName);
     }
+
+    [MiniBtn(nameof(ChangeToTestEnemy))]
+    public string testChangeToEnmey = "E_2_Gun";
+    void ChangeToTestEnemy()
+    {
+        Player0 player0 = GameAllData.commonData.player0;
+        player0.ChangeToTestEnemy(testChangeToEnmey);
+    }
+
 #endif
 }

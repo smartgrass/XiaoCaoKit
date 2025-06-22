@@ -1,5 +1,6 @@
 ﻿using DG.Tweening.Plugins.Core.PathCore;
 using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -11,8 +12,16 @@ public class IdRole : IdComponent
 {
     public int raceId = 1;
 
-    [Dropdown(nameof(GetDirAllFileName))]
+    [HorLayout(true)]
     public string bodyName = "Body_P_0";
+
+    [OnValueChanged(nameof(SelectBodyName))]
+    [Dropdown(nameof(GetDirAllFileName))]
+    [Label("")]
+    [HorLayout(false)]
+    public string testBodyName = "";
+
+
     public string animControllerName = "";
 
     [XCLabel("重量, 影响击飞程度")]
@@ -94,6 +103,14 @@ public class IdRole : IdComponent
             EntityMgr.Inst.RemoveEntity(this.GetEntity());
         }
     }
+
+    public void SelectBodyName()
+    {
+        bodyName = testBodyName;
+    }
+
+
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

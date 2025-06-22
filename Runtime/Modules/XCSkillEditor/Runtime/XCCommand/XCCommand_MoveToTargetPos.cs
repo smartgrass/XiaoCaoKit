@@ -105,7 +105,7 @@ namespace XiaoCao
         {
             float maxDistance = curEvent.baseMsg.numMsg;
             var role = task.Info.role;
-            if (!task.Info.role.FindEnemy(out Role findRole, maxDistance + 5, angle: 90))
+            if (!task.Info.role.FindEnemy(out Role findRole, maxDistance + 5, angle: 75))
             {
                 //如果距离过远 则放弃索敌
                 return;
@@ -113,8 +113,13 @@ namespace XiaoCao
             role.AISetLookTarget(findRole.transform);
             role.transform.RotaToPos(findRole.transform.position, 0.4f);
 
+            if (isShoot)
+            {
+                moveEvent.task.ObjectData.ReSetStartPos();
+            }
+
             //修改终点,并且修改handle
-            Vector3 worldStartVec = task.GetBindTranfrom().transform.position; //获取当前世界坐标
+            Vector3 worldStartVec = task.GetBindTranfrom().position; //获取当前世界坐标
             Vector3 worldEndVec = findRole.transform.position;
 
             if (isShoot)

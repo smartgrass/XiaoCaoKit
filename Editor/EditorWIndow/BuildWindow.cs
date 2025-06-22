@@ -1,20 +1,18 @@
-﻿#if UNITY_EDITOR
-//using AssetEditor.Editor.Window;
-
-// ReSharper disable once CheckNamespace
-using NaughtyAttributes;
+﻿using NaughtyAttributes;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using XiaoCao;
 using XiaoCaoEditor;
+using YooAsset.Editor;
 
 namespace AssetEditor.Editor
 {
     public class BuildWindow : XiaoCaoWindow
     {
-        public StaticSetting staticSetting;
-        public const int Line1 = 1;
-
 
         [MenuItem(XCEditorTools.XCBuildWindow)]
         public static BuildWindow Open()
@@ -22,8 +20,17 @@ namespace AssetEditor.Editor
             return OpenWindow<BuildWindow>("构建面板");
         }
 
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            buildTarget = EditorUserBuildSettings.activeBuildTarget;
+        }
 
-        [Button("写入", Line1)]
+        #region StaticSetting
+        [MiniBtn(nameof(GenStaticSetting), "生成", 100)]
+        [MiniBtn(nameof(ReadStaticSetting), "读取", 100)]
+        public StaticSetting staticSetting;
+
         public void GenStaticSetting()
         {
             //BuildTool
@@ -33,12 +40,68 @@ namespace AssetEditor.Editor
             FileTool.SerializeWriteJson<StaticSetting>(debugPath, staticSetting);
             Debug.Log($"--- sava {filePath} {debugPath}");
         }
-        [Button("读取", Line1)]
         public void ReadStaticSetting()
         {
             staticSetting = ConfigMgr.LoadStaticSetting();
         }
 
+
+        public const int Line1 = 1;
+
+        #endregion
+
+
+        [Dropdown(nameof(GetBuildTargetName))]
+        public BuildTarget buildTarget;
+
+        public bool IsBuildYooAseet = true;
+
+        public bool IsBuildPackage = true;
+
+
+        private List<BuildTarget> GetBuildTargetName()
+        {
+            return new List<BuildTarget>() {
+                BuildTarget.StandaloneWindows64,
+                BuildTarget.Android
+            };
+        }
+
+
+        [Button]
+        void StartBuld()
+        {
+            BuildTool.CheckSaveScene();
+
+            bool isAndriod = buildTarget == BuildTarget.Android;
+
+            CIBuildHelper.SwitchPlatform(buildTarget);
+
+            if (!isAndriod)
+            {
+                BuildTool.ClearStreamingAssets();
+            }
+
+            if (IsBuildYooAseet)
+            {
+                BuildResult result = YooAssetBuildHelper.BuildYooAseets();
+                if (!result.Success)
+                {
+                    Debug.LogError($"--- BuildYooAseet fail");
+                    return;
+                }
+            }
+
+            if (isAndriod)
+            {
+                BuildTool.CopyDirToAndroidBuild();
+            }
+
+
+            if (IsBuildPackage)
+            {
+                BuildTool.ProjectBuild();
+            }
+        }
     }
 }
-#endif

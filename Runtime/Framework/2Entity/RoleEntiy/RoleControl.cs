@@ -177,7 +177,7 @@ namespace XiaoCao
         public virtual void RcpPlaySkill(string skillId)
         {
             PreSkillStart(skillId);
-            Data_R.curSkillId = skillId;
+            Data_R.tempCurSkillId = skillId;
             Transform selfTf = owner.transform;
             TaskInfo taskInfo = new TaskInfo()
             {

@@ -30,6 +30,13 @@ namespace XiaoCao
         public float JumpY = 2.5f;
 
         public float JumpNoGravityT = 0.4f;
+
+        [ReadOnly] //通过配置读取
+        public List<string> skillIdList = new List<string>();
+
+        public string rollSkillId;
+
+        public string jumpSkillId;
     }
 
     [Serializable]

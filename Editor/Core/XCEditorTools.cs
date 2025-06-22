@@ -33,11 +33,9 @@ namespace XiaoCaoEditor
         public const string OpenPath_LuabnExcel = XiaoCaoPath + "配置表格文件夹";
         public const string OpenPath_GenConfigPath = XiaoCaoPath + "打开生成配置位置";
 
-        public const string XCBuildWindow = "XiaoCao/Build/XCBuildWindow";
-        public const string BuildAll  = "XiaoCao/Build/0.一键打包(全量)";
-        public const string BuildYooRes  = "XiaoCao/Build/1.YooAsset资源打包";
-        public const string JustBuild  = "XiaoCao/Build/2.打包";
-        public const string CopyLubanConfig = "XiaoCao/Build/3.复制Luabn配置";
+        public const string XCBuildWindow = "XiaoCao/Build/0.打包窗口";
+        public const string BuildAll  = "XiaoCao/Build/1.一键打包(全量)";
+        public const string CopyConfigToSteamAssets = "XiaoCao/Build/3.复制ConfigSteamAssetss";
         public const string CreateZip = "XiaoCao/Build/4.打包文件夹生成Zip";
 
 

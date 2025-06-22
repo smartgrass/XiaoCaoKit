@@ -1,7 +1,4 @@
-﻿using NaughtyAttributes;
-using OdinSerializer.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 namespace XiaoCao
@@ -33,7 +30,7 @@ namespace XiaoCao
 
 
         public Transform transform => owner.transform;
-        public RoleMovement Movement => owner.roleData.movement;
+        public RoleMovement Movement => owner.data_R.movement;
         public bool IsAIFree => owner.IsFree && !owner.IsAnimBreak;
         public bool HasTarget => targetRole != null && !targetRole.IsDie;
 
@@ -100,7 +97,7 @@ namespace XiaoCao
 
             if (owner.HasTag(RoleTagCommon.ForceFollow))
             {
-                targetRole = GameDataCommon.LocalPlayer;
+                owner.FindEnemy(out targetRole, 999, 180);
                 ForceFollowTagerUpdate();
                 return;
             }
@@ -120,6 +117,10 @@ namespace XiaoCao
 
         void ForceFollowTagerUpdate()
         {
+            if (!HasTarget)
+            {
+                return;
+            }
             CheckDistance();
             if (tempTargetDis < mainDataFSM.setting.seeR)
             {

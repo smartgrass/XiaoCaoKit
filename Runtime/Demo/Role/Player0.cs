@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace XiaoCao
         public override void DataCreat()
         {
             playerData = new PlayerData0();
-            roleData = playerData;
+            data_R = playerData;
         }
 
 
@@ -37,22 +38,39 @@ namespace XiaoCao
             SetTeam(XCSetting.PlayerTeam);
 
             playerData.playerSetting = ConfigMgr.PlayerSettingSo.GetOrDefault(raceId, 0);
-            roleData.playerAttr.lv = savaData.lv;
+            GetPlayerCmdList(true);
+            data_R.playerAttr.lv = savaData.lv;
             InitRoleData();
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
             component.buffControl = new BuffControl(this);
-            roleData.roleControl = component.control;
+            data_R.roleControl = component.control;
             //component.aiControl = new AIControl(this);
             component.atkTimers = new PlayerAtkTimer(this);
             component.movement = new RoleMovement(this);
-            roleData.movement = component.movement;
+            data_R.movement = component.movement;
 
             RoleIn();
         }
 
+        public void GetPlayerCmdList(bool isLoadByConfig)
+        {
+            AiSkillCmdSetting AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
+            var seting = playerData.playerSetting;
+            seting.rollSkillId = AiCmdSetting.rollId;
 
+
+            if (isLoadByConfig && ConfigMgr.LocalRoleSetting.saveSkillBar)
+            {
+                seting.skillIdList = ConfigMgr.LocalRoleSetting.skillBarSetting;
+            }
+            else
+            {
+                seting.skillIdList = AiCmdSetting.cmdSkillList;
+            }
+
+        }
 
         protected override void OnUpdate()
         {
@@ -68,7 +86,7 @@ namespace XiaoCao
 
         void ForDebug()
         {
-            if (Time.timeScale >1) 
+            if (Time.timeScale > 1)
             {
                 DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             }
@@ -88,7 +106,7 @@ namespace XiaoCao
 
             //DataClear
             component.input.Used();
-            roleData.roleState.Used();
+            data_R.roleState.Used();
         }
 
         protected override void OnDestroy()
@@ -104,7 +122,7 @@ namespace XiaoCao
             base.ReceiveMsg(type, fromId, msg);
 
             if (type is EntityMsgType.PlayNextNorAck)
-            {   
+            {
                 component.control.TryNorAck();
             }
         }
@@ -114,6 +132,24 @@ namespace XiaoCao
             component.control.BreakAllBusy();
         }
 
+
+        public void ChangeToTestEnemy(string testChangeToEnmey)
+        {
+            string rolePath = XCPathConfig.GetIdRolePath(testChangeToEnmey);
+            GameObject idRoleGo = ResMgr.LoadAseet<GameObject>(rolePath);
+            IdRole targetIdRole = idRoleGo.GetComponent<IdRole>();
+            string bodyName = targetIdRole.bodyName;
+
+            ChangeRaceId(targetIdRole.raceId);
+            ChangeBody(bodyName);
+        }
+
+        public void ChangeRaceId(int setRaceId)
+        {
+            idRole.raceId = setRaceId;
+            this.raceId = setRaceId;
+            GetPlayerCmdList(false);
+        }
     }
 
     public class PlayerComponent : RoleComponent<Player0>
@@ -196,33 +232,33 @@ namespace XiaoCao
         public PlayerInputData inputData = new PlayerInputData(); //方向,ack 1,2 ,skill,空格
 
         public PlayerSetting playerSetting;
-    }
 
-
-    public class SkillBarData
-    {
-        public string[] onSkill;
-
-        public static SkillBarData GetDefault()
+        internal string GetBarSkillId(int index)
         {
-            SkillBarData skillBarData = new SkillBarData();
-            skillBarData.onSkill = new string[GameSetting.SkillCountOnBar];
-            for (int i = 0; i < skillBarData.onSkill.Length; i++)
+            if (index < 0)
             {
-                skillBarData.onSkill[i] = (i + 1).ToString();
+                return "";
             }
-            return skillBarData;
+
+            var list = playerSetting.skillIdList;
+            if (list.Count > index)
+            {
+                return list[index];
+            }
+            return list[index % list.Count];
         }
     }
 
+
+    ///<see cref="InputKey"/>
     public class PlayerInputData
     {
         public float x;
         public float y;
         //InputKey
         public bool[] inputs = new bool[8];
-        public string skillInput;
-        
+        public int skillInput = -1; //-1无效值
+
 
         public KeyCode[] CheckKeyCode = new KeyCode[] {
             KeyCode.Alpha0, KeyCode.Alpha1
@@ -246,19 +282,28 @@ namespace XiaoCao
         {
             for (int i = 0; i < inputs.Length; i++)
                 inputs[i] = false;
-            skillInput = "";
+            skillInput = -1;
             x = 0;
             y = 0;
         }
 
-        public void Copy(PlayerInputData data)
-        {
-            this.x = data.x;
-            this.y = data.y;
-            this.inputs = data.inputs;
-            skillInput = data.skillInput;
-        }
+        //public void Copy(PlayerInputData data)
+        //{
+        //    this.x = data.x;
+        //    this.y = data.y;
+        //    this.inputs = data.inputs;
+        //    skillInput = data.skillInput;
+        //}
 
+    }
+
+    public static class InputKey
+    {
+        public const int NorAck = 0;
+        public const int LeftShift = 1;
+        public const int Space = 2; //Jump
+        public const int Tab = 3;
+        public const int Focus = 4;
     }
     public class PlayerAttr
     {
@@ -381,15 +426,6 @@ namespace XiaoCao
         public BuffControl buffControl;
     }
 
-
-    public static class InputKey
-    {
-        public const int NorAck = 0;
-        public const int LeftShift = 1;
-        public const int Space = 2; //Jump
-        public const int Tab = 3;
-        public const int Focus = 4;
-    }
     #endregion
 
 }

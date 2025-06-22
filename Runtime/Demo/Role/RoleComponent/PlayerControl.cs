@@ -14,6 +14,8 @@ namespace XiaoCao
         public PlayerAtkTimer AtkTimers => owner.component.atkTimers;
         public Tween JumpTween { get; set; }
 
+        public string RollName => Data_P.playerSetting.rollSkillId;
+
         public override void Update()
         {
             if (owner.IsDie)
@@ -34,10 +36,11 @@ namespace XiaoCao
                 return;
             }
 
-            if (!string.IsNullOrEmpty(InputData.skillInput))
+            if (InputData.skillInput >= 0)
             {
                 ///<see cref="SkillDataSo"/>
-                TryCastSkill(InputData.skillInput);
+                string skillId = Data_P.GetBarSkillId(InputData.skillInput);
+                TryCastSkill(skillId);
                 Data_P.norAckCache = false;
             }
 
@@ -57,6 +60,7 @@ namespace XiaoCao
                 {
                     TimeStopMgr.Inst.StopTimeSpeed();
                 }
+                owner.component.atkTimers.ClearAllCd();
             }
             if (InputData.inputs[InputKey.Focus])
             {
@@ -122,7 +126,7 @@ namespace XiaoCao
                 this.Data_R.movement.RotateByMoveDir(dir, 1);
             }
 
-            if (AnimNames.Roll != skillId)
+            if (RollName != skillId)
             {
                 DefaultAutoDirect();
             }
@@ -130,15 +134,21 @@ namespace XiaoCao
 
         public void TryRoll()
         {
-            //判断冷缩
-            if (!AtkTimers.IsSkillReady(AnimNames.Roll))
+            if (string.IsNullOrEmpty(RollName))
             {
-                Debug.Log($"rollId cd {AtkTimers.GetWaitTime(AnimNames.Roll)}");
+                Debug.LogError("--- rollName null");
+                return;
+            }
+
+            //判断冷缩
+            if (!AtkTimers.IsSkillReady(RollName))
+            {
+                Debug.Log($"rollId cd {AtkTimers.GetWaitTime(RollName)}");
                 //UIMgr.PopToast($"rollId is in cd {AtkTimers.GetWaitTime(AnimNames.Roll).ToString("N2")}s");
                 return;
             }
 
-            AtkTimers.SetSkillEnterCD(AnimNames.Roll);
+            AtkTimers.SetSkillEnterCD(RollName);
 
             //停止&打断当前动作
             if (IsBusy())
@@ -146,7 +156,7 @@ namespace XiaoCao
                 BreakAllBusy();
             }
 
-            RcpPlaySkill(AnimNames.Roll);
+            RcpPlaySkill(RollName);
         }
 
         public override void SetNoBusy(int runnerId)
@@ -201,7 +211,7 @@ namespace XiaoCao
 
             Data_P.norAckCache = false;
 
-            RcpPlaySkill($"{AnimNames.NorAck}{nextNorAckIndex}");
+            RcpPlaySkill(GetNorAtkName(nextNorAckIndex));
 
             Debug.Log($"--- NorAck {AnimNames.NorAck}{nextNorAckIndex}");
 
@@ -210,9 +220,21 @@ namespace XiaoCao
             Debug.Log($"--- runner {norAckTaskRunner.gameObject.GetInstanceID()}");
         }
 
+        private string GetNorAtkName(int num)
+        {
+            if (owner.raceId != 0)
+            {
+                return Data_P.GetBarSkillId(0);
+            }
+
+            return $"{AnimNames.NorAck}{num}";
+        }
+
+
+
         private bool IsOnNorAck()
         {
-            return Data_R.curSkillId.StartsWith(AnimNames.NorAck);
+            return Data_R.tempCurSkillId.StartsWith(AnimNames.NorAck);
         }
 
         //public override void DefaultAutoDirect()

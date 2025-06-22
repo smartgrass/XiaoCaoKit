@@ -76,28 +76,39 @@ namespace XiaoCao
 
         public static string GetExtraPackageDir()
         {
-            if (Application.isEditor)
-            {
-                return $"{PathTool.GetProjectPath()}/Build/ExtraPackage";
-            }
-            else
-            {
-                if (!Application.isMobilePlatform)
-                {
-                    return $"{PathTool.GetProjectPath()}/ExtraPackage";
-                }
+            return $"{GetBuildExtraResDir()}/yoo/ExtraPackage";
 
-                return $"{Application.streamingAssetsPath}/yoo/ExtraPackage";
-            }
         }
         //BuildTool.AfterBuild 在打包后将复制配置
-        public static string GetGameConfigDir()
+        public static string GetGameConfigDir(bool isForceStream = false)
         {
-            if (!Application.isMobilePlatform)
+            return $"{GetBuildExtraResDir(isForceStream)}/GameConfig";
+        }
+
+
+        //获取默认资源目录
+        public static string GetBuildExtraResDir(bool isForceStream = false)
+        {
+#if !UNITY_EDITOR
+            if (Application.isMobilePlatform)
             {
-                return $"{PathTool.GetProjectPath()}/GameConfig";
+                return $"{Application.streamingAssetsPath}";
             }
-            return $"{Application.streamingAssetsPath}/GameConfig";
+#endif
+            if (isForceStream) {
+                return $"{Application.streamingAssetsPath}";
+            }
+            return $"{PathTool.GetProjectPath()}/ExtraRes";
+        }
+
+        public static string GetWindowBuildResDir()
+        {
+            return $"{PathTool.GetProjectPath()}/Build";
+        }
+
+        public static string GetStreamingAssetsPath()
+        {
+            return $"{Application.streamingAssetsPath}";
         }
 
         public static string GetSkillPrefabDir(string raceId)
@@ -114,9 +125,9 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }
 
-        public static string GetIdRolePath(RoleType roleType, string prefabId)
+        public static string GetIdRolePath(string prefabId)
         {
-            return $"{ResMgr.RESDIR}/Role/{roleType}/{prefabId}.prefab";
+            return $"{ResMgr.RESDIR}/Role/IdRole/{prefabId}.prefab";
         }
 
         public static string GetAIPath(string aiId)
@@ -155,6 +166,8 @@ namespace XiaoCao
         public static readonly string DebugGUI_IsShow = "DebugGUI_IsShow";
 
         public static readonly string OtherShowing = "DebugGUI/IsOtherShowing";
+
+        //TODO Debug分级
         public static bool IsDebug
         {
             get
@@ -182,6 +195,8 @@ namespace XiaoCao
         {
             get => SceneManager.GetActiveScene().name.StartsWith("SkillEditor");
         }
+
+        public static GameVersionType GetGameVersionType => GameSetting.VersionType;
 
         public static int PauseFrame;
     }

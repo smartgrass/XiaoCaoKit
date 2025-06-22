@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 using XiaoCao;
 
 namespace cfg
@@ -131,19 +132,12 @@ namespace cfg
         {
             string path = GetLubanPath(file);
 
-            Debug.Log($"--- {path}");
-            return new ByteBuf(File.ReadAllBytes(path));
+            return new ByteBuf(FileTool.WWWReadByteSync(path));
         }
 
         private static string GetLubanPath(string file)
         {
-            string path;
-            path = $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
-            if (!File.Exists(path))
-            {
-                Debug.LogError($"--- 找不到数据,先生成luban {path}");
-            }
-            return path;
+            return $"{XCPathConfig.GetGameConfigDir()}/Luban/{file}.bytes";
         }
     }
 }

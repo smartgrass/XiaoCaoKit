@@ -12,7 +12,8 @@ namespace XiaoCao
         public static string NoEnough = "NoEnough";
         public static string AutoLockEnemy = "AutoLockEnemy";
         public static string LockCam = "LockCam"; //锁定视角
-        public static string SkinList = "SkinList"; //锁定视角
+        public static string SkinList = "SkinList"; //皮肤
+        public static string TestEnmeyList = "TestEnmeyList"; //测试敌人
         public static string MouseView = "MouseView";//视角跟随鼠标
         public static string MobileInput = "MobileInput";//移动端输入
 

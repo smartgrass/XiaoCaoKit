@@ -327,7 +327,7 @@ namespace XiaoCao
             Player0 player0 = GameDataCommon.LocalPlayer;
             if (player0 != null)
             {
-                Role role = player0.roleData.lastEnemy;
+                Role role = player0.data_R.lastEnemy;
                 if (role != null && !role.IsDie)
                 {
                     ShowAnimTarget(role.transform.position);

@@ -20,7 +20,10 @@ namespace Flux
         public List<float> arrivalTimes = new List<float>(); // 存储每个点到达的时间
 
 
-        public List<AnimationCurve> curves = new List<AnimationCurve>();    
+        public List<AnimationCurve> curves = new List<AnimationCurve>();
+
+        //水平方向上旋转
+        public float horAngle = 0;
 
         //List<Ease>
         [SerializeField]
@@ -251,7 +254,12 @@ namespace Flux
             }
             else
             {
-                return MathTool.LinearVec3(controlPoints[timeIndex], controlPoints[timeIndex + 1], tBetweenPoints);
+                Vector3 start = controlPoints[timeIndex];
+                Vector3 end = controlPoints[timeIndex + 1];
+
+                start = MathTool.RotateY(start, horAngle);
+                end = MathTool.RotateY(end, horAngle);  
+                return MathTool.LinearVec3(start, end, tBetweenPoints);
             }
         }
 
@@ -308,6 +316,9 @@ namespace Flux
                 XCMoveEvent xcMove = new XCMoveEvent();
                 var start = fe.controlPoints[i];
                 var end = fe.controlPoints[i + 1];
+                //补充
+                start = MathTool.RotateY(start, fe.horAngle);
+                end = MathTool.RotateY(end, fe.horAngle);
 
                 xcMove.isBezier = fe.IsBezier;
                 if (fe.IsBezier)

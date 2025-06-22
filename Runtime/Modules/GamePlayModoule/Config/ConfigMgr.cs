@@ -33,6 +33,8 @@ namespace XiaoCao
 
         public static List<string> SkinList;
 
+        public static List<string> TestEnmeyList;
+
         #endregion
 
         #region  private
@@ -60,23 +62,29 @@ namespace XiaoCao
             BuffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
+            GetTestEnemyList();
         }
 
         public static StaticSetting LoadStaticSetting()
         {
-            string filePath = XCPathConfig.GetGameConfigFile("static.info");
-            if (!File.Exists(filePath))
-            {
-                _staticSetting = new StaticSetting();
-                return _staticSetting;
-            }
-            _staticSetting = FileTool.DeserializeRead<StaticSetting>(filePath);
+            _staticSetting = new StaticSetting();
+            //string filePath = XCPathConfig.GetGameConfigFile("static.info");
+            //if (!Application.isMobilePlatform)
+            //{
+            //    if (!File.Exists(filePath))
+            //    {
+
+            //        return _staticSetting;
+            //    }
+            //}
+            //_staticSetting = FileTool.DeserializeRead<StaticSetting>(filePath);
             return _staticSetting;
         }
 
         private static void GetSkinList()
         {
-            List<string> skinList = new List<string>();
+            List<string> list = new List<string>();
+            list.Add("Body_Skin_0");
             foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
             {
                 if (section.SectionName.StartsWith("Mod"))
@@ -85,13 +93,27 @@ namespace XiaoCao
                     {
                         if (key.StartsWith("Body_"))
                         {
-                            skinList.Add(key);
+                            list.Add(key);
                         }
                     }
                 }
             }
-            SkinList = skinList;
+            SkinList = list;
 
+        }
+
+        private static void GetTestEnemyList()
+        {
+            var config = ConfigMgr.MainCfg.GetSection("TestEnmey");
+            if (config == null)
+            {
+                TestEnmeyList = new List<string>();
+                return;
+            }
+            List<string> list = new List<string>();
+            list.Add("--");
+            list.AddRange(config.Dic.Keys);
+            TestEnmeyList = list;
         }
 
         public static string GetSettingSkinName()
@@ -102,11 +124,20 @@ namespace XiaoCao
 
         public static string GetSkinName(int index)
         {
-            if (SkinList.Count == 0)
+            if (index == 0)
             {
                 return "Body_Skin_0";
             }
             return SkinList[index % SkinList.Count];
+        }
+
+        public static string GetTestEnmeyName(int index)
+        {
+            if (index == 0)
+            {
+                return "P_0";
+            }
+            return TestEnmeyList[index % TestEnmeyList.Count];
         }
 
         public static string GetConfigPath(Type t)
@@ -211,18 +242,9 @@ namespace XiaoCao
         public bool saveSkillBar;
 
         public List<string> skillBarSetting;
-
-        public string GetBarSkillId(int index)
-        {
-            if (skillBarSetting.Count > index)
-            {
-                return skillBarSetting[index];
-            }
-            return "";
-        }
-
         public static LocalRoleSetting Load()
         {
+
             var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
             if (!isSuc)
             {
@@ -232,11 +254,9 @@ namespace XiaoCao
             SkillDataSo dataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             if (!ret.saveSkillBar)
             {
-                ret.skillBarSetting = dataSo.playerDefaultSkills;
-            }
-            if (dataSo.UseTestSkill)
-            {
-                ret.skillBarSetting = dataSo.testSkills;
+                int raceId = 0;
+                AiSkillCmdSetting AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
+                ret.skillBarSetting = AiCmdSetting.cmdSkillList;
             }
 
             return ret;

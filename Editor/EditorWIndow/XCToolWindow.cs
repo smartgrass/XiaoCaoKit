@@ -35,6 +35,10 @@ namespace AssetEditor.Editor
         [HorLayout(true)]
         [OnValueChanged(nameof(OnLevelChange))]
         public int playerLevel = 5;
+
+        [OnValueChanged(nameof(OnLevelChange))]
+        public bool isHiding;
+
         [HorLayout(false)]
         [Range(0, 10)]
         [OnValueChanged(nameof(OnTimeScale))]
@@ -65,6 +69,7 @@ namespace AssetEditor.Editor
                     "IsKaiLe".SetKeyBool(true);
                     OnTimeScale();
                     GetBuffs();
+                    OnHidingChange();
                 }
             }
         }
@@ -170,6 +175,17 @@ namespace AssetEditor.Editor
             SaveXCTask.LoadLubanExcelWithCode();
         }
 
+        private void OnHidingChange()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+            if (GameDataCommon.Current.gameState == GameState.Running)
+            {
+                GameDataCommon.LocalPlayer.IsHiding = isHiding;
+            }
+        }
 
         private void OnLevelChange()
         {
@@ -181,7 +197,7 @@ namespace AssetEditor.Editor
 
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
-                GameDataCommon.LocalPlayer.roleData.playerAttr.lv = playerLevel;
+                GameDataCommon.LocalPlayer.data_R.playerAttr.lv = playerLevel;
                 GameDataCommon.LocalPlayer.InitRoleData();
                 HotFlags.PlayerAttrChange = true;
             }

@@ -24,6 +24,7 @@ namespace XiaoCao
         //出招表
         public List<string> cmdSkillList = new List<string>();
 
+        public string rollId = "Roll";
 
         public string GetCmdSkillByIndex(int index)
         {

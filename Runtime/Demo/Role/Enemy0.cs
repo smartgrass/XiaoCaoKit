@@ -9,7 +9,7 @@ namespace XiaoCao
         public override void DataCreat()
         {
             enemyData = new EnemyData0();
-            roleData = enemyData;
+            data_R = enemyData;
         }
 
         public EnemyData0 enemyData;
@@ -23,22 +23,21 @@ namespace XiaoCao
             CreateIdRole(prefabId);
             CreateRoleBody(idRole.bodyName);
             SetTeam(XCSetting.EnmeyTeam);
-            roleData.playerAttr.lv = level;
+            data_R.playerAttr.lv = level;
             InitRoleData();
 
             component.movement = new RoleMovement(this);
-            roleData.movement = component.movement;
+            data_R.movement = component.movement;
 
             AddEnemyData aiData = idRole.gameObject.GetComponent<AddEnemyData>();
-
-            int curCmdSettingId = aiData.cmdSettingId >= 0 ? aiData.cmdSettingId : raceId;
-            enemyData.AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(curCmdSettingId, 0);
+            enemyData.AiCmdSetting = aiData.GetAiSkillCmdSetting(raceId);
             component.aiControl = new AIControl(this).Init(aiData.aiId);
 
 
-            roleData.roleControl = component.aiControl;
+            data_R.roleControl = component.aiControl;
             RoleIn();
         }
+
 
         /// <summary>
         /// TODO 
@@ -66,7 +65,7 @@ namespace XiaoCao
             component.aiControl.FixedUpdate();
             component.movement.FixedUpdate();
 
-            roleData.roleState.Used();
+            data_R.roleState.Used();
         }
 
         protected override void OnDestroy()

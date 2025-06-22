@@ -43,5 +43,6 @@ public class GameStartMono : MonoBehaviour
     public virtual void OnGameStart()
     {
         isGameStarted = true;
+        //表示玩家已经加载完成
     }
 }

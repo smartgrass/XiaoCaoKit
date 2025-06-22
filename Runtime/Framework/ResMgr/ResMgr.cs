@@ -1,9 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
-using DG.Tweening.Plugins.Core.PathCore;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using YooAsset;
@@ -154,7 +152,7 @@ public class ResMgr
     {
         string packageName = DefaultPackage;
         ResourcePackage package = GetOrCreatPackage(packageName);
-        InitializationOperation initializationOperation = null;
+        InitializationOperation initOperation = null;
         EPlayMode playMode = GetEPlayMode();
         Loader = package;
 
@@ -169,7 +167,7 @@ public class ResMgr
             var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
             var initParameters = new EditorSimulateModeParameters();
             initParameters.EditorFileSystemParameters = editorFileSystem;
-            initializationOperation = package.InitializeAsync(initParameters);
+            initOperation = package.InitializeAsync(initParameters);
             Debug.Log($"--- EditorSimulateMode");
         }
 #endif
@@ -179,7 +177,7 @@ public class ResMgr
             var buildinFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
             var initParameters = new OfflinePlayModeParameters();
             initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
-            initializationOperation = package.InitializeAsync(initParameters);
+            initOperation = package.InitializeAsync(initParameters);
         }
 
         // 联机运行模式
@@ -194,7 +192,7 @@ public class ResMgr
             //initializationOperation =package.InitializeAsync(initParameters);
             Debuger.LogWarning($"HostPlayMode 无");
         }
-        await initializationOperation;
+        await initOperation;
 
         var operation1 = package.RequestPackageVersionAsync();
         await operation1;
@@ -207,62 +205,66 @@ public class ResMgr
 
     public static async Task InitExtraPackage()
     {
-        string dir = XCPathConfig.GetExtraPackageDir();
+        //string dir = XCPathConfig.GetExtraPackageDir();o
 
-        DirectoryInfo directory = new DirectoryInfo(dir);
-        foreach (var item in directory.GetDirectories())
+        foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
         {
-            var packageName = item.Name;
-            Debug.Log($"--- load package {packageName}");
-
-            ResourcePackage package = YooAssets.CreatePackage(packageName);
-            InitializationOperation initOperation = null;
-            EPlayMode playMode = GetEPlayMode();
-
-            string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
-            string fallbackHostServer = defaultHostServer;
-            if (!hasManifest)
+            if (section.SectionName.StartsWith("Mod"))
             {
-                Debug.LogError($"--- no manifest {defaultHostServer}");
-                continue;
-            }
-            playMode = EPlayMode.HostPlayMode;
+                var packageName = section.SectionName;
+                ResourcePackage package = YooAssets.CreatePackage(packageName);
+                InitializationOperation initOperation = null;
+                EPlayMode playMode = GetEPlayMode();
 
-            IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-            var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-            var initParameters = new HostPlayModeParameters();
-            initParameters.BuildinFileSystemParameters = cacheFileSystem;
-            initParameters.CacheFileSystemParameters = cacheFileSystem;
-
-            initOperation = package.InitializeAsync(initParameters);
-
-            Debug.Log($"--- initializationOperation task");
-            await initOperation.Task;
-
-            if (initOperation.Status == EOperationStatus.Succeed)
-                Debug.Log("资源包初始化成功！");
-            else
-                Debug.LogError($"资源包初始化失败：{initOperation.Error}");
-
-            var versionTask = package.RequestPackageVersionAsync();
-            await versionTask;
-            var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
-            await manifestTask;
-
-            IniSection section = ConfigMgr.MainCfg.GetSection(packageName);
-            if (section == null)
-            {
-                Debug.LogError($"--- no section {packageName} in Main.ini ");
-                continue;
-            }
-
-            foreach (var kv in section.Dic)
-            {
-                ShortKeyDic[kv.Key] = new ShortKeyCache()
+                if (playMode == EPlayMode.EditorSimulateMode)
                 {
-                    package = package,
-                    path = kv.Value
-                };
+                    playMode = EPlayMode.HostPlayMode;
+                }
+
+                Debug.Log($"--- packageName {playMode}");
+
+                if (playMode == EPlayMode.HostPlayMode)
+                {
+                    string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
+                    string fallbackHostServer = defaultHostServer;
+
+                    IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                    var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+                    var initParameters = new HostPlayModeParameters();
+                    initParameters.BuildinFileSystemParameters = cacheFileSystem;
+                    initParameters.CacheFileSystemParameters = cacheFileSystem;
+
+                    initOperation = package.InitializeAsync(initParameters);
+                    await initOperation.Task;
+
+                    var versionTask = package.RequestPackageVersionAsync();
+                    await versionTask;
+                    var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
+                    await manifestTask;
+                }
+                else
+                {
+                    var buildinFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
+                    var initParameters = new OfflinePlayModeParameters();
+                    initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
+                    initOperation = package.InitializeAsync(initParameters);
+
+                    await initOperation;
+
+                    var operation1 = package.RequestPackageVersionAsync();
+                    await operation1;
+                    var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+                    await operation2;
+                }
+
+                foreach (var kv in section.Dic)
+                {
+                    ShortKeyDic[kv.Key] = new ShortKeyCache()
+                    {
+                        package = package,
+                        path = kv.Value
+                    };
+                }
             }
         }
     }
@@ -362,7 +364,7 @@ public class ResMgr
     }
 
 
-    private static EPlayMode GetEPlayMode()
+    public static EPlayMode GetEPlayMode()
     {
         EPlayMode playMode = EPlayMode.OfflinePlayMode;
 #if UNITY_EDITOR

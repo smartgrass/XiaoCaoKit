@@ -17,3 +17,4 @@ MonoBehaviour:
   raceId: 0
   targetAnimtorController: {fileID: 9100000, guid: 550e36f525d1fff46b6ef9a0955fbd97, type: 2}
   forEditorAC: {fileID: 9100000, guid: 67e3c803347fe3e448566fb113c8cdd3, type: 2}
+  saveToAllAnim: 0

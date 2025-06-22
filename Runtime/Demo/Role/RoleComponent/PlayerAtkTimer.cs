@@ -10,7 +10,7 @@ namespace XiaoCao
 
         public Dictionary<string, SkillCdData> dic = new Dictionary<string, SkillCdData>();
 
-        public float GetSkillCDOff => owner.roleData.playerAttr.GetValue(EAttr.SkillCDOff);
+        public float GetSkillCDOff => owner.data_R.playerAttr.GetValue(EAttr.SkillCDOff);
 
         public float norAckTimer;
 
@@ -105,6 +105,13 @@ namespace XiaoCao
             return dic[skillIndex].GetWaitTime();
         }
 
+        public void ClearAllCd()
+        {
+            foreach (var v in dic.Values)
+            {
+                v.cdFinishTime = 0;
+            }
+        }
 
         public class SkillCdData
         {

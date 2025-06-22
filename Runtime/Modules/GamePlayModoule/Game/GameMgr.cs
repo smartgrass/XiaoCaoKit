@@ -94,6 +94,7 @@ namespace XiaoCao
             SetGameState(GameState.Exit);
             curScene = SceneManager.GetActiveScene().name;
             LoadScene(curScene);
+            SoundMgr.Inst.OnReloadScene();
         }
 
         public void LoadScene(string sceneName)

@@ -26,9 +26,9 @@ namespace XiaoCao
         public bool IsPlayer { get => RoleType == RoleType.Player; }
 
         //roleData
-        public RoleData roleData;
+        public RoleData data_R;
 
-        public PlayerAttr PlayerAttr => roleData.playerAttr;
+        public PlayerAttr PlayerAttr => data_R.playerAttr;
 
         public Action<Role> DeadAct;
 
@@ -38,11 +38,13 @@ namespace XiaoCao
         public override int Hp { get => (int)Math.Round(PlayerAttr.hp); set => PlayerAttr.hp = value; }
         public override float MaxHp { get => PlayerAttr.MapHp; }
 
-        public float ShowArmorPercentage => roleData.breakData.ShowPercentage;
+        public float ShowArmorPercentage => data_R.breakData.ShowPercentage;
 
         [ShowNativeProperty]
-        public override bool IsDie => roleData.bodyState == EBodyState.Dead;
-        public bool IsFree => roleData.IsStateFree;
+        public override bool IsDie => data_R.bodyState == EBodyState.Dead;
+        public bool IsFree => data_R.IsStateFree;
+
+        public bool IsHiding = false; //隐身
 
         public bool IsNoDamage => PlayerAttr.GetAttribute(EAttr.NoDamage).CurrentValue > 0;
 
@@ -68,7 +70,7 @@ namespace XiaoCao
         internal Animator Anim => idRole.animator;
         public bool isBodyCreated => body != null;
 
-        public RoleMovement Movement => roleData.movement;
+        public RoleMovement Movement => data_R.movement;
 
         #endregion
 
@@ -79,7 +81,7 @@ namespace XiaoCao
         {
             this.prefabId = prefabId;
 
-            string baseRole = XCPathConfig.GetIdRolePath(RoleType, prefabId);
+            string baseRole = XCPathConfig.GetIdRolePath(prefabId);
             GameObject idRoleGo = ResMgr.LoadInstan(baseRole, PackageType.DefaultPackage);
 
 
@@ -113,12 +115,13 @@ namespace XiaoCao
             CreateRoleBody(bodyName);
         }
 
+
         protected void BaseInit()
         {
             idRole.animator = body.GetComponent<Animator>();
             idRole.animator.runtimeAnimatorController = idRole.LoadRuntimeAc;
             idRole.animator.applyRootMotion = false;
-            roleData.moveSetting = idRole.moveSetting;
+            data_R.moveSetting = idRole.moveSetting;
         }
 
         public void SetTeam(int team)
@@ -167,26 +170,27 @@ namespace XiaoCao
 
             }
 
-            roleData.breakData.OnHit((int)setting.BreakPower);
+            data_R.breakData.OnHit((int)setting.BreakPower);
             //TODO 累计血量的BreakPower加成
 
-            roleData.movement.OnDamage(roleData.breakData.IsBreak);
+            data_R.movement.OnDamage(data_R.breakData.IsBreak);
 
-            OnDamageAct?.Invoke(ackInfo, roleData.breakData.IsBreak);
+            OnDamageAct?.Invoke(ackInfo, data_R.breakData.IsBreak);
             AfterDamage(ackInfo);
 
             if (!BattleData.IsTimeStop)
             {
                 HitStop.Do(setting.HitStop);
             }
-            HitTween(ackInfo, setting, roleData.breakData.IsBreak);
+            HitTween(ackInfo, setting, data_R.breakData.IsBreak);
 
-            if (roleData.breakData.IsBreak)
+            if (data_R.breakData.IsBreak)
             {
                 //无重力时间
-                roleData.movement.SetNoGravityT(setting.NoGTime);
+                data_R.movement.SetNoGravityT(setting.NoGTime);
 
                 // 打断当前技能
+                Debug.Log($"--- OnBreak {this.transform.name} {data_R.tempCurSkillId}");
                 OnBreak();
                 if (!BattleData.IsTimeStop)
                 {
@@ -196,11 +200,11 @@ namespace XiaoCao
             }
             else
             {
-                if (!BattleData.IsTimeStop && !roleData.IsBusy)
+                if (!BattleData.IsTimeStop && !data_R.IsBusy)
                 {
                     Anim.TryPlayAnim(AnimHash.Hit);
                 }
-                roleData.movement.SetUnMoveTime(0.35f);
+                data_R.movement.SetUnMoveTime(0.35f);
 
             }
             //playerMover.SetNoGravityT(setting.NoGravityT);
@@ -219,7 +223,7 @@ namespace XiaoCao
 
         public void ChangeNowValue(ENowAttr eAttr, float delta)
         {
-            roleData.playerAttr.ChangeNowValue(ENowAttr.Hp, delta);
+            data_R.playerAttr.ChangeNowValue(ENowAttr.Hp, delta);
         }
 
         //击退处理
@@ -257,10 +261,10 @@ namespace XiaoCao
 
         public void CheckBreakUpdate()
         {
-            roleData.breakData.OnUpdate(XCTime.deltaTime);
-            if (!roleData.breakData.IsBreak)
+            data_R.breakData.OnUpdate(XCTime.deltaTime);
+            if (!data_R.breakData.IsBreak)
             {
-                roleData.bodyState = EBodyState.Ready;
+                data_R.bodyState = EBodyState.Ready;
             }
         }
 
@@ -290,7 +294,8 @@ namespace XiaoCao
         public override void OnDie(AtkInfo atkInfo)
         {
             base.OnDie(atkInfo);
-            roleData.bodyState = EBodyState.Dead;
+            data_R.roleControl.BreakAllBusy();
+            data_R.bodyState = EBodyState.Dead;
             if (!BattleData.IsTimeStop)
             {
                 Anim.SetBool(AnimHash.IsDead, true);
@@ -301,7 +306,7 @@ namespace XiaoCao
         public void InitRoleData()
         {
             var setting = ConfigMgr.CommonSettingSo;
-            int lv = roleData.playerAttr.lv;
+            int lv = data_R.playerAttr.lv;
             int attrSettingId = 0;
             if (!IsPlayer)
             {
@@ -314,8 +319,8 @@ namespace XiaoCao
             }
             AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
 
-            roleData.breakData.SetAttr(attr);
-            roleData.playerAttr.Init(id, lv, attr);
+            data_R.breakData.SetAttr(attr);
+            data_R.playerAttr.Init(id, lv, attr);
         }
 
         public void RoleIn()
@@ -354,9 +359,9 @@ namespace XiaoCao
             //处理击飞
             if (!isOn)
             {
-                if (roleData.breakData.HasHit)
+                if (data_R.breakData.HasHit)
                 {
-                    if (roleData.breakData.IsBreak)
+                    if (data_R.breakData.IsBreak)
                     {
                         Anim.TryPlayAnim(AnimHash.Break);
                     }
@@ -366,14 +371,14 @@ namespace XiaoCao
                     }
                 }
 
-                if (roleData.bodyState == EBodyState.Dead)
+                if (data_R.bodyState == EBodyState.Dead)
                 {
                     Anim.SetBool(AnimHash.IsDead, true);
                 }
 
             }
 
-            roleData.roleControl.StopTimeSpeed(isOn);
+            data_R.roleControl.StopTimeSpeed(isOn);
         }
 
         ///<see cref="BaseMsg"/>
@@ -419,7 +424,8 @@ namespace XiaoCao
                     OnNoDamage(msg);
                     break;
                 case EntityMsgType.TheWorld:
-                    TimeStopMgr.Inst.StopTimeSpeed();
+                    SetTimeStop(msg);
+
                     break;
                 case EntityMsgType.NoBreakTime:
                     OnNoBreakTime(msg);
@@ -429,28 +435,35 @@ namespace XiaoCao
             }
         }
 
-        private void OnNoBreakTime(object msg)
+        private void PlayNextSkill(object msg)
         {
             string skillId = ((BaseMsg)msg).strMsg;
-            if (roleData.roleControl.IsBusy())
+            if (data_R.roleControl.IsBusy())
             {
-                roleData.roleControl.BreakAllBusy();
+                data_R.roleControl.BreakAllBusy();
             }
-            roleData.roleControl.TryPlaySkill(skillId);
+            data_R.roleControl.TryPlaySkill(skillId);
         }
 
-        private void PlayNextSkill(object msg)
+        private void OnNoBreakTime(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;
             float time = baseMsg.numMsg;
             if (baseMsg.state == 0)
             {
-                roleData.breakData.SetNoBreakTime(time);
+                data_R.breakData.SetNoBreakTime(time);
             }
             else
             {
-                roleData.breakData.SetNoBreakTime(0,false);
+                data_R.breakData.SetNoBreakTime(0, false);
             }
+        }
+
+        private void SetTimeStop(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            float time = baseMsg.numMsg;
+            TimeStopMgr.Inst.StopTimeSpeed(time);
         }
 
         private void OnNoDamage(object msg)
@@ -547,12 +560,12 @@ namespace XiaoCao
 
         private void AutoDirect(object msg)
         {
-            roleData.roleControl.DefaultAutoDirect();
+            data_R.roleControl.DefaultAutoDirect();
         }
         private void SetUnMoveTime(object msg)
         {
             float t = ((BaseMsg)msg).numMsg;
-            roleData.movement.SetUnMoveTime(t);
+            data_R.movement.SetUnMoveTime(t);
         }
 
         private void AddTag(object msg)
@@ -574,11 +587,11 @@ namespace XiaoCao
             float t1 = baseMsg.numMsg;
             if (baseMsg.state == 0)
             {
-                roleData.movement.SetSkillNoGravityT(t1);
+                data_R.movement.SetSkillNoGravityT(t1);
             }
             else
             {
-                roleData.movement.SetSkillNoGravityT(0);
+                data_R.movement.SetSkillNoGravityT(0);
             }
 
         }
@@ -591,18 +604,18 @@ namespace XiaoCao
         /// <param name="isLookDir">是否根据移动方向旋转</param>
         public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
         {
-            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
+            data_R.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
         public virtual void AIMoveTo(Vector3 pos, float speedFactor, bool isLookDir = false)
         {
             var dir = (pos - gameObject.transform.position).normalized;
-            roleData.movement.SetMoveDir(dir, speedFactor, isLookDir);
+            data_R.movement.SetMoveDir(dir, speedFactor, isLookDir);
         }
 
         public void AISetLookTarget(Transform target)
         {
-            roleData.movement.SetLookTarget(target);
+            data_R.movement.SetLookTarget(target);
         }
 
         public virtual void AIMsg(ActMsgType actType, string actMsg)
@@ -696,7 +709,7 @@ namespace XiaoCao
             this.owner = _owner;
         }
 
-        public RoleData Data_R => owner.roleData;
+        public RoleData Data_R => owner.data_R;
         public RoleMoveData RoleState => Data_R.roleState;
 
         public virtual void OnDestroy()
@@ -726,7 +739,7 @@ namespace XiaoCao
     public class RoleData
     {
 
-        public string curSkillId = "";
+        public string tempCurSkillId = "";
 
         public EBodyState bodyState;
 
@@ -933,7 +946,7 @@ namespace XiaoCao
             _noBreakTimer = time;
             if (armor <= 0)
             {
-                armor = 0.1f *  maxArmor;
+                armor = 0.1f * maxArmor;
             }
         }
     }

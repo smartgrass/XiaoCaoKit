@@ -26,11 +26,18 @@ namespace XiaoCao
         [Button(enabledMode: EButtonEnableMode.Playmode)]
         public void Play()
         {
-            if (_coroutine == null)
+            if (isLoop && _coroutine == null)
             {
                 _coroutine = StartCoroutine(TweenAnimation());
             }
+            else
+            {
+                Stop();
+                _coroutine = StartCoroutine(TweenAnimation());
+            }
         }
+
+
         [Button(enabledMode: EButtonEnableMode.Playmode)]
         public void Stop()
         {

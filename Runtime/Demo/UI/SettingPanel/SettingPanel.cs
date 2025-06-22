@@ -22,12 +22,15 @@ public class SettingPanel : TabPanel
 
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
         SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
-        SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
+        if (GameSetting.VersionType != GameVersionType.Office)
+        {
+            SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
+        }
         reloadBtn.onClick.AddListener(OnReload);
 
         mainPanel.Show();
         gameObject.SetActive(false);
-        Prefabs.gameObject.SetActive(false); 
+        Prefabs.gameObject.SetActive(false);
         IsInited = true;
     }
 

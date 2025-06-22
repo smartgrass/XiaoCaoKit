@@ -11,14 +11,21 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
+    Android:
+      enabled: 1
+      settings:
+        AndroidLibraryDependee: UnityLibrary
+        AndroidSharedLibraryType: Executable
+        CPU: ARMv7
     Any:
       enabled: 0
       settings:
+        Exclude Android: 0
         Exclude Editor: 1
         Exclude Linux64: 0
         Exclude OSXUniversal: 0
         Exclude Win: 0
-        Exclude Win64: 0
+        Exclude Win64: 1
     Editor:
       enabled: 0
       settings:

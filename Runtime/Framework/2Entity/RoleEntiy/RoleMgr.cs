@@ -22,7 +22,7 @@ namespace XiaoCao
             maxS = 0;
             foreach (var item in roleDic.Values)
             {
-                if (item.team != team && !item.IsDie)
+                if (item.team != team && !item.IsDie && !item.IsHiding)
                 {
                     GetAngleAndDistance(self, item.transform, out float curAngle, out float curDis);
 

@@ -48,7 +48,7 @@ namespace XiaoCao
         NoDamage = 20,
         [InspectorName("时停")]
         TheWorld = 21,
-        [InspectorName("霸体时间")]
+        [InspectorName("霸体时间(NoBreakTime)")]
         NoBreakTime = 22,
 
 

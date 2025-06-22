@@ -306,10 +306,59 @@ public class SaveXCTask
             animDic.Add(xcEvent.eName, animEvent._animationClip);
             taskData._events.Add(xcEvent);
         }
-        //检测动画机连线
-        XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic, curSequence._skillId);
+
+        if (fSeqSetting.saveToAllAnim)
+        {
+            string path = AssetDatabase.GetAssetPath(fSeqSetting.targetAnimtorController);
+            string fullDir = PathTool.GetUpperDir(path);
+            string assetDir = PathTool.FullPathToAssetsPath(fullDir);
+            Debug.Log($"--- dir {assetDir}");
+            var runtimeAnims = GetAnimatorControllersInDirectory(assetDir);
+            foreach (var anim in runtimeAnims)
+            {
+                XCAnimatorTool.CheckAnim(anim, animDic, curSequence._skillId);
+            }
+        }
+        else
+        {
+            //检测动画机连线
+            XCAnimatorTool.CheckAnim(fSeqSetting.targetAnimtorController, animDic, curSequence._skillId);
+        }
     }
 
+    public static List<RuntimeAnimatorController> GetAnimatorControllersInDirectory(string directoryPath)
+    {
+        // 用于存储找到的控制器的列表
+        List<RuntimeAnimatorController> controllers = new List<RuntimeAnimatorController>();
+
+        // 检查目录是否存在
+        if (!directoryPath.StartsWith("Assets"))
+        {
+            Debug.LogError("指定的目录不存在: " + directoryPath);
+            return controllers;
+        }
+
+
+
+
+        // 获取目录下所有 .controller 文件的GUID
+        string[] guids = AssetDatabase.FindAssets("t:RuntimeAnimatorController", new[] { directoryPath });
+
+        // 遍历GUID，加载对应的控制器资源
+        foreach (string guid in guids)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+            Debug.Log($"--- assetPath {assetPath}");
+            RuntimeAnimatorController controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(assetPath);
+
+            if (controller != null)
+            {
+                controllers.Add(controller);
+            }
+        }
+
+        return controllers;
+    }
 
 
     private static ObjectData MakeObjectData(FTrack _track)

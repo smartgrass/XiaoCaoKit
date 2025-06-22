@@ -17,5 +17,6 @@ namespace XiaoCao
 
         public RuntimeAnimatorController targetAnimtorController;
         public RuntimeAnimatorController forEditorAC;
+        public bool saveToAllAnim;
     }
 }

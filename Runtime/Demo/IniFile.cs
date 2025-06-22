@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 using XiaoCao;
 
 public class IniFile
@@ -13,22 +14,28 @@ public class IniFile
     {
         m_sectionList = new List<IniSection>();
     }
-    public void LoadFromFile(string fileName,string failBack = null)
+
+
+    public void LoadFromFile(string fileName, string failBack = null)
     {
         string strFullPath = XCPathConfig.GetGameConfigFile(fileName);
-        if (!File.Exists(strFullPath))
-        {
-            if (failBack != null)
-            {
-                Debug.LogError($"--- no file {fileName}");
-                LoadFromFile(failBack,null);
-            }
-            return;
-        }
-        using (FileStream fs = new FileStream(strFullPath, FileMode.Open))
-        {
-            LoadFromStream(fs);
-        }
+        string fileContent = FileTool.WWWAllTextsSync(strFullPath);
+        LoadFromText(fileContent);
+
+
+        //if (!File.Exists(strFullPath))
+        //{
+        //    if (failBack != null)
+        //    {
+        //        Debug.LogError($"--- no file {strFullPath}");
+        //        LoadFromFile(failBack,null);
+        //    }
+        //    return;
+        //}
+        //using (FileStream fs = new FileStream(strFullPath, FileMode.Open))
+        //{
+        //    LoadFromStream(fs);
+        //}
     }
     /// <summary>
     /// 取得配置文件中所有的头名称
@@ -60,9 +67,10 @@ public class IniFile
         return defaultValue;
     }
 
-    public bool TryGetFristValue(string key, out string ret){
+    public bool TryGetFristValue(string key, out string ret)
+    {
         IniSection section = m_sectionList[0];
-        if (section.Dic.TryGetValue(key,out string value))
+        if (section.Dic.TryGetValue(key, out string value))
         {
             ret = value;
             return true;
@@ -70,13 +78,13 @@ public class IniFile
         ret = null;
         return false;
     }
-    
+
     public bool TryGetValue(string sectionName, string key, out string ret)
     {
         IniSection section = GetSection(sectionName);
         if (section != null)
         {
-            if (section.Dic.TryGetValue(key,out string value))
+            if (section.Dic.TryGetValue(key, out string value))
             {
                 ret = value;
                 return true;
@@ -85,7 +93,17 @@ public class IniFile
         ret = "";
         return false;
     }
-    private void LoadFromStream(FileStream fs)
+
+    public void LoadFromText(string content)
+    {
+        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(content);
+        using (MemoryStream ms = new MemoryStream(bytes))
+        {
+            LoadFromStream(ms);
+        }
+    }
+
+    private void LoadFromStream(MemoryStream fs)
     {
         using (StreamReader sr = new StreamReader(fs))
         {
@@ -98,11 +116,11 @@ public class IniFile
             {
                 line = line.Trim();
                 if (line == "") continue;
-                
+
                 // 跳过注释
                 if (line.StartsWith("//")) continue;
-                
-                
+
+
                 // 处理 Section
                 if (line.StartsWith("[") && line.EndsWith("]"))
                 {

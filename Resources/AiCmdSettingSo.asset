@@ -16,22 +16,28 @@ MonoBehaviour:
   - CmdSettingId: 0
     des: "\u9ED8\u8BA4"
     cmdSkillList:
-    - NorAck0
-    - NorAck1
+    - 1
+    - 2
+    - 3
+    - 4
+    rollId: Roll
   - CmdSettingId: 1
     des: "\u654C\u4EBA\u9ED8\u8BA4"
     cmdSkillList:
     - 101
     - 102
+    rollId: Roll
   - CmdSettingId: 2
     des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
     cmdSkillList:
     - 201
+    rollId: Roll
   - CmdSettingId: 3
     des: "\u5251"
     cmdSkillList:
     - 301
     - 302
+    rollId: Roll
   - CmdSettingId: 4
     des: "\u67AA\u5175-boss"
     cmdSkillList:
@@ -39,3 +45,5 @@ MonoBehaviour:
     - 402
     - 403
     - 404
+    - 405
+    rollId: 404

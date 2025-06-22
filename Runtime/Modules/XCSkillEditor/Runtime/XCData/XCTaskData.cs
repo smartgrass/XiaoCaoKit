@@ -106,7 +106,7 @@ namespace XiaoCao
                 //控制特效播放速度
                 InitPs(ps);
             }
-            SetPos();
+            ReSetStartPos();
 
             CheckAtkMsg(info);
 
@@ -162,7 +162,7 @@ namespace XiaoCao
         }
 
         //设置起始位置
-        private void SetPos()
+        public void ReSetStartPos()
         {
             if (transfromType == TransfromType.StartPos)
             {

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using NaughtyAttributes;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,16 +8,12 @@ namespace XiaoCao
 {
 
 
-    public class SkillBarHud : MonoBehaviour
+    public class SkillBarHud : GameStartMono, IClearCache
     {
-        public GameObject prefab;
-        public LocalRoleSetting LocalRoleSetting => ConfigMgr.LocalRoleSetting;
-
-        public CachePool<SkillSlot> cachePool;
-
-        private ChildPos childPos;
-
-        private Transform slotParent;
+        public Transform slotParent;
+        [ReadOnly]
+        public List<SkillSlot> slots;
+        //private ChildPos childPos;
 
         private PlayerAtkTimer _atkTimer;
         public PlayerAtkTimer AtkTimer
@@ -30,33 +28,48 @@ namespace XiaoCao
             }
         }
 
-        public int SkillCount => GameSetting.SkillCountOnBar;
-
-        public void Init()
+        public PlayerData0 _playerData;
+        public PlayerData0 PlayerData
         {
-            cachePool = new CachePool<SkillSlot>(prefab, SkillCount);
-            slotParent = prefab.transform.parent;
-            childPos = slotParent.GetComponent<ChildPos>();
-            CheckImg();
-            gameObject.SetActive(true);
-
+            get
+            {
+                if (_playerData == null)
+                {
+                    _playerData = GameDataCommon.LocalPlayer.playerData;
+                }
+                return _playerData;
+            }
         }
 
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        private void ClearCache()
+        {
+            _atkTimer = null;
+            _playerData =null;
+        }
+
+        public override void OnGameStart()
+        {
+            base.OnGameStart();
+            ClearCache();
+            CheckImg();
+            slots = slotParent.GetComponentsInChildren<SkillSlot>().ToList();
+        }
 
 
         private void CheckImg()
         {
-            ////atkTimer = GameDataCommon.Current.player0.component.atkTimers;
-
-            for (int i = 0; i < SkillCount; i++)
+            for (int i = 0; i < slots.Count; i++)
             {
-                var solt = cachePool.cacheList[i];
-                string skillndex = LocalRoleSetting.GetBarSkillId(i);
-                solt.transform.SetParent(slotParent);
-                solt.gameObject.name = "slot_" + i;
+                var solt = slots[i];
+                string skillndex = PlayerData.GetBarSkillId(i);
                 solt.image.sprite = SpriteResHelper.LoadSkillIcon(skillndex);
             }
-            childPos.SetChildPos();
+            //childPos.SetChildPos();
         }
 
         public void Update()
@@ -67,21 +80,21 @@ namespace XiaoCao
             }
 
 
-            for (int i = 0; i < SkillCount; i++)
+            for (int i = 0; i < slots.Count; i++)
             {
-                var solt = cachePool.cacheList[i];
-                float process = AtkTimer.GetWaitTimeProccess(LocalRoleSetting.GetBarSkillId(i));
+                var solt = slots[i];
+                float process = AtkTimer.GetWaitTimeProccess(PlayerData.GetBarSkillId(i));
 
                 bool isCd = process != 0;
                 if (solt.isColdLastFrame && !isCd)
                 {
                     Debug.Log($"cd finish! {i}");
                     //播放发光特效
-                    solt.PlayEffect();
+                    solt.CdFinish();
                 }
                 if (!solt.isColdLastFrame && isCd)
                 {
-                    solt.EnterCD();
+                    solt.CdEnter();
                 }
 
                 solt.isColdLastFrame = isCd;

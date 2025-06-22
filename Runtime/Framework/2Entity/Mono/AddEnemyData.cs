@@ -2,7 +2,7 @@
 using UnityEngine;
 using XiaoCao;
 
-public class AddEnemyData: MonoBehaviour
+public class AddEnemyData : MonoBehaviour
 {
 #if UNITY_EDITOR
     [OnValueChanged(nameof(Check))]
@@ -21,6 +21,18 @@ public class AddEnemyData: MonoBehaviour
     [Label("")]
     [NaughtyAttributes.ReadOnly]
     public ActPoolFSM CurAi;
+
+    /// <summary>
+    /// GetAiSkillCmdSetting
+    /// </summary>
+    /// <param name="fallBackId">RaceId</param>
+    /// <returns></returns>
+    public AiSkillCmdSetting GetAiSkillCmdSetting(int fallBackId)
+    {
+        int curCmdSettingId = cmdSettingId >= 0 ? cmdSettingId : fallBackId;
+        AiSkillCmdSetting AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(curCmdSettingId, 0);
+        return AiCmdSetting;
+    }
 
 #if UNITY_EDITOR
     void Check()

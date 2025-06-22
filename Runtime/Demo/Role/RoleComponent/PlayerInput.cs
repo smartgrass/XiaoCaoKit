@@ -12,6 +12,19 @@ namespace XiaoCao
 
         public override void Update()
         {
+
+#if !UNITY_EDITOR
+            if (Application.isMobilePlatform)
+            {
+                return;
+            }
+#endif
+            CheckPcInputs();
+        }
+
+        private void CheckPcInputs()
+        {
+            //电脑端输入检测
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
             {
                 return;
@@ -19,24 +32,15 @@ namespace XiaoCao
 
             CheckInputXY();
 
-            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
-            {
-                data.inputs[InputKey.NorAck] = true;
-                ////屏幕安全边距
-                //if (GetMouseProportionalCoordinates().y < 0.9f)
-                //{
-
-                //}
-
-            }
+            CheckNorAtk();
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
                 data.inputs[InputKey.LeftShift] = true;
 
-#if PLATFORM_STANDALONE_WIN
+
             if (Input.GetKeyDown(KeyCode.Mouse1))
                 data.inputs[InputKey.LeftShift] = true;
-#endif
+
 
             if (Input.GetKeyDown(KeyCode.Space))
                 data.inputs[InputKey.Space] = true;
@@ -47,11 +51,11 @@ namespace XiaoCao
             if (Input.GetKeyDown(KeyCode.F))
                 data.inputs[InputKey.Focus] = true;
 
-            for (int i = 0; i < 6; i++)
+            for (int index = 0; index < 6; index++)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                if (Input.GetKeyDown(KeyCode.Alpha1 + index))
                 {
-                    data.skillInput = ConfigMgr.LocalRoleSetting.GetBarSkillId(i);
+                    data.skillInput = index;
                 }
             }
 
@@ -59,11 +63,27 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(data.CheckKeyCode2[i]))
                 {
-                    data.skillInput = ConfigMgr.LocalRoleSetting.GetBarSkillId(i);
+                    data.skillInput = i;
                 }
             }
+        }
 
-            owner.playerData.inputData.Copy(data);
+        private void CheckNorAtk()
+        {
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                data.inputs[InputKey.NorAck] = true;
+            }
+
+            if (GameSetting.UserInputType == UserInputType.Touch)
+            {
+                return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                data.inputs[InputKey.NorAck] = true;
+            }
         }
 
         private void CheckInputXY()

@@ -1,5 +1,6 @@
 ﻿using EasyUI.Helpers;
 using EasyUI.Toast;
+using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
 using TEngine;
@@ -18,10 +19,7 @@ namespace XiaoCao
         public Canvas topCanvas;
         public Canvas midCanvas;
 
-
         public BattleHud battleHud;
-
-        public SkillBarHud skillBarHud;
 
         public LevelPanel levelPanel;
 
@@ -29,27 +27,52 @@ namespace XiaoCao
 
         public PlayerPanel playerPanel;
 
+        public SkillBarHud skillBarHud;
+
+        public MobileInputHud mobileInputHud;
+
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
+        [ReadOnly]
         public PanelBase lastPanel;
 
-        public Transform mobileInputHudTf;
         //懒加载 或 主动加载
 
         public override void Init()
         {
             base.Init();
             battleHud?.Init();
-            skillBarHud?.Init();
             settingPanel?.Init();
             playerPanel?.Init();
             transform.SetParent(null);
-            mobileInputHudTf = midCanvas.transform.Find("MobileInputHud");
+
+#if UNITY_EDITOR
+            if (mobileInputHud.gameObject.activeSelf)
+            {
+                GameSetting.UserInputType = UserInputType.Touch;
+            }
+#endif
+
+            OnChangeInputType(GameSetting.UserInputType);
         }
 
         private void OnDestroy()
         {
 
+        }
+
+        public void OnChangeInputType(UserInputType type)
+        {
+            if (type == UserInputType.Touch)
+            {
+                mobileInputHud.Show();
+                skillBarHud.gameObject.SetActive(false);
+            }
+            else
+            {
+                skillBarHud.Show();
+                mobileInputHud.gameObject.SetActive(false);
+            }
         }
 
         public void ShowView(UIPanelType type)

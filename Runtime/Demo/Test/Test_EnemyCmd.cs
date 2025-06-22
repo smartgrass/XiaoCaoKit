@@ -59,7 +59,7 @@ public class Test_EnemyCmd : MonoBehaviour
 
     private bool NoBusy()
     {
-        return !enemy.roleData.IsBusy;
+        return !enemy.data_R.IsBusy;
     }
 
 

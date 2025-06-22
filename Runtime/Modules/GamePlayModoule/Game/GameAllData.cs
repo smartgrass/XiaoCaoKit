@@ -17,13 +17,12 @@ namespace XiaoCao
         //由玩家缓存数据读取 , 不需要初始值
         public static PlayerSaveData playerSaveData = null;
 
-        [RuntimeInitializeOnLoadMethod( )]
-        private static void GameAllDataInit()
+        //RuntimeInitializeOnLoadMethod
+        public static void GameAllDataInit()
         {
-            Debug.Log($"-- RuntimeInitializeOnLoadMethod GameAllDataInit");
+            Debug.Log($"-- GameAllDataInit");
             commonData = new GameDataCommon();
             battleData = new BattleData();
-            GameSetting.GetGameVersion();
         }
 
     }
@@ -38,6 +37,8 @@ namespace XiaoCao
         }
         public static GameVersionType VersionType;
 
+        public static UserInputType UserInputType;
+
         //目前技能
         public const int SkillCountOnBar = 4;
         ///<see cref="EQuality"/>
@@ -45,6 +46,12 @@ namespace XiaoCao
 
         ///<see cref="LevelSettingHelper"/>
         ///<see cref="XCSetting"/>
+    }
+
+    public enum UserInputType
+    {
+        Mouse,
+        Touch,
     }
 
 
@@ -139,16 +146,16 @@ namespace XiaoCao
 
         public float GetDamageFactor(int Team)
         {
-            float mult = 1;
+            float mult = 0;
             if (Team == XCSetting.PlayerTeam)
             {
                 tempNumDic.TryGetValue(BattleNumKeys.DamageMult_P, out mult);
-                return mult;
+                return 1 + mult;
             }
             else
             {
                 tempNumDic.TryGetValue(BattleNumKeys.DamageMult_E, out mult);
-                return mult;
+                return 1 + mult;
             }
         }
     }
@@ -184,7 +191,7 @@ namespace XiaoCao
         public static void AddBuff(int id, BuffItem buff)
         {
             GetPlayerBuff(id).AddBuff(buff);
-            GameEvent.Send<UIPanelType,bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel,true);
+            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel, true);
         }
 
         public static PlayerBuffs LocalPlayerBuffs
@@ -268,7 +275,7 @@ namespace XiaoCao
     }
 
     public static class BattleNumKeys
-    { 
+    {
         public const string DamageMult_P = "DamageMult_P"; //伤害倍率
         public const string DamageMult_E = "DamageMult_E";
     }

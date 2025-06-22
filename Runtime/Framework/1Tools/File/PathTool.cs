@@ -72,7 +72,8 @@ public static class PathTool
 #if  NET_STANDARD_2_1
         return Path.Combine("Assets", Path.GetRelativePath(Application.dataPath, fullPath));
 #else
-        return Path.Combine("Assets", fullPath.RemoveHead(Application.dataPath));
+        fullPath = GetRegularPath(fullPath);
+        return "Assets" + fullPath.RemoveHead(Application.dataPath);
 #endif
     }
 
