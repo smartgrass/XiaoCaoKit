@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -24,26 +25,12 @@ namespace AssetEditor.Editor
         {
             base.OnEnable();
             buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            staticSetting = ConfigMgr.StaticSettingSo;
         }
 
         #region StaticSetting
-        [MiniBtn(nameof(GenStaticSetting), "生成", 100)]
-        [MiniBtn(nameof(ReadStaticSetting), "读取", 100)]
-        public StaticSetting staticSetting;
-
-        public void GenStaticSetting()
-        {
-            //BuildTool
-            string filePath = XCPathConfig.GetGameConfigFile("static.info");
-            FileTool.SerializeWrite<StaticSetting>(filePath, staticSetting);
-            string debugPath = $"Assets/Ignore/static.json";
-            FileTool.SerializeWriteJson<StaticSetting>(debugPath, staticSetting);
-            Debug.Log($"--- sava {filePath} {debugPath}");
-        }
-        public void ReadStaticSetting()
-        {
-            staticSetting = ConfigMgr.LoadStaticSetting();
-        }
+        [Expandable]
+        public StaticSettingSo staticSetting;
 
 
         public const int Line1 = 1;
@@ -71,37 +58,7 @@ namespace AssetEditor.Editor
         [Button]
         void StartBuld()
         {
-            BuildTool.CheckSaveScene();
-
-            bool isAndriod = buildTarget == BuildTarget.Android;
-
-            CIBuildHelper.SwitchPlatform(buildTarget);
-
-            if (!isAndriod)
-            {
-                BuildTool.ClearStreamingAssets();
-            }
-
-            if (IsBuildYooAseet)
-            {
-                BuildResult result = YooAssetBuildHelper.BuildYooAseets();
-                if (!result.Success)
-                {
-                    Debug.LogError($"--- BuildYooAseet fail");
-                    return;
-                }
-            }
-
-            if (isAndriod)
-            {
-                BuildTool.CopyDirToAndroidBuild();
-            }
-
-
-            if (IsBuildPackage)
-            {
-                BuildTool.ProjectBuild();
-            }
+            BuildTool.StartBuld(IsBuildYooAseet, IsBuildPackage, buildTarget);
         }
     }
 }

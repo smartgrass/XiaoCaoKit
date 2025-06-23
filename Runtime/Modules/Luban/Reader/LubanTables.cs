@@ -132,7 +132,7 @@ namespace cfg
         {
             string path = GetLubanPath(file);
 
-            return new ByteBuf(FileTool.WWWReadByteSync(path));
+            return new ByteBuf(FileTool.ReadByte(path));
         }
 
         private static string GetLubanPath(string file)

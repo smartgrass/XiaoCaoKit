@@ -22,6 +22,8 @@ namespace XiaoCao
         public static string BuffEffect = "BuffEffect";
         public static string EquippedBuffEffect = "EquippedBuffEffect";
 
+        public static string BuildTime = "BuildTime";
+
         public static string GetSkillNameKey(int skillId)
         {
             return $"skill_{skillId}";

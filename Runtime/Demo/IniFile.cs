@@ -19,23 +19,23 @@ public class IniFile
     public void LoadFromFile(string fileName, string failBack = null)
     {
         string strFullPath = XCPathConfig.GetGameConfigFile(fileName);
-        string fileContent = FileTool.WWWAllTextsSync(strFullPath);
-        LoadFromText(fileContent);
+        //string fileContent = FileTool.WWWAllTextsSync(strFullPath);
+        //LoadFromText(fileContent);
 
 
-        //if (!File.Exists(strFullPath))
-        //{
-        //    if (failBack != null)
-        //    {
-        //        Debug.LogError($"--- no file {strFullPath}");
-        //        LoadFromFile(failBack,null);
-        //    }
-        //    return;
-        //}
-        //using (FileStream fs = new FileStream(strFullPath, FileMode.Open))
-        //{
-        //    LoadFromStream(fs);
-        //}
+        if (!File.Exists(strFullPath))
+        {
+            if (failBack != null)
+            {
+                Debug.LogError($"--- no file {strFullPath}");
+                LoadFromFile(failBack, null);
+            }
+            return;
+        }
+        using (FileStream fs = new FileStream(strFullPath, FileMode.Open))
+        {
+            LoadFromStream(fs);
+        }
     }
     /// <summary>
     /// 取得配置文件中所有的头名称
@@ -96,14 +96,14 @@ public class IniFile
 
     public void LoadFromText(string content)
     {
-        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(content);
-        using (MemoryStream ms = new MemoryStream(bytes))
-        {
-            LoadFromStream(ms);
-        }
+        //byte[] bytes = System.Text.Encoding.UTF8.GetBytes(content);
+        //using (FileStream ms = new FileStream(bytes))
+        //{
+        //    LoadFromStream(ms);
+        //}
     }
 
-    private void LoadFromStream(MemoryStream fs)
+    private void LoadFromStream(FileStream fs)
     {
         using (StreamReader sr = new StreamReader(fs))
         {

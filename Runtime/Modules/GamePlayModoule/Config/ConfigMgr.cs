@@ -21,6 +21,18 @@ namespace XiaoCao
     public class ConfigMgr
     {
         #region  public
+        public static StaticSettingSo StaticSettingSo
+        {
+            get
+            {
+                if (_staticSettingSo == null)
+                {
+                    _staticSettingSo = LoadSoConfig<StaticSettingSo>();
+                }
+                return _staticSettingSo;
+            }
+        }
+
         public static PlayerSettingSo PlayerSettingSo;
 
         public static SkillDataSo SkillDataSo;
@@ -39,13 +51,13 @@ namespace XiaoCao
 
         #region  private
 
-        private static StaticSetting _staticSetting;
-
         private static IniFile _mainConfig;
 
         private static InitArrayFile _soundCfg;
 
         private static LocalSetting _localSetting;
+
+        private static StaticSettingSo _staticSettingSo;
 
         #endregion
 
@@ -53,7 +65,6 @@ namespace XiaoCao
 
         public static void Init()
         {
-            LoadStaticSetting();
             var init = MainCfg;
             PlayerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
             CommonSettingSo = ConfigMgr.LoadSoConfig<AttrSettingSo>();
@@ -65,21 +76,6 @@ namespace XiaoCao
             GetTestEnemyList();
         }
 
-        public static StaticSetting LoadStaticSetting()
-        {
-            _staticSetting = new StaticSetting();
-            //string filePath = XCPathConfig.GetGameConfigFile("static.info");
-            //if (!Application.isMobilePlatform)
-            //{
-            //    if (!File.Exists(filePath))
-            //    {
-
-            //        return _staticSetting;
-            //    }
-            //}
-            //_staticSetting = FileTool.DeserializeRead<StaticSetting>(filePath);
-            return _staticSetting;
-        }
 
         private static void GetSkinList()
         {
@@ -168,17 +164,6 @@ namespace XiaoCao
 #endif
             }
             return ret;
-        }
-        public static StaticSetting StaticSetting
-        {
-            get
-            {
-                if (_staticSetting == null)
-                {
-                    LoadStaticSetting();
-                }
-                return _staticSetting;
-            }
         }
 
         public static IniFile MainCfg
@@ -320,12 +305,6 @@ namespace XiaoCao
         }
     }
 
-
-    [Serializable]
-    public class StaticSetting
-    {
-        public GameVersionType versionType;
-    }
     public enum GameVersionType
     {
         Office,//正式

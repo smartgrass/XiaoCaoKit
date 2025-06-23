@@ -1,15 +1,13 @@
 ﻿
-#if UNITY_EDITOR
 using NaughtyAttributes;
 using System.Collections.Generic;
-using XiaoCao;
-using UnityEditor;
 using UnityEngine;
+using XiaoCao;
 using static MathLayoutTool;
-using System.Drawing;
 
 public class Test_MapLayout : MonoBehaviour
 {
+#if UNITY_EDITOR
     [MiniBtn(nameof(GetBounds))]
     [OnValueChanged(nameof(GetBounds))]
     public GameObject prefab;
@@ -24,15 +22,11 @@ public class Test_MapLayout : MonoBehaviour
     //边缘分组
     public bool sortGroup = true;
 
-
     public string prefabName;
     [ReadOnly]
     public Vector3 boxSize;
     [ReadOnly]
     public Vector3 center;
-
-
-
 
     void GetBounds()
     {
@@ -100,7 +94,7 @@ public class Test_MapLayout : MonoBehaviour
                         continue;
                     }
                 }
-                
+
             }
         }
     }
@@ -129,8 +123,8 @@ public class Test_MapLayout : MonoBehaviour
             if (IsPrefab())
             {
                 Debug.Log($"--- IsPrefab");
-                string path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefab);
-                Object go = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path), transform);
+                string path = UnityEditor.PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(prefab);
+                Object go = UnityEditor.PrefabUtility.InstantiatePrefab(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path), transform);
                 return go as GameObject;
             }
             else
@@ -144,13 +138,16 @@ public class Test_MapLayout : MonoBehaviour
     {
         bool isPrefab = false;
 
-        isPrefab = PrefabUtility.IsPartOfPrefabAsset(prefab);
+        isPrefab = UnityEditor.PrefabUtility.IsPartOfPrefabAsset(prefab);
 
-        return isPrefab || PrefabUtility.GetPrefabInstanceStatus(prefab) == PrefabInstanceStatus.Connected;
+        return isPrefab || UnityEditor.PrefabUtility.GetPrefabInstanceStatus(prefab) == UnityEditor.PrefabInstanceStatus.Connected;
     }
-
+#endif
 }
 
+/// <summary>
+/// 获取Prefab的边界盒大小
+/// </summary>
 public class PrefabUtils
 {
     // 封装成方法，返回Prefab实例化后所有子物体边界盒的包围盒  
@@ -205,46 +202,3 @@ public class PrefabUtils
 }
 
 
-
-public class RoomGenerator 
-{
-    public GameObject wallPrefab; // Wall预制体  
-    public float roomWidth = 10f; // 房间的宽度  
-    public float roomDepth = 10f; // 房间的深度  
-    public float wallThickness = 1f; // 墙体的厚度  
-    public float hollowWidth = 4f; // 空心部分的宽度  
-
-
-    void GenerateRoom()
-    {
-        //// 计算墙体位置  
-        //float halfWidth = roomWidth / 2f;
-        //float halfDepth = roomDepth / 2f;
-        //float halfThickness = wallThickness / 2f;
-        //float hollowHalfWidth = hollowWidth / 2f;
-
-        //// 生成外部墙体  
-        //// 前  
-        //GameObject.Instantiate(wallPrefab, new Vector3(halfWidth - halfThickness, 0, halfDepth - halfThickness), Quaternion.identity, transform);
-        //// 后  
-        //GameObject.Instantiate(wallPrefab, new Vector3(halfWidth - halfThickness, 0, -halfDepth + halfThickness), Quaternion.identity, transform);
-        //// 左  
-        //GameObject.Instantiate(wallPrefab, new Vector3(-halfWidth + halfThickness, 0, 0), Quaternion.Euler(0, 90, 0), transform);
-        //// 右  
-        //GameObject.Instantiate(wallPrefab, new Vector3(halfWidth - hollowHalfWidth - halfThickness, 0, 0), Quaternion.Euler(0, 90, 0), transform);
-
-        //// 如果需要，你可以添加更多墙体来封闭顶部和底部  
-
-        //// 生成空心部分两侧的墙体  
-        //// 左侧空心墙  
-        //GameObject.Instantiate(wallPrefab, new Vector3(-hollowHalfWidth + halfThickness, 0, -halfDepth + halfThickness), Quaternion.Euler(0, 90, 0), transform);
-        //GameObject.Instantiate(wallPrefab, new Vector3(-hollowHalfWidth + halfThickness, 0, halfDepth - halfThickness), Quaternion.Euler(0, 90, 0), transform);
-
-        // 右侧空心墙（可选，取决于设计）  
-        // 类似地实例化，但调整x坐标  
-    }
-}
-
-#else
-
-#endif

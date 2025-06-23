@@ -35,9 +35,7 @@ namespace XiaoCaoEditor
 
         public const string XCBuildWindow = "XiaoCao/Build/0.打包窗口";
         public const string BuildAll  = "XiaoCao/Build/1.一键打包(全量)";
-        public const string CopyConfigToSteamAssets = "XiaoCao/Build/3.复制ConfigSteamAssetss";
-        public const string CreateZip = "XiaoCao/Build/4.打包文件夹生成Zip";
-
+        public const string CopyZipToAndroidBuild = "XiaoCao/Build/2.ExtraRes生成Zip到SteamAssets";
 
 
 

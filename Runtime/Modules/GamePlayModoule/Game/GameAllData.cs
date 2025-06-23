@@ -32,7 +32,7 @@ namespace XiaoCao
     {
         public static void GetGameVersion()
         {
-            VersionType = ConfigMgr.StaticSetting.versionType;
+            VersionType = ConfigMgr.StaticSettingSo.versionType;
 
         }
         public static GameVersionType VersionType;

@@ -25,7 +25,7 @@ namespace XiaoCao
         //平a重置时间
         public float resetNorAckTime = 1.5f;
 
-        public float[] norAckCdTimes = { 0.5f, 0.5f, 0.5f, 0.5f};
+        public float[] norAckCdTimes = { 0.5f, 0.5f, 0.5f, 0.5f };
 
         public float JumpY = 2.5f;
 
@@ -40,7 +40,7 @@ namespace XiaoCao
     }
 
     [Serializable]
-    public class AttrSetting:IIndex
+    public class AttrSetting : IIndex
     {
         public string desc = "备注";
 

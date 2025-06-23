@@ -11,6 +11,8 @@ using XiaoCao;
 using UnityEngine.Networking;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
+using System.Collections;
+
 
 
 
@@ -110,7 +112,7 @@ public static class FileTool
 
     public static T DeserializeReadJson<T>(string path)
     {
-        byte[] bytes = WWWReadByteSync(path);
+        byte[] bytes = ReadByte(path);
         T data = OdinSerializer.SerializationUtility.DeserializeValue<T>(bytes, DataFormat.JSON);
         return data;
     }
@@ -144,13 +146,14 @@ public static class FileTool
         }
     }
 
+
     public static string WWWAllTextsSync(string path)
     {
         using (UnityWebRequest request = UnityWebRequest.Get(path))
         {
             UnityWebRequestAsyncOperation operation = request.SendWebRequest();
             //阻塞线程
-            while (!operation.isDone){ }
+            while (!operation.isDone) { }
             if (request.result == UnityWebRequest.Result.Success)
             {
                 // 获取文件内容
@@ -160,6 +163,34 @@ public static class FileTool
             {
                 Debug.LogError($"无法加载文件: {request.error}");
                 return null;
+            }
+        }
+    }
+
+    public static IEnumerator CopyStreamingAssetsFileToPersistentData(string fileName)
+    {
+        string sourcePath = Path.Combine(Application.streamingAssetsPath, fileName);
+        string destPath = Path.Combine(Application.persistentDataPath, fileName);
+
+        // 检查目标路径是否已存在文件（避免重复复制）
+        if (File.Exists(destPath))
+        {
+            Debug.Log($"文件已存在：{fileName}");
+            //yield break;
+        }
+
+        // Android/WebGL平台使用UnityWebRequest加载
+        using (UnityWebRequest request = UnityWebRequest.Get(sourcePath))
+        {
+            yield return request.SendWebRequest();
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                File.WriteAllBytes(destPath, request.downloadHandler.data);
+                Debug.Log($"复制成功：{fileName}");
+            }
+            else
+            {
+                Debug.LogError($"复制失败：{request.error}");
             }
         }
     }

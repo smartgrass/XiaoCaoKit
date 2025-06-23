@@ -11,7 +11,8 @@
         "Unity.TextMeshPro",
         "Fantasy.Unity",
         "GG.Extensions",
-        "PhysicsExtension"
+        "PhysicsExtension",
+        "Unity.SharpZipLib.Utils"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

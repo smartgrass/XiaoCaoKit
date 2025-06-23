@@ -153,7 +153,7 @@ public class ResMgr
         string packageName = DefaultPackage;
         ResourcePackage package = GetOrCreatPackage(packageName);
         InitializationOperation initOperation = null;
-        EPlayMode playMode = GetEPlayMode();
+        EPlayMode playMode = DebugSetting.GetEPlayMode();
         Loader = package;
 
 #if UNITY_EDITOR
@@ -214,13 +214,8 @@ public class ResMgr
                 var packageName = section.SectionName;
                 ResourcePackage package = YooAssets.CreatePackage(packageName);
                 InitializationOperation initOperation = null;
-                EPlayMode playMode = GetEPlayMode();
-
-                if (playMode == EPlayMode.EditorSimulateMode)
-                {
-                    playMode = EPlayMode.HostPlayMode;
-                }
-
+                EPlayMode playMode = playMode = EPlayMode.HostPlayMode;
+                //DebugSetting.GetEPlayMode();
                 Debug.Log($"--- packageName {playMode}");
 
                 if (playMode == EPlayMode.HostPlayMode)
@@ -235,12 +230,6 @@ public class ResMgr
                     initParameters.CacheFileSystemParameters = cacheFileSystem;
 
                     initOperation = package.InitializeAsync(initParameters);
-                    await initOperation.Task;
-
-                    var versionTask = package.RequestPackageVersionAsync();
-                    await versionTask;
-                    var manifestTask = package.UpdatePackageManifestAsync(versionTask.PackageVersion);
-                    await manifestTask;
                 }
                 else
                 {
@@ -248,14 +237,9 @@ public class ResMgr
                     var initParameters = new OfflinePlayModeParameters();
                     initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
                     initOperation = package.InitializeAsync(initParameters);
-
-                    await initOperation;
-
-                    var operation1 = package.RequestPackageVersionAsync();
-                    await operation1;
-                    var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-                    await operation2;
                 }
+
+                await UpdatePackage(package, initOperation);
 
                 foreach (var kv in section.Dic)
                 {
@@ -290,7 +274,7 @@ public class ResMgr
 
     public static async Task InitRawPackage()
     {
-        EPlayMode playMode = GetEPlayMode();
+        EPlayMode playMode = DebugSetting.GetEPlayMode();
 
         string packageName = RawPackage;
 
@@ -298,7 +282,7 @@ public class ResMgr
 
         RawLoader = package;
 
-        InitializationOperation initializationOperation = null;
+        InitializationOperation initOperation = null;
 
 #if UNITY_EDITOR
         if (playMode == EPlayMode.EditorSimulateMode)
@@ -309,7 +293,7 @@ public class ResMgr
             var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
             var initParameters = new EditorSimulateModeParameters();
             initParameters.EditorFileSystemParameters = editorFileSystem;
-            initializationOperation = package.InitializeAsync(initParameters);
+            initOperation = package.InitializeAsync(initParameters);
         }
 #endif
 
@@ -319,17 +303,21 @@ public class ResMgr
             var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinRawFileSystemParameters();
             var initParameters = new OfflinePlayModeParameters();
             initParameters.BuildinFileSystemParameters = buildinFileSystem;
-            initializationOperation = package.InitializeAsync(initParameters);
+            initOperation = package.InitializeAsync(initParameters);
         }
-        await initializationOperation.Task;
 
+        await UpdatePackage(package, initOperation);
+
+    }
+
+    private static async Task UpdatePackage(ResourcePackage package, InitializationOperation initOperation)
+    {
+        await initOperation.Task;
         var operation1 = package.RequestPackageVersionAsync();
         await operation1;
         var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
         await operation2;
-
     }
-
 
     private static ResourcePackage GetOrCreatPackage(string packageName)
     {
@@ -361,19 +349,6 @@ public class ResMgr
 
         Debug.Log($"has {ret} {filePath}");
         return ret;
-    }
-
-
-    public static EPlayMode GetEPlayMode()
-    {
-        EPlayMode playMode = EPlayMode.OfflinePlayMode;
-#if UNITY_EDITOR
-        playMode = (EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
-#else
-        playMode = EPlayMode.OfflinePlayMode;
-#endif
-
-        return playMode;
     }
 
     #endregion

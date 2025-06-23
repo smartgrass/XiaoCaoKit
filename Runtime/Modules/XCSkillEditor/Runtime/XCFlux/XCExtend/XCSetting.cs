@@ -1,6 +1,5 @@
 ﻿using OdinSerializer;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace XiaoCao
 {
@@ -76,29 +75,29 @@ namespace XiaoCao
 
         public static string GetExtraPackageDir()
         {
-            return $"{GetBuildExtraResDir()}/yoo/ExtraPackage";
+            return $"{GetBuildExtraResDir()}/ExtraPackage";
 
         }
         //BuildTool.AfterBuild 在打包后将复制配置
-        public static string GetGameConfigDir(bool isForceStream = false)
+        public static string GetGameConfigDir()
         {
-            return $"{GetBuildExtraResDir(isForceStream)}/GameConfig";
+            return $"{GetBuildExtraResDir()}/GameConfig";
         }
 
 
         //获取默认资源目录
-        public static string GetBuildExtraResDir(bool isForceStream = false)
+        public static string GetBuildExtraResDir()
         {
-#if !UNITY_EDITOR
-            if (Application.isMobilePlatform)
+            if (DebugSetting.IsMobilePlatform)
             {
-                return $"{Application.streamingAssetsPath}";
-            }
-#endif
-            if (isForceStream) {
-                return $"{Application.streamingAssetsPath}";
+                return $"{Application.persistentDataPath}/ExtraRes";
             }
             return $"{PathTool.GetProjectPath()}/ExtraRes";
+        }
+
+        public static string GetExtraResZipPath()
+        {
+            return $"{Application.streamingAssetsPath}/ExtraRes.zip";
         }
 
         public static string GetWindowBuildResDir()
@@ -160,44 +159,10 @@ namespace XiaoCao
         }
     }
 
-    public static class DebugSetting
+    public enum ResTypeP
     {
-
-        public static readonly string DebugGUI_IsShow = "DebugGUI_IsShow";
-
-        public static readonly string OtherShowing = "DebugGUI/IsOtherShowing";
-
-        //TODO Debug分级
-        public static bool IsDebug
-        {
-            get
-            {
-                //return true;
-                if (Application.isEditor)
-                {
-                    return DebugGUI_IsShow.GetKeyBool();
-                }
-                else
-                {
-                    if (ConfigMgr.MainCfg.GetValue("Setting", "DebugLog", "0") == "1")
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-
-
-
-        //Demo专用配置
-        public static bool IsSkillEditor
-        {
-            get => SceneManager.GetActiveScene().name.StartsWith("SkillEditor");
-        }
-
-        public static GameVersionType GetGameVersionType => GameSetting.VersionType;
-
-        public static int PauseFrame;
+        Windows,
+        Android,
+        Editor
     }
 }

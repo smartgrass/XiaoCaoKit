@@ -19,9 +19,7 @@ namespace XiaoCaoEditor
         [MenuItem(XCEditorTools.BuildAll)]
         public static void BuildAll()
         {
-            CheckSaveScene();
-            BuildYooAseets();
-            ProjectBuild();
+            StartBuld(true, true, EditorUserBuildSettings.activeBuildTarget);
         }
 
         public static void CheckSaveScene()
@@ -85,12 +83,6 @@ namespace XiaoCaoEditor
             }
         }
 
-        [MenuItem(XCEditorTools.CreateZip)]
-        public static void CreateZip()
-        {
-            SaveZipTool.Create();
-        }
-
 
         [PostProcessBuild(1)]
         public static void AfterBuild(BuildTarget target, string pathToBuiltProject)
@@ -107,12 +99,12 @@ namespace XiaoCaoEditor
 
         }
 
-        [MenuItem(XCEditorTools.CopyConfigToSteamAssets)]
-        public static void CopyDirToAndroidBuild()
+        [MenuItem(XCEditorTools.CopyZipToAndroidBuild)]
+        public static void CopyZipToAndroidBuild()
         {
-            string tgtDir = XCPathConfig.GetGameConfigDir(true);
-            string sourceDir = XCPathConfig.GetGameConfigDir();
-            FileTool.CopyDirAll(sourceDir, tgtDir);
+            string tgtDir = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
+            string sourceDir = $"{PathTool.GetProjectPath()}/ExtraRes";
+            ZipHelper.CompressFolder(sourceDir, tgtDir);
         }
 
         private static void CopyDirToWindowBuild(string buildDir)
@@ -123,7 +115,42 @@ namespace XiaoCaoEditor
             Debug.Log($"复制完成！{buildDir} -> {tgtDir}");
         }
 
+        public static void StartBuld(bool IsBuildYooAseet, bool IsBuildPackage, BuildTarget buildTarget)
+        {
+            BuildTool.CheckSaveScene();
 
+            bool isAndriod = buildTarget == BuildTarget.Android;
+
+            CIBuildHelper.SwitchPlatform(buildTarget);
+
+            if (!isAndriod)
+            {
+                BuildTool.ClearStreamingAssets();
+            }
+
+
+            if (IsBuildYooAseet)
+            {
+                BuildResult result = YooAssetBuildHelper.BuildYooAseets();
+                if (!result.Success)
+                {
+                    Debug.LogError($"--- BuildYooAseet fail");
+                    return;
+                }
+            }
+            if (isAndriod)
+            {
+                BuildTool.CopyZipToAndroidBuild();
+            }
+            ConfigMgr.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+
+            if (IsBuildPackage)
+            {
+                BuildTool.ProjectBuild();
+            }
+
+        }
     }
 
 }
