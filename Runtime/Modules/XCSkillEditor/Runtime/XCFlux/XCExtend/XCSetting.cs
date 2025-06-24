@@ -75,7 +75,8 @@ namespace XiaoCao
 
         public static string GetExtraPackageDir()
         {
-            return $"{GetBuildExtraResDir()}/ExtraPackage";
+            //Application.platform
+            return $"{GetBuildExtraResDir()}/{Application.platform}";
 
         }
         //BuildTool.AfterBuild 在打包后将复制配置

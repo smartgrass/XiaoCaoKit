@@ -63,24 +63,17 @@ namespace XiaoCaoEditor
 
         }
 
-        //[MenuItem(XCEditorTools.CopyConfigToSteamAssets)]
-        public static void CopyLubanConfig()
+        [MenuItem(XCEditorTools.CopyExtraResToWin)]
+        public static void CopyExtraResToWin()
         {
             //win->build下面 ->buildAfter
             //Android ->streamAsset下 ->buildBefore
-            if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+            string buildDir = EditorPrefs.GetString(PathKey);
+            if (string.IsNullOrEmpty(buildDir))
             {
-
+                buildDir = PathTool.GetProjectPath() + "/Build";
             }
-            else
-            {
-                string buildDir = EditorPrefs.GetString("EditorBuildDir");
-                if (string.IsNullOrEmpty(buildDir))
-                {
-                    buildDir = PathTool.GetProjectPath() + "/Build";
-                }
-                CopyDirToWindowBuild(buildDir);
-            }
+            CopyDirToWindowBuild(buildDir);
         }
 
 
@@ -109,8 +102,21 @@ namespace XiaoCaoEditor
 
         private static void CopyDirToWindowBuild(string buildDir)
         {
-            string tgtDir = XCPathConfig.GetWindowBuildResDir();
+            string tgtDir = XCPathConfig.GetWindowBuildResDir() + "/ExtraRes";
             string sourceDir = XCPathConfig.GetBuildExtraResDir();
+
+            var reportFilePathList = FileTool.FindFiles(sourceDir, "BuildReport*.json");
+            foreach (var _reportFilePath in reportFilePathList)
+            {
+                Debug.Log($"--- _reportFilePath {_reportFilePath}");
+                string jsonData = FileTool.ReadFileString(_reportFilePath);
+                var _buildReport = BuildReport.Deserialize(jsonData);
+                if (_buildReport.Summary.BuildTarget != BuildTarget.StandaloneWindows64)
+                {
+                    Debug.LogError($"returen : {_buildReport.Summary.BuildPackageName} is {_buildReport.Summary.BuildTarget}");
+                    return;
+                }
+            }
             FileTool.CopyDirAll(sourceDir, tgtDir);
             Debug.Log($"复制完成！{buildDir} -> {tgtDir}");
         }

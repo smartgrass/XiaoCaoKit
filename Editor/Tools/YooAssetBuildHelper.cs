@@ -9,32 +9,29 @@ public static class YooAssetBuildHelper
     public static BuildResult BuildYooAseets()
     {
         var PackageName = GetYooAssetBuildPackageNames()[0];
-        EBuildPipeline BuildPipeline = EBuildPipeline.BuiltinBuildPipeline;
         BuildTarget BuildTarget = EditorUserBuildSettings.activeBuildTarget;
+        EBuildPipeline BuildPipeline = AssetBundleBuilderSetting.GetPackageBuildPipeline(PackageName);
 
-        var buildMode = AssetBundleBuilderSetting.GetPackageBuildMode(PackageName, BuildPipeline);
-        var fileNameStyle = AssetBundleBuilderSetting.GetPackageFileNameStyle(PackageName, BuildPipeline);
-        var buildinFileCopyOption = AssetBundleBuilderSetting.GetPackageBuildinFileCopyOption(PackageName, BuildPipeline);
-        var buildinFileCopyParams = AssetBundleBuilderSetting.GetPackageBuildinFileCopyParams(PackageName, BuildPipeline);
-        var compressOption = AssetBundleBuilderSetting.GetPackageCompressOption(PackageName, BuildPipeline);
 
         BuiltinBuildParameters buildParameters = new BuiltinBuildParameters();
         buildParameters.BuildOutputRoot = AssetBundleBuilderHelper.GetDefaultBuildOutputRoot();
         buildParameters.BuildinFileRoot = AssetBundleBuilderHelper.GetStreamingAssetsRoot();
         buildParameters.BuildPipeline = BuildPipeline.ToString();
         buildParameters.BuildTarget = BuildTarget;
-        buildParameters.BuildMode = EBuildMode.ForceRebuild;
+        buildParameters.BuildMode = AssetBundleBuilderSetting.GetPackageBuildMode(PackageName, BuildPipeline); ;
         buildParameters.PackageName = PackageName;
         buildParameters.PackageVersion = GetDefaultPackageVersion();
         buildParameters.EnableSharePackRule = true;
         buildParameters.VerifyBuildingResult = true;
-        buildParameters.FileNameStyle = fileNameStyle;
-        buildParameters.BuildinFileCopyOption = EBuildinFileCopyOption.ClearAndCopyAll;
-        buildParameters.BuildinFileCopyParams = buildinFileCopyParams;
-        buildParameters.EncryptionServices = null;
-        buildParameters.CompressOption = compressOption;
+        buildParameters.FileNameStyle = AssetBundleBuilderSetting.GetPackageFileNameStyle(PackageName, BuildPipeline); ;
 
-        BuiltinBuildPipeline pipeline = new BuiltinBuildPipeline();
+        //var buildinFileCopyOption = AssetBundleBuilderSetting.GetPackageBuildinFileCopyOption(PackageName, BuildPipeline);
+        buildParameters.BuildinFileCopyOption = EBuildinFileCopyOption.ClearAndCopyAll;
+        buildParameters.BuildinFileCopyParams = AssetBundleBuilderSetting.GetPackageBuildinFileCopyParams(PackageName, BuildPipeline);
+        buildParameters.EncryptionServices = null;
+        buildParameters.CompressOption = AssetBundleBuilderSetting.GetPackageCompressOption(PackageName, BuildPipeline);
+
+        IBuildPipeline pipeline = BuildPipeline == EBuildPipeline.BuiltinBuildPipeline ? new BuiltinBuildPipeline() : new RawFileBuildPipeline();
         var buildResult = pipeline.Run(buildParameters, true);
         return buildResult;
     }

@@ -312,4 +312,39 @@ public static class FileTool
     }
 
 
+    /// <summary>
+    /// 查找文件
+    /// </summary>
+    /// <param name="directory"></param>
+    /// <param name="searchString">如"*.json"</param>
+    /// <returns></returns>
+    public static List<string> FindFiles(string directory, string searchString, bool findSubDirectories = true)
+    {
+        List<string> result = new List<string>();
+        try
+        {
+            // 搜索当前目录
+            string[] jsonFiles = Directory.GetFiles(directory, searchString);
+            foreach (string file in jsonFiles)
+            {
+                result.Add(file);
+            }
+
+            // 递归搜索子目录
+            if (findSubDirectories)
+            {
+                string[] subDirectories = Directory.GetDirectories(directory);
+                foreach (string subDir in subDirectories)
+                {
+                    result.AddRange(FindFiles(subDir, searchString));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"搜索时发生错误: {ex.Message}");
+        }
+        return result;
+    }
+
 }

@@ -1,10 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using XiaoCao;
 using YooAsset;
+using Debug = UnityEngine.Debug;
 
 public class ResMgr
 {
@@ -129,13 +131,15 @@ public class ResMgr
     }
 
     #region Init
-    public static async Task InitYooAssetAll()
+    public static async UniTask InitYooAssetAll()
     {
         ResMgr.InitYooAsset();
         ShortKeyDic.Clear();
-        await ResMgr.InitDefaultPackage();
-        await ResMgr.InitRawPackage();
-        await ResMgr.InitExtraPackage();
+        var task1 = ResMgr.InitDefaultPackage();;
+        var task2 = ResMgr.InitRawPackage();
+        var task3 = ResMgr.InitExtraPackage();
+        //使用并行任务,相比同步快个300ms
+        await UniTask.WhenAll(task1, task2, task3);
     }
 
     public static void InitYooAsset()
@@ -148,9 +152,10 @@ public class ResMgr
         YooAssets.SetDefaultPackage(Loader);
     }
 
-    public static async Task InitDefaultPackage()
+    public static async UniTask InitDefaultPackage()
     {
         string packageName = DefaultPackage;
+        Debug.Log($"--- InitPackage {packageName}");
         ResourcePackage package = GetOrCreatPackage(packageName);
         InitializationOperation initOperation = null;
         EPlayMode playMode = DebugSetting.GetEPlayMode();
@@ -180,43 +185,27 @@ public class ResMgr
             initOperation = package.InitializeAsync(initParameters);
         }
 
-        // 联机运行模式
-        if (playMode == EPlayMode.HostPlayMode)
-        {
-            //string defaultHostServer = "http://127.0.0.1/CDN/Android/v1.0";
-            //string fallbackHostServer = "http://127.0.0.1/CDN/Android/v1.0";
-            //var initParameters = new HostPlayModeParameters();
-            //initParameters.BuildinQueryServices = new GameQueryServices();
-            //initParameters.DecryptionServices = new FileOffsetDecryption();
-            //initParameters.RemoteServices = new RemoteServices(defaultHostServer, fallbackHostServer
-            //initializationOperation =package.InitializeAsync(initParameters);
-            Debuger.LogWarning($"HostPlayMode 无");
-        }
         await initOperation;
 
         var operation1 = package.RequestPackageVersionAsync();
         await operation1;
         var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
         await operation2;
-
-        AddDefaultSection();
+        Debug.Log($"--- InitPackageEnd {packageName}");
     }
 
 
-    public static async Task InitExtraPackage()
+    public static async UniTask InitExtraPackage()
     {
-        //string dir = XCPathConfig.GetExtraPackageDir();o
-
         foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
         {
             if (section.SectionName.StartsWith("Mod"))
             {
                 var packageName = section.SectionName;
                 ResourcePackage package = YooAssets.CreatePackage(packageName);
+                Debug.Log($"--- InitPackage {packageName}");
                 InitializationOperation initOperation = null;
                 EPlayMode playMode = playMode = EPlayMode.HostPlayMode;
-                //DebugSetting.GetEPlayMode();
-                Debug.Log($"--- packageName {playMode}");
 
                 if (playMode == EPlayMode.HostPlayMode)
                 {
@@ -249,34 +238,19 @@ public class ResMgr
                         path = kv.Value
                     };
                 }
+                Debug.Log($"--- InitPackageEnd {packageName}");
             }
         }
     }
 
-    public static void AddDefaultSection()
-    {
-        IniSection section = ConfigMgr.MainCfg.GetSection(DefaultPackage);
-        if (section == null)
-        {
-            Debug.LogWarning($"--- no section {DefaultPackage} in Main.ini ");
-            return;
-        }
 
-        foreach (var kv in section.Dic)
-        {
-            ShortKeyDic[kv.Key] = new ShortKeyCache()
-            {
-                package = Loader,
-                path = kv.Value
-            };
-        }
-    }
-
-    public static async Task InitRawPackage()
+    public static async UniTask InitRawPackage()
     {
         EPlayMode playMode = DebugSetting.GetEPlayMode();
 
         string packageName = RawPackage;
+
+        Debug.Log($"--- InitPackage {packageName}");
 
         ResourcePackage package = GetOrCreatPackage(packageName);
 
@@ -307,7 +281,7 @@ public class ResMgr
         }
 
         await UpdatePackage(package, initOperation);
-
+        Debug.Log($"--- InitPackageEnd {packageName}");
     }
 
     private static async Task UpdatePackage(ResourcePackage package, InitializationOperation initOperation)

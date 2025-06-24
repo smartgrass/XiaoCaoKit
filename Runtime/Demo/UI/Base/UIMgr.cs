@@ -45,14 +45,6 @@ namespace XiaoCao
             settingPanel?.Init();
             playerPanel?.Init();
             transform.SetParent(null);
-
-#if UNITY_EDITOR
-            if (mobileInputHud.gameObject.activeSelf)
-            {
-                GameSetting.UserInputType = UserInputType.Touch;
-            }
-#endif
-
             OnChangeInputType(GameSetting.UserInputType);
         }
 

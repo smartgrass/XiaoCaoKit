@@ -16,7 +16,8 @@ public abstract class ProcedureBase
 
     public bool IsReload
     {
-        get {
+        get
+        {
             return ProcedureMgr.Inst.LoadedDic.Contains(GetType());
         }
     }
@@ -48,12 +49,13 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
             {
                 continue;
             }
-
+            DebugCostTime.StartTime(2);
             item.Start();
             while (!item.IsFinish)
             {
                 await UniTask.Yield();
             }
+            DebugCostTime.StopTime(item.ToString(), 2);
             LoadedDic.Add(item.GetType());
         }
         Procedures.Clear();

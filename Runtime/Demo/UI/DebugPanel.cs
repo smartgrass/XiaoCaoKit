@@ -15,7 +15,10 @@ public class DebugPanel : SubPanel
     {
         AddSkinDropDown();
         AddTestEnmeyDropDown();
-        AddMobileInput();
+        if (!DebugSetting.IsMobilePlatform)
+        {
+            AddMobileInput();
+        }
     }
 
 

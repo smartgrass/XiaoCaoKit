@@ -1,8 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
+using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace XiaoCao
 {
@@ -31,6 +31,7 @@ namespace XiaoCao
                 GameAllData.GameAllDataInit();
             }
             GameSetting.GetGameVersion();
+
             if (DebugSetting.IsDebug)
             {
                 //OpenLogConsole();
@@ -42,8 +43,8 @@ namespace XiaoCao
             //LoadOnce
             procedureMgr.AddTask(new ConfigProcedure());
             procedureMgr.AddTask(new ResProcedure());
-
             procedureMgr.AddTask(new PreLoadPoolProcedure());
+
             //Reload
             procedureMgr.AddTask(new MapProcedure());
             procedureMgr.AddTask(new PlayerProcedure());
@@ -58,24 +59,31 @@ namespace XiaoCao
 
         public async UniTask UnCompressedZip()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Debuger.Log($"--- 开始解压");
             string fileName = "ExtraRes.zip";
             //string zipPath = XCPathConfig.GetExtraResZipPath();
             //WWW读取并复制
+            DebugCostTime.StartTime();
             await FileTool.CopyStreamingAssetsFileToPersistentData(fileName);
-            string destPath = Path.Combine(Application.persistentDataPath, fileName);
+            DebugCostTime.StopTime($"CopyStreamingAssetsFile {fileName}");
 
+            string destPath = Path.Combine(Application.persistentDataPath, fileName);
+            DebugCostTime.StartTime();
             await ZipHelper.ExtractZip(destPath, Application.persistentDataPath);
+            DebugCostTime.StopTime($"ExtractZip {fileName}");
 
             //删除Zip
-            File.Delete(destPath);  
-
-            Debug.Log($"--- 解压完成 {Application.persistentDataPath}/{fileName} ");
+            File.Delete(destPath);
+            
         }
 
         private static void OpenLogConsole()
         {
+            DebugCostTime.StartTime();
             var prefab = Resources.Load<GameObject>("IngameDebugConsole");
             var con = GameObject.Instantiate(prefab);
+            DebugCostTime.StopTime("OpenLogConsole");
         }
 
     }

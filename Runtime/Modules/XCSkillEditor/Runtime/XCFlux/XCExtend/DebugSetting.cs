@@ -1,6 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using YooAsset;
+using Debug = UnityEngine.Debug;
 
 namespace XiaoCao
 {
@@ -93,4 +96,35 @@ namespace XiaoCao
 
         public static int PauseFrame;
     }
+
+    public static class DebugCostTime
+    {
+        //分配不同表,尽量同时不占用
+        public static List<Stopwatch> stopwatchs = new List<Stopwatch>(){
+                new Stopwatch(),
+                new Stopwatch(),
+                new Stopwatch(),
+        };
+
+
+
+        public static void StartTime(int index = 0)
+        {
+            if (stopwatchs[index].IsRunning)
+            {
+                Debug.LogError($"--- stopwatch {index} IsRunning");
+            }
+            stopwatchs[index].Restart();
+        }
+        public static void StopTime(string logMsg, int index = 0)
+        {
+            stopwatchs[index].Stop();
+            Debug.Log($"--- cost time {logMsg} {stopwatchs[index].ElapsedMilliseconds}ms");
+            stopwatchs[index].Reset();
+        }
+
+
+
+    }
+
 }

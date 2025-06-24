@@ -117,20 +117,14 @@ namespace XiaoCao
 
             GameEvent.Send(EGameEvent.GameStartFinsh.Int());
 
-            try
-            {
-                var uiMgr = UIMgr.Inst;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"--- uiMgr {e}");
-            }
             if (!IsReload)
             {
                 DelayRun().Forget();
             }
 
             IsFinish = true;
+
+            var uiMgr = UIMgr.Inst;
         }
 
         public async UniTask DelayRun()

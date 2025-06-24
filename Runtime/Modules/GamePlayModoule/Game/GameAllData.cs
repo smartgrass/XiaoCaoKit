@@ -33,7 +33,7 @@ namespace XiaoCao
         public static void GetGameVersion()
         {
             VersionType = ConfigMgr.StaticSettingSo.versionType;
-
+            UserInputType = DebugSetting.IsMobilePlatform ? UserInputType.Touch : UserInputType.Mouse;
         }
         public static GameVersionType VersionType;
 

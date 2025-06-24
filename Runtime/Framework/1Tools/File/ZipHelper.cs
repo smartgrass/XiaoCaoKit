@@ -71,8 +71,8 @@ public class ZipHelper
                         progressCallback?.Invoke(overallProgress);
 
                         // 每写入100KB让出控制权给主线程
-                        if (bytesWritten % 102400 < buffer.Length)
-                            yield return null;
+                        //if (bytesWritten % 102400 < buffer.Length)
+                        //    yield return null;
                     }
                 }
 
