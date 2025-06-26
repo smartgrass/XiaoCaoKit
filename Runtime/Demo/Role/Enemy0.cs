@@ -65,7 +65,7 @@ namespace XiaoCao
             component.aiControl.FixedUpdate();
             component.movement.FixedUpdate();
 
-            data_R.roleState.Used();
+            //data_R.roleState.Used();
         }
 
         protected override void OnDestroy()

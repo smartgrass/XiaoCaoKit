@@ -279,17 +279,80 @@ public static class FileTool
         t.LoadImage(bytes);
         return t;
     }
+    
+    public static bool CopyFolder(string sourcePath, string destinationPath, bool overwrite = true,
+    Action<float, string> progressCallback = null)
+    {
+        string dirName = new DirectoryInfo(sourcePath).Name;
+        destinationPath = Path.Combine(destinationPath, dirName);
 
+        // 验证输入参数
+        if (!Directory.Exists(sourcePath))
+        {
+            Debug.LogError($"源文件夹不存在: {sourcePath}");
+            return false;
+        }
+
+        try
+        {
+            // 获取源文件夹中的所有文件
+            var filePaths = CollectFiles(sourcePath);
+            int totalFiles = filePaths.Count;
+
+            if (totalFiles == 0)
+            {
+                Debug.LogWarning("源文件夹为空");
+                return true; // 空文件夹也算复制成功
+            }
+
+            // 创建目标文件夹
+            if (!Directory.Exists(destinationPath))
+            {
+                Directory.CreateDirectory(destinationPath);
+            }
+
+            // 复制每个文件
+            for (int i = 0; i < totalFiles; i++)
+            {
+                string sourceFilePath = filePaths[i];
+                string relativePath = sourceFilePath.Substring(sourcePath.Length + 1);
+                string destinationFilePath = Path.Combine(destinationPath, relativePath);
+
+                // 更新进度
+                progressCallback?.Invoke((float)i / totalFiles, relativePath);
+
+                // 创建目标文件所在的目录
+                string destinationFileDir = Path.GetDirectoryName(destinationFilePath);
+                if (!Directory.Exists(destinationFileDir))
+                {
+                    Directory.CreateDirectory(destinationFileDir);
+                }
+
+                // 复制文件
+                File.Copy(sourceFilePath, destinationFilePath, overwrite);
+            }
+
+            // 完成进度
+            progressCallback?.Invoke(1f, "复制完成");
+            Debug.Log($"复制完成！{sourcePath} -> {destinationPath}");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"复制文件夹失败: {e.Message}");
+            return false;
+        }
+    }
 
     //将目录的文件复制到新目录, 不包括根文件夹
-    public static void CopyDirAll(string srcDir, string destDir)
+    public static void CopyFolderNoRoot(string srcDir, string destDir)
     {
         Debug.Log($"--- CopyDirAll {srcDir} {destDir}");
         DirectoryInfo diSource = new DirectoryInfo(srcDir);
         DirectoryInfo diTarget = new DirectoryInfo(destDir);
-        CopyDirAll(diSource, diTarget);
+        CopyFolderNoRoot(diSource, diTarget);
     }
-    private static void CopyDirAll(DirectoryInfo source, DirectoryInfo target)
+    private static void CopyFolderNoRoot(DirectoryInfo source, DirectoryInfo target)
     {
         // Check if the target directory exists, if not, create it
         if (!Directory.Exists(target.FullName))
@@ -307,9 +370,37 @@ public static class FileTool
         foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
         {
             DirectoryInfo nextTargetSubDir = target.CreateSubdirectory(diSourceSubDir.Name);
-            CopyDirAll(diSourceSubDir, nextTargetSubDir);
+            CopyFolderNoRoot(diSourceSubDir, nextTargetSubDir);
         }
     }
+
+
+    public static List<string> CollectFiles(string directory)
+    {
+        List<string> filePaths = new List<string>();
+        CollectFilesRecursive(directory, filePaths);
+        return filePaths;
+    }
+    private static void CollectFilesRecursive(string directory, List<string> filePaths)
+    {
+        try
+        {
+            foreach (string filePath in Directory.GetFiles(directory))
+            {
+                filePaths.Add(filePath);
+            }
+
+            foreach (string subDirectory in Directory.GetDirectories(directory))
+            {
+                CollectFilesRecursive(subDirectory, filePaths);
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"无法读取文件夹: {directory}\n{e.Message}");
+        }
+    }
+
 
 
     /// <summary>

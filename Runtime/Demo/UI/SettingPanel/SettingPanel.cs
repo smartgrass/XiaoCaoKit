@@ -22,6 +22,7 @@ public class SettingPanel : TabPanel
 
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
         SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
+        SubPanel renderPanel = AddPanel<PerformancePanel>("Performance");
         if (GameSetting.VersionType != GameVersionType.Office)
         {
             SubPanel debugPanel = AddPanel<DebugPanel>("Debug");

@@ -9,6 +9,8 @@ namespace XiaoCao
         public static string[] LanguageShowNames = { "中文", "English" };
         public static string Language = "Language";
         public static string Bgm = "Bgm";
+        public static string RenderQuality = "RenderQuality";
+        public static string FrameRate = "FrameRate";
         public static string NoEnough = "NoEnough";
         public static string AutoLockEnemy = "AutoLockEnemy";
         public static string LockCam = "LockCam"; //锁定视角

@@ -71,8 +71,10 @@ namespace XiaoCao
             if (InputData.inputs[InputKey.Space])
             {
                 TryJump();
-
             }
+
+
+            //CheckInputAction
         }
 
         public void TryCastSkill(string skillId)
@@ -120,11 +122,12 @@ namespace XiaoCao
 
         protected override void PreSkillStart(string skillId)
         {
-            if (InputData.x != 0 || InputData.y != 0)
+            if (InputData.X != 0 || InputData.Y != 0)
             {
                 var dir = owner.component.movement.inputDir;
                 this.Data_R.movement.RotateByMoveDir(dir, 1);
             }
+            //Time.frameCount
 
             if (RollName != skillId)
             {

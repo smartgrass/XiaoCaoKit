@@ -105,7 +105,7 @@ namespace XiaoCao
         {
             //checkInput
             Vector2 input = joystick.GetInputV;
-            PlayerInput.AddInputXY(input.x, input.y);
+            PlayerInput.SetXY(input.x, input.y);
         }
 
         private void CheckBarImg()

@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XiaoCao;
+using XiaoCaoEditor;
 using YooAsset.Editor;
 
 namespace XiaoCaoEditor
@@ -85,7 +86,7 @@ namespace XiaoCaoEditor
             Debug.Log("buildPath:" + buildDir);
 
             EditorPrefs.SetString(PathKey, buildDir);
-            if (target == BuildTarget.StandaloneWindows)
+            if (target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64)
             {
                 CopyDirToWindowBuild(buildDir);
             }
@@ -95,20 +96,33 @@ namespace XiaoCaoEditor
         [MenuItem(XCEditorTools.CopyZipToAndroidBuild)]
         public static void CopyZipToAndroidBuild()
         {
-            string tgtDir = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
-            string sourceDir = $"{PathTool.GetProjectPath()}/ExtraRes";
-            ZipHelper.CompressFolder(sourceDir, tgtDir);
+            string zipPath = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
+            string sourceDir = $"{PathTool.GetProjectPath()}/ExtraRes/{BuildTarget.Android}";
+            string sourceDir2 = $"{PathTool.GetProjectPath()}/ExtraRes/GameConfig";
+            ZipHelper.CompressFolders(new[] { sourceDir, sourceDir2 }, zipPath);
+            AssetDatabase.Refresh();
+        }
+
+        public static void DeleteExtraResZip()
+        {
+            string zipPath = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
+            File.Delete(zipPath);
         }
 
         private static void CopyDirToWindowBuild(string buildDir)
         {
             string tgtDir = XCPathConfig.GetWindowBuildResDir() + "/ExtraRes";
-            string sourceDir = XCPathConfig.GetBuildExtraResDir();
+            if (!Directory.Exists(tgtDir))
+            {
+                Directory.CreateDirectory(tgtDir);
+            }
 
+            string sourceDir = XCPathConfig.GetExtraPackageDir();
+
+            //检测打包文件是否正确
             var reportFilePathList = FileTool.FindFiles(sourceDir, "BuildReport*.json");
             foreach (var _reportFilePath in reportFilePathList)
             {
-                Debug.Log($"--- _reportFilePath {_reportFilePath}");
                 string jsonData = FileTool.ReadFileString(_reportFilePath);
                 var _buildReport = BuildReport.Deserialize(jsonData);
                 if (_buildReport.Summary.BuildTarget != BuildTarget.StandaloneWindows64)
@@ -117,8 +131,9 @@ namespace XiaoCaoEditor
                     return;
                 }
             }
-            FileTool.CopyDirAll(sourceDir, tgtDir);
-            Debug.Log($"复制完成！{buildDir} -> {tgtDir}");
+
+            FileTool.CopyFolder(XCPathConfig.GetGameConfigDir(), tgtDir);
+            FileTool.CopyFolder(XCPathConfig.GetExtraPackageDir(), tgtDir);
         }
 
         public static void StartBuld(bool IsBuildYooAseet, bool IsBuildPackage, BuildTarget buildTarget)
@@ -148,6 +163,10 @@ namespace XiaoCaoEditor
             {
                 BuildTool.CopyZipToAndroidBuild();
             }
+            else
+            {
+                BuildTool.DeleteExtraResZip();
+            }
             ConfigMgr.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
 
@@ -159,4 +178,14 @@ namespace XiaoCaoEditor
         }
     }
 
+}
+
+
+public static class CIBuild
+{
+    public static void Build()
+    {
+        Debug.Log($"--- CIBuild BuildAll ");
+        BuildTool.BuildAll();
+    }
 }

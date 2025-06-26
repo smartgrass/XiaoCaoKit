@@ -54,7 +54,7 @@ namespace XiaoCao
         /// </summary>
         protected virtual void Awake()
         {
-            Debuger.Log($"--- Awake");
+            //Debuger.Log($"--- Awake");
         }
         protected virtual void OnEnable(bool isEnable)
         {

@@ -105,8 +105,8 @@ namespace XiaoCao
             component.input.FixedUpdate();
 
             //DataClear
-            component.input.Used();
-            data_R.roleState.Used();
+            //component.input.Used();
+            //data_R.roleState.Used();
         }
 
         protected override void OnDestroy()
@@ -249,12 +249,37 @@ namespace XiaoCao
         }
     }
 
+    //为了兼容触摸和键盘都能输入
+    public class LocalInput
+    {
+        public float x;
+        public float y;
+    }
+
 
     ///<see cref="InputKey"/>
     public class PlayerInputData
     {
-        public float x;
-        public float y;
+        public float X
+        {
+            get
+            {
+                return x + localInput.x;
+            }
+        }
+        public float Y
+        {
+            get
+            {
+                return y + localInput.y;
+            }
+        }
+
+        private float x;
+        private float y;
+
+        public LocalInput localInput = new LocalInput();
+
         //InputKey
         public bool[] inputs = new bool[8];
         public int skillInput = -1; //-1无效值
@@ -269,23 +294,27 @@ namespace XiaoCao
             KeyCode.K, KeyCode.L , KeyCode.U,KeyCode.I,KeyCode.O
         };
 
-        public void AddInputXY(float x, float y)
+
+        public void SetXY(float x, float y)
         {
-            if (x != 0 || y != 0)
-            {
-                this.x = x;
-                this.y = y;
-            }
+            this.x = x;
+            this.y = y;
         }
 
-        public void Reset()
+        public void SetLocalXY(float x, float y)
+        {
+            localInput.x = x;
+            localInput.y = y;
+        }
+
+        public void ResetKey()
         {
             for (int i = 0; i < inputs.Length; i++)
                 inputs[i] = false;
             skillInput = -1;
-            x = 0;
-            y = 0;
         }
+
+
 
         //public void Copy(PlayerInputData data)
         //{

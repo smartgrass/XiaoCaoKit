@@ -44,6 +44,10 @@ namespace AssetEditor.Editor
         [OnValueChanged(nameof(OnTimeScale))]
         public float timeScale = 1;
 
+        [MiniBtn(nameof(SetFrameRate))]
+        public int frameRate = 30;
+
+
 
         public override void OnEnable()
         {
@@ -252,6 +256,11 @@ namespace AssetEditor.Editor
         {
             Debug.Log($"{Application.dataPath}" +
                 $"{Application.consoleLogPath} {PathTool.GetProjectPath()}");
+        }
+
+        private void SetFrameRate()
+        {
+            Application.targetFrameRate = frameRate;
         }
 
     }

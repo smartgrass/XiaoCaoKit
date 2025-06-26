@@ -7,7 +7,7 @@ namespace XiaoCao
 {
     public class TimeStopMgr : MonoSingleton<TimeStopMgr>, IMgr
     {
-        public float time;
+        public float time = 5;
 
         public Coroutine coroutine;
 
@@ -18,7 +18,6 @@ namespace XiaoCao
                 return;
             }
             BattleData.IsTimeStop = true;
-            this.time = time;
             //1.敌人停止动画
             //2.修改runner的speed [每个敌人都执行]
 

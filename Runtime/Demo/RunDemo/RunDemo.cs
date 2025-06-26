@@ -24,8 +24,6 @@ namespace XiaoCao
                 }
             }
 
-            OpenLogConsole();
-
             if (Application.isEditor)
             {
                 GameAllData.GameAllDataInit();
@@ -36,6 +34,12 @@ namespace XiaoCao
             {
                 //OpenLogConsole();
             }
+
+            if(GameSetting.VersionType == GameVersionType.Debug)
+            {
+                OpenLogConsole();
+            }
+
             //这里做点编辑器开关
             Debuger.LogLevel = LogLevel.Info;
 

@@ -22,7 +22,7 @@ namespace XiaoCao
         //加入
         public List<XCTask> subTasks = new List<XCTask>();
 
-        public XCState State{ get; set; }
+        public XCState State { get; set; }
 
         //标记为不占用, 但可以继续Running
         public bool IsNoBusyFlag { get; set; }
@@ -35,7 +35,7 @@ namespace XiaoCao
         {
             if (IsMainTask)
             {
-                return  Info.playerTF;
+                return Info.playerTF;
             }
             else
             {
@@ -169,7 +169,7 @@ namespace XiaoCao
                 return;
             }
 
-            if (ObjectData != null )
+            if (ObjectData != null)
             {
                 if (_curFrame >= ObjectData.endFrame && ObjectData.HasStart)
                 {
@@ -271,7 +271,7 @@ namespace XiaoCao
                 return;
             }
             ObjectData?.StopTimeSpeed(isOn);
-            
+
             foreach (var e in subTasks)
             {
                 e.StopTimeSpeed(isOn);

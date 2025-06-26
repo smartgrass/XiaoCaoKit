@@ -12,7 +12,6 @@ namespace XiaoCao
 
         public override void Update()
         {
-
 #if !UNITY_EDITOR
             if (Application.isMobilePlatform)
             {
@@ -24,13 +23,13 @@ namespace XiaoCao
 
         private void CheckPcInputs()
         {
+            CheckInputXY();
+
             //电脑端输入检测
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
             {
                 return;
             }
-
-            CheckInputXY();
 
             CheckNorAtk();
 
@@ -90,12 +89,13 @@ namespace XiaoCao
         {
             float x = Input.GetAxis("Horizontal");
             float y = Input.GetAxis("Vertical");
-            data.AddInputXY(x, y);
+            data.SetLocalXY(x, y);
         }
 
         public override void FixedUpdate()
         {
             movement.SetMoveDir(GetInputMoveDir());
+            data.ResetKey();
         }
 
         public Vector2 GetMouseProportionalCoordinates()
@@ -118,14 +118,14 @@ namespace XiaoCao
             Vector3 forward = movement.camForward;
             forward.y = 0;
             Vector3 hor = -Vector3.Cross(forward, Vector3.up).normalized;
-            Vector3 moveDir = (data.y * forward.normalized + data.x * hor).normalized;
+            Vector3 moveDir = (data.Y * forward.normalized + data.X * hor).normalized;
             return moveDir;
         }
 
         //使用过
         public void Used()
         {
-            data.Reset();
+            data.ResetKey();
         }
     }
 

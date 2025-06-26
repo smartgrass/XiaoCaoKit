@@ -5,22 +5,23 @@ using Unity.SharpZipLib.Zip;
 using System;
 using System.Collections.Generic;
 using Unity.SharpZipLib.Core;
+
 public class ZipHelper
 {
     // 解压ZIP文件的协程实现（带进度报告）
-    public static IEnumerator ExtractZip(string zipFilePath, string targetDirectory, Action<float> progressCallback = null,
-        Action<bool, string> completionCallback = null)
+    public static IEnumerator ExtractZip(string zipFilePath, string targetDir)
     {
         // 验证输入参数
         if (!File.Exists(zipFilePath))
         {
-            completionCallback?.Invoke(false, "ZIP文件不存在: " + zipFilePath);
             yield break;
         }
 
-        if (!Directory.Exists(targetDirectory))
+        string trueTargetDir = $"{targetDir}/{Path.GetFileNameWithoutExtension(zipFilePath)}";
+
+        if (!Directory.Exists(trueTargetDir))
         {
-            Directory.CreateDirectory(targetDirectory);
+            Directory.CreateDirectory(trueTargetDir);
         }
 
         using (FileStream fs = File.OpenRead(zipFilePath))
@@ -36,7 +37,7 @@ public class ZipHelper
                     continue; // 跳过目录
 
                 string entryFileName = zipEntry.Name;
-                string entryFilePath = Path.Combine(targetDirectory, entryFileName);
+                string entryFilePath = Path.Combine(trueTargetDir, entryFileName);
 
                 // 创建目录结构
                 string directoryName = Path.GetDirectoryName(entryFilePath);
@@ -68,7 +69,7 @@ public class ZipHelper
                         // 计算整体进度
                         float overallProgress = (processedEntries + fileProgress) / totalEntries;
 
-                        progressCallback?.Invoke(overallProgress);
+                        //progressCallback?.Invoke(overallProgress);
 
                         // 每写入100KB让出控制权给主线程
                         //if (bytesWritten % 102400 < buffer.Length)
@@ -77,42 +78,57 @@ public class ZipHelper
                 }
 
                 processedEntries++;
-                progressCallback?.Invoke((float)processedEntries / totalEntries);
 
                 // 每处理一个文件让出控制权
                 yield return null;
             }
         }
-        completionCallback?.Invoke(true, "解压完成");
+        //completionCallback?.Invoke(true, "解压完成");
     }
 
-    public static bool CompressFolder(string sourceFolderPath, string targetZipPath,
+    public static bool CompressFolders(string[] sourceFolderPaths, string targetZipPath,
     int compressionLevel = 6, System.Action<float, string> progressCallback = null)
     {
-        if (!Directory.Exists(sourceFolderPath))
+        if (sourceFolderPaths == null || sourceFolderPaths.Length == 0)
         {
-            Debug.LogError($"源文件夹不存在: {sourceFolderPath}");
+            Debug.LogError("源文件夹路径数组为空");
             return false;
+        }
+
+        if (string.IsNullOrEmpty(targetZipPath))
+        {
+            return false;
+        }
+
+        string targetDirectory = Path.GetDirectoryName(targetZipPath);
+        // 确保目标目录存在
+        if (!Directory.Exists(targetDirectory))
+        {
+            Directory.CreateDirectory(targetDirectory);
         }
 
         try
         {
             // 收集所有文件
-            var filePaths = CollectFiles(sourceFolderPath);
+            var filePaths = new List<string>();
+            foreach (string sourceFolderPath in sourceFolderPaths)
+            {
+                if (!Directory.Exists(sourceFolderPath))
+                {
+                    Debug.LogError($"源文件夹不存在: {sourceFolderPath}");
+                    continue;
+                }
+                filePaths.AddRange(CollectFiles(sourceFolderPath));
+            }
+
             int totalFiles = filePaths.Count;
 
             if (totalFiles == 0)
             {
-                Debug.LogWarning($"源文件夹为空: {sourceFolderPath}");
+                Debug.LogWarning("源文件夹为空");
                 return false;
             }
 
-            // 确保目标目录存在
-            string targetDirectory = Path.GetDirectoryName(targetZipPath);
-            if (!string.IsNullOrEmpty(targetDirectory) && !Directory.Exists(targetDirectory))
-            {
-                Directory.CreateDirectory(targetDirectory);
-            }
 
             // 删除已存在的目标文件
             if (File.Exists(targetZipPath))
@@ -124,12 +140,11 @@ public class ZipHelper
             using (ZipOutputStream zipStream = new ZipOutputStream(File.Create(targetZipPath)))
             {
                 zipStream.SetLevel(compressionLevel);
-                string sourceRoot = Path.GetDirectoryName(sourceFolderPath) + Path.DirectorySeparatorChar;
 
                 for (int i = 0; i < totalFiles; i++)
                 {
                     string filePath = filePaths[i];
-                    string relativePath = filePath.Substring(sourceRoot.Length);
+                    string relativePath = GetRelativePath(filePath, sourceFolderPaths);
 
                     progressCallback?.Invoke((float)i / totalFiles, relativePath);
 
@@ -158,6 +173,19 @@ public class ZipHelper
             Debug.LogError($"压缩失败: {e.Message}");
             return false;
         }
+    }
+
+    private static string GetRelativePath(string filePath, string[] sourceFolderPaths)
+    {
+        foreach (string sourceFolderPath in sourceFolderPaths)
+        {
+            if (filePath.StartsWith(sourceFolderPath))
+            {
+                string sourceRoot = Path.GetDirectoryName(sourceFolderPath) + Path.DirectorySeparatorChar;
+                return filePath.Substring(sourceRoot.Length);
+            }
+        }
+        return filePath;
     }
 
     private static List<string> CollectFiles(string directory)

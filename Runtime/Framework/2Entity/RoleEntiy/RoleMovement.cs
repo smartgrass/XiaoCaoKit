@@ -154,7 +154,6 @@ namespace XiaoCao
 
             FixUpdateLockTime();
 
-            Used();
         }
 
         public void Used()

@@ -75,9 +75,8 @@ namespace XiaoCao
 
         public static string GetExtraPackageDir()
         {
-            //Application.platform
-            return $"{GetBuildExtraResDir()}/{Application.platform}";
-
+            string platformName = DebugSetting.IsMobilePlatform ? "Android" : "StandaloneWindows64";
+            return $"{GetBuildExtraResDir()}/{platformName}";
         }
         //BuildTool.AfterBuild 在打包后将复制配置
         public static string GetGameConfigDir()
