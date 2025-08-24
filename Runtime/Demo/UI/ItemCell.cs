@@ -24,11 +24,11 @@ namespace XiaoCao
             if (isNeedItem)
             {
                 int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(Item.Key);
-                text.text = $"{hasCount}/{Item.count}";
+                text.text = $"{hasCount}/{Item.num}";
             }
             else
             {
-                text.text = Item.count.ToString();
+                text.text = Item.num.ToString();
             }
 
         }

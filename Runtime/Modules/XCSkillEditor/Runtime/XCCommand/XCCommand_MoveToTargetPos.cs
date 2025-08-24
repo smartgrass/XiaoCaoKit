@@ -42,11 +42,17 @@ namespace XiaoCao
         {
             float maxDistance = curEvent.baseMsg.numMsg;
             var role = task.Info.role;
-            if (!task.Info.role.FindEnemy(out Role findRole, maxDistance + 5, angle: 75))
+            if (!task.Info.role.FindEnemy(out Role findRole, maxDistance + 5, angle: 50))
             {
                 //如果距离过远 则放弃索敌
                 return;
             }
+
+            if (maxDistance == 0)
+            {
+                maxDistance = 5;
+            }
+
             role.AISetLookTarget(findRole.transform);
             role.transform.RotaToPos(findRole.transform.position, 0.4f);
 
@@ -80,7 +86,7 @@ namespace XiaoCao
             if (moveEvent.isBezier)
             {
                 moveEvent.handlePoint = TransformPointC(moveEvent.startVec, moveEvent.endVec, moveEvent.handlePoint,
-                   worldStartVec, worldEndVec);
+                    worldStartVec, worldEndVec);
                 //可以考虑handlePoint.y 和原来的一样
             }
 
@@ -91,7 +97,8 @@ namespace XiaoCao
 
 
         /// <returns>变换后的点C'</returns>
-        public static Vector3 TransformPointC(Vector3 originalA, Vector3 originalB, Vector3 originalC, Vector3 newA, Vector3 newB)
+        public static Vector3 TransformPointC(Vector3 originalA, Vector3 originalB, Vector3 originalC, Vector3 newA,
+            Vector3 newB)
         {
             // 1. 计算平移向量
             Vector3 translation = newA - originalA;
@@ -114,6 +121,7 @@ namespace XiaoCao
                 if (rotationAxis.sqrMagnitude < 0.0001f)
                     rotationAxis = Vector3.Cross(originalAB.normalized, Vector3.right);
             }
+
             rotationAxis.Normalize();
 
             // 计算旋转角度
@@ -132,7 +140,13 @@ namespace XiaoCao
 
             return scaledC;
         }
-        public void OnFinish(bool hasTrigger) { }
-        public void OnUpdate(int frame, float timeSinceTrigger) { }
+
+        public void OnFinish(bool hasTrigger)
+        {
+        }
+
+        public void OnUpdate(int frame, float timeSinceTrigger)
+        {
+        }
     }
 }

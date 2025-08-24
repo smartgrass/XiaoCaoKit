@@ -20,6 +20,7 @@ namespace XiaoCao
 
         public RectTransform aimImgRT;
 
+        public ItemPopHud itemPopHud;
 
         public HpBar playerBar;
 

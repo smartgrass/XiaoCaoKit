@@ -111,12 +111,13 @@ namespace FluxEditor
             _sequences = GameObject.FindObjectsOfType<FSequence>();
             System.Array.Sort<FSequence>(_sequences, delegate (FSequence x, FSequence y) { return x.name.CompareTo(y.name); });
 
-            _sequenceNames = new GUIContent[_sequences.Length + 1];
+            _sequenceNames = new GUIContent[_sequences.Length + 2];
             for (int i = 0; i != _sequences.Length; ++i)
             {
                 _sequenceNames[i] = new GUIContent(_sequences[i].name);
             }
 
+            _sequenceNames[_sequenceNames.Length - 2] = new GUIContent("[Null]");
             _sequenceNames[_sequenceNames.Length - 1] = new GUIContent("[Create New Sequence]");
             _selectedSequenceIndex = -1;
         }
@@ -301,7 +302,12 @@ namespace FluxEditor
             int newSequenceIndex = EditorGUI.Popup(_sequencePopupRect, _selectedSequenceIndex, _sequenceNames);
             if (EditorGUI.EndChangeCheck())
             {
-                if (newSequenceIndex == _sequenceNames.Length - 1)
+                if (newSequenceIndex == _sequenceNames.Length - 2)
+                {
+                    _selectedSequenceIndex = -1;
+                    _sequenceWindow.GetSequenceEditor().OpenSequence(null);
+                }
+                else if (newSequenceIndex == _sequenceNames.Length - 1)
                 {
                     FSequence newSequence = FSequenceEditorWindow.CreateSequence();
                     Selection.activeTransform = newSequence.transform;
@@ -408,13 +414,14 @@ namespace FluxEditor
         void EditorCode()
         {
             var editor = FSequenceEditorWindow.instance.GetSequenceEditor();
-            if (editor.Sequence == null ) {
+            if (editor.Sequence == null)
+            {
                 Debug.Log($"--- cur sequence null");
                 return;
             }
             MonoScript script = MonoScript.FromMonoBehaviour(editor.Sequence);
             //FSequence
-            var fileAssetPath  = AssetDatabase.GetAssetPath(script);
+            var fileAssetPath = AssetDatabase.GetAssetPath(script);
             Debug.Log($"--- fileAssetPath {fileAssetPath}");
             int line = GetLineNumber(fileAssetPath, "[SeqHeaderShow");
             Debug.Log($"--- EditorCode {fileAssetPath} line {line}");

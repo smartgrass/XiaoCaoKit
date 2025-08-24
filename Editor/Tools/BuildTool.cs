@@ -45,11 +45,13 @@ namespace XiaoCaoEditor
             }
         }
 
+        [MenuItem(XCEditorTools.BuildYooAsset)]
         public static bool BuildYooAseets()
         {
-            BuildResult result = YooAssetBuildHelper.BuildYooAseets();
-            Debug.Log($"--- BuildYooAseets {result.Success}");
-            return result.Success;
+            var results = YooAssetBuildHelper.BuildYooAseets();
+            var isSuccess = YooAssetBuildHelper.IsAllSucced(results);
+            Debug.Log($"--- BuildYooAseets {isSuccess}");
+            return isSuccess;
         }
 
         public static void ProjectBuild()
@@ -152,8 +154,9 @@ namespace XiaoCaoEditor
 
             if (IsBuildYooAseet)
             {
-                BuildResult result = YooAssetBuildHelper.BuildYooAseets();
-                if (!result.Success)
+                var results = YooAssetBuildHelper.BuildYooAseets();
+
+                if (!YooAssetBuildHelper.IsAllSucced(results))
                 {
                     Debug.LogError($"--- BuildYooAseet fail");
                     return;

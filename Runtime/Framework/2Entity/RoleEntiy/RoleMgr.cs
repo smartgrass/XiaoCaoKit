@@ -7,6 +7,13 @@ namespace XiaoCao
     {
         public Dictionary<int, Role> roleDic = new Dictionary<int, Role>();
 
+        //角度权重
+        public static float angleDistanceRate = 0.7f;
+
+        public bool TryGetRole(int id, out Role role)
+        {
+            return roleDic.TryGetValue(id, out role);
+        }
 
         //首先获取所有范围内敌人
         //获取最高分数
@@ -15,7 +22,8 @@ namespace XiaoCao
         //距离越小分数越高 ds = 1/d  (d >0.1)
         //夹角越小分数越高 as = cos(x)
         //旧目标加分计算 暂无
-        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS, int team = TeamTag.Enemy)
+        public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS,
+            int team = TeamTag.Enemy)
         {
             float hearR = seeR * 0.4f;
             Role role = null;
@@ -26,26 +34,31 @@ namespace XiaoCao
                 {
                     GetAngleAndDistance(self, item.transform, out float curAngle, out float curDis);
 
-                    float limitDis ;
+                    float limitDis;
                     //动态边界, 角度越偏, 边界越短
-                    if (seeAngle > 179.9) {
+                    if (seeAngle > 179.9)
+                    {
                         limitDis = seeR;
                     }
                     else
                     {
                         limitDis = MathTool.ValueMapping(curAngle, seeAngle, 180, seeR, hearR);
                     }
-                    if (curDis > limitDis){
+
+                    if (curDis > limitDis)
+                    {
                         //超出距离的排除
                         continue;
                     }
-                    
+
                     //距离越小 分数越高
                     float _ds = 1 / curDis;
+                    _ds = Mathf.Clamp01(_ds);
                     //角度越小 分数越高
                     float _as = Mathf.Cos(curAngle / 2f * Mathf.Deg2Rad);
-                    float score = _ds * _as;
-                    
+
+                    float score = (1 - angleDistanceRate) * _ds + angleDistanceRate * _as;
+
                     if (score > maxS)
                     {
                         maxS = score;
@@ -53,6 +66,7 @@ namespace XiaoCao
                     }
                 }
             }
+
             return role;
         }
 
@@ -66,5 +80,4 @@ namespace XiaoCao
             curDis = Mathf.Max(0.1f, dir.magnitude);
         }
     }
-
 }

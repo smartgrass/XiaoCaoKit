@@ -6,6 +6,9 @@ namespace XiaoCao
     {
         public static void Example()
         {
+            //string.fromat {0:P0}百分比, {0:0}整数格式化 {0:0.#}自动有效数字
+            //{0:F2} 两位小数
+
             //使用vs右键/交互模式验证
             //都是四舍五入原则
             float number = 234.567f;

@@ -116,6 +116,10 @@ namespace XiaoCao
                     IdleMove(Setting.walkSR, Setting.walkAnimSR);
                 }
             }
+            else
+            {
+                control.MoveStop();
+            }
 
             if (Timer <= -curSleepTime)
             {
@@ -152,7 +156,7 @@ namespace XiaoCao
         {
             bool isLookAtTargetOnHide = Setting.isLookAtTargetOnHide;
 
-            control.owner.AIMoveDir(_tempHideDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
+            control.owner.AIMoveVector(_tempHideDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
 
         }
 
@@ -169,7 +173,7 @@ namespace XiaoCao
                 _isEnterIdle = true;
             }
 
-            control.owner.AIMoveDir(_idleDir.normalized * speedRate * 0.8f, animSpeedRate, true);
+            control.owner.AIMoveVector(_idleDir.normalized * speedRate * 0.8f, animSpeedRate, true);
         }
 
     }

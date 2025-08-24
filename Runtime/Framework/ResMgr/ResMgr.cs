@@ -41,6 +41,7 @@ public class ResMgr
         return GameObject.Instantiate(LoadPrefab(path, type));
     }
 
+    ///<see cref="ConfigMgr.GetSkinList"/>
     public static GameObject TryShorKeyInst(string shortKey, string failBackPath)
     {
         if (ResMgr.ShortKeyDic.ContainsKey(shortKey))
@@ -90,6 +91,14 @@ public class ResMgr
 
     public static T LoadAseet<T>(string path) where T : Object
     {
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            Debug.Log($"--- Application.isPlaying false");
+            return null;
+        }
+#endif
+
         if (Loader.CheckLocationValid(path))
         {
             var task = Loader.LoadAssetSync<T>(path);
@@ -135,7 +144,7 @@ public class ResMgr
     {
         ResMgr.InitYooAsset();
         ShortKeyDic.Clear();
-        var task1 = ResMgr.InitDefaultPackage();;
+        var task1 = ResMgr.InitDefaultPackage(); ;
         var task2 = ResMgr.InitRawPackage();
         var task3 = ResMgr.InitExtraPackage();
         //使用并行任务,相比同步快个300ms
@@ -203,32 +212,28 @@ public class ResMgr
             {
                 var packageName = section.SectionName;
                 ResourcePackage package = YooAssets.CreatePackage(packageName);
-                Debug.Log($"--- InitPackage {packageName}");
+
                 InitializationOperation initOperation = null;
-                EPlayMode playMode = playMode = EPlayMode.HostPlayMode;
-
-                if (playMode == EPlayMode.HostPlayMode)
+                string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
+                if (!hasManifest)
                 {
-                    string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
-                    string fallbackHostServer = defaultHostServer;
-
-                    IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-                    var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-                    var initParameters = new HostPlayModeParameters();
-                    initParameters.BuildinFileSystemParameters = cacheFileSystem;
-                    initParameters.CacheFileSystemParameters = cacheFileSystem;
-
-                    initOperation = package.InitializeAsync(initParameters);
+                    Debug.LogWarning($"--- continue No Package {packageName} {defaultHostServer}");
+                    continue;
                 }
-                else
-                {
-                    var buildinFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-                    var initParameters = new OfflinePlayModeParameters();
-                    initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
-                    initOperation = package.InitializeAsync(initParameters);
-                }
+
+                Debug.Log($"--- InitPackage {packageName} {defaultHostServer}");
+                string fallbackHostServer = defaultHostServer;
+
+                IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
+                var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
+                var initParameters = new HostPlayModeParameters();
+                initParameters.BuildinFileSystemParameters = cacheFileSystem;
+                initParameters.CacheFileSystemParameters = cacheFileSystem;
+
+                initOperation = package.InitializeAsync(initParameters);
 
                 await UpdatePackage(package, initOperation);
+                Debug.Log($"--- InitPackageEnd {packageName}");
 
                 foreach (var kv in section.Dic)
                 {
@@ -238,7 +243,6 @@ public class ResMgr
                         path = kv.Value
                     };
                 }
-                Debug.Log($"--- InitPackageEnd {packageName}");
             }
         }
     }
@@ -320,8 +324,6 @@ public class ResMgr
         string filePath = System.IO.Path.Combine(dir, fileName);
 
         bool ret = FileTool.IsFileExist(filePath);
-
-        Debug.Log($"has {ret} {filePath}");
         return ret;
     }
 

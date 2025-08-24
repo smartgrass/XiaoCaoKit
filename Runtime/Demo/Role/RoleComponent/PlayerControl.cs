@@ -114,7 +114,7 @@ namespace XiaoCao
             //暂时关闭
             //Data_R.movement.Startgrappling();
 
-            owner.Anim.Play(AnimNames.Jump);
+            owner.Anim.CrossFade(AnimNames.Jump, 0.15f);
             JumpTween = cc.DOHit(Data_P.playerSetting.JumpY, Vector3.zero, 0.5f);
             Data_R.movement.SetNoGravityT(Data_P.playerSetting.JumpNoGravityT);
         }

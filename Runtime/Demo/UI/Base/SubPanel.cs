@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GG.Extensions;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -53,7 +54,7 @@ public abstract class SubPanel
 
     }
 
-    public TMP_Text AddTextText(string title,string showStr)
+    public TMP_Text AddTextText(string title, string showStr)
     {
         GameObject instance = Object.Instantiate(Prefabs.textText, gameObject.transform);
         TextMeshProUGUI showText = instance.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
@@ -116,11 +117,25 @@ public abstract class SubPanel
         return toggle;
     }
 
-    public void AddButton(string title, UnityAction onClick)
+    public void AddButton(string title, UnityAction onClick, string content = "Btns")
     {
+
+        Transform contentTf = gameObject.transform.Find(content);
+        if (!contentTf)
+        {
+            GameObject contentGo = new GameObject(content);
+            contentGo.transform.SetParent(gameObject.transform, false);
+            var layout = contentGo.AddComponent<GridLayoutGroup>();
+            contentTf = layout.transform; //必须重新获取,因为从Transfrom变为RectTransfrom了
+            layout.cellSize = new Vector2Int(240, 120);
+            layout.spacing = new Vector2Int(100, 0);
+        }
+
         GameObject buttonPrefab = Prefabs.btn;
-        GameObject instance = Object.Instantiate(buttonPrefab, gameObject.transform);
-        Button button = instance.GetComponent<Button>();
+        GameObject instance = Object.Instantiate(buttonPrefab, contentTf);
+        instance.transform.SetParent(contentTf, false);
+        Debug.Log($"--- AddButton {instance} {contentTf}");
+        Button button = instance.GetComponentInChildren<Button>();
 
         TextMeshProUGUI textMesh = instance.transform.GetComponentInChildren<TextMeshProUGUI>();
         textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);

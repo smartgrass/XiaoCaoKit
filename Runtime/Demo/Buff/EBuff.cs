@@ -39,13 +39,13 @@ namespace XiaoCao
         [InspectorName("普攻速度增加15%")]
         NorAtkSpeedAdd,
 
-        [InspectorName("特殊buff分界线,buff数值不能直接叠加效果")]
-        SpecialBuffIndex = 100,
+        [InspectorName("exBuff分界线")]
+        NorBuffEndIndex = 100,
 
         [InspectorName("自动召唤魔法导弹,cd{5}s")]
         MagicMissile = 101,
 
-        [InspectorName("普攻时,产生额外剑气")]
+        [InspectorName("产生额外剑气")]
         ExtraSlash = 102,
 
         [InspectorName("闪避成功,使周围目标陷入时停3s")]
@@ -61,11 +61,11 @@ namespace XiaoCao
                 return EBuffType.None;
             }
             int index = (int)buff;
-            if (index < (int)EBuff.SpecialBuffIndex)
+            if (index < (int)EBuff.NorBuffEndIndex)
             {
                 return EBuffType.Nor;
             }
-            else if (index == (int)EBuff.SpecialBuffIndex)
+            else if (index == (int)EBuff.NorBuffEndIndex)
             {
                 return EBuffType.None;
             }

@@ -16,6 +16,7 @@ namespace XiaoCao
 
         public EnemyShareData0 component => enemyData.component;
 
+        public AIControl AiControl => component.aiControl;
 
         //prefabId = enemyId
         public void Init(string prefabId, int level = 1)

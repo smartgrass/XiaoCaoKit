@@ -1,6 +1,6 @@
-﻿using cfg;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using cfg;
 using TEngine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -127,6 +127,7 @@ namespace XiaoCao
 
         public Dictionary<string, float> tempNumDic = new Dictionary<string, float>();
 
+        ///<see cref="UIMgr.CheckPlayInputAble"/>
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
         public bool UIEnter;
@@ -190,7 +191,13 @@ namespace XiaoCao
 
         public static void AddBuff(int id, BuffItem buff)
         {
-            GetPlayerBuff(id).AddBuff(buff);
+            GetPlayerBuffControl(id).AddBuff(buff);
+            if (id.IsLocalPlayerId())
+            {
+                //显示提示
+
+            }
+
             GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel, true);
         }
 
@@ -198,11 +205,11 @@ namespace XiaoCao
         {
             get
             {
-                return GetPlayerBuff().playerBuffs;
+                return GetPlayerBuffControl().playerBuffs;
             }
         }
 
-        public static BuffControl GetPlayerBuff(int playerId = -1)
+        public static BuffControl GetPlayerBuffControl(int playerId = -1)
         {
             if (playerId < 0)
             {
@@ -220,7 +227,7 @@ namespace XiaoCao
 
         public static int GetSkillLevel(string skillId)
         {
-            var dic = PlayerSaveData.Current.skillUnlockDic;
+            var dic = PlayerSaveData.LocalSavaData.skillUnlockDic;
             dic.TryGetValue(skillId, out int level);
             return level;
         }
@@ -251,6 +258,7 @@ namespace XiaoCao
         CameraChange = 3,
         RoleChange = 4,
         UIPanelBtnGlow = 5,
+        OnGetItem = 6,//捡到物品时
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,

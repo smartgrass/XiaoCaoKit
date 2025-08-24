@@ -1,4 +1,5 @@
 ﻿using Cinemachine;
+using MFPC;
 using NaughtyAttributes;
 using System;
 using UnityEngine;
@@ -100,6 +101,15 @@ namespace XiaoCao
             //{
             //    Mode = CameraMode.TowDown;
             //}
+
+            //if (Mode == CameraMode.ThirdPerson)
+            //{
+            //    _inputLook.x = Input.GetAxis("Mouse X");
+            //    _inputLook.y = Input.GetAxis("Mouse Y");
+            //}
+
+            SetLocalSwipeDirection();
+
             if (shakeTimer > 0)
             {
                 shakeTimer -= Time.deltaTime;
@@ -110,29 +120,20 @@ namespace XiaoCao
             }
 
 
-            if (Mode == CameraMode.ThirdPerson)
-            {
-                _inputLook.x = Input.GetAxis("Mouse X");
-                _inputLook.y = Input.GetAxis("Mouse Y");
-            }
-            else if (Mode == CameraMode.TowDown)
+            if (Mode == CameraMode.TowDown)
             {
                 if (BattleData.Current.CanPlayerControl)
                 {
                     if (!Input.mouseScrollDelta.IsZore())
                     {
                         var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
-                            setting_topDown.camDistance - 4, setting_topDown.camDistance + 6);
+                            setting_topDown.minCamDistance, setting_topDown.camDistance + 6);
                         CFT.m_CameraDistance = distance;
                     }
                 }
-
-
             }
-
-
-
         }
+
         public void OnFixedUpdate()
         {
             if (Mode == CameraMode.ThirdPerson)
@@ -144,8 +145,7 @@ namespace XiaoCao
                 TopDownFixedUpdate();
             }
         }
-        //索敌的思路, 可以将瞄准中心变为 玩家和敌人的中心点
-        //或者只需要将
+
 
         private Vector2 _inputLook;
         public float curAngleX;
@@ -155,16 +155,9 @@ namespace XiaoCao
         {
             if (_inputLook.IsZore())
             {
-                curAngleY += _inputLook.x;
-                curAngleX += _inputLook.y * -1f;
-
-                curAngleY = ClampAngle(curAngleY, float.MinValue, float.MaxValue);
-                curAngleX = ClampAngle(curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
-
-                vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0);
+                FixUpdateCamRotate(vcam_topDown.transform);
             }
         }
-
         void TopDownInit()
         {
             curAngleX = setting_topDown.defaultAngle.x;
@@ -175,26 +168,40 @@ namespace XiaoCao
         {
             CheckPlayer();
             UIMgr.Inst.battleHud.AnimTargetFixUpdate();
-            vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
+            FixUpdateCamRotate(vcam_topDown.transform);
+        }
+
+        private void FixUpdateCamRotate(Transform VCamTran)
+        {
+            curAngleY += _inputLook.x * setting_topDown.swipeSpeedY * Time.fixedDeltaTime;
+            curAngleX += _inputLook.y * -1f * setting_topDown.swipeSpeedX * Time.fixedDeltaTime;
+            curAngleX = ClampAngle(curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
+            VCamTran.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
+            _inputLook = Vector2.zero;
         }
 
         private float findEnmeyTime;
         private float remindEnmeyTime = 0.25f;
         private float tempSpeed;
+        private Player0 player0;
+
+
+        //相机索敌
         public void CheckPlayer()
         {
             bool isAutoLockEnmey = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
-            bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
 
-            Player0 player0 = GameDataCommon.LocalPlayer;
+
+            player0 = GameDataCommon.LocalPlayer;
+
+            //暂时夺取控制
+            autoLookForwardWait -= XCTime.fixedDeltaTime;
+
             if (player0 != null && !player0.data_R.IsBusy)
             {
                 if (!isAutoLockEnmey)
                 {
-                    if (!isLockCam)
-                    {
-                        AimToDIr(player0.transform.forward);
-                    }
+                    AutoDirect();
                     return;
                 }
 
@@ -224,28 +231,52 @@ namespace XiaoCao
                 {
                     //规则 偏角不能超过15度
                     Vector3 dir = (findRole.transform.position - player0.transform.position);
-
-                    distance = dir.magnitude;
-                    //dir = Vector3.Lerp(dir, player0.transform.forward, 1f * Time.fixedDeltaTime);
                     AimToDIr(dir);
                 }
                 else
                 {
-                    if (!isLockCam)
-                    {
-                        distance = 0;
-
-                        AimToDIr(player0.transform.forward, player0.data_R.movement.lastInputDir.IsZore());
-                    }
+                    AutoDirect();
                 }
             }
         }
+        //自动回正
+        void AutoDirect()
+        {
+            bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
+            if (isLockCam)
+            {
+                return;
+            }
+
+            if (swipe)
+            {
+                //转动镜头后,不再回正
+                if (player0.Movement.inputDir.IsZore())
+                {
+                    return;
+                }
+                else
+                {
+                    swipe = false;
+                }
+            }
+
+            AimToDIr(player0.transform.forward);
+        }
+
 
         private float lastDeltaAngle;
         private float distance;
+        private float autoLookForwardWait;
+        private float setLookForwardWaitTime = 1f; //中断镜头自动回正时间
 
         private void AimToDIr(Vector3 dir, bool isStoping = false)
         {
+            if (autoLookForwardWait > 0)
+            {
+                return;
+            }
+
             //如果相差超过90度, 则不跟踪
             Vector3 inputDir = CameraMgr.Forword;
 
@@ -258,10 +289,10 @@ namespace XiaoCao
             else
             {
                 float addX = 0;
-                if (distance > 0 && distance < 10)
-                {
-                    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0, distance / 10);
-                }
+                //if (distance > 0 && distance < 10)
+                //{
+                //    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0, distance / 10);
+                //}
 
                 curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x + addX, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
             }
@@ -301,6 +332,24 @@ namespace XiaoCao
             // curAngleY = Mathf.SmoothDamp(curAngleY, curAngleY - deltaAngle, ref tempSpeed, setting_topDown.smoothTime);
 
 
+        }
+        private bool swipe;
+        void SetLocalSwipeDirection()
+        {
+            if (!PlayerInputData.LocalSwipeDirection.IsZore())
+            {
+                autoLookForwardWait = setLookForwardWaitTime;
+                swipe = true;
+            }
+            float speed = ConfigMgr.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
+            if (Application.isMobilePlatform)
+            {
+                speed *= 5;
+            }
+
+            _inputLook.y += PlayerInputData.LocalSwipeDirection.y * speed;
+            _inputLook.x += PlayerInputData.LocalSwipeDirection.x * speed;
+            //
         }
 
         public void SetTarget(Transform follow, Transform lookAt = null)
@@ -357,8 +406,9 @@ namespace XiaoCao
     {
         public Vector2 defaultAngle = new Vector2(30, 0);
         public float stopAngleX = 5;
-        public float nearAddAngleX = 15;
+        public float farAddAngleX = 15;
         public float camDistance = 7.5f;
+        public float minCamDistance = 1;
         public float aimLerp = 0.1f;
         public float smoothTime = 0.5f;
         [XCLabel("安全角度范围")]
@@ -366,6 +416,9 @@ namespace XiaoCao
         public float seeR = 8;
         public float seeAngle = 45;
 
+        [Header("滑动转向速度")]
+        public float swipeSpeedX = 0.1f;
+        public float swipeSpeedY = 0.5f;
     }
 
 }

@@ -495,7 +495,7 @@ namespace FluxEditor
 
             Init(sequence, null);
 
-            if (!Application.isPlaying && sequenceChanged)
+            if (!Application.isPlaying && sequenceChanged && sequence)
             {
                 sequence.Init();
             }

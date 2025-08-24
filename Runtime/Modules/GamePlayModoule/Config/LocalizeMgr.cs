@@ -6,7 +6,7 @@ namespace XiaoCao
     ///<see 配置 cref="LocalizeKey"/>
     public class LocalizeMgr : Singleton<LocalizeMgr>, IClearCache
     {
-        private IniFile _localizeData;
+        public IniFile localizeData;
         public Action OnLanguageChanged = null;
 
         private const string DirName = "Localize/";
@@ -20,7 +20,7 @@ namespace XiaoCao
             Load();
         }
 
-        public static void Load()
+        private static void Load()
         {
             var langStr = CurLangKey.GetKeyString();
             Enum.TryParse(langStr, out ELanguage lang);
@@ -33,13 +33,20 @@ namespace XiaoCao
         {
 #if UNITY_EDITOR
             var inst = LocalizeMgr.Inst;
+
+            if (key.EndsWith('\r'))
+            {
+                Debug.LogError($"-- key {key} ends with \\r");
+            }
+            
 #endif
 
-            if (_instance._localizeData.TryGetFristValue(key, out string value))
+            if (_instance.localizeData.TryGetFristValue(key, out string value))
             {
                 return value;
             }
-            return $"\"{key}\"";
+            return $"<color=#FFE880>{key}</color>";
+            //return $"\"{key}\"";
         }
 
 
@@ -48,7 +55,7 @@ namespace XiaoCao
             var ini = new IniFile();
             //默认语言
             ini.LoadFromFile($"{DirName}{lang}.ini", $"{DirName}{DefaultLang}.ini");
-            _instance._localizeData = ini;
+            Inst.localizeData = ini;
         }
 
         public static void ChangeCurLang(ELanguage lang)

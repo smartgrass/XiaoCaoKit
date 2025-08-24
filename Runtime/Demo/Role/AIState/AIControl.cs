@@ -1,5 +1,7 @@
-﻿using System;
+﻿using GG.Extensions;
+using System;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 namespace XiaoCao
 {
@@ -34,11 +36,15 @@ namespace XiaoCao
         public bool IsAIFree => owner.IsFree && !owner.IsAnimBreak;
         public bool HasTarget => targetRole != null && !targetRole.IsDie;
 
+        //处于表演状态
+        public bool IsOnShowAction { get; set; }
+
         public Role targetRole;
         public float tempActDis = 1.5f;
         public float tempTargetDis;
         public Vector3 idlePos;
         private bool HasAddAction;
+
 
 
         public AIControl Init(string aiId)
@@ -94,10 +100,9 @@ namespace XiaoCao
             if (!owner.IsAiOn) return;
             if (!IsAIFree) return;
 
-
-            if (owner.HasTag(RoleTagCommon.ForceFollow))
+            //屏蔽原本ai逻辑
+            if (IsOnShowAction)
             {
-                owner.FindEnemy(out targetRole, 999, 180);
                 ForceFollowTagerUpdate();
                 return;
             }
@@ -117,17 +122,68 @@ namespace XiaoCao
 
         void ForceFollowTagerUpdate()
         {
-            if (!HasTarget)
+            if (TargetPosTypeValue == TargetPosType.Stop)
             {
+                MoveStop();
                 return;
             }
-            CheckDistance();
-            if (tempTargetDis < mainDataFSM.setting.seeR)
+
+            Vector3 targetPos = GetTargetPos();
+            CheckDistancePoint(targetPos);
+
+            if (tempTargetDis >= TargetStopDistance)
             {
-                owner.RemoveTag(RoleTagCommon.ForceFollow);
+                //移速处理
+                owner.AIMoveTo(targetPos, MoveSpeedShowAction, MoveSpeedShowAction);
             }
-            owner.AIMoveTo(targetRole.transform.position ,1);
+            else
+            {
+
+                //到达则停止
+                TargetPosTypeValue = TargetPosType.Stop;
+            }
         }
+        public enum TargetPosType
+        {
+            Default,
+            Transform,
+            Point,
+            Stop
+        }
+
+        public TargetPosType TargetPosTypeValue { get; set; }
+        public Vector3 TargetPos { get; set; }
+        public Transform TargetTf { get; set; }
+
+        public float MoveSpeedShowAction { get; set; } = 1f;
+
+        //目标点的停止距离
+        public float TargetStopDistance { get; set; } = 3;
+
+        public Vector3 GetTargetPos()
+        {
+            switch (TargetPosTypeValue)
+            {
+                case TargetPosType.Default:
+                    if (targetRole != null)
+                    {
+                        return targetRole.transform.position;
+                    }
+                    break;
+                case TargetPosType.Point:
+                    return TargetPos;
+                case TargetPosType.Transform:
+                    if (TargetTf)
+                    {
+                        return TargetTf.position;
+                    }
+                    break;
+                default:
+                    return TargetPos;
+            }
+            return TargetPos;
+        }
+
 
         #region CheckTarget
 
@@ -153,7 +209,7 @@ namespace XiaoCao
 
             if (targetRole != null && !targetRole.IsDie)
             {
-                CheckDistance();
+                CheckDistancePoint(targetRole.transform.position);
             }
         }
 
@@ -162,7 +218,7 @@ namespace XiaoCao
         {
             searchTimer = 0;
 
-            float seeR = mainDataFSM.setting.seeR; 
+            float seeR = mainDataFSM.setting.seeR;
 
             float seeAngle = mainDataFSM.setting.seeAngle;
 
@@ -186,8 +242,14 @@ namespace XiaoCao
             Vector3 dir = targetRole == null ? transform.forward :
                   (targetRole.transform.position - transform.position).normalized;
 
-            owner.AIMoveDir(dir, speedRate);
+            owner.AIMoveVector(dir, speedRate);
         }
+
+        public void MoveStop()
+        {
+            owner.AIMoveVector(Vector3.zero,0);
+        }
+
         public void Lock(bool isMoveBack = false)
         {
             if (targetRole == null)
@@ -208,7 +270,7 @@ namespace XiaoCao
             {
                 float deltaAngle = Vector3.Angle(dir, transform.forward);
                 float sin = -1 * Mathf.Sin(deltaAngle * Mathf.Deg2Rad); ;
-                owner.AIMoveDir(dir * sin, 1, false);
+                owner.AIMoveVector(dir * sin, 1, false);
             }
             else
             {
@@ -218,7 +280,12 @@ namespace XiaoCao
 
         public void CheckDistance()
         {
-            tempTargetDis = GetDistance(targetRole.transform);
+            tempTargetDis = Vector3.Distance(transform.position, GetTargetPos());
+        }
+
+        public void CheckDistancePoint(Vector3 pos)
+        {
+            tempTargetDis = Vector3.Distance(transform.position, pos);
         }
         private float GetDistance(Transform tf)
         {

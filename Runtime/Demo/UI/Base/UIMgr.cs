@@ -27,11 +27,13 @@ namespace XiaoCao
 
         public PlayerPanel playerPanel;
 
-        public SkillBarHud skillBarHud;
+        public StandaloneInputHud standaloneInputHud;
 
         public MobileInputHud mobileInputHud;
 
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
+
+        public TalkPanel talkPanel;
 
         [ReadOnly]
         public PanelBase lastPanel;
@@ -45,6 +47,7 @@ namespace XiaoCao
             settingPanel?.Init();
             playerPanel?.Init();
             transform.SetParent(null);
+            talkPanel.Init();
             OnChangeInputType(GameSetting.UserInputType);
         }
 
@@ -55,16 +58,10 @@ namespace XiaoCao
 
         public void OnChangeInputType(UserInputType type)
         {
-            if (type == UserInputType.Touch)
-            {
-                mobileInputHud.Show();
-                skillBarHud.gameObject.SetActive(false);
-            }
-            else
-            {
-                skillBarHud.Show();
-                mobileInputHud.gameObject.SetActive(false);
-            }
+            bool isTouch = type == UserInputType.Touch;
+            mobileInputHud.gameObject.SetActive(isTouch);
+            standaloneInputHud.gameObject.SetActive(true);
+            standaloneInputHud.SetTouchShow(isTouch);
         }
 
         public void ShowView(UIPanelType type)
@@ -99,6 +96,10 @@ namespace XiaoCao
             CheckPlayInputAble();
         }
 
+        public void MidCanvasEnable(bool enable)
+        {
+            midCanvas.enabled = enable;
+        }
 
         private void Update()
         {
@@ -138,6 +139,10 @@ namespace XiaoCao
                 {
                     can = false;
                 }
+            }
+            if (TalkMgr.Inst.isTalking)
+            {
+                can = false;
             }
             GameAllData.battleData.CanPlayerControl.SetValue(can);
         }

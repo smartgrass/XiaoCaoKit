@@ -44,7 +44,7 @@ namespace XiaoCao
             bool isEnough = true;
             foreach (Item item in list)
             {
-                if (!inventory.CheckEnoughItem(item.Key,item.count))
+                if (!inventory.CheckEnoughItem(item.Key,item.num))
                 {
                     isEnough = false;
                 }
@@ -54,7 +54,7 @@ namespace XiaoCao
             {
                 foreach (Item item in list)
                 {
-                    inventory.ConsumeItem(item.Key, item.count);
+                    inventory.ConsumeItem(item.Key, item.num);
                 }
                 GameAllData.playerSaveData.AddSkillLevel(skillId);
                 PlayerSaveData.Sava();

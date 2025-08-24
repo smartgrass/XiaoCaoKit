@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 using XiaoCao.UI;
 
 namespace XiaoCao
 {
-    public class LocalizeKey
+    public static class LocalizeKey
     {
         //与枚举1,1对应
         public static string[] LanguageShowNames = { "中文", "English" };
@@ -25,6 +26,8 @@ namespace XiaoCao
         public static string EquippedBuffEffect = "EquippedBuffEffect";
 
         public static string BuildTime = "BuildTime";
+        public static string SwapCameraSpeed = "SwapCameraSpeed";
+        public static string AnglePower = "AnglePower";
 
         public static string GetSkillNameKey(int skillId)
         {
@@ -45,8 +48,29 @@ namespace XiaoCao
             // return "skillId";
         }
 
+        #region Item
+        public static string GetItemName(this Item item)
+        {
+            if(item.type == ItemType.Buff)
+            {
+                string key = GetBuffNameKey(item.ToBuffItem().GetFirstEBuff);
+                return key.ToLocalizeStr();
+            }
+            return item.id.ToLocalizeStr();
+        }
+
+        #endregion
 
         #region Buff
+
+        public static string GetBuffNameKey(EBuff buff)
+        {
+            if (buff.GetBuffType() == EBuffType.Ex)
+            {
+                return $"BuffTitle/{buff}";
+            }
+            return "Buff";
+        }
 
         private static string GetGetBuffInfoKey(EBuff buff)
         {
@@ -55,55 +79,40 @@ namespace XiaoCao
 
         public static string GetBuffInfoDesc(BuffInfo info)
         {
-            try
+            int len = info.addInfo.Length;
+            if (len == 0)
             {
-                int len = info.addInfo.Length;
-                if (len == 0)
-                {
-                    return GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
-                }
-
-                if (SpecialBuffInfoDesc(info, out string ret))
-                {
-                    return ret;
-                }
-
-                string rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
-                if (len == 1)
-                {
-                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]));
-                }
-                else if (len == 2)
-                {
-                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]), AutoNumStr(info.addInfo[1]));
-                }
-                else if (len == 3)
-                {
-                    return string.Format(rawStr, AutoNumStr(info.addInfo[0]), AutoNumStr(info.addInfo[1]), AutoNumStr(info.addInfo[2]));
-                }
-                else
-                {
-                    Debuger.LogError($"--- buff desc error {info.eBuff}");
-                }
-
-                return rawStr;
-            }
-            catch (System.Exception e)
-            {
-                Debuger.LogError($"--- buff desc error {e}");
                 return GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
             }
-        }
-        //小于1,默认显示百分比
-        private static string AutoNumStr(float num)
-        {
-            if (num < 1)
+
+            if (SpecialBuffInfoDesc(info, out string ret))
             {
-                return ((num * 100)).ToString("#.##");
+                return ret;
             }
-            else
+
+            string rawStr = GetGetBuffInfoKey(info.eBuff).ToLocalizeStr();
+            return FormatWithArray(rawStr, info.addInfo);
+        }
+
+
+        public static string FormatWithArray(string format, float[] values)
+        {
+            // 将float数组转换为object数组
+            object[] objValues = new object[values.Length];
+            for (int i = 0; i < values.Length; i++)
             {
-                return num.ToString("#.##");
+                objValues[i] = values[i];
+            }
+
+            // 使用string.Format处理
+            try
+            {
+                return string.Format(format, objValues);
+            }
+            catch (FormatException e)
+            {
+                Debuger.LogError($"格式化失败: {e.Message}");
+                return format; // 返回原始格式字符串或自定义错误信息
             }
         }
 

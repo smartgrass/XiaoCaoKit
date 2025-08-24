@@ -35,11 +35,19 @@ public class SoundPanel : SubPanel
 
         bgmDropDown = AddDropdown(LocalizeKey.Bgm, OnBgmChange, songList, false);
 
-        string bgm = LocalizeKey.Bgm.GetKeyString();
-        int index = songList.IndexOf(bgm);
-        if (index < 0)
+        string bgmName = LocalizeKey.Bgm.GetKeyString();
+        int index = 0;
+        if (string.IsNullOrEmpty(bgmName) && songList.Count > 1)
         {
-            index = 0;
+            index = 1;
+        }
+        else
+        {
+            index = songList.IndexOf(bgmName);
+            if (index < 0)
+            {
+                index = 0;
+            }
         }
         bgmDropDown.SetValueWithoutNotify(index);
     }

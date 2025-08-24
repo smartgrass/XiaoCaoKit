@@ -20,6 +20,7 @@ MonoBehaviour:
     - 2
     - 3
     - 4
+    - dash
     rollId: Roll
   - CmdSettingId: 1
     des: "\u654C\u4EBA\u9ED8\u8BA4"
@@ -31,6 +32,7 @@ MonoBehaviour:
     des: "\u654C\u4EBA-\u67AA\u70AE\u624B"
     cmdSkillList:
     - 201
+    - 202
     rollId: Roll
   - CmdSettingId: 3
     des: "\u5251"

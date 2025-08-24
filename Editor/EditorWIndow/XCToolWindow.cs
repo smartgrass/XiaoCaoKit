@@ -227,7 +227,7 @@ namespace AssetEditor.Editor
             PoolMgr.Inst.ClearAllPool(false);
         }
 
-        [Button("Buff + 10", Line99)]
+        [Button("Buff + 圣器", Line99)]
         void GetBuffs()
         {
             if (!Application.isPlaying)
@@ -249,6 +249,9 @@ namespace AssetEditor.Editor
                     PlayerHelper.AddBuff(0, buffItem);
                 }
             }
+
+
+
         }
 
         [Button("Test Config", Line99)]
@@ -263,6 +266,19 @@ namespace AssetEditor.Editor
             Application.targetFrameRate = frameRate;
         }
 
+        [Button("LogAllLocalize", Line99)]
+        void LogAllLocalize()
+        {
+            foreach (var section in LocalizeMgr.Inst.localizeData.SectionList)
+            {
+                Debug.Log($"-- section {section.SectionName}");
+                foreach (var dic in section.Dic)
+                {
+                    Debug.Log($"-- dic {dic.Key} {dic.Value}");
+                }
+            }
+        }
+        
     }
 }
 #endif

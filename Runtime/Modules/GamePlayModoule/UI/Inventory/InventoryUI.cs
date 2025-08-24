@@ -5,7 +5,7 @@ namespace XiaoCao
 {
     public class InventoryUI : MonoBehaviour
     {
-        public Inventory inventory => PlayerSaveData.Current.inventory;
+        public Inventory localInventory => PlayerSaveData.LocalSavaData.inventory;
         public GameObject slotPrefab; // 格子预制体
         public Transform slotsParent; // 格子的父对象
         private List<InventorySlotUI> slots = new List<InventorySlotUI>();
@@ -19,7 +19,7 @@ namespace XiaoCao
         // 动态生成格子
         private void InitializeSlots()
         {
-            for (int i = 0; i < inventory.items.Count; i++)
+            for (int i = 0; i < localInventory.items.Count; i++)
             {
                 GameObject slotObject = Instantiate(slotPrefab, slotsParent);
                 InventorySlotUI slot = slotObject.GetComponent<InventorySlotUI>();
@@ -32,9 +32,9 @@ namespace XiaoCao
         {
             for (int i = 0; i < slots.Count; i++)
             {
-                if (i < inventory.items.Count)
+                if (i < localInventory.items.Count)
                 {
-                    slots[i].UpdateSlot(inventory.items[i]);
+                    slots[i].UpdateSlot(localInventory.items[i]);
                 }
                 else
                 {

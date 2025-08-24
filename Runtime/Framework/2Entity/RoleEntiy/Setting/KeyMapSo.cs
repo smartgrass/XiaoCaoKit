@@ -28,12 +28,25 @@ namespace XiaoCao
             map = ArrayToMap(array);
         }
 
-        public T GetOrDefault(string key)
+        public bool ContainsKey(string key)
         {
+            Check();
+            return map.ContainsKey(key);
+        }
+
+        void Check()
+        {
+#if UNITY_EDITOR
             if (!hasInited)
             {
                 InitMap(array);
             }
+#endif
+        }
+
+        public T GetOrDefault(string key)
+        {
+            Check();
 
             if (map.ContainsKey(key))
             {

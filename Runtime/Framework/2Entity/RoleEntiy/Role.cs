@@ -3,6 +3,7 @@ using cfg;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TEngine;
 using UnityEngine;
 using XiaoCao.Render;
@@ -101,11 +102,17 @@ namespace XiaoCao
 
         protected void CreateRoleBody(string bodyName)
         {
-            string shortKey = bodyName;
-            string bodyPath = XCPathConfig.GetRoleBodyPath(bodyName, RoleType);
-            body = ResMgr.TryShorKeyInst(shortKey, bodyPath);
+            body = LoadModelByKey(bodyName);
             body.transform.SetParent(idRole.transform, false);
+            body.transform.localPosition = Vector3.zero;
+            tempRender = null;
             BaseInit();
+        }
+
+        public static GameObject LoadModelByKey(string shortKey)
+        {
+            string bodyPath = XCPathConfig.GetRoleBodyPath(shortKey);
+            return ResMgr.TryShorKeyInst(shortKey, bodyPath);
         }
 
         public void ChangeBody(string bodyName)
@@ -599,18 +606,20 @@ namespace XiaoCao
         /// <summary>
         /// 移动
         /// </summary>
-        /// <param name="dir">长度有效</param>
-        /// <param name="speedFactor">影响移动动画的最大值</param>
+        /// <param name="vector">长度有效</param>
+        /// <param name="animSpeedFactor">影响移动动画的最大值</param>
         /// <param name="isLookDir">是否根据移动方向旋转</param>
-        public virtual void AIMoveDir(Vector3 dir, float speedFactor, bool isLookDir = false)
+        public virtual void AIMoveVector(Vector3 vector, float animSpeedFactor, bool isLookDir = false)
         {
-            data_R.movement.SetMoveDir(dir, speedFactor, isLookDir);
+            data_R.movement.SetMoveDir(vector, animSpeedFactor, isLookDir);
         }
 
-        public virtual void AIMoveTo(Vector3 pos, float speedFactor, bool isLookDir = false)
+        /// <summary>
+        /// 移动到指定位置
+        public virtual void AIMoveTo(Vector3 pos, float moveSpeed, float animSpeedFactor, bool isLookDir = false)
         {
-            var dir = (pos - gameObject.transform.position).normalized;
-            data_R.movement.SetMoveDir(dir, speedFactor, isLookDir);
+            var dir = (pos - gameObject.transform.position).normalized * moveSpeed;
+            data_R.movement.SetMoveDir(dir, animSpeedFactor, isLookDir);
         }
 
         public void AISetLookTarget(Transform target)
@@ -959,7 +968,6 @@ namespace XiaoCao
         public const int MainPlayer = 1;
         public const int Boss = 2;
         public const int EnableAiIfHurt = 100;
-        public const int ForceFollow = 101;
     }
     public enum EBodyState
     {

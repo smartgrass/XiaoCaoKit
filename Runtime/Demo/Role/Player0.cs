@@ -159,63 +159,7 @@ namespace XiaoCao
         public PlayerData0 Data_P => owner.playerData;
     }
 
-
     #region Datas & Flag
-
-    public class PlayerSaveData
-    {
-        public static PlayerSaveData Current => GameAllData.playerSaveData;
-
-        public int lv;
-
-        public int raceId = 0;
-
-        public string prefabId;
-
-        //技能解锁状态
-        public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
-
-        //ItemUI
-        public Inventory inventory = new Inventory();
-        //持有物
-        public List<Item> holdItems = new List<Item>();
-
-        //反序列化读取的数据, 可能会出现空的现象
-        internal void CheckNull()
-        {
-            // ConfigMgr.LocalSetting.GetBoolValue 暂时不用
-
-            if (inventory == null)
-            {
-                inventory = new Inventory();
-            }
-            if (skillUnlockDic == null)
-            {
-                skillUnlockDic = new Dictionary<string, int>();
-            }
-            if (string.IsNullOrEmpty(prefabId))
-            {
-                prefabId = "P_0";
-            }
-        }
-
-        public void AddSkillLevel(string skillId)
-        {
-            if (!skillUnlockDic.ContainsKey(skillId))
-            {
-                skillUnlockDic[skillId] = 1;
-            }
-            else
-            {
-                skillUnlockDic[skillId] = skillUnlockDic[skillId] + 1;
-            }
-        }
-
-        public static void Sava()
-        {
-            SaveMgr.SaveData(PlayerSaveData.Current);
-        }
-    }
 
     //玩家特有数据
     public class PlayerData0 : RoleData
@@ -279,6 +223,8 @@ namespace XiaoCao
         private float y;
 
         public LocalInput localInput = new LocalInput();
+
+        public static Vector2 LocalSwipeDirection; // 滑动方向
 
         //InputKey
         public bool[] inputs = new bool[8];

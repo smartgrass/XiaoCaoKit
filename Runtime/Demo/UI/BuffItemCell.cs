@@ -127,7 +127,7 @@ namespace XiaoCao
                 return;
             }
 
-            bool canUpgrade = IsCanUgrade(nextCell);
+            bool canUpgrade = IsCanUgrade(nextCell, out bool isMaxLevel);
             if (canUpgrade)
             {
                 //合成
@@ -135,31 +135,48 @@ namespace XiaoCao
             }
             else
             {
-                //交换
-                ExChange(nextCell);
+                //确保一个ExBuff只能装备一个
+                if (isMaxLevel || !HasSameExBuff())
+                {
+                    ExChange(nextCell);
+                }
             }
+            RefreshView();
             EnableRayCast(true);
         }
 
-        private bool IsCanUgrade(BuffItemCell nextCell)
+        private bool IsCanUgrade(BuffItemCell nextCell, out bool isMaxLevel)
         {
-            EBuffType type = nextCell.buffItem.GetBuffType;
-            if (type == EBuffType.None)
+            isMaxLevel = false;
+            //升级设计: Ex, 同类型, 同等级
+            EBuffType nextType = nextCell.buffItem.GetBuffType;
+            if (nextType == EBuffType.Ex && buffItem.GetBuffType == EBuffType.Ex
+                && buffItem.GetFirstEBuff == nextCell.buffItem.GetFirstEBuff)
             {
-                return false;
+                if (buffItem.IsMaxLevel)
+                {
+                    isMaxLevel = true;
+                    return false;
+                }
+                return true;
             }
-            //Ex只有相同EBuff才可升级
-            if (type == EBuffType.Ex)
+            return false;
+            //return nextCell.buffItem.CanUpGradeItem(buffItem);
+        }
+
+        private bool HasSameExBuff()
+        {
+            foreach (var item in PlayerHelper.LocalPlayerBuffs.EquippedExBuffs)
             {
-                if (buffItem.GetFirstEBuff == nextCell.buffItem.GetFirstEBuff)
+                if (item.GetFirstEBuff == buffItem.GetFirstEBuff)
                 {
                     return true;
                 }
-                return false;
             }
-            return nextCell.buffItem.CanUpGradeItem(buffItem);
+            return false;
         }
 
+        //需要拦截同类型ExBuff
         void ExChange(BuffItemCell nextCell)
         {
             PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
@@ -168,7 +185,7 @@ namespace XiaoCao
 
         void UpgradeBuff(BuffItemCell nextCell)
         {
-            PlayerHelper.LocalPlayerBuffs.UpgradeBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
+            PlayerHelper.LocalPlayerBuffs.CombineItem(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             OnBuffChangeAct?.Invoke();
         }
 
@@ -222,6 +239,10 @@ namespace XiaoCao
             if (index < 0)
             {
                 index = len - 1;
+            }
+            if (index >= colorSetting.values.Length)
+            {
+                index = colorSetting.values.Length - 1;
             }
             bg.color = colorSetting.values[index];
         }

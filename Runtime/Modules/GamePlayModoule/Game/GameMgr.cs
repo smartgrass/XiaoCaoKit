@@ -1,15 +1,15 @@
-using NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Threading;
+using NaughtyAttributes;
 using TEngine;
 using UnityEngine;
-using UnityEngine.Profiling;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
+
 namespace XiaoCao
 {
     ///<see cref="GameDataCommon"/>
@@ -28,7 +28,7 @@ namespace XiaoCao
         public LevelControl levelControl;
         public PoolMgr poolMgr;
 
-        //¾²Ì¬
+        //ï¿½ï¿½Ì¬
         public SaveMgr saveMgr;
         public ConfigMgr configMgr;
 
@@ -85,7 +85,7 @@ namespace XiaoCao
 
         public void FinishLevel(int nextScene)
         {
-            //½áËã->ÏÔÊ¾½áËãÒ³
+            //ï¿½ï¿½ï¿½ï¿½->ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ò³
 
         }
 
@@ -164,8 +164,7 @@ namespace XiaoCao
         public const int LoadingScene = 2;
     }
 
-
-    ///Ö±½ÓÊ¹ÓÃ<see cref="GameMgr"/>
+    
     public class SceneMgr { }
 
     public static class SceneNames

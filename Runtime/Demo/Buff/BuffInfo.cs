@@ -1,27 +1,34 @@
-﻿using System;
+﻿using cfg;
+using OdinSerializer;
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
+using static Cinemachine.DocumentationSortingAttribute;
 
 namespace XiaoCao
 {
-
-    //词条Buff的最基础单位
-    [Serializable]
-    public struct BuffInfo
-    {
-        public EBuff eBuff;
-
-        public float[] addInfo;
-    }
     /// <summary>
     /// Buff容器, 可以承载多个词条
     /// </summary>
     [Serializable]
-    public struct BuffItem
+    public class BuffItem : ISubItem
     {
-        public int level; //星级
+        public int level; //等级,默认0,文本显示+1
 
         public List<BuffInfo> buffs;
+
+        public List<BuffInfo> GetBuffs
+        {
+            get
+            {
+                if (buffs == null)
+                {
+                    buffs = new List<BuffInfo>();
+                }
+                return buffs;
+            }
+        }
 
         //取第一个为主属性
         public EBuffType GetBuffType
@@ -57,17 +64,48 @@ namespace XiaoCao
             }
         }
 
-        public int GetMaxBuffCount => level + 1; // 0级1个词条, 1级两个词条
-
-
-        public void UpGradeItem(BuffItem costItem)
+        public bool IsMaxLevel
         {
-            buffs.Add(costItem.buffs[0]);
-            level++;
-            if (level > GameSetting.MaxBuffLevel)
+            get
             {
-                Debug.LogError($"--- level > MaxBuffLevel {level} > {GameSetting.MaxBuffLevel} ");
+                return level >= ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
             }
+
+        }
+        public int GetExBuffMaxLevel
+        {
+            get => ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
+        }
+
+        /// <summary>
+        /// 纹章合成
+        /// </summary>
+        /// <param name="costItem"></param>
+        public void CombineItem(BuffItem costItem)
+        {
+            //ExBuff根据level读取配置
+            if (costItem.GetBuffType == EBuffType.Ex)
+            {
+                level = (costItem.level + 1 + level);
+                level = Math.Min(level, costItem.GetExBuffMaxLevel);
+                buffs[0] = ConfigMgr.BuffConfigSo.GetLevelBuffInfo(costItem.buffs[0].eBuff, level);
+            }
+            else
+            {
+                var getBuffs = GetBuffs; //check null         
+                for (int i = 0; i < buffs.Count; i++)
+                {
+                    if (buffs[i].eBuff == costItem.buffs[0].eBuff)
+                    {
+                        //合并同类buff
+                        buffs[i] = BuffHelper.CombineBuffInfo(buffs[i].eBuff, buffs[i], costItem.buffs[0]);
+                        return;
+                    }
+                }
+                buffs.Add(costItem.buffs[0]);
+                level++;
+            }
+
         }
 
         public void Clear()
@@ -76,16 +114,55 @@ namespace XiaoCao
             buffs = null;
         }
 
-        //同级 & 非满级 -> 可合成
-        public bool CanUpGradeItem(BuffItem buffItem)
+        public Item ToItem()
         {
-            if (level > GameSetting.MaxBuffLevel)
-            {
-                return false;
-            }
-            return level == buffItem.level;
+            int num = ((int)buffs[0].eBuff);
+            Item item = new Item(ItemType.Buff, num.ToString());
+            return item;
         }
 
+        public static BuffItem Create(Item item)
+        {
+            EBuff eBuff;
+            if (item.id[0] == '#')
+            {
+                //根据类型抽取
+                var valueString = item.id.Substring(1);
+                int.TryParse(valueString, out int num);
+                EBuffType eBuffType = (EBuffType)num;
+                eBuff = BuffHelper.GetRandomBuff(eBuffType);
+            }
+            else
+            {
+                //直接转数字
+                int.TryParse(item.id, out int num);
+                eBuff = (EBuff)num;
+            }
+
+            var buffItem = BuffHelper.CreatBuffItem(eBuff);
+            return buffItem;
+        }
+
+        public Sprite GetBuffSprite()
+        {
+            var so = RunTimePoolMgr.Inst.staticResSoUsing.buffSpriteSo;
+            int index = (int)GetBuffType;
+            if (index < 0)
+            {
+                return null;
+            }
+            return so.values[index];
+        }
+
+    }
+
+    //词条Buff的最基础单位
+    [Serializable]
+    public struct BuffInfo
+    {
+        public EBuff eBuff;
+
+        public float[] addInfo;
     }
 
     public static class BuffHelper

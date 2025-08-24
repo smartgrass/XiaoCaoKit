@@ -51,18 +51,24 @@ namespace XiaoCao.Render
 
         IEnumerator IEActivateTrail()
         {
-            WaitForSeconds wait = new WaitForSeconds(meshRefreshRate);
-            Vector3 creatPos = transform.position;
+            float timer = meshRefreshRate / 2f;
+            Vector3 lastCreatePos = transform.position;
+
             while (_maxActiveTime > 0)
             {
-                Vector3 nextPos = transform.position;
-                //if (Vector3.Distance(nextPos, creatPos) > createPreDistance)
-                //{
-                //    nextPos = creatPos + (nextPos - creatPos).normalized * createPreDistance;
-                //}
-                creatPos = nextPos;
-                CreateOnPos(nextPos);
-                yield return wait;
+                timer += XCTime.deltaTime;
+                Vector3 currentPos = transform.position;
+
+                // 检查是否达到创建幻影的时间或距离条件
+                if (timer >= meshRefreshRate || Vector3.Distance(currentPos, lastCreatePos) >= createPreDistance)
+                {
+                    CreateOnPos(currentPos);
+                    timer = 0f; // 重置计时器
+                    lastCreatePos = currentPos; // 更新上次创建位置
+                }
+
+                _maxActiveTime -= XCTime.deltaTime;
+                yield return null;
             }
         }
 
@@ -88,13 +94,12 @@ namespace XiaoCao.Render
                     var tween = mat.DOFade(0, fadeTime);
                 }
             }
+
             Destroy(copy, fadeTime + 0.1f);
         }
 
         private void OnDestroy()
         {
         }
-
-
     }
 }

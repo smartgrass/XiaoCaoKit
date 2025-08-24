@@ -6,14 +6,9 @@ using XiaoCao;
 
 public class IniFile
 {
-    private List<IniSection> m_sectionList;
+    private List<IniSection> m_sectionList = new();
 
     public List<IniSection> SectionList => m_sectionList;
-
-    public IniFile()
-    {
-        m_sectionList = new List<IniSection>();
-    }
 
 
     public void LoadFromFile(string fileName, string failBack = null)

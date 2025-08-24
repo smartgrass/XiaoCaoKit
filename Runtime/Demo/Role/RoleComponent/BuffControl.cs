@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEngine;
 using XiaoCao.Buff;
 
@@ -11,11 +11,11 @@ namespace XiaoCao
 
         public BuffControl(Role _owner) : base(_owner)
         {
-            playerBuffs.BuffUpdataAct += UpdateAttributeValues;
+            playerBuffs.UpdataAllBuffAct += OnUpdateAllBuff;
+            playerBuffs.BuffItemUpdataAct += OnBuffIemUpdate;
         }
 
-        private readonly List<IBuffEffect> buffEffectList = new();
-
+        private Dictionary<EBuff, IBuffEffect> buffDic = new();
 
         public void AddBuff(BuffItem buff)
         {
@@ -24,48 +24,81 @@ namespace XiaoCao
 
         public void RemoveAllEffect()
         {
-            foreach (IBuffEffect buff in buffEffectList)
+            foreach (IBuffEffect buff in buffDic.Values)
             {
                 buff.RemoveEffect();
             }
-            buffEffectList.Clear();
+            buffDic.Clear();
         }
 
-        public void UpdateAttributeValues()
+        public void OnUpdateAllBuff()
         {
+            Debuger.Log($"--- Re Apply All Buff");
             //先移除
             RemoveAllEffect();
 
-            int playerId = owner.id;
-            var EquippedBuffs = playerBuffs.EquippedBuffs;
+            var EquippedBuffs = playerBuffs.EquippedExBuffs;
             int len = EquippedBuffs.Count;
             for (int i = 0; i < len; i++)
             {
-                if (!EquippedBuffs[i].IsEnable)
+                var buffItem = EquippedBuffs[i];
+                if (!buffItem.IsEnable)
                 {
                     continue;
                 }
-                string key = $"EBuff_{i}";
-                foreach (var buff in EquippedBuffs[i].buffs)
+                EnableBuff(buffItem);
+            }
+
+            EnableBuff(playerBuffs.norBuff);
+        }
+
+        public void OnBuffIemUpdate(BuffItem item)
+        {
+            if (item.GetBuffType == EBuffType.Nor)
+            {
+                foreach (var buff in item.GetBuffs)
                 {
-                    var instance = BuffBinder.Inst.GetOrCreateInstance(buff.eBuff);
-                    if (instance != null)
+                    if (buffDic.ContainsKey(buff.eBuff))
                     {
-                        buffEffectList.Add(instance);
-                        instance.ApplyEffect(key, buff, playerId);
+                        buffDic[buff.eBuff].RemoveEffect();
                     }
-                    else
-                    {
-                        //默认做法
-                        Debug.LogError($"--- no buffEffect {buff}");
-                    }
+                }
+                EnableBuff(playerBuffs.norBuff);
+            }
+            else
+            {
+                if (buffDic.ContainsKey(item.GetFirstEBuff))
+                {
+                    buffDic[item.GetFirstEBuff].RemoveEffect();
+                }
+                EnableBuff(item);
+            }
+        }
+
+        private void EnableBuff(BuffItem buffItem)
+        {
+            int playerId = owner.id;
+            foreach (var buff in buffItem.buffs)
+            {
+                var instance = BuffBinder.Inst.GetOrCreateInstance(buff.eBuff);
+                if (instance != null)
+                {
+                    buffDic[buff.eBuff] = instance;
+                    string key = buff.eBuff.ToString();
+                    //可能会出现key重复的情况, 需要处理叠加
+                    instance.ApplyEffect(key, buff, playerId);
+                }
+                else
+                {
+                    //默认做法
+                    Debug.LogError($"--- no buffEffect {buff.eBuff}");
                 }
             }
         }
 
         public override void Update()
         {
-            foreach (IBuffEffect buff in buffEffectList)
+            foreach (IBuffEffect buff in buffDic.Values)
             {
                 if (buff.HasLife)
                 {
@@ -77,135 +110,6 @@ namespace XiaoCao
         public override void OnDestroy()
         {
             RemoveAllEffect();
-        }
-
-    }
-    public class PlayerBuffs
-    {
-        public Action BuffUpdataAct;
-
-        public bool NoUpdateAtrribute { get; set; }
-
-        public int MaxEquipped = 4;
-        // 装备中buffe
-        public List<BuffItem> EquippedBuffs = new List<BuffItem>();
-        // 未装备buff
-        public List<BuffItem> UnequippedBuffs = new List<BuffItem>();
-
-        public BuffItem GetValue(bool isEquipped, int index)
-        {
-            List<BuffItem> sourceList = isEquipped ? EquippedBuffs : UnequippedBuffs;
-            if (sourceList.Count > index)
-            {
-                return sourceList[index];
-            }
-            return default;
-        }
-
-        public void AddBuff(BuffItem buff)
-        {
-            int findEmpty = -1;
-            for (int i = 0; i < UnequippedBuffs.Count; i++)
-            {
-                if (UnequippedBuffs[i].GetBuffType == EBuffType.None)
-                {
-                    findEmpty = i;
-                    UnequippedBuffs[findEmpty] = buff;
-                    return;
-                }
-            }
-
-            UnequippedBuffs.Add(buff);
-        }
-
-        // 合成: 移除buff-from, 将from第一个词条加在to
-        public void UpgradeBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
-        {
-            List<BuffItem> fromList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
-            List<BuffItem> toList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
-
-            var toItem = toList[ToIndex];
-            var costItem = fromList[FromIndex];
-
-            toItem.UpGradeItem(costItem);
-            toList[ToIndex] = toItem;
-            costItem.Clear();
-            fromList[FromIndex] = costItem;
-
-            if (!NoUpdateAtrribute)
-            {
-                UpdateAttributeValues();
-            }
-        }
-
-        // 移动buff: 将装备中或未装备中的buff移动到任意位置, 如果该位置已存在buff,则交换两buff位置
-        public void MoveBuff(bool isFromEquipped, int FromIndex, bool isToEquipped, int ToIndex)
-        {
-            List<BuffItem> sourceList = isFromEquipped ? EquippedBuffs : UnequippedBuffs;
-            List<BuffItem> baseList = isToEquipped ? EquippedBuffs : UnequippedBuffs;
-
-            if (FromIndex < 0 || FromIndex >= sourceList.Count || ToIndex < 0)
-            {
-                Debug.LogError("索引无效！");
-                return;
-            }
-
-            if (ToIndex >= baseList.Count)
-            {
-                // 如果目标索引超出目标列表长度，则扩展列表（这个逻辑可以根据实际需求调整）
-                for (int i = baseList.Count; i <= ToIndex; i++)
-                {
-                    var empty = new BuffItem();
-                    empty.Clear();
-                    baseList.Add(empty); // 或者创建一个默认的BuffItem实例
-                }
-            }
-
-            BuffItem temp = sourceList[FromIndex];
-            BuffItem temp2 = baseList[ToIndex];
-
-            sourceList[FromIndex] = temp2;
-            baseList[ToIndex] = temp;
-            Debug.Log($"--- 交换了 From{FromIndex} to{ToIndex}");
-            if (!NoUpdateAtrribute)
-            {
-                UpdateAttributeValues();
-            }
-        }
-
-        public int FindEmptyIndex(bool Equipped)
-        {
-            if (Equipped)
-            {
-                for (int i = 0; i < EquippedBuffs.Count; i++)
-                {
-                    if (!EquippedBuffs[i].IsEnable)
-                    {
-                        return i;
-                    }
-                }
-                if (EquippedBuffs.Count < MaxEquipped)
-                {
-                    return EquippedBuffs.Count;
-                }
-                return MaxEquipped - 1;
-            }
-            else
-            {
-                for (int i = 0; i < UnequippedBuffs.Count; i++)
-                {
-                    if (!UnequippedBuffs[i].IsEnable)
-                    {
-                        return i;
-                    }
-                }
-                return UnequippedBuffs.Count;
-            }
-        }
-
-        public void UpdateAttributeValues()
-        {
-            BuffUpdataAct.Invoke();
         }
 
     }

@@ -52,10 +52,6 @@ namespace XiaoCao
 
 
 
-        public void Show()
-        {
-            gameObject.SetActive(true);
-        }
         public override void OnGameStart()
         {
             base.OnGameStart();
@@ -81,11 +77,12 @@ namespace XiaoCao
             {
                 return;
             }
+            CheckBtnInput();
+
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
             {
                 return;
             }
-            CheckBtnInput();
 
             CheckUIUpdate();
         }

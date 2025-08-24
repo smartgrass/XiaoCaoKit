@@ -62,6 +62,11 @@ namespace XiaoCao
             return $"{SpriteDir}/SkillIcon/{skillId}.png";
         }
 
+        public static string GetRoleTexturePath(string roleId)
+        {
+            return $"{SpriteDir}/RoleTexture/{roleId}.png";
+        }
+
         //获取动画机
         public static string GetAnimatorControllerPath(string raceId)
         {
@@ -85,7 +90,7 @@ namespace XiaoCao
         }
 
 
-        //获取默认资源目录
+        //获取ExtraRes目录
         public static string GetBuildExtraResDir()
         {
             if (DebugSetting.IsMobilePlatform)
@@ -119,7 +124,7 @@ namespace XiaoCao
             return $"{DataDir}/{skillId}{RawFileExtend}";
         }
 
-        public static string GetRoleBodyPath(string prefabName, RoleType roleType)
+        public static string GetRoleBodyPath(string prefabName)
         {
             return $"{ResMgr.RESDIR}/Role/Body/{prefabName}.prefab";
         }

@@ -18,7 +18,7 @@ namespace XiaoCao
             {
                 itemIcon.sprite = GetItemIcon(item);
                 itemNameText.text = item.Key;
-                itemCountText.text = "x" + item.count.ToString();
+                itemCountText.text = "x" + item.num.ToString();
             }
             else
             {

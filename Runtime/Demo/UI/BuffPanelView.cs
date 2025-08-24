@@ -24,6 +24,9 @@ namespace XiaoCao
         public Button switchBtn;
         public TextMeshProUGUI buffTitle;
 
+        public Color exBuffTextColor = new Color32(160,255,160,255); 
+        public Color norBuffTextColor = Color.white;
+
         private PlayerBuffs playerBuffs;
 
 
@@ -48,7 +51,7 @@ namespace XiaoCao
             TempItemCell.EnableRayCast(false);
 
             prefabsTf.gameObject.SetActive(false);
-            playerBuffs = PlayerHelper.GetPlayerBuff().playerBuffs;
+            playerBuffs = PlayerHelper.GetPlayerBuffControl().playerBuffs;
             switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
             RefreshUI();
@@ -66,9 +69,9 @@ namespace XiaoCao
             for (int i = 0; i < playerBuffs.MaxEquipped; i++)
             {
                 BuffItem item = default;
-                if (i < playerBuffs.EquippedBuffs.Count)
+                if (i < playerBuffs.EquippedExBuffs.Count)
                 {
-                    item = playerBuffs.EquippedBuffs[i];
+                    item = playerBuffs.EquippedExBuffs[i];
                 }
                 else
                 {
@@ -79,29 +82,41 @@ namespace XiaoCao
                 cell.IsEquiped = true;
             }
             // 显示未装备的buff
-            for (int i = 0; i < playerBuffs.UnequippedBuffs.Count; i++)
+            for (int i = 0; i < playerBuffs.UnequippedExBuffs.Count; i++)
             {
-                var cell = InstantiateBuffItem(unequippedBuffContainer, playerBuffs.UnequippedBuffs[i]);
+                var cell = InstantiateBuffItem(unequippedBuffContainer, playerBuffs.UnequippedExBuffs[i]);
                 cell.Index = i;
                 cell.IsEquiped = false;
             }
         }
 
-        private void ShowBuffText(List<BuffInfo> buffInfoList)
+        private void ShowBuffText(List<BuffInfo> buffInfoList, List<BuffInfo> passiveBuffList = null)
         {
-            if (buffInfoList == null)
+            ClearTexts();
+            if (buffInfoList != null)
             {
-                return;
+                foreach (var buffInfo in buffInfoList)
+                {
+                    GameObject newBuffItem = textPool.Get();
+                    newBuffItem.transform.SetParent(textContainer, false);
+                    var text = newBuffItem.GetComponent<TextMeshProUGUI>();
+                    text.text = LocalizeKey.GetBuffInfoDesc(buffInfo);
+                    text.color = exBuffTextColor;
+                }
             }
 
-            ClearTexts();
-            foreach (var buffInfo in buffInfoList)
+            if (passiveBuffList != null)
             {
-                GameObject newBuffItem = textPool.Get();
-                newBuffItem.transform.SetParent(textContainer, false);
-                var text = newBuffItem.GetComponent<TextMeshProUGUI>();
-                text.text = LocalizeKey.GetBuffInfoDesc(buffInfo);
+                foreach (var buffInfo in passiveBuffList)
+                {
+                    GameObject newBuffItem = textPool.Get();
+                    newBuffItem.transform.SetParent(textContainer, false);
+                    var text = newBuffItem.GetComponent<TextMeshProUGUI>();
+                    text.text = LocalizeKey.GetBuffInfoDesc(buffInfo);
+                    text.color = norBuffTextColor;
+                }
             }
+
         }
 
         private void OnBuffClick(BuffItem item)
@@ -109,7 +124,7 @@ namespace XiaoCao
             //显示单个buff
             if (item.GetBuffType != EBuffType.None)
             {
-                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level+1}";
+                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level + 1}";
                 switchBtn.gameObject.SetActive(true);
                 ShowBuffText(item.buffs);
             }
@@ -129,19 +144,19 @@ namespace XiaoCao
         {
             buffTitle.text = $"{LocalizeKey.EquippedBuffEffect.ToLocalizeStr()} lv{GetEquippedBuffsLevel()}";
             switchBtn.gameObject.SetActive(false);
-            var buffInfoList = playerBuffs.EquippedBuffs.GetBuffInfos().Combine();
-            Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedBuffs.GetBuffInfos().Count}");
-            ShowBuffText(buffInfoList);
+            var buffInfoList = playerBuffs.EquippedExBuffs.GetBuffInfos().Combine();
+            Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedExBuffs.GetBuffInfos().Count}");
+            ShowBuffText(buffInfoList, playerBuffs.norBuff.GetBuffs.Combine());
         }
 
         private int GetEquippedBuffsLevel()
         {
             int level = 0;
-            foreach (var item in playerBuffs.EquippedBuffs)
+            foreach (var item in playerBuffs.EquippedExBuffs)
             {
                 if (item.IsEnable)
                 {
-                    level += item.level+1;
+                    level += item.level + 1;
                 }
             }
             return level;

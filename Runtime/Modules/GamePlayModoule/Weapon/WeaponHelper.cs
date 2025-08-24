@@ -4,6 +4,13 @@ namespace XiaoCao
 {
     public static class WeaponHelper
     {
+        public static Transform FindWeapon(Animator animator)
+        {
+            var hand = WeaponHelper.FindHand(animator);
+            var weapon = hand.Find(Role.WeaponPointName);
+            return weapon;
+        }
+
         public static Transform FindHand(Animator animator)
         {
             Transform rightHandBone = null;

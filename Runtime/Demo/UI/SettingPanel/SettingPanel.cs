@@ -25,8 +25,14 @@ public class SettingPanel : TabPanel
         SubPanel renderPanel = AddPanel<PerformancePanel>("Performance");
         if (GameSetting.VersionType != GameVersionType.Office)
         {
+            SubPanel debugPanel = AddPanel<DemoPanel>("ExtraTest");
+        }
+
+        if (GameSetting.VersionType == GameVersionType.Debug)
+        {
             SubPanel debugPanel = AddPanel<DebugPanel>("Debug");
         }
+
         reloadBtn.onClick.AddListener(OnReload);
 
         mainPanel.Show();

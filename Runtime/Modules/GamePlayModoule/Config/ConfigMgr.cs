@@ -9,10 +9,10 @@ using System.Text;
 using Newtonsoft.Json;
 
 
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
 namespace XiaoCao
 {
     ///<see cref="MoveSettingSo"/>
@@ -20,7 +20,8 @@ namespace XiaoCao
     ///<see cref="LocalizeMgr"/>
     public class ConfigMgr
     {
-        #region  public
+        #region public
+
         public static StaticSettingSo StaticSettingSo
         {
             get
@@ -29,6 +30,7 @@ namespace XiaoCao
                 {
                     _staticSettingSo = LoadSoConfig<StaticSettingSo>();
                 }
+
                 return _staticSettingSo;
             }
         }
@@ -43,13 +45,15 @@ namespace XiaoCao
 
         public static BuffConfigSo BuffConfigSo;
 
+        public static ModelConfigSo ModelConfigDataSo;
+
         public static List<string> SkinList;
 
         public static List<string> TestEnmeyList;
 
         #endregion
 
-        #region  private
+        #region private
 
         private static IniFile _mainConfig;
 
@@ -62,7 +66,6 @@ namespace XiaoCao
         #endregion
 
 
-
         public static void Init()
         {
             var init = MainCfg;
@@ -71,11 +74,17 @@ namespace XiaoCao
             SkillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             EnemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
+            ModelConfigDataSo = ConfigMgr.LoadSoConfig<ModelConfigSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
             GetTestEnemyList();
         }
 
+        public static string GetTalkChapter(string chapterId)
+        {
+            string strFullPath = XCPathConfig.GetGameConfigFile($"Talk/{chapterId}.txt");
+            return FileTool.ReadFileString(strFullPath);
+        }
 
         private static void GetSkinList()
         {
@@ -87,15 +96,15 @@ namespace XiaoCao
                 {
                     foreach (var key in section.Dic.Keys)
                     {
-                        if (key.StartsWith("Body_"))
+                        if (key.StartsWith("Role") || key.StartsWith("E_"))
                         {
                             list.Add(key);
                         }
                     }
                 }
             }
-            SkinList = list;
 
+            SkinList = list;
         }
 
         private static void GetTestEnemyList()
@@ -106,6 +115,7 @@ namespace XiaoCao
                 TestEnmeyList = new List<string>();
                 return;
             }
+
             List<string> list = new List<string>();
             list.Add("--");
             list.AddRange(config.Dic.Keys);
@@ -122,8 +132,9 @@ namespace XiaoCao
         {
             if (index == 0)
             {
-                return "Body_Skin_0";
+                return "Role_0";
             }
+
             return SkinList[index % SkinList.Count];
         }
 
@@ -133,6 +144,7 @@ namespace XiaoCao
             {
                 return "P_0";
             }
+
             return TestEnmeyList[index % TestEnmeyList.Count];
         }
 
@@ -163,6 +175,7 @@ namespace XiaoCao
                 AssetDatabase.CreateAsset(ret, path);
 #endif
             }
+
             return ret;
         }
 
@@ -176,6 +189,7 @@ namespace XiaoCao
                     ini.LoadFromFile("main.ini");
                     _mainConfig = ini;
                 }
+
                 return _mainConfig;
             }
         }
@@ -190,6 +204,7 @@ namespace XiaoCao
                     ini.LoadFromFile("sound.ini");
                     _soundCfg = ini;
                 }
+
                 return _soundCfg;
             }
         }
@@ -202,11 +217,13 @@ namespace XiaoCao
                 {
                     _localSetting = LocalSetting.Load();
                 }
+
                 return _localSetting;
             }
         }
 
         private static LocalRoleSetting _localRoleSetting;
+
         public static LocalRoleSetting LocalRoleSetting
         {
             get
@@ -215,10 +232,10 @@ namespace XiaoCao
                 {
                     _localRoleSetting = LocalRoleSetting.Load();
                 }
+
                 return _localRoleSetting;
             }
         }
-
     }
 
     //角色相关的本地设置 , 随时清空, 比如技能图标,按键设置
@@ -227,14 +244,14 @@ namespace XiaoCao
         public bool saveSkillBar;
 
         public List<string> skillBarSetting;
+
         public static LocalRoleSetting Load()
         {
-
             var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
             if (!isSuc)
             {
-
             }
+
             //修改时, 需要修改saveSkillBar ,恢复默认则清除saveSkillBar
             SkillDataSo dataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
             if (!ret.saveSkillBar)
@@ -256,8 +273,7 @@ namespace XiaoCao
 
     public class LocalSetting
     {
-        [OdinSerialize]
-        public Dictionary<string, float> floatDic = new Dictionary<string, float>();
+        [OdinSerialize] public Dictionary<string, float> floatDic = new Dictionary<string, float>();
 
         public float GetValue(string key, float defaultValue)
         {
@@ -265,6 +281,7 @@ namespace XiaoCao
             {
                 return value;
             }
+
             return defaultValue;
         }
 
@@ -289,8 +306,8 @@ namespace XiaoCao
             var ret = SaveMgr.ReadData<LocalSetting>(out bool isSuc);
             if (!isSuc)
             {
-
             }
+
             return ret;
         }
 
@@ -307,19 +324,19 @@ namespace XiaoCao
 
     public enum GameVersionType
     {
-        Office,//正式
-        Demo,//试玩
+        Office, //正式
+        Demo, //试玩
         Debug //开发
     }
 }
 
 
-
 public sealed class OdinPlayerPrefs
 {
-
     #region Singleton
+
     public const string Name = "OdinPlayerPrefs";
+
     static OdinPlayerPrefs()
     {
         absoluteDirectoryPath = Path.Combine(Application.persistentDataPath, "User");
@@ -327,10 +344,14 @@ public sealed class OdinPlayerPrefs
         {
             Directory.CreateDirectory(absoluteDirectoryPath);
         }
+
         fileFullName = Path.Combine(absoluteDirectoryPath, fileName);
         LoadData();
     }
-    public OdinPlayerPrefs() { }
+
+    public OdinPlayerPrefs()
+    {
+    }
 
     #endregion
 
@@ -359,6 +380,7 @@ public sealed class OdinPlayerPrefs
         byte[] bytes = SerializationUtility.SerializeValue(userInfo, dataFormat);
         File.WriteAllBytes(fileFullName, bytes);
     }
+
     private static void LoadData()
     {
         if (!File.Exists(fileFullName))
@@ -366,6 +388,7 @@ public sealed class OdinPlayerPrefs
             userInfo = new UserInfo();
             return;
         }
+
         byte[] bytes = File.ReadAllBytes(fileFullName);
         userInfo = SerializationUtility.DeserializeValue<UserInfo>(bytes, dataFormat);
     }
@@ -378,6 +401,7 @@ public sealed class OdinPlayerPrefs
         userInfo.keyValuePairs_Int.Clear();
         SaveData();
     }
+
     public static void DeleteKey(string key)
     {
         bool isNeedSaveData = false;
@@ -386,16 +410,19 @@ public sealed class OdinPlayerPrefs
             userInfo.keyValuePairs_String.Remove(key);
             isNeedSaveData = true;
         }
+
         if (userInfo.keyValuePairs_Float.ContainsKey(key))
         {
             userInfo.keyValuePairs_Float.Remove(key);
             isNeedSaveData = true;
         }
+
         if (userInfo.keyValuePairs_Int.ContainsKey(key))
         {
             userInfo.keyValuePairs_Int.Remove(key);
             isNeedSaveData = true;
         }
+
         if (isNeedSaveData)
         {
             SaveData();
@@ -405,10 +432,12 @@ public sealed class OdinPlayerPrefs
             Debug.LogWarning($"删除失败，没有找到指定Key:{key}");
         }
     }
+
     public static float GetFloat(string key)
     {
         return GetFloat(key, defaultFloat);
     }
+
     public static float GetFloat(string key, float defaultValue)
     {
         if (userInfo.keyValuePairs_Float.ContainsKey(key))
@@ -420,10 +449,12 @@ public sealed class OdinPlayerPrefs
             return defaultValue;
         }
     }
+
     public static int GetInt(string key)
     {
         return GetInt(key, defaultInt);
     }
+
     public static int GetInt(string key, int defaultValue)
     {
         if (userInfo.keyValuePairs_Int.ContainsKey(key))
@@ -435,10 +466,12 @@ public sealed class OdinPlayerPrefs
             return defaultValue;
         }
     }
+
     public static string GetString(string key)
     {
         return GetString(key, defaultString);
     }
+
     public static string GetString(string key, string defaultValue)
     {
         if (userInfo.keyValuePairs_String.ContainsKey(key))
@@ -450,37 +483,42 @@ public sealed class OdinPlayerPrefs
             return defaultValue;
         }
     }
+
     public static bool HasKey(string key)
     {
         if (userInfo.keyValuePairs_String.ContainsKey(key))
         {
             return true;
         }
+
         if (userInfo.keyValuePairs_Float.ContainsKey(key))
         {
             return true;
         }
+
         if (userInfo.keyValuePairs_Int.ContainsKey(key))
         {
             return true;
         }
+
         return false;
     }
+
     public static void SetFloat(string key, float value)
     {
         userInfo.keyValuePairs_Float[key] = value;
         SaveData();
     }
+
     public static void SetInt(string key, int value)
     {
         userInfo.keyValuePairs_Int[key] = value;
         SaveData();
     }
+
     public static void SetString(string key, string value)
     {
         userInfo.keyValuePairs_String[key] = value;
         SaveData();
     }
 }
-
-

@@ -1,16 +1,19 @@
-﻿using NaughtyAttributes;
+﻿using MFPC;
+using NaughtyAttributes;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace XiaoCao
 {
 
 
-    public class SkillBarHud : GameStartMono, IClearCache
+    public class StandaloneInputHud : GameStartMono, IClearCache
     {
         public Transform slotParent;
+
+        public TouchField touchField;
+
         [ReadOnly]
         public List<SkillSlot> slots;
         //private ChildPos childPos;
@@ -41,16 +44,7 @@ namespace XiaoCao
             }
         }
 
-        public void Show()
-        {
-            gameObject.SetActive(true);
-        }
-
-        private void ClearCache()
-        {
-            _atkTimer = null;
-            _playerData =null;
-        }
+        private bool isTouch;
 
         public override void OnGameStart()
         {
@@ -58,8 +52,25 @@ namespace XiaoCao
             ClearCache();
             CheckImg();
             slots = slotParent.GetComponentsInChildren<SkillSlot>().ToList();
+            //touchField
         }
 
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void SetTouchShow(bool isTouch)
+        {
+            slotParent.gameObject.SetActive(!isTouch);
+            this.isTouch = isTouch;
+        }
+
+        private void ClearCache()
+        {
+            _atkTimer = null;
+            _playerData = null;
+        }
 
         private void CheckImg()
         {
@@ -79,6 +90,21 @@ namespace XiaoCao
                 return;
             }
 
+
+            UpdateSkillBar();
+        }
+
+        private void FixedUpdate()
+        {
+            PlayerInputData.LocalSwipeDirection = touchField.GetSwipeDirection;
+        }
+
+        private void UpdateSkillBar()
+        {
+            if (isTouch)
+            {
+                return;
+            }
 
             for (int i = 0; i < slots.Count; i++)
             {
@@ -103,7 +129,6 @@ namespace XiaoCao
                 solt.OnUpdate(process);
             }
         }
-
     }
 
 }

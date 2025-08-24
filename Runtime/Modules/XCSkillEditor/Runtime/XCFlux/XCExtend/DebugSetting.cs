@@ -25,6 +25,8 @@ namespace XiaoCao
                 {
                     return true;
                 }
+
+                Debug.Log($"--- android-editor");
 #endif
                 return Application.isMobilePlatform;
             }

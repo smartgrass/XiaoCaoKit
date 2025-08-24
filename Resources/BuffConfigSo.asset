@@ -53,7 +53,15 @@ MonoBehaviour:
     - 2
   - eBuff: 102
     addInfo:
-    - 1
+    - 4
   - eBuff: 103
     addInfo:
     - 3
+  exBuffInfos:
+  - eBuff: 102
+    maxLevel: 2
+    addInfoArray:
+    - values:
+      - 8
+    - values:
+      - 10

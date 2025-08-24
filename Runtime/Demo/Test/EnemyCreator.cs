@@ -7,10 +7,13 @@ using UnityEngine.UIElements;
 using XiaoCao;
 using EGameEvent = XiaoCao.EGameEvent;
 using System;
+using GG.Extensions;
+
 
 
 #if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
 public class EnemyCreator : GameStartMono, IExecute
@@ -33,12 +36,12 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public int genCount = 1;
 
-    public bool isForceFollow;
-
     public float delayGen = 0.5f;
 
     public float circleSize = 1;
 
+    [Multiline]
+    public string taskLines;
 
     private int curGenCount;
     private int deadCount;
@@ -113,10 +116,6 @@ public class EnemyCreator : GameStartMono, IExecute
                 {
                     enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
                 }
-                if (isForceFollow)
-                {
-                    enemy.AddTag(RoleTagCommon.ForceFollow);
-                }
 
                 if (IsPlayerTeam)
                 {
@@ -130,6 +129,13 @@ public class EnemyCreator : GameStartMono, IExecute
                 _enemyList.Add(enemy.id);
 
                 posIndex++;
+
+                if (!string.IsNullOrEmpty(taskLines))
+                {
+                    var action = enemy.idRole.AddComponent<EnemyShowAction>();
+                    action.taskLines = taskLines;
+                    action.OnEnemyCreat(this, enemy);
+                }
             }
 
         }
@@ -175,7 +181,7 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             float radius = ((count - 2) * 0.5f + 2) * circleSize;
             Mathf.Clamp(radius, 2, 5);
-            var addVec = MathTool.AngleToVector(index * 360 / count).To3D(); ;
+            var addVec = MathTool.AngleToVector(index * 360 / count + transform.localEulerAngles.y).To3D(); ;
             return transform.position + addVec * radius;
         }
         else
@@ -191,14 +197,14 @@ public class EnemyCreator : GameStartMono, IExecute
         enemyIdList = enmeyBrowse;
 #if UNITY_EDITOR
         EditorUtility.SetDirty(this);
-        var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/Enemy/{enmeyBrowse}.prefab");
+        var obj = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Res/Role/IdRole/{enmeyBrowse}.prefab");
         EditorGUIUtility.PingObject(obj);
 #endif
     }
 
     private List<string> GetDirAllFileName()
     {
-        return PathTool.GetDirAllFileName("Assets/_Res/Role/Enemy");
+        return PathTool.GetDirAllFileName("Assets/_Res/Role/IdRole");
     }
 
 

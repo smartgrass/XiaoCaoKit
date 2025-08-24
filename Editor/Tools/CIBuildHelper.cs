@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -14,11 +15,15 @@ public static class CIBuildHelper
         UnityEditor.Build.Reporting.BuildReport report = null;
 
 
-        BuildOptions buildOptions = EditorUserBuildSettings.development? BuildOptions.Development : BuildOptions.None;
+        BuildOptions buildOptions = EditorUserBuildSettings.development ? BuildOptions.Development : BuildOptions.None;
+
+        int index = EditorPrefs.GetInt("BuildIndex", 0);
+
+        EditorPrefs.SetInt("BuildIndex", index + 1);
 
         if (target == BuildTarget.Android)
         {
-            report = BuildPipeline.BuildPlayer(scenes, "BuildAndroid/ActGame.apk", BuildTarget.Android, buildOptions);
+            report = BuildPipeline.BuildPlayer(scenes, $"BuildAndroid/ActGame_{index}.apk", BuildTarget.Android, buildOptions);
         }
         else
         {

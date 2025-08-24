@@ -27,7 +27,8 @@ public class SoulTrailTween : MonoBehaviour
     private Vector3 tempVec3;
     public Vector3 GetEndPoint
     {
-        get {
+        get
+        {
             if (targetTf)
             {
                 tempVec3 = targetTf.position + endOffset;
@@ -71,12 +72,16 @@ public class SoulTrailTween : MonoBehaviour
         }
         yield return null;
 
+        float timer2 = 0;
         float distance = Vector3.Distance(transform.position, GetEndPoint);
         while (distance > 0.2f)
         {
             Vector3 dir = transform.forward;
             Vector3 targetDir = GetEndPoint - transform.position;
-            Vector3 lerpDir = Vector3.Lerp(dir, targetDir, 0.1f);
+            float lerp = 0.1f + timer2 * 0.1f / 5;
+            timer2 += Time.deltaTime;
+
+            Vector3 lerpDir = Vector3.Lerp(dir, targetDir, lerp);
             transform.rotation = Quaternion.LookRotation(lerpDir);
 
             transform.position += transform.forward * speed * Time.deltaTime;

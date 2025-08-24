@@ -9,8 +9,13 @@ namespace XiaoCao
     /// </summary>
     public class RunTimePoolMgr : Singleton<RunTimePoolMgr>
     {
-        
+        public StaticResSoUsing staticResSoUsing;
 
+        protected override void Init()
+        {
+            base.Init();
+            staticResSoUsing = ResMgr.LoadAseet<StaticResSoUsing>("Assets/_Res/UI/Setting/StaticResSoUsing.asset");
+        }
 
         internal GameObject GetHitEffect(int hitEffect)
         {

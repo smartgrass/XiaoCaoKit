@@ -2,6 +2,7 @@
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -70,7 +71,7 @@ namespace XiaoCao
             {
                 case ItemType.Consumable:
                     break;
-                case ItemType.Equipment:
+                case ItemType.HolyRelic:
                     break;
                 case ItemType.Coin:
                     break;
@@ -113,25 +114,17 @@ namespace XiaoCao
                 return;
             }
 
-            EBuff eBuff;
-            if (item.id[0] == '#')
-            {
-                //根据类型抽取
-                var valueString = item.id.Substring(1);
-                int.TryParse(valueString, out int num);
-                EBuffType eBuffType = (EBuffType)num;
-                eBuff = BuffHelper.GetRandomBuff(eBuffType);
-            }
-            else
-            {
-                //直接转数字
-                int.TryParse(item.id, out int num);
-                eBuff = (EBuff)num;
-            }
+            BuffItem buffItem = BuffItem.Create(item);
 
-            var buffItem = BuffHelper.CreatBuffItem(eBuff);
             PlayerHelper.AddBuff(GameDataCommon.Current.LocalPlayerId, buffItem);
+
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
+
+            //Item item = new Item { type = ItemType.Coin, id = "金币", count = 10 };
+            //
+
+            GameEvent.Send<Item>(EGameEvent.OnGetItem.Int(), buffItem.ToItem());
         }
+        //特殊的转换规则,可以取随机
     }
 }
