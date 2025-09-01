@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
+using TEngine;
 using UnityEngine;
 using static XiaoCao.NpcShowAction;
 
@@ -29,7 +30,33 @@ namespace XiaoCao
 
         private Animator animator;
 
+        private string _reciveMsg;
+        private string _waitMsg;
+        private bool _msgReceived;
+
         protected bool isOverrideRunAct;
+
+        public override void Start()
+        {
+            base.Start();
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+        }
+
+        private void OnReciveMsg(string str)
+        {
+            if (!string.IsNullOrEmpty(_waitMsg) && str == _waitMsg)
+            {
+                _msgReceived = true;
+            }
+        }
+
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+        }
+
 
         public IEnumerator IETaskRun()
         {
@@ -86,7 +113,26 @@ namespace XiaoCao
                     }
 
                     break;
+                case ShowActKeys.WaitMsg:
+                    // 等待消息
+                    _msgReceived = false;
+                    if (string.IsNullOrEmpty(showActData.content))
+                    {
+                        Debug.LogWarning("WaitMsg action requires a message content to wait for");
+                        break;
+                    }
 
+                    _waitMsg = showActData.content;
+
+                    // 等待消息接收
+                    while (!_msgReceived)
+                    {
+                        yield return null;
+                    }
+
+                    _waitMsg = null;
+
+                    break;
                 case ShowActKeys.Anim:
                     Debug.Log($"--- taskData {showActData}");
                     // 播放动画行为
@@ -296,6 +342,15 @@ namespace XiaoCao
                 }
             }
         }
+
+        // 消息接收处理方法
+        private void OnWaitMsgReceived(string receivedMsg, string expectedMsg)
+        {
+            if (receivedMsg == expectedMsg)
+            {
+                _msgReceived = true;
+            }
+        }
     }
 
 
@@ -447,6 +502,8 @@ namespace XiaoCao
         /// </summary>
         public const string Wait = "Wait";
 
+        public const string WaitMsg = "WaitMsg";
+
         /// <summary>
         /// 播放动画
         /// 用法: anim,attack
@@ -495,7 +552,7 @@ namespace XiaoCao
         public const string Loop = "Loop";
 
         public const string EndLoop = "EndLoop";
-        
+
         public const string FollowPlayer = "FollowPlayer";
     }
 }

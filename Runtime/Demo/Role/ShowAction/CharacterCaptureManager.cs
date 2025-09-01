@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>,IClearCache
+public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, IClearCache
 {
     private readonly Dictionary<string, ModelLoader> _modelLoaderDic = new Dictionary<string, ModelLoader>();
 
@@ -29,6 +29,11 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>,IC
         if (string.IsNullOrEmpty(speakerName))
         {
             Debug.LogError("Speaker name is null or empty");
+            return null;
+        }
+
+        if (speakerName == "Null")
+        {
             return null;
         }
 

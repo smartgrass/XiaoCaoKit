@@ -26,7 +26,7 @@ public class GameStartMono : MonoBehaviour
         }
     }
 
-    public void OnDestroy()
+    public virtual void OnDestroy()
     {
         RemoveListener();
     }

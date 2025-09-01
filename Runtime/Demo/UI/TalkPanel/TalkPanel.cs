@@ -44,20 +44,28 @@ public class TalkPanel : MonoBehaviour
         // 开始逐字显示文本
         //textTypingCoroutine = StartCoroutine(IETypeTextCoroutine(node.dialogueText, node.textSpeed, node.typeSound));
         dialogueText.text = node.Str1.ToLocalizeStr();
-        
+
         // 无选项时显示继续按钮
         continueButton.gameObject.SetActive(true);
     }
-    
+
 
     /// <summary>
     /// 更新说话人信息
     /// </summary>
-    private void UpdateSpeakerInfo(Texture avatar, string name)
+    private void UpdateSpeakerInfo(Texture texture, string nameKey)
     {
-        speakerImg.texture = avatar;
-        speakerNameText.text = name.ToLocalizeStr();
-        // 可以添加头像位置动画（左右切换）
+        if (nameKey == "Null")
+        {
+            speakerImg.enabled = false;
+            speakerNameText.text = "";
+        }
+        else
+        {
+            speakerImg.enabled = true;
+            speakerImg.texture = texture;
+            speakerNameText.text = nameKey.ToLocalizeStr();
+        }
     }
 
 
