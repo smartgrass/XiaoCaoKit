@@ -22,7 +22,7 @@ namespace XiaoCao
         public LevelData LevelData { get => BattleData.Current.levelData; }
 
         private LevelControl levelControl;
-
+ 
         private void Awake()
         {
             _instance = this;

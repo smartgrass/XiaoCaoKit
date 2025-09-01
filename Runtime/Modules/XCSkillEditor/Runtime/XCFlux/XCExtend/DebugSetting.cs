@@ -25,8 +25,6 @@ namespace XiaoCao
                 {
                     return true;
                 }
-
-                Debug.Log($"--- android-editor");
 #endif
                 return Application.isMobilePlatform;
             }
@@ -103,6 +101,8 @@ namespace XiaoCao
     {
         //分配不同表,尽量同时不占用
         public static List<Stopwatch> stopwatchs = new List<Stopwatch>(){
+                new Stopwatch(),
+                new Stopwatch(),
                 new Stopwatch(),
                 new Stopwatch(),
                 new Stopwatch(),

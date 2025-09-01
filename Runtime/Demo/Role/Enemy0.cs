@@ -3,7 +3,7 @@ using TEngine;
 
 namespace XiaoCao
 {
-    //Enemy0相当于base
+    //Enemy0包括敌人和npc队友
     public class Enemy0 : EnemyBase, IMsgReceiver
     {
         public override void DataCreat()
@@ -19,10 +19,15 @@ namespace XiaoCao
         public AIControl AiControl => component.aiControl;
 
         //prefabId = enemyId
-        public void Init(string prefabId, int level = 1)
+        public void Init(string prefabId, int level = 1,string skinNameSet = null)
         {
             CreateIdRole(prefabId);
-            CreateRoleBody(idRole.bodyName);
+            string skinName = idRole.bodyName;
+            if (!string.IsNullOrEmpty(skinNameSet))
+            {
+                skinName = skinNameSet;
+            }
+            CreateRoleBody(skinName);
             SetTeam(XCSetting.EnmeyTeam);
             data_R.playerAttr.lv = level;
             InitRoleData();

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XiaoCao;
@@ -6,13 +7,22 @@ using XiaoCao;
 //读取数据
 public class TalkMgr : Singleton<TalkMgr>
 {
-    private ChapterTalkData _chapterTalkData;
+    // 使用栈来保存对话状态，支持嵌套任务
+    private Stack<ChapterTalkState> talkStateStack = new Stack<ChapterTalkState>();
 
-    public string currentChapterId;
+    private ChapterTalkData _chapterTalkData;
 
     public int currentTalkIndex;
 
     public bool isTalking;
+
+    // 对话状态类，用于保存对话进度
+    private class ChapterTalkState
+    {
+        public ChapterTalkData chapterData;
+        public string chapterId;
+        public int talkIndex;
+    }
 
     public TalkPanel TalkPanel => UIMgr.Inst.talkPanel;
 
@@ -23,23 +33,116 @@ public class TalkMgr : Singleton<TalkMgr>
         isTalking = true;
     }
 
-    public void EndTalk()
+    public void EndTalk(bool isReShowCanvas = true)
     {
-        isTalking = false;
-        currentTalkIndex = 0;
-        currentChapterId = null;
-        _chapterTalkData = null;
-        TalkPanel.HidePanel();
-        UIMgr.Inst.MidCanvasEnable(true);
+        // 检查是否有嵌套的对话任务
+        if (talkStateStack.Count > 0)
+        {
+            // 恢复上一层对话状态
+            var prevState = talkStateStack.Pop();
+            _chapterTalkData = prevState.chapterData;
+            currentTalkIndex = prevState.talkIndex;
+            // 继续显示原来的对话
+            ShowTalk(currentTalkIndex);
+        }
+        else
+        {
+            // 真正结束所有对话
+            isTalking = false;
+            currentTalkIndex = 0;
+            _chapterTalkData = null;
+            TalkPanel.HidePanel();
+            if (isReShowCanvas)
+            {
+                UIMgr.Inst.MidCanvasEnable(true);
+            }
+        }
     }
 
     public void StartTalk(string chapterId)
     {
-        //TODO: 启动对话
         LoadChapterTalkData(chapterId);
         isTalking = true;
         ShowTalk(0);
     }
+
+    public void StartTask(string taskId)
+    {
+        string str = ConfigMgr.GetTalkChapter(taskId);
+        var data = new ChapterTalkData(str);
+        ShowTalkNode(data.talkNodes[0]);
+    }
+
+    /// <summary>
+    /// 显示对话节点
+    /// </summary>pu
+    public void ShowTalkNode(TalkData node)
+    {
+        TalkType type = node.talkType;
+        if (type == TalkType.Text)
+        {
+            TalkPanel.ShowTextData(node);
+        }
+        else if (type == TalkType.List)
+        {
+            int listLen = int.Parse(node.Str1);
+            for (int i = 0; i < listLen; i++)
+            {
+                MoveNextTalk();
+            }
+        }
+        else if (type == TalkType.Task)
+        {
+            StartTask(node.Str1);
+        }
+        else if (node.talkType == TalkType.End)
+        {
+            bool isHide = true;
+            if (node.array.Length > 1)
+            {
+                isHide = bool.Parse(node.Str1);
+            }
+
+            EndTalk(isHide);
+        }
+        else if (node.talkType == TalkType.ShowCanvas)
+        {
+            bool isShow = true;
+            if (node.array.Length > 0)
+            {
+                isShow = bool.Parse(node.Str1);
+            }
+            UIMgr.Inst.MidCanvasEnable(isShow);
+        }
+        else if (node.talkType == TalkType.Event)
+        {
+            //执行后直接继续
+            // if (node.Str1 == "DoSkill")
+            // {
+            //     string skillId = node.Str2;
+            //     string[] cmdList = skillId.Split("|");
+            //     GameDataCommon.LocalPlayer.component.control.DoActCombol(cmdList);
+            // }
+        }
+
+        // 如果有选项，等待文本完成后显示选项
+        //if (node.hasOptions)
+        //{
+        //    continueButton.gameObject.SetActive(false);
+        //    StartCoroutine(WaitForTextCompleteThenShowOptions(node));
+        //}
+    }
+
+    IEnumerator IEActCombol(IRoleControl control, string[] cmdList)
+    {
+        foreach (string cmd in cmdList)
+        {
+            // control.AIMsg(ActMsgType.Skill, cmd);
+            yield return null;
+            // yield return new WaitUntil(NoBusy);
+        }
+    }
+
 
     public void MoveNextTalk()
     {
@@ -50,7 +153,7 @@ public class TalkMgr : Singleton<TalkMgr>
     {
         var talkData = GetTalkNode(index);
         currentTalkIndex = index;
-        TalkPanel.ShowTalkNode(talkData);
+        ShowTalkNode(talkData);
     }
 
 
@@ -58,7 +161,6 @@ public class TalkMgr : Singleton<TalkMgr>
     {
         string str = ConfigMgr.GetTalkChapter(chapterId);
         _chapterTalkData = new ChapterTalkData(str);
-        currentChapterId = chapterId;
     }
 
     public TalkData GetTalkNode(int index)
@@ -107,9 +209,13 @@ public class TalkData
 {
     public TalkType talkType;
 
-    [Header("说话人信息")] public string speakerName; // 说话人名字
+    public string[] array;
 
-    public string contentText; // 对话文本
+    //[Header("说话人信息")] 
+
+    public string Str1 => array[1];
+    public string Str2 => array[2];
+
 
     //TODO 第四字段: 特殊信息
 
@@ -117,24 +223,20 @@ public class TalkData
 
     public void ReadStr(string str)
     {
+        str = str.Replace("\r", "").Replace("\n", "");
         var array = str.Split(",");
+        // var array = Regex.Split(str, @"\s*,\s*");
+        this.array = array;
 
-        talkType = Enum.Parse<TalkType>(array[0]);
-
-        if (array.Length > 1)
+        if (!Enum.TryParse<TalkType>(array[0], out talkType))
         {
-            speakerName = array[1].TrimEnd();
-        }
-
-        if (array.Length > 2)
-        {
-            contentText = array[2].TrimEnd();
+            Debug.Log($"--  error type {array[0]}");
         }
     }
 
     public Texture GetSpeakerAvatar()
     {
-        Texture texture = CharacterCaptureManager.Inst.GetSpeakerAvatar(speakerName);
+        Texture texture = CharacterCaptureManager.Inst.GetSpeakerAvatar(Str2);
         return texture;
     }
 }

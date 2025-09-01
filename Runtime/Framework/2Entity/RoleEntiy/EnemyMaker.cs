@@ -8,8 +8,8 @@ namespace XiaoCao
     {
         public Dictionary<string, Type> enemyTypeDic = new Dictionary<string, Type>();
 
-        public Dictionary<string, Enemy0> enmeyGroup = new Dictionary<string, Enemy0>(); 
-        
+        public Dictionary<string, Enemy0> enmeyGroup = new Dictionary<string, Enemy0>();
+
         protected override void Init()
         {
             base.Init();
@@ -21,7 +21,7 @@ namespace XiaoCao
             enemyTypeDic[enemyId] = type;
         }
 
-        public Enemy0 CreatEnemy(string enemyId,int level = 1)
+        public Enemy0 CreatEnemy(string enemyId, int level = 1, string skinNameSet = null)
         {
             Enemy0 enemy = null;
             if (enemyTypeDic.ContainsKey(enemyId))
@@ -33,19 +33,19 @@ namespace XiaoCao
             {
                 enemy = EntityMgr.Inst.CreatEntity<Enemy0>();
             }
-            enemy.Init(enemyId, level);
+
+            enemy.Init(enemyId, level, skinNameSet);
             enemy.IsAiOn = true;
             return enemy;
         }
-
-
     }
 
-    public class EnmeyGroup:IDisposable
+    public class EnmeyGroup : IDisposable
     {
         public List<Enemy0> list;
 
-        public EnmeyGroup() {
+        public EnmeyGroup()
+        {
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
         }
 
@@ -53,23 +53,18 @@ namespace XiaoCao
         {
             GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
         }
+
         private void OnEntityChange(int arg1, RoleChangeType type)
         {
-            
         }
 
-        public  void Add(Enemy0 e)
+        public void Add(Enemy0 e)
         {
             list.Add(e);
-
         }
 
         public void OnEnemyDead()
         {
-
         }
-
-
     }
-
 }

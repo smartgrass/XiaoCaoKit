@@ -6,12 +6,14 @@ using static XiaoCao.NpcShowAction;
 
 namespace XiaoCao
 {
+    /// <see cref="ShowActKeys"/>>
+    /// <see cref="EnemyShowAction"/>>
     public abstract class BaseShowAction : GameStartMono
     {
-        [Multiline]
-        public string taskLines;
+        [Multiline(12)] public string taskLines;
 
-        public abstract CharacterController Cc { get; }
+        public virtual CharacterController Cc => GameDataCommon.LocalPlayer.idRole.cc;
+
         public Animator Animator
         {
             get
@@ -20,6 +22,7 @@ namespace XiaoCao
                 {
                     animator = Cc.GetComponentInChildren<Animator>();
                 }
+
                 return animator;
             }
         }
@@ -47,12 +50,10 @@ namespace XiaoCao
 
         public virtual void OnTaskEnd()
         {
-
         }
 
         public virtual void OnTaskStart()
         {
-
         }
 
         public IEnumerator RunLine(string line)
@@ -83,6 +84,7 @@ namespace XiaoCao
                     {
                         Debug.LogWarning($"Invalid wait time: {showActData.content}");
                     }
+
                     break;
 
                 case ShowActKeys.Anim:
@@ -107,6 +109,8 @@ namespace XiaoCao
                             yield return null;
                         }
                     }
+
+                    Debug.Log($"-- Talk End");
                     break;
 
                 case ShowActKeys.MoveLocal:
@@ -116,6 +120,7 @@ namespace XiaoCao
                         ShowActMoveData moveData = ShowActMoveData.ParseMoveData(showActData.content);
                         yield return StartCoroutine(MoveToLocalPosition(moveData));
                     }
+
                     break;
                 case ShowActKeys.SetTargetMove:
                     Debug.Log($"--- SetTargetMove TODO");
@@ -127,13 +132,27 @@ namespace XiaoCao
                     break;
 
                 case ShowActKeys.Event:
+                    Debug.Log($"-- Event {showActData.content}");
                     // 发送事件
                     if (!string.IsNullOrEmpty(showActData.content))
                     {
                         // 这里可以根据需要发送不同类型的事件
                         //GameEvent.Send<string>(EGameEvent.CustomEvent.Int(), taskData.content);
                         Debug.Log($"Send event: {showActData.content}");
+                        var array = showActData.content.Split(",");
+                        if (array.Length == 0)
+                        {
+                            break;
+                        }
+
+                        if (array[0] == "DoSkill")
+                        {
+                            string skillId = array[1];
+                            string[] cmdList = skillId.Split("|");
+                            yield return GameDataCommon.LocalPlayer.component.control.IEWaitActCombol(cmdList, null);
+                        }
                     }
+
                     yield return null;
                     break;
 
@@ -150,7 +169,7 @@ namespace XiaoCao
                     break;
 
                 default:
-                    Debug.LogWarning($"Unknown action: {showActData.actName}");
+                    Debug.LogError($"Unknown action: {showActData.actName}");
                     yield return null;
                     break;
             }
@@ -230,23 +249,53 @@ namespace XiaoCao
         private void HandleActiveAction(string content)
         {
             string[] parts = content.Split(',');
-            if (parts.Length >= 2)
+            if (parts.Length >= 1)
             {
                 string objectName = parts[0].Trim();
-                bool activeState = parts[1].Trim().ToLower() == "true";
+                bool activeState = true;
+                if (parts.Length >= 2)
+                {
+                    activeState = parts[1].Trim().ToLower() == "true";
+                }
 
-                GameObject targetObject = GameObject.Find(objectName);
-                if (targetObject != null)
+                GameObject targetObject = null;
+                if (MarkObjectMgr.TryGet(objectName, out var game))
+                {
+                    targetObject = game;
+                }
+                else
+                {
+                    //在当前层级查找
+                    Transform find = transform.FindChildEx(objectName);
+                    if (find)
+                    {
+                        targetObject = find.gameObject;
+                    }
+                    else if (transform.parent)
+                    {
+                        find = transform.parent.FindChildEx(objectName);
+                        if (find)
+                        {
+                            targetObject = find.gameObject;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"-- GameObject Find :{objectName}");
+                        targetObject = GameObject.Find(objectName);
+                    }
+                }
+
+                if (targetObject)
                 {
                     targetObject.SetActive(activeState);
                 }
                 else
                 {
-                    Debug.LogWarning($"Object not found: {objectName}");
+                    Debug.LogError($"Object not found: {objectName}");
                 }
             }
         }
-
     }
 
 
@@ -339,9 +388,9 @@ namespace XiaoCao
             {
                 moveData.moveTime = time;
             }
+
             return moveData;
         }
-
     }
 
     public class ShowActHelper
@@ -388,8 +437,6 @@ namespace XiaoCao
             string[] parts = content.Split(',');
             return parts.Select(float.Parse).ToArray();
         }
-
-
     }
 
     public static class ShowActKeys
@@ -412,6 +459,8 @@ namespace XiaoCao
         /// </summary>
         public const string MoveLocal = "MoveLocal";
 
+        public const string SetHp = "SetHp";
+
         /// <summary>
         /// (moveType,content)
         /// Transform targetName speed stopDis
@@ -424,7 +473,7 @@ namespace XiaoCao
 
         /// <summary>
         /// 激活/禁用游戏对象
-        /// 用法: active,objectName,true
+        /// 用法: Active:objectName,true
         /// </summary>
         public const string Active = "Active";
 
@@ -436,7 +485,7 @@ namespace XiaoCao
         /// 发送事件消息
         /// 用法: event,CustomEventName
         /// </summary>
-        public const string Event = "event";
+        public const string Event = "Event";
 
         /// <summary>
         /// 循环执行指定次数
@@ -444,6 +493,9 @@ namespace XiaoCao
         ///     endloop (结束循环)
         /// </summary>
         public const string Loop = "Loop";
+
         public const string EndLoop = "EndLoop";
+        
+        public const string FollowPlayer = "FollowPlayer";
     }
 }

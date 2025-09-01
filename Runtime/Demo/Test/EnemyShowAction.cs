@@ -35,8 +35,22 @@ public class EnemyShowAction : BaseShowAction
         isOverrideRunAct = false;
         switch (showActData.actName)
         {
+            case ShowActKeys.FollowPlayer:
+                enemy0.AiControl.FollowPlayer();
+                break;
             case ShowActKeys.SetTargetMove:
+                isOverrideRunAct = true;
                 yield return IEProcessTargetMoveAct(showActData);
+                break;
+            case ShowActKeys.SetHp:
+                isOverrideRunAct = true;
+                if (!string.IsNullOrEmpty(showActData.content))
+                {
+                    int hp = int.Parse(showActData.content);
+                    enemy0.PlayerAttr.GetAttribute(EAttr.MaxHp).BaseValue = hp;
+                    enemy0.PlayerAttr.hp = hp;
+                }
+
                 break;
         }
 
@@ -44,12 +58,12 @@ public class EnemyShowAction : BaseShowAction
         {
             yield return base.RunActData(showActData);
         }
+
         yield break;
     }
 
     private IEnumerator IEProcessTargetMoveAct(ShowActData showActData)
     {
-        isOverrideRunAct = true;
         var aiControl = enemy0.AiControl;
         string[] parts = showActData.GetContentArray();
         aiControl.TargetPosTypeValue = Enum.Parse<TargetPosType>(parts[0]);
@@ -69,7 +83,6 @@ public class EnemyShowAction : BaseShowAction
 
             // 设置目标点
             aiControl.TargetPos = vec;
-
         }
         else if (parts[0] == TargetPosType.Transform.ToString())
         {
@@ -77,7 +90,7 @@ public class EnemyShowAction : BaseShowAction
             float stopDistance = float.Parse(parts[3]);
             aiControl.TargetStopDistance = stopDistance;
             aiControl.MoveSpeedShowAction = speed;
-            GameObject target = MarkObject.GetById(parts[1]);
+            GameObject target = MarkObjectMgr.GetById(parts[1]);
             SetTarget(target, parts[1]);
         }
         else

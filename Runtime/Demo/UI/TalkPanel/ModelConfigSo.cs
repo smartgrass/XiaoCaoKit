@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using static ModelConfigSo;
@@ -11,6 +13,17 @@ public class ModelConfigSo : KeyMapSo<ModelConfigEntry>
     public bool HasConfigTexture(string roleKey)
     {
         var config = GetOrDefault(roleKey);
+#if UNITY_EDITOR
+        if (config.hasTexture)
+        {
+            if (!File.Exists(XCPathConfig.GetRoleTexturePath(roleKey)))
+            {
+                Debug.LogError($"角色{roleKey}的配置纹理不存在");
+                config.hasTexture = false;
+            }
+        }
+#endif
+
         return config.hasTexture;
     }
 }
@@ -20,6 +33,7 @@ public class ModelConfigSo : KeyMapSo<ModelConfigEntry>
 public class ModelConfigEntry : IKey
 {
     public string roleKey;
+    public string anim;
     public bool hasTexture;
 
     public Vector3 localPosition;
@@ -31,9 +45,6 @@ public class ModelConfigEntry : IKey
 
     public Texture2D LoadTexture
     {
-        get
-        {
-            return ResMgr.LoadAseet<Texture2D>(XCPathConfig.GetRoleTexturePath(roleKey));
-        }
+        get { return ResMgr.LoadAseet<Texture2D>(XCPathConfig.GetRoleTexturePath(roleKey)); }
     }
 }

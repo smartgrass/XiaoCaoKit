@@ -59,6 +59,12 @@ public class ModelLoader
         loadedModel.transform.localPosition = config.localPosition;
         loadedModel.transform.localEulerAngles = config.localEulerAngles;
         loadedModel.transform.localScale = config.size * Vector3.one;
+        if (!string.IsNullOrEmpty(config.anim))
+        {
+            string path =XCPathConfig.GetAnimatorControllerPath(config.anim);
+            var loadAc = ResMgr.LoadAseet(path) as RuntimeAnimatorController;
+            loadedModel.GetComponent<Animator>().runtimeAnimatorController = loadAc;
+        }
     }
 
     /// <summary>

@@ -17,6 +17,7 @@ namespace XiaoCao.Buff
         public int maxSlashCount = 10;
         public int triggerCount = 0;
         public int curSlashCount = 0;
+        public float lifeTime = 1.8f;
 
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
@@ -45,7 +46,7 @@ namespace XiaoCao.Buff
                 }
             }
 
-            GameObject b = PoolMgr.Inst.Get(BulletPath, 4);
+            GameObject b = PoolMgr.Inst.Get(BulletPath, lifeTime);
             b.transform.position = data.Tran.position;
             b.transform.rotation = data.Tran.rotation;
             b.GetComponent<Rigidbody>().linearVelocity = data.Tran.forward * Speed;

@@ -16,6 +16,7 @@ namespace XiaoCao
     public class GameMgr : MonoSingleton<GameMgr>, IMgr
     {
         #region AllMgr
+
         private GameDataCommon GameData => GameDataCommon.Current;
         private BattleData BattleData => BattleData.Current;
 
@@ -37,7 +38,6 @@ namespace XiaoCao
         ///<see cref="RewardHelper"/>
         ///<see cref="LevelSettingHelper"/>
 
-
         #endregion
 
         [Button]
@@ -49,7 +49,6 @@ namespace XiaoCao
             dataView.GetCurrentData();
             poolMgr = PoolMgr.Inst;
 #endif
-
         }
 
         public override void Init()
@@ -72,21 +71,21 @@ namespace XiaoCao
 
         #region Scene
 
-
         private string curScene;
 
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
         {
-            //curScene = scene.buildIndex;
             curScene = scene.name;
             Debug.Log($"--- OnSceneLoaded {curScene}");
+            if (curScene == SceneNames.Level)
+            {
+                BlackScreen.ShowBlack();
+            }
         }
 
         public void FinishLevel(int nextScene)
         {
-            //����->��ʾ����ҳ
-
         }
 
         public void ReloadScene()
@@ -100,7 +99,7 @@ namespace XiaoCao
         public void LoadScene(string sceneName)
         {
             SetGameState(GameState.Loading);
-            GameDataCommon.Current.NextSceneName = curScene;
+            GameDataCommon.Current.NextSceneName = sceneName;
             SceneManager.LoadScene(SceneNames.Loading);
             ///<see cref="SceneLoader"/>
             //StartCoroutine(LoadSceneInBackground(sceneName));
@@ -112,26 +111,27 @@ namespace XiaoCao
             //return SceneManager.UnloadSceneAsync(curScene);
         }
 
-        [Obsolete]
-        private IEnumerator LoadSceneInBackground(string NextScene)
-        {
-            curScene = NextScene;
-            AsyncOperation loadingScene = SceneManager.LoadSceneAsync(NextScene, LoadSceneMode.Single);
-            Debug.Log($"--- LoadSceneInBackground {NextScene}");
-            while (!loadingScene.isDone)
-            {
-                float progress = loadingScene.progress;
+        // [Obsolete]
+        // private IEnumerator LoadSceneInBackground(string NextScene)
+        // {
+        //     curScene = NextScene;
+        //     AsyncOperation loadingScene = SceneManager.LoadSceneAsync(NextScene, LoadSceneMode.Single);
+        //     Debug.Log($"--- LoadSceneInBackground {NextScene}");
+        //     while (!loadingScene.isDone)
+        //     {
+        //         float progress = loadingScene.progress;
+        //
+        //         Debug.Log($"Loading: {progress * 100:F2}%");
+        //
+        //         yield return new WaitForSeconds(0.25f);
+        //     }
+        //     Debug.Log($"Loading: finish {NextScene}");
+        //
+        //     // SceneManager.GetSceneByBuildIndex(sceneBuildIndex)
+        //     //SceneManager.SetActiveScene(SceneManager.GetSceneByName(curScene));
+        //     SetGameState(GameState.Running);
+        // }
 
-                Debug.Log($"Loading: {progress * 100:F2}%");
-
-                yield return new WaitForSeconds(0.25f);
-            }
-            Debug.Log($"Loading: finish {NextScene}");
-
-            // SceneManager.GetSceneByBuildIndex(sceneBuildIndex)
-            //SceneManager.SetActiveScene(SceneManager.GetSceneByName(curScene));
-            SetGameState(GameState.Running);
-        }
         #endregion
 
 
@@ -164,8 +164,10 @@ namespace XiaoCao
         public const int LoadingScene = 2;
     }
 
-    
-    public class SceneMgr { }
+
+    public class SceneMgr
+    {
+    }
 
     public static class SceneNames
     {
@@ -173,6 +175,8 @@ namespace XiaoCao
         public static string Loading = "Loading";
     }
 
-
-
+    public static class MapNames
+    {
+        public static readonly string Level0 = "level0";
+    }
 }

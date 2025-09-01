@@ -44,7 +44,7 @@ namespace XiaoCao
         {
             base.OnGameStart();
             markName = gameObject.name;
-            MarkObject.MarkDic[gameObject.name] = gameObject;
+            MarkObjectMgr.Add(gameObject.name,gameObject);
             DoLoadSkin();
         }
 

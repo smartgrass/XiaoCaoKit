@@ -93,7 +93,7 @@ namespace AssetEditor.Editor
         private void CheckDebugGo()
         {
             DebugSetting.DebugGUI_IsShow.SetKeyBool(IsShowDebug);
-            if (MarkObject.TryGet("debugGo", out GameObject debugGo))
+            if (MarkObjectMgr.TryGet("debugGo", out GameObject debugGo))
             {
                 if (debugGo)
                 {

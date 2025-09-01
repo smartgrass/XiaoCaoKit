@@ -15,22 +15,26 @@ MonoBehaviour:
   Des: 
   array:
   - roleKey: defult
+    anim: 
     hasTexture: 0
     localPosition: {x: 0, y: -1.5, z: 7}
     localEulerAngles: {x: -5, y: 180, z: 0}
     size: 1
   - roleKey: Role_0
+    anim: 
     hasTexture: 0
     localPosition: {x: 0, y: -3.19, z: 6.82}
     localEulerAngles: {x: 352, y: 180, z: 0}
     size: 2.2
   - roleKey: Role_1
+    anim: 
     hasTexture: 0
     localPosition: {x: 0, y: -3.03, z: 6.78}
     localEulerAngles: {x: 346.05, y: 180, z: 5.2435378e-14}
     size: 2.1
   - roleKey: E_1_Axer
+    anim: 3
     hasTexture: 1
-    localPosition: {x: 0.01, y: -1.49, z: 7.01}
-    localEulerAngles: {x: 354.99997, y: 180, z: -2.5541631e-14}
+    localPosition: {x: -0.0099983215, y: -1.3699951, z: 6.998727}
+    localEulerAngles: {x: 354.99997, y: 146.83228, z: 0.0000012855522}
     size: 0.78

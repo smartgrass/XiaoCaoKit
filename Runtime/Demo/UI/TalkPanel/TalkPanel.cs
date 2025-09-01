@@ -9,8 +9,7 @@ using XiaoCao.UI;
 
 public class TalkPanel : MonoBehaviour
 {
-    [Header("UI 组件")]
-    public GameObject dialoguePanel; // 对话面板
+    [Header("UI 组件")] public GameObject dialoguePanel; // 对话面板
     public RawImage speakerImg; // 说话人头像
     public TextMeshProUGUI speakerNameText; // 说话人名字
     public TextMeshProUGUI dialogueText; // 对话文本
@@ -28,55 +27,28 @@ public class TalkPanel : MonoBehaviour
         optionsPanel.SetActive(false);
         continueButton.onClick.AddListener(OnContinueClick);
     }
+
     internal void Init()
     {
         gameObject.SetActive(false);
     }
 
-
-    /// <summary>
-    /// 显示对话节点
-    /// </summary>pu
-    public void ShowTalkNode(TalkData node)
+    public void ShowTextData(TalkData node)
     {
         gameObject.SetActive(true);
-        if (node.talkType == TalkType.Text)
-        {
-            // 显示对话面板
-            dialoguePanel.SetActive(true);
-            // 更新头像和名字
-            UpdateSpeakerInfo(node.GetSpeakerAvatar(), node.speakerName);
+        // 显示对话面板
+        dialoguePanel.SetActive(true);
+        // 更新头像和名字
+        UpdateSpeakerInfo(node.GetSpeakerAvatar(), node.Str2);
 
-            // 开始逐字显示文本
-            //textTypingCoroutine = StartCoroutine(IETypeTextCoroutine(node.dialogueText, node.textSpeed, node.typeSound));
-            dialogueText.text = node.contentText.ToLocalizeStr();
-
-            Debug.Log($"-- {node.contentText} {node.contentText.ToLocalizeStr()} ");
-
-            // 无选项时显示继续按钮
-            continueButton.gameObject.SetActive(true);
-        }
-
-        else if (node.talkType == TalkType.End)
-        {
-            TalkMgr.Inst.EndTalk();
-        }
-        else if (node.talkType == TalkType.Event)
-        {
-            //执行后直接继续
-            if (node.contentText != "")
-            {
-                // DialogueEventManager.Inst.TriggerEvent(node.contentText);
-            }
-        }
-
-        // 如果有选项，等待文本完成后显示选项
-        //if (node.hasOptions)
-        //{
-        //    continueButton.gameObject.SetActive(false);
-        //    StartCoroutine(WaitForTextCompleteThenShowOptions(node));
-        //}
+        // 开始逐字显示文本
+        //textTypingCoroutine = StartCoroutine(IETypeTextCoroutine(node.dialogueText, node.textSpeed, node.typeSound));
+        dialogueText.text = node.Str1.ToLocalizeStr();
+        
+        // 无选项时显示继续按钮
+        continueButton.gameObject.SetActive(true);
     }
+    
 
     /// <summary>
     /// 更新说话人信息
@@ -87,7 +59,6 @@ public class TalkPanel : MonoBehaviour
         speakerNameText.text = name.ToLocalizeStr();
         // 可以添加头像位置动画（左右切换）
     }
-
 
 
     /// <summary>
@@ -173,7 +144,7 @@ public class TalkPanel : MonoBehaviour
     public string optionEventName; // 选择后触发的事件
 }
 
-    
+
     /// <summary>
     /// 选项选择事件
     /// </summary>
@@ -187,6 +158,7 @@ public class TalkPanel : MonoBehaviour
     }
 
     */
+
     #endregion
 }
 
@@ -195,6 +167,10 @@ public enum TalkType
     Text = 0, // 对话
     End = 1,
     Choice = 2, // 选择
-    Event = 3,  // 事件
-
+    Event = 3, // 事件
+    ShowCanvas = 4,
+    List = 5, //连续节点
+    DelayNext = 6,
+    JumpTo = 7,
+    Task = 8 //暂时弃用
 }

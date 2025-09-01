@@ -10,7 +10,6 @@ using System;
 using GG.Extensions;
 
 
-
 #if UNITY_EDITOR
 using UnityEditor;
 
@@ -26,13 +25,12 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public string enemyIdList = "E_0";
 
-    [Dropdown(nameof(GetDirAllFileName))]
-    [Label("")]
-    //[Header("Show all Enmey")]
-    [MiniBtn(nameof(SetEnemyValue), "选中")]
+    public string skinNameSet;
+
+    [Dropdown(nameof(GetDirAllFileName))] [Label("")] [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
-    public int baseLv = 0;
+    [Label("lvConfigIndex")] public int baseLv = 0;
 
     public int genCount = 1;
 
@@ -40,8 +38,7 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public float circleSize = 1;
 
-    [Multiline]
-    public string taskLines;
+    [Multiline] public string taskLines;
 
     private int curGenCount;
     private int deadCount;
@@ -66,6 +63,7 @@ public class EnemyCreator : GameStartMono, IExecute
             list.Add(enemyIdList);
             return list.ToArray();
         }
+
         return ids;
     }
 
@@ -89,10 +87,8 @@ public class EnemyCreator : GameStartMono, IExecute
     }
 
 
-
     private void GenEnemy()
     {
-
         string[] enemyNameList = GetEnemyNameList();
 
         int posIndex = 0;
@@ -101,7 +97,7 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             foreach (string id in enemyNameList)
             {
-                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv));
+                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv), skinNameSet);
 
                 var genPos = GetGenPosition(posIndex, posCount);
 
@@ -137,7 +133,6 @@ public class EnemyCreator : GameStartMono, IExecute
                     action.OnEnemyCreat(this, enemy);
                 }
             }
-
         }
     }
 
@@ -151,6 +146,7 @@ public class EnemyCreator : GameStartMono, IExecute
             }
         }
     }
+
     void ShowEffect(Vector3 pos)
     {
         if (showEffectPrefab)
@@ -169,6 +165,7 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             enemyAllDead?.Invoke(this);
         }
+
         ///<see cref="LevelControl.OnEnemyDeadEvent"/> 并行触发
         Debug.Log($"--- 无奖励");
         //GetItemEffectHelper.PlayRewardEffect(role.transform.position, null);
@@ -181,7 +178,8 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             float radius = ((count - 2) * 0.5f + 2) * circleSize;
             Mathf.Clamp(radius, 2, 5);
-            var addVec = MathTool.AngleToVector(index * 360 / count + transform.localEulerAngles.y).To3D(); ;
+            var addVec = MathTool.AngleToVector(index * 360 / count + transform.localEulerAngles.y).To3D();
+            ;
             return transform.position + addVec * radius;
         }
         else
@@ -206,8 +204,6 @@ public class EnemyCreator : GameStartMono, IExecute
     {
         return PathTool.GetDirAllFileName("Assets/_Res/Role/IdRole");
     }
-
-
 }
 
 

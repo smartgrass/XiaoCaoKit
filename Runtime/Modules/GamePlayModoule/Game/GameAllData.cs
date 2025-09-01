@@ -73,7 +73,7 @@ namespace XiaoCao
         //需要保存
         public int LocalPlayerId;
 
-        public string NextSceneName;
+        public string NextSceneName { get; set; }
 
         public string MapName = "level0";
 

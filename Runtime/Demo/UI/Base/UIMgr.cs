@@ -1,14 +1,13 @@
-﻿using EasyUI.Helpers;
-using EasyUI.Toast;
+﻿using EasyUI.Toast;
 using NaughtyAttributes;
-using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using TEngine;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace XiaoCao
 {
-
     public class UIMgr : MonoSingletonPrefab<UIMgr>, IMgr
     {
         public override bool NeedDontDestroy => false;
@@ -35,10 +34,9 @@ namespace XiaoCao
 
         public TalkPanel talkPanel;
 
-        [ReadOnly]
-        public PanelBase lastPanel;
+        [ReadOnly] public PanelBase lastPanel;
 
-        //懒加载 或 主动加载
+        //BlackScreenUI
 
         public override void Init()
         {
@@ -53,7 +51,6 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
-
         }
 
         public void OnChangeInputType(UserInputType type)
@@ -72,6 +69,7 @@ namespace XiaoCao
             {
                 midCanvas.enabled = false;
             }
+
             showingPanels.Add(panel);
             lastPanel = panel;
             CheckPlayInputAble();
@@ -85,6 +83,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             panel.IsShowing = false;
             panel.Hide();
             showingPanels.Remove(panel);
@@ -93,6 +92,7 @@ namespace XiaoCao
             {
                 midCanvas.enabled = true;
             }
+
             CheckPlayInputAble();
         }
 
@@ -125,8 +125,6 @@ namespace XiaoCao
                     }
                 }
             }
-
-
         }
 
         //屏蔽输入
@@ -140,10 +138,12 @@ namespace XiaoCao
                     can = false;
                 }
             }
+
             if (TalkMgr.Inst.isTalking)
             {
                 can = false;
             }
+
             GameAllData.battleData.CanPlayerControl.SetValue(can);
         }
 
@@ -161,6 +161,7 @@ namespace XiaoCao
             {
                 return playerPanel;
             }
+
             Debuger.LogError($"--- no panel {type}");
             return null;
         }
@@ -169,6 +170,7 @@ namespace XiaoCao
         {
             return true;
         }
+
         public void PlayDamageText(int atk, Vector3 textPos)
         {
             battleHud.ShowDamageText(atk.ToString(), textPos);
@@ -176,7 +178,8 @@ namespace XiaoCao
 
         void PopToastInst(string str, float time = 1)
         {
-            PopToast(str, time); ;
+            PopToast(str, time);
+            ;
         }
 
         public static void PopToast(string str, float time = 1)
@@ -191,9 +194,6 @@ namespace XiaoCao
 
         public static void PopRewardBuffItem()
         {
-
         }
     }
 }
-
-

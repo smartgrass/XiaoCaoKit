@@ -1,14 +1,18 @@
-﻿using DG.Tweening;
+﻿using System;
+using System.Collections;
+using DG.Tweening;
 using EasyUI.Helpers;
 using TEngine;
 using UnityEngine;
 
 namespace XiaoCao
 {
-
     public class PlayerControl : RoleControl<Player0>
     {
-        public PlayerControl(Player0 _owner) : base(_owner) { }
+        public PlayerControl(Player0 _owner) : base(_owner)
+        {
+        }
+
         public PlayerData0 Data_P => owner.playerData;
         public PlayerInputData InputData => owner.playerData.inputData;
         public PlayerAtkTimer AtkTimers => owner.component.atkTimers;
@@ -23,6 +27,7 @@ namespace XiaoCao
                 OnDeadUpdate();
                 return;
             }
+
             owner.CheckBreakUpdate();
         }
 
@@ -60,8 +65,10 @@ namespace XiaoCao
                 {
                     TimeStopMgr.Inst.StopTimeSpeed();
                 }
+
                 owner.component.atkTimers.ClearAllCd();
             }
+
             if (InputData.inputs[InputKey.Focus])
             {
                 SwitchFocus();
@@ -83,11 +90,13 @@ namespace XiaoCao
             {
                 return;
             }
+
             //判断冷缩
             if (!AtkTimers.IsSkillReady(skillId))
             {
                 return;
             }
+
             AtkTimers.SetSkillEnterCD(skillId);
 
             RcpPlaySkill(skillId);
@@ -179,12 +188,15 @@ namespace XiaoCao
             {
                 return;
             }
+
             //如处于busy中,排除处于平a中
             if (IsBusy() && !IsOnNorAck())
             {
                 return;
             }
-            float norAckCdTime = Data_P.playerSetting.norAckCdTimes.GetArrayValue(Data_P.curNorAckIndex) / XCTime.timeScale;
+
+            float norAckCdTime = Data_P.playerSetting.norAckCdTimes.GetArrayValue(Data_P.curNorAckIndex) /
+                                 XCTime.timeScale;
             bool isNorAckCdFinsh = Time.time - Data_P.lastNorAckTime > norAckCdTime;
             if (!isNorAckCdFinsh)
             {
@@ -192,6 +204,7 @@ namespace XiaoCao
                 {
                     Data_P.norAckCache = true;
                 }
+
                 return;
             }
 
@@ -199,6 +212,7 @@ namespace XiaoCao
             {
                 norAckTaskRunner.OnNoBusy();
             }
+
             NorAck();
         }
 
@@ -234,7 +248,6 @@ namespace XiaoCao
         }
 
 
-
         private bool IsOnNorAck()
         {
             return Data_R.tempCurSkillId.StartsWith(AnimNames.NorAck);
@@ -254,7 +267,32 @@ namespace XiaoCao
         }
 
 
+        public void DoActCombol(string[] list, Action onFinish = null)
+        {
+            owner.idRole.StartCoroutine(IEActCombol(list, onFinish));
+        }
+
+        public IEnumerator IEWaitActCombol(string[] list, Action onFinish = null)
+        {
+            yield return owner.idRole.StartCoroutine(IEActCombol(list, onFinish));
+        }
+
+
+        IEnumerator IEActCombol(string[] cmdList, Action onFinish)
+        {
+            foreach (string cmd in cmdList)
+            {
+                TryPlaySkill(cmd);
+                yield return null;
+                yield return new WaitUntil(NoBusy);
+            }
+
+            onFinish?.Invoke();
+        }
+
+        private bool NoBusy()
+        {
+            return !owner.data_R.IsBusy;
+        }
     }
-
 }
-

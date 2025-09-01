@@ -120,6 +120,11 @@ namespace XiaoCao
             }
         }
 
+        public void FollowPlayer()
+        {
+            targetRole = GameAllData.commonData.player0;
+        }
+
         void ForceFollowTagerUpdate()
         {
             if (TargetPosTypeValue == TargetPosType.Stop)

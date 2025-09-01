@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
 
-public class EnemeyGroupComponent : GameStartMono, IMapMsgSender
+public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 {
     public UnityEvent enterEvent;
 
@@ -43,6 +43,7 @@ public class EnemeyGroupComponent : GameStartMono, IMapMsgSender
             creator.enemyAllDead += OnEnemyDeadEvent;
             //creator.gameObject.SetActive(false);
         }
+
         maxTriggerTime = creators.Count;
     }
 
@@ -63,18 +64,20 @@ public class EnemeyGroupComponent : GameStartMono, IMapMsgSender
 
     private void Update()
     {
-        if (GameDataCommon.Current.gameState == GameState.Running)
+        if (radus <= 0)
         {
-            if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
-            {
-                float dis = Vector3.Distance(transform.position, GameDataCommon.LocalPlayer.transform.position);
-                if (dis < radus)
-                {
-                    enabled = false;
-                    enterEvent?.Invoke();
-                    OnTriggerAct();
-                }
-            }
+            return;
+        }
+
+        if (GameDataCommon.Current.gameState != GameState.Running) return;
+        if (GameDataCommon.LocalPlayer == null || !GameDataCommon.LocalPlayer.isBodyCreated) return;
+
+        float dis = Vector3.Distance(transform.position, GameDataCommon.LocalPlayer.transform.position);
+        if (dis < radus)
+        {
+            enabled = false;
+            enterEvent?.Invoke();
+            OnTriggerAct();
         }
     }
 
@@ -111,5 +114,4 @@ public class EnemeyGroupComponent : GameStartMono, IMapMsgSender
             }
         }
     }
-
 }
