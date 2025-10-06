@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using UnityEngine;
 using XiaoCao;
+using Object = UnityEngine.Object;
 
 public class ModelLoader
 {
@@ -14,14 +15,14 @@ public class ModelLoader
     public CameraCapture cameraCapture;
 
     // 引用配置数据
-    public ModelConfigSo configSo => ConfigMgr.ModelConfigDataSo;
+    private ModelConfigSo ConfigSo => ConfigMgr.ModelConfigDataSo;
 
     public void Init(string key)
     {
         roleKey = key;
 
         // 检查是否有配置纹理
-        bool hasConfigTexture = configSo.HasConfigTexture(roleKey);
+        bool hasConfigTexture = ConfigSo.HasConfigTexture(roleKey);
         //没有配置则 创建相机
         if (!hasConfigTexture)
         {
@@ -31,21 +32,23 @@ public class ModelLoader
 
     public Texture GetTexture()
     {
-        var config = configSo.GetOrDefault(roleKey);
+        var config = ConfigSo.GetOrDefault(roleKey);
         if (config.hasTexture)
         {
             return config.LoadTexture;
         }
+
         return cameraCapture.CaptureImage();
     }
 
     internal void CreateCamera()
     {
-        GameObject CameraCaptureObject = ResMgr.LoadInstan("Assets/_Res/UI/Talk/CameraCapture.prefab");
-        cameraCapture = CameraCaptureObject.GetComponent<CameraCapture>();
-        cameraCapture.modelLoader = this;
-        CameraCaptureObject.transform.position = new Vector3(0, -200, 0) + Vector3.right * offsetIndex * 50;
+        GameObject cameraCaptureObject = ResMgr.LoadInstan(CameraCapture.PrefabPath);
+        cameraCapture = cameraCaptureObject.GetComponent<CameraCapture>();
+        cameraCaptureObject.transform.position = new Vector3(0, -200, 0) + Vector3.right * offsetIndex * 50;
         LoadModel();
+        cameraCapture.Model = loadedModel;
+        cameraCapture.ModelLoader = this;
     }
 
     private void LoadModel()
@@ -54,14 +57,14 @@ public class ModelLoader
         loadedModel.transform.SetParent(cameraCapture.transform, false);
 
         // 获取配置信息
-        var config = configSo.GetOrDefault(roleKey);
+        var config = ConfigSo.GetOrDefault(roleKey);
         // 使用配置的位置、旋转和缩放偏移
         loadedModel.transform.localPosition = config.localPosition;
         loadedModel.transform.localEulerAngles = config.localEulerAngles;
         loadedModel.transform.localScale = config.size * Vector3.one;
         if (!string.IsNullOrEmpty(config.anim))
         {
-            string path =XCPathConfig.GetAnimatorControllerPath(config.anim);
+            string path = XCPathConfig.GetAnimatorControllerPath(config.anim);
             var loadAc = ResMgr.LoadAseet(path) as RuntimeAnimatorController;
             loadedModel.GetComponent<Animator>().runtimeAnimatorController = loadAc;
         }
@@ -74,7 +77,7 @@ public class ModelLoader
     {
         if (loadedModel != null)
         {
-            GameObject.Destroy(loadedModel);
+            Object.Destroy(loadedModel);
             loadedModel = null;
         }
     }

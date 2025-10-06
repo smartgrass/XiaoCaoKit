@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -17,11 +18,15 @@ namespace XiaoCao
         // 剧情进度记录
         public StoryProgress storyProgress = new StoryProgress();
 
+        // 记录关卡通过状态
+        public LevelPassData levelPassData = new LevelPassData();
+
         //技能解锁状态
         public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
 
         //ItemUI
         public Inventory inventory = new Inventory();
+
         //持有物
         public List<Item> holdItems = new List<Item>();
 
@@ -39,18 +44,26 @@ namespace XiaoCao
             {
                 inventory = new Inventory();
             }
+
             if (skillUnlockDic == null)
             {
                 skillUnlockDic = new Dictionary<string, int>();
             }
+
             if (string.IsNullOrEmpty(prefabId))
             {
                 prefabId = "P_0";
             }
+
             // 确保剧情进度不为空
             if (storyProgress == null)
             {
                 storyProgress = new StoryProgress();
+            }
+
+            if (levelPassData == null)
+            {
+                levelPassData = new LevelPassData();
             }
         }
 
@@ -81,6 +94,7 @@ namespace XiaoCao
                 var relic = HolyRelicItem.Create(item);
                 dict[relic.modName] = item;
             }
+
             return dict;
         }
 
@@ -88,7 +102,42 @@ namespace XiaoCao
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);
         }
+
+        public LevelPassState GetPassState(int chapter, int index)
+        {
+            //判断章节是否解锁
+            bool isChapterUnlock = chapter <= levelPassData.maxChapter;
+            bool isLevelPass = index <= levelPassData.maxLevel;
+            if (!isChapterUnlock)
+            {
+                return LevelPassState.Lock;
+            }
+            
+            if (isLevelPass)
+            {
+                return LevelPassState.Pass;
+            }
+
+            if (index == levelPassData.maxLevel + 1)
+            {
+                return LevelPassState.Unlock;
+            }
+
+            return LevelPassState.Lock;
+        }
     }
 
+    [Serializable]
+    public class LevelPassData
+    {
+        public int maxChapter;
+        public int maxLevel;
+    }
 
+    public enum LevelPassState
+    {
+        Lock,
+        Unlock,
+        Pass
+    }
 }

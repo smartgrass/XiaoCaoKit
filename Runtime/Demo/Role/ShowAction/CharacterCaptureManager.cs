@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, IClearCache
 {
-    private readonly Dictionary<string, ModelLoader> _modelLoaderDic = new Dictionary<string, ModelLoader>();
+    private static readonly Dictionary<string, ModelLoader> ModelLoaderDic = new Dictionary<string, ModelLoader>();
 
     //用于防止模型生成位置重叠
     private int _index;
@@ -16,7 +16,7 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, I
 
     private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
-        _modelLoaderDic.Clear();
+        ModelLoaderDic.Clear();
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, I
             return null;
         }
 
-        if (!_modelLoaderDic.TryGetValue(speakerName, out var loader))
+        if (!ModelLoaderDic.TryGetValue(speakerName, out var loader))
         {
             return LoadNew(speakerName);
         }
@@ -66,7 +66,7 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, I
 
     private ModelLoader LoadNew(string speakerName)
     {
-        if (_modelLoaderDic.TryGetValue(speakerName, out var modelLoader))
+        if (ModelLoaderDic.TryGetValue(speakerName, out var modelLoader))
         {
             return modelLoader;
         }
@@ -74,17 +74,16 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, I
         ModelLoader loader = new ModelLoader();
         loader.offsetIndex = _index++;
         loader.Init(speakerName);
-        _modelLoaderDic[speakerName] = loader;
+        ModelLoaderDic[speakerName] = loader;
         return loader;
     }
 
-    public void Remove(string key)
+    public static void Remove(string key)
     {
         if (string.IsNullOrEmpty(key))
         {
             return;
         }
-
-        _modelLoaderDic.Remove(key);
+        ModelLoaderDic.Remove(key);
     }
 }

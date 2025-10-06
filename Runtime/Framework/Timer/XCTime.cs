@@ -25,7 +25,7 @@ public class XCTime
 
     public static Timer DelayTimer(float time, TimerCompleteHandler TimerCompleteHandler)
     {
-        var timer =  TimerManager.Inst.Register(time, TimerCompleteHandler);
+        var timer = TimerManager.Inst.Register(time, TimerCompleteHandler);
         //timer.Pause();
         //timer.onResume 
         //timer.onDestroy
@@ -53,6 +53,17 @@ public class XCTime
 
         action();
     }
+
+    //UniTask取消方法2
+    void TestCancel()
+    {
+        MonoBehaviour mono = GameObject.FindAnyObjectByType<MonoBehaviour>();
+        //取消令牌
+        var token =  mono.GetCancellationTokenOnDestroy();
+
+    }
+
+
     public static async UniTask DelayRun<T>(float time, Action<T> action, T t, Object bindObject = null)
     {
         bool isBind = bindObject != null;

@@ -402,6 +402,9 @@ namespace XiaoCao
                     break;
                 case EntityMsgType.SetUnMoveTime:
                     SetUnMoveTime(msg);
+                    break;                
+                case EntityMsgType.SetUnRotate:
+                    SetUnRotateTime(msg);
                     break;
                 case EntityMsgType.AddTag:
                     AddTag(msg);
@@ -575,6 +578,12 @@ namespace XiaoCao
             data_R.movement.SetUnMoveTime(t);
         }
 
+        private void SetUnRotateTime(object msg)
+        {
+            float t = ((BaseMsg)msg).numMsg;
+            data_R.movement.SetUnRotateTime(t);
+        }
+        
         private void AddTag(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;

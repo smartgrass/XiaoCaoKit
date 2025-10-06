@@ -30,7 +30,7 @@ namespace Flux
 
 		private FAnimationTrack _animTrack = null;
 
-        private bool isBackToIdle;
+        public bool isBackToIdle;
 
         protected override void OnTrigger( float timeSinceTrigger )
 		{

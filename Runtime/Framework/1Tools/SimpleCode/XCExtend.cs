@@ -117,6 +117,17 @@ public static class XCExtend
         color.a = alpha;
         return color;
     }
+    
+    public static TweenerCore<Vector3, Vector3, VectorOptions> DOUIMoveX(
+        this RectTransform target,
+        float endValue,
+        float duration,
+        bool snapping = false)
+    {
+        TweenerCore<Vector3, Vector3, VectorOptions> t = DOTween.To((DOGetter<Vector3>) (() => target.anchoredPosition), (DOSetter<Vector3>) (x => target.anchoredPosition = x), new Vector3(endValue, 0.0f, 0.0f), duration);
+        t.SetOptions(AxisConstraint.X, snapping).SetTarget<Tweener>((object) target);
+        return t;
+    }
 
     //自动检测长度
     public static float GetArrayValue(this float[] array, int index)

@@ -31,8 +31,9 @@ namespace XiaoCao
             }
         }
 
-        public PlayerData0 _playerData;
-        public PlayerData0 PlayerData
+        private PlayerData0 _playerData;
+
+        private PlayerData0 PlayerData
         {
             get
             {

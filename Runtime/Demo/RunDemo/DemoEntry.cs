@@ -17,16 +17,12 @@ public class DemoEntry : MonoBehaviour
     {
         //读取配置, 判断是否进入新手剧情
         ProcedureMgr procedureMgr = ProcedureMgr.Inst;
-        //LoadOnce
-        procedureMgr.AddTask(new ConfigProcedure());
-        procedureMgr.AddTask(new PlayerDataProcedure());
+        
+        procedureMgr.InitOnce();
         
         await procedureMgr.Run();
 
-        MapMgr.Inst.MapName = MapNames.Level0;
-        
-        GameMgr.Inst.LoadScene(SceneNames.Level);
-        
+        GameMgr.Inst.LoadLevelScene(MapNames.Level0);
 
         if (GameAllData.playerSaveData.IsNewPlayer)
         {

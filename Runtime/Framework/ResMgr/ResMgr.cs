@@ -31,6 +31,7 @@ public class ResMgr
 
     public const string RESDIR = "Assets/_Res";
 
+    public static bool IsLoadFinish;
     public static ResourcePackage Loader;
     public static ResourcePackage RawLoader;
 
@@ -149,6 +150,7 @@ public class ResMgr
         var task3 = ResMgr.InitExtraPackage();
         //使用并行任务,相比同步快个300ms
         await UniTask.WhenAll(task1, task2, task3);
+        IsLoadFinish = true;
     }
 
     public static void InitYooAsset()

@@ -17,8 +17,8 @@ namespace XiaoCao
         public static string LockCam = "LockCam"; //锁定视角
         public static string SkinList = "SkinList"; //皮肤
         public static string TestEnmeyList = "TestEnmeyList"; //测试敌人
-        public static string MouseView = "MouseView";//视角跟随鼠标
-        public static string MobileInput = "MobileInput";//移动端输入
+        public static string MouseView = "MouseView"; //视角跟随鼠标
+        public static string MobileInput = "MobileInput"; //移动端输入
 
 
         public static string Buff = "Buff";
@@ -28,16 +28,18 @@ namespace XiaoCao
         public static string BuildTime = "BuildTime";
         public static string SwapCameraSpeed = "SwapCameraSpeed";
         public static string AnglePower = "AnglePower";
+        public static string Tip = "Tip";
+        public static string IsExitLevel = "IsExitLevel";
 
         public static string GetSkillNameKey(int skillId)
         {
             return $"skill_{skillId}";
         }
+
         public static string GetSkillDescKey(int skillId)
         {
             return $"skill_{skillId}_desc";
         }
-
 
 
         //技能命名 skill_[id]
@@ -49,13 +51,15 @@ namespace XiaoCao
         }
 
         #region Item
+
         public static string GetItemName(this Item item)
         {
-            if(item.type == ItemType.Buff)
+            if (item.type == ItemType.Buff)
             {
                 string key = GetBuffNameKey(item.ToBuffItem().GetFirstEBuff);
                 return key.ToLocalizeStr();
             }
+
             return item.id.ToLocalizeStr();
         }
 
@@ -69,6 +73,7 @@ namespace XiaoCao
             {
                 return $"BuffTitle/{buff}";
             }
+
             return "Buff";
         }
 
@@ -130,6 +135,5 @@ namespace XiaoCao
         }
 
         #endregion
-
     }
 }

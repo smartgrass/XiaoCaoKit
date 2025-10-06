@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using XiaoCao;
+using XiaoCao.UI;
 using Debug = UnityEngine.Debug;
 
 namespace XiaoCao
@@ -69,6 +70,11 @@ namespace XiaoCao
             GameEvent.Send<GameState, GameState>(EGameEvent.GameStateChange.Int(), oldState, gameState);
         }
 
+        public void LevelFinish()
+        {
+            GameMgr.Inst.SetGameState(GameState.Finish);
+        }
+
         #region Scene
 
         private string curScene;
@@ -84,8 +90,19 @@ namespace XiaoCao
             }
         }
 
-        public void FinishLevel(int nextScene)
+        //完成
+        public void LevelEnd()
         {
+            string title = LocalizeKey.Tip.ToString();
+            string content = LocalizeKey.IsExitLevel.ToString();
+            SetGameState(GameState.Finish); 
+            DialogManager.ShowDialog(title,content, BackHome);
+        }
+
+        public void BackHome()
+        {
+            SetGameState(GameState.Exit);
+            SceneManager.LoadScene(SceneNames.Home);
         }
 
         public void ReloadScene()
@@ -104,6 +121,16 @@ namespace XiaoCao
             ///<see cref="SceneLoader"/>
             //StartCoroutine(LoadSceneInBackground(sceneName));
         }
+
+
+        /// <see cref="MapNames"/>
+        public void LoadLevelScene(string levelId)
+        {
+            MapMgr.Inst.MapName = levelId;
+
+            GameMgr.Inst.LoadScene(SceneNames.Level);
+        }
+
 
         public void UnloadActiveScene()
         {
@@ -171,12 +198,42 @@ namespace XiaoCao
 
     public static class SceneNames
     {
-        public static string Level = "Level";
-        public static string Loading = "Loading";
+        public static readonly string Level = "Level";
+        public static readonly string Loading = "Loading";
+        public static readonly string Home = "Home";
     }
 
     public static class MapNames
     {
-        public static readonly string Level0 = "level0";
+        //story与level拆开,方便跳过剧情
+        //如果是在游戏中 则不是无法跳过,或者做其他定制化的处理
+        public static readonly string Level0 = "story_0_0";
+
+        public static string GetLevelName(int chapter, int index)
+        {
+            return $"level_{chapter}_{index}";
+        }
+
+        public static LevelInfo GetLevelInfoByName(string levelName)
+        {
+            var array = levelName.Split('_');
+
+            return new LevelInfo()
+            {
+                chapter = int.Parse(array[1]),
+                index = int.Parse(array[2])
+            };
+        }
+    }
+
+    public struct LevelInfo
+    {
+        public int chapter;
+        public int index;
+
+        public string GetIndexStr()
+        {
+            return $"{chapter}-{index}";
+        }
     }
 }

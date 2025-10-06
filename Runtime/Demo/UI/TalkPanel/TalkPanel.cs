@@ -78,6 +78,14 @@ public class TalkPanel : MonoBehaviour
     }
 
 
+    internal void HidePanel()
+    {
+        gameObject.SetActive(false);
+    }
+
+
+    #region 选项/字体动画相关
+
     // private IEnumerator IETypeTextCoroutine(string text, float speed)
     // {
     //     for (int i = 0; i < text.Length; i++)
@@ -87,15 +95,7 @@ public class TalkPanel : MonoBehaviour
     //     }
     //     // isTextComplete = true;
     // }
-
-    internal void HidePanel()
-    {
-        gameObject.SetActive(false);
-    }
-
-
-    #region 选项相关
-
+    
     /*
     /// <summary>
     /// 等待文本完成后显示选项

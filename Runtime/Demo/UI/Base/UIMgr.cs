@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace XiaoCao
 {
-    public class UIMgr : MonoSingletonPrefab<UIMgr>, IMgr
+    public class UIMgr : MonoSingletonPrefab<UIMgr>, IMgr, ICanvasMgr
     {
         public override bool NeedDontDestroy => false;
 
@@ -36,11 +36,13 @@ namespace XiaoCao
 
         [ReadOnly] public PanelBase lastPanel;
 
+        public Canvas Canvas => topCanvas;
         //BlackScreenUI
 
         public override void Init()
         {
             base.Init();
+            UICanvasMgr.Inst.canvasMgr = this;
             battleHud?.Init();
             settingPanel?.Init();
             playerPanel?.Init();
@@ -195,5 +197,22 @@ namespace XiaoCao
         public static void PopRewardBuffItem()
         {
         }
+    }
+
+
+    //跨场景使用
+    public class UICanvasMgr : Singleton<UICanvasMgr>, IMgr
+    {
+        public ICanvasMgr canvasMgr;
+
+        public Transform GetCanvasParent()
+        {
+            return canvasMgr.Canvas.transform.parent;
+        }
+    }
+
+    public interface ICanvasMgr
+    {
+        public Canvas Canvas { get; }
     }
 }

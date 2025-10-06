@@ -38,6 +38,11 @@ namespace XiaoCao
 
         public async UniTask Run()
         {
+            if (Application.isEditor)
+            {
+                GameAllData.GameAllDataInit();
+            }
+
             if (DebugSetting.IsMobilePlatform)
             {
                 Debug.Log($"-- MobilePlatform");
@@ -52,26 +57,20 @@ namespace XiaoCao
                 }
             }
 
-            if (Application.isEditor)
-            {
-                GameAllData.GameAllDataInit();
-            }
-
             GameSetting.GetGameVersion();
-            
+
 
             if (GameSetting.VersionType == GameVersionType.Debug)
             {
                 OpenLogConsole();
             }
-            
+
             LocalizeMgr localizeMgr = LocalizeMgr.Inst;
             ConfigMgr.Init();
             IsFinish = true;
         }
-        
-        
-        
+
+
         public async UniTask UnCompressedZip()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -112,7 +111,7 @@ namespace XiaoCao
             var data0 = SaveMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
             data0.CheckNull();
-            
+
             if (Application.isEditor && "IsKaiLe".GetKeyBool())
             {
                 data0.lv = PlayerPrefs.GetInt("playerLv");
@@ -162,7 +161,7 @@ namespace XiaoCao
                 //Entity 需要替换, 但同时 id保持不变         
             }
 
-            int playerId = IsReload ? GameDataCommon.Current.LocalPlayerId : IdMgr.GetPlayerId();
+            int playerId = IsReload ? GameDataCommon.Current.localPlayerId : IdMgr.GetPlayerId();
 
             Player0 player = EntityMgr.Inst.CreatEntity<Player0>(playerId);
 
@@ -183,7 +182,7 @@ namespace XiaoCao
             var pool = RunTimePoolMgr.Inst;
             DebugCostTime.StartTime(4);
             // Shader.WarmupAllShaders(); //
-            DebugCostTime.StopTime("WarmupAllShaders",4);
+            DebugCostTime.StopTime("WarmupAllShaders", 4);
             IsFinish = true;
         }
     }
@@ -196,7 +195,7 @@ namespace XiaoCao
             MapMgr.Inst.SetPlayerStartPos();
 
             GameMgr.Inst.SetGameState(GameState.Running);
-            
+
             BlackScreen.FadeOutAnim();
 
             GameEvent.Send(EGameEvent.GameStartFinsh.Int());

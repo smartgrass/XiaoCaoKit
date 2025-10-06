@@ -11,6 +11,7 @@ namespace XiaoCao
     {
         //不会清空
         public static GameDataCommon commonData = new GameDataCommon();
+
         //过关卡时请空
         public static BattleData battleData = new BattleData();
 
@@ -24,7 +25,6 @@ namespace XiaoCao
             commonData = new GameDataCommon();
             battleData = new BattleData();
         }
-
     }
 
     [XCHelper]
@@ -35,14 +35,16 @@ namespace XiaoCao
             VersionType = ConfigMgr.StaticSettingSo.versionType;
             UserInputType = DebugSetting.IsMobilePlatform ? UserInputType.Touch : UserInputType.Mouse;
         }
+
         public static GameVersionType VersionType;
 
         public static UserInputType UserInputType;
 
         //目前技能
         public const int SkillCountOnBar = 4;
+
         ///<see cref="EQuality"/>
-        public const int MaxBuffLevel = 5;//从0~5
+        public const int MaxBuffLevel = 5; //从0~5
 
         ///<see cref="LevelSettingHelper"/>
         ///<see cref="XCSetting"/>
@@ -57,7 +59,6 @@ namespace XiaoCao
 
     public class TempData
     {
-
     }
 
     public class GameDataCommon
@@ -67,30 +68,27 @@ namespace XiaoCao
         public PlayMode playMode;
 
         public GameState gameState;
-
+        
         public Player0 player0;
 
         //需要保存
-        public int LocalPlayerId;
+        public int localPlayerId;
 
         public string NextSceneName { get; set; }
 
-        public string MapName = "level0";
-
+        public string mapName;
+        
+        public string selectLevel;
+        
         public static Player0 LocalPlayer
         {
-            get
-            {
-                return Current.player0;
-            }
-
+            get { return Current.player0; }
         }
 
         public static Player0 GetPlayer(int id = 0)
         {
             //封装, 方便多玩家时处理
             return Current.player0;
-
         }
 
         public bool loadMod = false;
@@ -116,7 +114,12 @@ namespace XiaoCao
         public static BattleData Current => GameAllData.battleData;
 
         public LevelData levelData = new LevelData();
-        public static bool IsTimeStop { get => Current._isTimeStop; set => Current._isTimeStop = value; }
+
+        public static bool IsTimeStop
+        {
+            get => Current._isTimeStop;
+            set => Current._isTimeStop = value;
+        }
 
         private bool _isTimeStop;
 
@@ -164,7 +167,6 @@ namespace XiaoCao
     [XCHelper]
     public static class PlayerHelper
     {
-
         public static Role GetRoleById(this int id)
         {
             EntityMgr.Inst.FindEntity<Role>(id, out Role role);
@@ -195,7 +197,6 @@ namespace XiaoCao
             if (id.IsLocalPlayerId())
             {
                 //显示提示
-
             }
 
             GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel, true);
@@ -203,10 +204,7 @@ namespace XiaoCao
 
         public static PlayerBuffs LocalPlayerBuffs
         {
-            get
-            {
-                return GetPlayerBuffControl().playerBuffs;
-            }
+            get { return GetPlayerBuffControl().playerBuffs; }
         }
 
         public static BuffControl GetPlayerBuffControl(int playerId = -1)
@@ -221,6 +219,7 @@ namespace XiaoCao
             {
                 return player.component.buffControl;
             }
+
             Debug.LogError($"--- no player {playerId}");
             return null;
         }
@@ -231,8 +230,6 @@ namespace XiaoCao
             dic.TryGetValue(skillId, out int level);
             return level;
         }
-
-
     }
 
     public enum PlayMode
@@ -248,17 +245,19 @@ namespace XiaoCao
         Finish,
         Exit
     }
+    
 
     public enum EGameEvent : uint
     {
         None = 0,
         GameStateChange = 1,
+
         ///<see cref="GameStartMono"/>
         GameStartFinsh = 2,
         CameraChange = 3,
         RoleChange = 4,
         UIPanelBtnGlow = 5,
-        OnGetItem = 6,//捡到物品时
+        OnGetItem = 6, //捡到物品时
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,
@@ -274,12 +273,10 @@ namespace XiaoCao
 
         //Map 300
         MapMsg = 300,
-
     }
 
     public static class BattleFlagNames
     {
-
     }
 
     public static class BattleNumKeys
@@ -340,6 +337,7 @@ namespace XiaoCao
             _data = value;
             OnValueChanged?.Invoke(value);
         }
+
         // 不触发回调
         public void SetValueQuiet(T value)
         {
@@ -374,7 +372,4 @@ namespace XiaoCao
         //    return v;
         //}
     }
-
 }
-
-

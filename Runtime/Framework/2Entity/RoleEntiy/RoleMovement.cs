@@ -309,6 +309,19 @@ namespace XiaoCao
 
         }
 
+        internal void SetUnRotateTime(float t)
+        {
+            if (t <= 0)
+            {
+                RoleState.rotateLockTime = 0;
+            }
+            else
+            {
+                RoleState.rotateLockTime = Mathf.Max(t, RoleState.rotateLockTime);
+            }
+        }
+        
+        
         private void GroundedCheck()
         {
             float GroundedOffset = -0.14f;

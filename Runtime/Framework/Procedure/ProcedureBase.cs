@@ -16,17 +16,12 @@ public abstract class ProcedureBase
 
     public bool IsReload
     {
-        get
-        {
-            return ProcedureMgr.Inst.LoadedDic.Contains(GetType());
-        }
+        get { return ProcedureMgr.Inst.LoadedDic.Contains(GetType()); }
     }
-
 }
 
 public class ProcedureMgr : Singleton<ProcedureMgr>
 {
-
     protected override void Init()
     {
         base.Init();
@@ -49,16 +44,30 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
             {
                 continue;
             }
+
             DebugCostTime.StartTime(2);
             item.Start();
             while (!item.IsFinish)
             {
                 await UniTask.Yield();
             }
+
             DebugCostTime.StopTime(item.ToString(), 2);
             LoadedDic.Add(item.GetType());
         }
+
         Procedures.Clear();
     }
+}
 
+
+public static class ProcedureMgrExtend
+{
+    public static ProcedureMgr InitOnce(this ProcedureMgr procedureMgr)
+    {
+        procedureMgr.AddTask(new ConfigProcedure());
+        procedureMgr.AddTask(new PlayerDataProcedure());
+        procedureMgr.AddTask(new ResProcedure());
+        return procedureMgr;
+    }
 }

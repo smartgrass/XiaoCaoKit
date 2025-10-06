@@ -213,6 +213,9 @@ namespace XiaoCao
                     Debug.LogWarning("EndLoop action should be handled at a higher level");
                     yield return null;
                     break;
+                case ShowActKeys.LevelEnd:
+                    GameMgr.Inst.LevelEnd();
+                    break;
 
                 default:
                     Debug.LogError($"Unknown action: {showActData.actName}");
@@ -554,5 +557,7 @@ namespace XiaoCao
         public const string EndLoop = "EndLoop";
 
         public const string FollowPlayer = "FollowPlayer";
+
+        public const string LevelEnd = "LevelEnd";
     }
 }

@@ -10,19 +10,11 @@ namespace XiaoCao
     {
         public async UniTask Run()
         {
-            #region 前置系统
             //这里做点编辑器开关
             Debuger.LogLevel = LogLevel.Info;
 
-            ProcedureMgr procedureMgr = ProcedureMgr.Inst;
-            //LoadOnce
-            procedureMgr.AddTask(new ConfigProcedure());
-            procedureMgr.AddTask(new PlayerDataProcedure());
-
-            #endregion
-
-            //
-            procedureMgr.AddTask(new ResProcedure());
+            ProcedureMgr procedureMgr = ProcedureMgr.Inst.InitOnce();
+            //LoadOnce;
             procedureMgr.AddTask(new PreLoadPoolProcedure());
 
             //Reload

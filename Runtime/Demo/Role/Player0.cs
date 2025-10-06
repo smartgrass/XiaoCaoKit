@@ -32,7 +32,7 @@ namespace XiaoCao
                 idRole.bodyName = ConfigMgr.GetSettingSkinName();
                 AddTag(RoleTagCommon.MainPlayer);
                 GameDataCommon.Current.player0 = this;
-                GameDataCommon.Current.LocalPlayerId = this.id;
+                GameDataCommon.Current.localPlayerId = this.id;
             }
             CreateRoleBody(idRole.bodyName);
             SetTeam(XCSetting.PlayerTeam);

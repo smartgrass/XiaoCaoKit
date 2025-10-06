@@ -15,8 +15,8 @@ namespace XiaoCao
 
         public string MapName
         {
-            get => GameDataCommon.Current.MapName;
-            set => GameDataCommon.Current.MapName = value;
+            get => GameDataCommon.Current.mapName;
+            set => GameDataCommon.Current.mapName = value;
         }
 
         public LevelData LevelData { get => BattleData.Current.levelData; }
@@ -32,10 +32,12 @@ namespace XiaoCao
         public IEnumerator LoadLevelObject()
         {
             GetSetting();
-
-            if (dontLoadMap) {
+#if UNITY_EDITOR
+            if (dontLoadMap)
+            {
                 yield break;
             }
+#endif
 
             if (string.IsNullOrEmpty(MapName))
             {

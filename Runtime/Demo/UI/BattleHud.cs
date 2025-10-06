@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TEngine;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static XiaoCao.BattleHud;
 using Image = UnityEngine.UI.Image;
 
@@ -28,6 +29,8 @@ namespace XiaoCao
 
         public Canvas worldCanvas;
 
+        public Button exitLevelBtn;
+
         private AssetPool pool;
 
         private readonly Vector3 hidePos = new Vector3(0, -999, 0);
@@ -39,16 +42,31 @@ namespace XiaoCao
         {
             pool = PoolMgr.Inst.GetOrCreatPrefabPool(worldHpBarPrefab);
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
-            GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), LocalPlayerChangeNowAttr);
+            GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
+                LocalPlayerChangeNowAttr);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), OnGameState);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
             playerBar.SetBarColors(false);
+            exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
+            exitLevelBtn.transform.parent.gameObject.SetActive(false);
         }
+
+        private void OnGameState(GameState arg1, GameState arg2)
+        {
+            if (arg2 == GameState.Finish)
+            {
+                exitLevelBtn.transform.parent.gameObject.SetActive(true);
+            }
+        }
+
         private void OnDestroy()
         {
             GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
-            GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), LocalPlayerChangeNowAttr);
+            GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
+                LocalPlayerChangeNowAttr);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), OnGameState);
         }
 
         private void Update()
@@ -61,6 +79,7 @@ namespace XiaoCao
         }
 
         #region HpBar
+
         //每帧都执行, 检查增加
         private void NorHpBarUpdate()
         {
@@ -80,6 +99,7 @@ namespace XiaoCao
                 }
             }
         }
+
         private void UpdataPlayerHpBar(Role role)
         {
             if (role.IsRuning)
@@ -93,6 +113,7 @@ namespace XiaoCao
                 }
             }
         }
+
         private void UpdataEnemyHpBar(Role role)
         {
             if (role.IsRuning && !role.HasTag(RoleTagCommon.NoHpBar))
@@ -107,10 +128,10 @@ namespace XiaoCao
                     bar.transform.SetParent(worldHpBarParent, false);
                     bar.SetFollowRole(role);
                 }
+
                 bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
                 bar.UpdateArmorBar(role.ShowArmorPercentage);
                 bar.UpdatePostion();
-
             }
         }
 
@@ -134,6 +155,7 @@ namespace XiaoCao
                 itemHpBarDic.Remove(key);
             }
         }
+
         public void RemoveItemHpBar(HpBar value)
         {
             foreach (var item in itemHpBarDic)
@@ -152,6 +174,7 @@ namespace XiaoCao
                 item.Value.UpdatePostion();
             }
         }
+
         #endregion
 
 
@@ -183,6 +206,7 @@ namespace XiaoCao
                 {
                     return;
                 }
+
                 ETextColor color = num > 0 ? ETextColor.Recover : ETextColor.Injured;
                 string numStr;
                 if (-1 < num && num < 1)
@@ -196,7 +220,6 @@ namespace XiaoCao
 
                 ShowDamageText(numStr, GameDataCommon.LocalPlayer.transform.position, color);
             }
-
         }
 
         void UpdateLvText(int lv)
@@ -204,7 +227,14 @@ namespace XiaoCao
             lvText.text = $"Lv {lv}";
         }
 
+        public void OnExitLevelBtn()
+        {
+            GameMgr.Inst.BackHome();
+        }
+
+
         #region DamageText
+
         public DamageTextSetting DamageUITSetting;
         public int maxTextCount = 6;
         public TMP_Text firstText;
@@ -255,14 +285,16 @@ namespace XiaoCao
                     nextText = 0;
                 }
 
-                changeVec2 = Vector2.Scale(DamageUITSetting.randomVec2, Random.insideUnitCircle);  //波动值
+                changeVec2 = Vector2.Scale(DamageUITSetting.randomVec2, Random.insideUnitCircle); //波动值
                 changeVec2 += DamageUITSetting.offset;
 
                 mScreen.x += changeVec2.x;
                 mScreen.y += changeVec2.y;
-                t.transform.localScale = Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y) * Vector3.one;
+                t.transform.localScale =
+                    Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y) * Vector3.one;
 
-                float randomY = DamageUITSetting.MoveY * Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y);
+                float randomY = DamageUITSetting.MoveY *
+                                Random.Range(DamageUITSetting.randomScaleVec2.x, DamageUITSetting.randomScaleVec2.y);
 
                 if (eTextColor == ETextColor.Recover)
                 {
@@ -277,7 +309,9 @@ namespace XiaoCao
                 t.transform.position = mScreen + DamageUITSetting.starY * Vector3.one;
                 //tween.SetEase(DamageUITSetting.ease);
                 //大小
-                tween.Join(DOTween.To(x => t.fontSize = (int)x, DamageUITSetting.frontSizeStart, DamageUITSetting.frontSizeEnd, DamageUITSetting.flyTime / 2).SetLoops(2, LoopType.Yoyo));
+                tween.Join(DOTween
+                    .To(x => t.fontSize = (int)x, DamageUITSetting.frontSizeStart, DamageUITSetting.frontSizeEnd,
+                        DamageUITSetting.flyTime / 2).SetLoops(2, LoopType.Yoyo));
 
                 //位置
                 tween.Join(t.transform.DOMoveY(mScreen.y + DamageUITSetting.MoveY, DamageUITSetting.flyTime / 2));
@@ -356,7 +390,6 @@ namespace XiaoCao
         }
 
 
-
         public class DamageTextTween
         {
             public TMP_Text text;
@@ -385,7 +418,6 @@ namespace XiaoCao
 
             public Color recoverColor = Color.green;
             public Color injuredColor = Color.red;
-
         }
 
         public enum ETextColor
@@ -393,11 +425,8 @@ namespace XiaoCao
             Nor,
             Recover, //绿
             Injured, //红
-
         }
 
         #endregion
     }
 }
-
-

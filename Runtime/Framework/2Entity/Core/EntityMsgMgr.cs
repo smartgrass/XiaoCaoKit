@@ -30,6 +30,7 @@ namespace XiaoCao
         
         SetNoBusy = 10,
         SetUnMoveTime = 11,
+
         AddTag = 12,
         SetNoGravityTime = 13,
         [InspectorName("索敌")]
@@ -50,6 +51,7 @@ namespace XiaoCao
         TheWorld = 21,
         [InspectorName("霸体时间(NoBreakTime)")]
         NoBreakTime = 22,
+        SetUnRotate = 23,
 
 
     }

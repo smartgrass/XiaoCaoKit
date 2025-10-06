@@ -1,4 +1,4 @@
-﻿
+
 using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,9 +35,18 @@ public class Test_MapLayout : MonoBehaviour
             return;
         }
         Bounds b = PrefabUtils.GetPrefabBounds(prefab);
+        Vector3 angle = prefab.transform.localEulerAngles;
+
+        // 通过将prefab的本地旋转应用到所有子物体，然后计算包围盒来修正boxSize
         boxSize = b.size;
         center = b.center;
+        if (!angle.IsZore())
+        {
+            boxSize = prefab.transform.rotation * boxSize;
+            center = prefab.transform.rotation * center;
+        }
     }
+    
 
 
     [Button("生成/排列")]

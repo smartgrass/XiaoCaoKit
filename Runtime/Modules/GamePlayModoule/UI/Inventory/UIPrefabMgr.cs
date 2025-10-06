@@ -10,7 +10,7 @@ namespace XiaoCao
             Inst = this;
         }
 
-
+        //暂无
         public GameObject popupUIPrefab;
 
         public GameObject itemCellPrefab;
@@ -23,6 +23,7 @@ namespace XiaoCao
 
         private AssetPool popupUIPool;
 
+        //暂未使用
         public AssetPool PopupUIPool
         {
             get

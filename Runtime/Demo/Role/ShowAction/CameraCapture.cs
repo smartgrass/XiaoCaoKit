@@ -5,35 +5,41 @@ using XiaoCao;
 
 public class CameraCapture : MonoBehaviour
 {
-    [Header("相机设置")]
-    public Camera captureCamera; // 用于拍摄的相机
-    [Range(128, 2048)]
-    public int textureWidth = 512;  // 输出图像宽度
-    [Range(128, 2048)]
-    public int textureHeight = 512; // 输出图像高度
+    [Header("相机设置")] public Camera captureCamera; // 用于拍摄的相机
+    [Range(128, 2048)] public int textureWidth = 512; // 输出图像宽度
+    [Range(128, 2048)] public int textureHeight = 512; // 输出图像高度
 
     public float modelDistance = 8;
 
-    private RenderTexture renderTexture; // 临时渲染纹理
+    private RenderTexture _renderTexture; // 临时渲染纹理
 
-    public ModelLoader modelLoader { get; set; }
+    public ModelLoader ModelLoader { get; set; }
 
-    public string Key => modelLoader.roleKey;
+    public GameObject Model { get; set; }
 
-    public GameObject Model => modelLoader.loadedModel;
 
+    public const string PrefabPath = "Assets/_Res/UI/Talk/CameraCapture.prefab";
     //public Transform modelPR; // 定位模型位置
 
     private void Awake()
     {
         // 初始化渲染纹理
-        renderTexture = new RenderTexture(textureWidth, textureHeight, 24);
-        captureCamera.targetTexture = renderTexture;
+        _renderTexture = new RenderTexture(textureWidth, textureHeight, 24);
+        captureCamera.targetTexture = _renderTexture;
 
         // 配置相机以获得透明背景
         captureCamera.clearFlags = CameraClearFlags.SolidColor;
         captureCamera.backgroundColor = new Color(0, 0, 0, 0); // 透明背景
         captureCamera.orthographic = true; // 正交相机，避免透视变形
+    }
+
+    public void SetRenderTextureSize(int x, int y)
+    {
+        Debug.Log($"-- set size {x} {y}");
+        textureWidth = x;
+        textureHeight = y;
+        _renderTexture = new RenderTexture(textureWidth, textureHeight, 24);
+        captureCamera.targetTexture = _renderTexture;
     }
 
     /// <summary>
@@ -47,35 +53,36 @@ public class CameraCapture : MonoBehaviour
 
     private void OnDestroy()
     {
-        // 释放资源
-        if (renderTexture != null)
-            Destroy(renderTexture);
-        
-        CharacterCaptureManager.Inst.Remove(Key);
+
     }
 
+
+#if UNITY_EDITOR
+    private string EditorGetKey => ModelLoader.roleKey;
+    
     [Button("保存位置")]
-    void SaveTranfromInfos()
+    void EditorSaveTransformInfos()
     {
-        SaveTranfromConfig(false);
+        SaveTranformConfig(false);
     }
 
-    void SaveTranfromConfig(bool hasTexture)
+    void SaveTranformConfig(bool hasTexture)
     {
-        if (string.IsNullOrEmpty(Key))
+        if (string.IsNullOrEmpty(EditorGetKey))
         {
             Debug.LogError("Key is null or empty");
             return;
         }
 
-#if UNITY_EDITOR
+
         // 确保我们正在修改一个可写的资源
-        ModelConfigSo so = AssetDatabase.LoadAssetAtPath<ModelConfigSo>("Assets/XiaoCaoKit/Resources/ModelConfigSo.asset");
+        ModelConfigSo so =
+            AssetDatabase.LoadAssetAtPath<ModelConfigSo>("Assets/XiaoCaoKit/Resources/ModelConfigSo.asset");
         int existingIndex = -1;
         ModelConfigEntry entry = null;
         for (int i = 0; i < so.array.Length; i++)
         {
-            if (so.array[i].roleKey == Key)
+            if (so.array[i].roleKey == EditorGetKey)
             {
                 entry = so.array[i];
                 existingIndex = i;
@@ -102,7 +109,7 @@ public class CameraCapture : MonoBehaviour
         entry.localPosition = localPosition;
         entry.localEulerAngles = localEulerAngles;
         entry.size = size;
-        entry.roleKey = Key;
+        entry.roleKey = EditorGetKey;
         entry.hasTexture = hasTexture;
 
         if (existingIndex < 0)
@@ -120,18 +127,13 @@ public class CameraCapture : MonoBehaviour
         UnityEditor.AssetDatabase.SaveAssets();
         UnityEditor.AssetDatabase.Refresh();
 
-        Debug.Log($"Transform info saved for role: {Key}");
-#else
-    Debug.LogWarning("SaveTranfromInfos can only be used in Unity Editor");
-#endif
+        Debug.Log($"Transform info saved for role: {EditorGetKey}");
     }
 
     [Button("保存位置和图片")]
-    void SaveTextureTo()
+    void EditorSaveTextureTo()
     {
-
-
-        string path = XCPathConfig.GetRoleTexturePath(Key);
+        string path = XCPathConfig.GetRoleTexturePath(EditorGetKey);
 
         if (string.IsNullOrEmpty(path))
         {
@@ -146,7 +148,7 @@ public class CameraCapture : MonoBehaviour
         }
 
         // 拍摄图像
-        Texture2D capturedTexture = CaptureAndConvertTexture();
+        Texture2D capturedTexture = EditorGetTexture();
 
         if (capturedTexture == null)
         {
@@ -178,9 +180,8 @@ public class CameraCapture : MonoBehaviour
             Debug.Log($"Texture saved to: {path}");
 
             // 刷新资源数据库（仅在编辑器中）
-#if UNITY_EDITOR
+
             UnityEditor.AssetDatabase.Refresh();
-#endif
         }
         catch (System.Exception e)
         {
@@ -192,42 +193,23 @@ public class CameraCapture : MonoBehaviour
             DestroyImmediate(capturedTexture);
         }
 
-        SaveTranfromConfig(true);
+        SaveTranformConfig(true);
     }
 
     /// <summary>
     /// 拍摄并转换纹理为Texture2D
     /// </summary>
     /// <returns>Texture2D对象</returns>
-    private Texture2D CaptureAndConvertTexture()
+    private Texture2D EditorGetTexture()
     {
-        // 保存当前的渲染目标
-        RenderTexture currentRT = RenderTexture.active;
+        Texture2D texture2D = new Texture2D(_renderTexture.width, _renderTexture.height, TextureFormat.RGBA32, false);
 
-        try
-        {
-            // 设置相机的渲染目标
-            RenderTexture.active = captureCamera.targetTexture;
+        // 从当前激活的RenderTexture读取像素数据
+        texture2D.ReadPixels(new Rect(0, 0, _renderTexture.width, _renderTexture.height), 0, 0);
 
-            // 渲染相机视图
-            captureCamera.Render();
-
-            // 创建纹理并读取像素
-            Texture2D capturedTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
-            capturedTexture.ReadPixels(new Rect(0, 0, textureWidth, textureHeight), 0, 0);
-            capturedTexture.Apply();
-
-            return capturedTexture;
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Error capturing texture: {e.Message}");
-            return null;
-        }
-        finally
-        {
-            // 恢复原来的渲染目标
-            RenderTexture.active = currentRT;
-        }
+        // 应用更改
+        texture2D.Apply();
+        return texture2D;
     }
+#endif
 }

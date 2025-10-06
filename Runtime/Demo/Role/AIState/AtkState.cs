@@ -15,7 +15,7 @@ namespace XiaoCao
 
         [XCLabel("攻击后摇")]
         public float afterAtk = 0; //攻击结束的后摇
-        [XCLabel("攻击信息")]
+        [XCLabel("攻击信息(从0起算,一般skillId+1)")]
         public string atkMsg = "0"; //信息
 
         [XCLabel("受击计时延迟")]

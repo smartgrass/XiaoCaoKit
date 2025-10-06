@@ -53,7 +53,7 @@ namespace XiaoCao
         //关卡分支 默认0
         public string LevelBranch = "0";
 
-        public string LevelName { get => GameDataCommon.Current.MapName; }
+        public string LevelName { get => GameDataCommon.Current.mapName; }
 
         public string GetLevelEnemyInfoKey(string groupName)
         {
@@ -116,7 +116,7 @@ namespace XiaoCao
 
             BuffItem buffItem = BuffItem.Create(item);
 
-            PlayerHelper.AddBuff(GameDataCommon.Current.LocalPlayerId, buffItem);
+            PlayerHelper.AddBuff(GameDataCommon.Current.localPlayerId, buffItem);
 
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
 
