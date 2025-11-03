@@ -9,11 +9,16 @@ using static ModelConfigSo;
 [CreateAssetMenu(fileName = "ModelConfigData", menuName = "SO/ModelConfigData")]
 public class ModelConfigSo : KeyMapSo<ModelConfigEntry>
 {
+    public bool IsDebug = false;
     // 检查是否有预配置纹理
     public bool HasConfigTexture(string roleKey)
     {
         var config = GetOrDefault(roleKey);
 #if UNITY_EDITOR
+        if (IsDebug)
+        {
+            return false;
+        }
         if (config.hasTexture)
         {
             if (!File.Exists(XCPathConfig.GetRoleTexturePath(roleKey)))
@@ -22,6 +27,7 @@ public class ModelConfigSo : KeyMapSo<ModelConfigEntry>
                 config.hasTexture = false;
             }
         }
+        
 #endif
 
         return config.hasTexture;
@@ -38,6 +44,10 @@ public class ModelConfigEntry : IKey
 
     public Vector3 localPosition;
     public Vector3 localEulerAngles;
+
+    public Vector3 cameraLocalPosition;
+    public Vector3 cameraLocalEulerAngles;
+    
     public float size = 1;
 
 

@@ -24,8 +24,8 @@ namespace XiaoCaoKit
 
         public string SelectLevel
         {
-            get => GameDataCommon.Current.selectLevel;
-            set => GameDataCommon.Current.selectLevel = value;
+            get => GameDataCommon.Current.uiSelectLevel;
+            set => GameDataCommon.Current.uiSelectLevel = value;
         }
 
         public LevelUISettingSo levelUISettingSo;
@@ -114,7 +114,7 @@ namespace XiaoCaoKit
 
         private void OnClickLevel(int index)
         {
-            SelectLevel = MapNames.GetLevelName(curChapter, index);
+            SelectLevel = MapNames.GetLevelKey(curChapter, index);
             levelDetailUI.Show();
         }
 

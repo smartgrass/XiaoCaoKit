@@ -4,6 +4,7 @@ using TEngine;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCao.UI;
 using static XiaoCao.BattleHud;
 using Image = UnityEngine.UI.Image;
 
@@ -44,21 +45,18 @@ namespace XiaoCao
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
             GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), OnGameState);
+            GameEvent.AddEventListener<int>(EGameEvent.LevelEnd.Int(), OnLevelEnd);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
             playerBar.SetBarColors(false);
             exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
-            exitLevelBtn.transform.parent.gameObject.SetActive(false);
+            exitLevelBtn.transform.gameObject.SetActive(false);
         }
 
-        private void OnGameState(GameState arg1, GameState arg2)
+        private void OnLevelEnd(int state)
         {
-            if (arg2 == GameState.Finish)
-            {
-                exitLevelBtn.transform.parent.gameObject.SetActive(true);
-            }
+            exitLevelBtn.transform.gameObject.SetActive(true);
         }
 
         private void OnDestroy()
@@ -66,7 +64,7 @@ namespace XiaoCao
             GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
             GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), OnGameState);
+            GameEvent.RemoveEventListener<int>(EGameEvent.LevelEnd.Int(), OnLevelEnd);
         }
 
         private void Update()
@@ -229,7 +227,7 @@ namespace XiaoCao
 
         public void OnExitLevelBtn()
         {
-            GameMgr.Inst.BackHome();
+            GameMgr.Inst.ShowLevelEndDialog();
         }
 
 

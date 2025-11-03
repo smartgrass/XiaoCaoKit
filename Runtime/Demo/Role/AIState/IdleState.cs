@@ -34,7 +34,6 @@ namespace XiaoCao
         private Vector3 _tempHideDir;
         private bool isFarToNear;
         private int _hasLoopTime;
-        private bool hasNoTarget;
         private float curSleepTime;
         private float curHideTime;
 
@@ -56,6 +55,12 @@ namespace XiaoCao
             //第一次启动
             if (!_isEnterIdle)
             {
+                if (HasTarget)
+                {
+                    Timer = 0;
+                    OnExit();
+                    return;
+                }
                 Timer = RandomHelper.RangeFloat(curSleepTime, curHideTime);
             }
             else

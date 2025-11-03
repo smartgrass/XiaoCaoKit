@@ -25,28 +25,24 @@ namespace AssetEditor.Editor
 
         public const int Line1 = 1;
         public const int Line2 = 2;
+        public const int Line3 = 3;
         public const int Line99 = 99;
 
-        [HorLayout(true)]
-        public bool IsKaiLe = false;
-        [HorLayout(false)]
-        [OnValueChanged(nameof(CheckDebugGo))]
+        [HorLayout(true)] public bool IsKaiLe = false;
+
+        [HorLayout(false)] [OnValueChanged(nameof(CheckDebugGo))]
         public bool IsShowDebug = true;
-        [HorLayout(true)]
-        [OnValueChanged(nameof(OnLevelChange))]
+
+        [HorLayout(true)] [OnValueChanged(nameof(OnLevelChange))]
         public int playerLevel = 5;
 
         [OnValueChanged(nameof(OnLevelChange))]
         public bool isHiding;
 
-        [HorLayout(false)]
-        [Range(0, 10)]
-        [OnValueChanged(nameof(OnTimeScale))]
+        [HorLayout(false)] [Range(0, 10)] [OnValueChanged(nameof(OnTimeScale))]
         public float timeScale = 1;
 
-        [MiniBtn(nameof(SetFrameRate))]
-        public int frameRate = 30;
-
+        [MiniBtn(nameof(SetFrameRate))] public int frameRate = 30;
 
 
         public override void OnEnable()
@@ -99,14 +95,12 @@ namespace AssetEditor.Editor
                 {
                     debugGo.gameObject.SetActive(IsShowDebug);
                 }
-
             }
         }
 
         [Button("选中角色", Line1)]
         void SelectPlayer()
         {
-
             if (!Application.isPlaying)
             {
                 Selection.activeObject = GameObject.Find("Editor/Player").transform.GetChild(0);
@@ -122,7 +116,6 @@ namespace AssetEditor.Editor
         [Button("选中敌人", Line1)]
         void SelectEnemy()
         {
-
             if (!Application.isPlaying)
             {
                 return;
@@ -138,9 +131,18 @@ namespace AssetEditor.Editor
                         return;
                     }
                 }
-
             }
         }
+
+        [Button("生成队友", Line1, enabledMode: EButtonEnableMode.Playmode)]
+        void GenFriend()
+        {
+            var playerTf = GameDataCommon.LocalPlayer.transform;
+            Vector3 pos = playerTf.position + playerTf.forward * 3;
+            string roleKey = $"Role_{ConfigMgr.LocalRoleSetting.GetFriendRoleIndex()}";
+            Enemy0 enemy0 = EnemyCreator.GenFriend(roleKey, pos, GameDataCommon.LocalPlayer.Level);
+        }
+
 
         [Button("生成敌人", Line1, enabledMode: EButtonEnableMode.Playmode)]
         void GenEnemy()
@@ -149,6 +151,18 @@ namespace AssetEditor.Editor
             if (testRole)
             {
                 testRole.Gen();
+            }
+        }
+
+        [Button("击杀敌人", Line1, enabledMode: EButtonEnableMode.Playmode)]
+        void KillEnemy()
+        {
+            foreach (var role in RoleMgr.Inst.roleDic.Values)
+            {
+                if (!role.IsPlayer && role.Enable && !role.IsDie)
+                {
+                    role.OnDie(new AtkInfo());
+                }
             }
         }
 
@@ -179,12 +193,25 @@ namespace AssetEditor.Editor
             SaveXCTask.LoadLubanExcelWithCode();
         }
 
+        [Button("玩家存档面板", Line3)]
+        void OpenSavaDataWin()
+        {
+            PlayerSaveDataWindow.Open();
+        }
+
+        [Button("LevelEnd", Line3, enabledMode: EButtonEnableMode.Playmode)]
+        void LevelEnd()
+        {
+            GameMgr.Inst.LevelFinish();
+        }
+
         private void OnHidingChange()
         {
             if (!Application.isPlaying)
             {
                 return;
             }
+
             if (GameDataCommon.Current.gameState == GameState.Running)
             {
                 GameDataCommon.LocalPlayer.IsHiding = isHiding;
@@ -205,7 +232,6 @@ namespace AssetEditor.Editor
                 GameDataCommon.LocalPlayer.InitRoleData();
                 HotFlags.PlayerAttrChange = true;
             }
-
         }
 
 
@@ -219,8 +245,8 @@ namespace AssetEditor.Editor
         void StopTime()
         {
             //TestRole testRole  = GameObject.FindObjectOfType<TestRole>();
-
         }
+
         [Button("清空对象池", Line99)]
         void ClearPool()
         {
@@ -234,6 +260,7 @@ namespace AssetEditor.Editor
             {
                 return;
             }
+
             for (int i = 0; i < 8; i++)
             {
                 Item item = RewardHelper.GetItemWithPool("0", 0);
@@ -249,16 +276,13 @@ namespace AssetEditor.Editor
                     PlayerHelper.AddBuff(0, buffItem);
                 }
             }
-
-
-
         }
 
         [Button("Test Config", Line99)]
         void TestConfig()
         {
             Debug.Log($"{Application.dataPath}" +
-                $"{Application.consoleLogPath} {PathTool.GetProjectPath()}");
+                      $"{Application.consoleLogPath} {PathTool.GetProjectPath()}");
         }
 
         private void SetFrameRate()
@@ -278,7 +302,6 @@ namespace AssetEditor.Editor
                 }
             }
         }
-        
     }
 }
 #endif

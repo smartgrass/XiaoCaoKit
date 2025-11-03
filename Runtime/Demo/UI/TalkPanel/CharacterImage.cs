@@ -1,9 +1,8 @@
-using System;
-using System.Collections;
 using MFPC;
 using UnityEngine;
 using UnityEngine.UI;
 using NaughtyAttributes;
+
 
 namespace XiaoCao
 {
@@ -12,6 +11,7 @@ namespace XiaoCao
         public RawImage img;
         public CameraCapture cameraCapture;
         public TouchField touchField;
+        [Label("角色UI相机配置")]
         public ModelConfigEntry config;
 
         private bool _isInit = false;
@@ -20,6 +20,11 @@ namespace XiaoCao
         private void Update()
         {
             if (!ResMgr.IsLoadFinish)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(config.roleKey))
             {
                 return;
             }
@@ -47,6 +52,16 @@ namespace XiaoCao
             img.texture = texture;
         }
 
+        public void ChangeModelKey(string key)
+        {
+            if (cameraCapture)
+            {
+                Destroy(cameraCapture.gameObject);
+            }
+            config.roleKey = key;
+            CreateCamera();
+        }
+        
         private void CreateCamera()
         {
             GameObject cameraCaptureObject = ResMgr.LoadInstan(CameraCapture.PrefabPath);
@@ -60,7 +75,12 @@ namespace XiaoCao
             loadedModel.transform.localPosition = config.localPosition;
             loadedModel.transform.localEulerAngles = config.localEulerAngles;
             loadedModel.transform.localScale = config.size * Vector3.one;
+            
+            cameraCapture.captureCamera.transform.localPosition = config.cameraLocalPosition;
+            cameraCapture.captureCamera.transform.localEulerAngles = config.cameraLocalEulerAngles;
+            
             cameraCapture.Model = loadedModel;
+            cameraCapture.characterImage = this;
 
             if (!string.IsNullOrEmpty(config.anim))
             {
@@ -71,11 +91,13 @@ namespace XiaoCao
         }
 
         [Button]
-        public void ReadConfig()
+        public void ReadDataToConfig()
         {
             var loadedModel = cameraCapture.Model;
             config.localPosition = loadedModel.transform.localPosition;
             config.localEulerAngles = loadedModel.transform.localEulerAngles;
+            config.cameraLocalPosition = cameraCapture.captureCamera.transform.localPosition;
+            config.cameraLocalEulerAngles = cameraCapture.captureCamera.transform.localEulerAngles;
             config.size = loadedModel.transform.localScale.x;
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TEngine;
 using UnityEngine;
@@ -213,10 +214,13 @@ namespace XiaoCao
                     Debug.LogWarning("EndLoop action should be handled at a higher level");
                     yield return null;
                     break;
-                case ShowActKeys.LevelEnd:
-                    GameMgr.Inst.LevelEnd();
+                case ShowActKeys.LevelFinish:
+                    GameMgr.Inst.LevelFinish();
                     break;
 
+                case ShowActKeys.KillEnemy:
+                    RoleMgr.Inst.KillEnemy();
+                    break;
                 default:
                     Debug.LogError($"Unknown action: {showActData.actName}");
                     yield return null;
@@ -357,6 +361,10 @@ namespace XiaoCao
     }
 
 
+    //格式: "actName:content"
+    /// <summary>
+    /// <see cref="ShowActKeys"/>
+    /// </summary>
     public struct ShowActData
     {
         public string actName;
@@ -455,7 +463,7 @@ namespace XiaoCao
     {
         /// <summary>
         /// 将字符串按逗号分隔转换为TaskData
-        /// 格式: "actName,content"
+        /// 格式: "actName:content"
         /// </summary>
         /// <param name="input">输入字符串</param>
         /// <returns>解析后的TaskData结构</returns>
@@ -468,10 +476,10 @@ namespace XiaoCao
                 return taskData;
             }
 
-            // 移除首尾空格并按逗号分割
             string[] parts = input.Trim().Split(':');
+
             taskData.actName = parts[0].Trim();
-            if (parts.Length >= 1)
+            if (parts.Length > 1)
             {
                 taskData.content = parts[1].Trim();
             }
@@ -501,7 +509,7 @@ namespace XiaoCao
     {
         /// <summary>
         /// 等待指定时间
-        /// 用法: wait,2.5
+        /// 用法: wait:2.5
         /// </summary>
         public const string Wait = "Wait";
 
@@ -509,13 +517,13 @@ namespace XiaoCao
 
         /// <summary>
         /// 播放动画
-        /// 用法: anim,attack
+        /// 用法: anim:attack
         /// </summary>
         public const string Anim = "Anim";
 
         /// <summary>
         /// 移动到指定位置
-        /// 用法: move,position1
+        /// 用法: move:position1
         /// </summary>
         public const string MoveLocal = "MoveLocal";
 
@@ -543,13 +551,13 @@ namespace XiaoCao
 
         /// <summary>
         /// 发送事件消息
-        /// 用法: event,CustomEventName
+        /// 用法: event:CustomEventName
         /// </summary>
         public const string Event = "Event";
 
         /// <summary>
         /// 循环执行指定次数
-        /// 用法: loop,3 (开始循环3次)
+        /// 用法: loop:3 (开始循环3次)
         ///     endloop (结束循环)
         /// </summary>
         public const string Loop = "Loop";
@@ -558,6 +566,22 @@ namespace XiaoCao
 
         public const string FollowPlayer = "FollowPlayer";
 
-        public const string LevelEnd = "LevelEnd";
+        public const string LevelFinish = "LevelFinish";
+        
+        public const string KillEnemy = "KillEnemy";
+
+        public static List<string> GetShortKeys()
+        {
+            //使用反射获取所有const字段
+            List<string> keys = new List<string>();
+            var fields = typeof(ShowActKeys).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy)
+                .Where(f => f.IsLiteral && !f.IsInitOnly);
+            foreach (var field in fields)
+            {
+                keys.Add(field.Name);
+            }
+            return keys;
+
+        }
     }
 }

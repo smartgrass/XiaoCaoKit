@@ -95,7 +95,8 @@ namespace XiaoCao
             bool lookMoveDir = isLookMoveDir || (!tempLookAt);
 
             ComputeMoveValue(isInput, lookMoveDir, moveDir);
-
+            
+            
             if (lookMoveDir)
             {
                 RotateByMoveDir(moveDir, moveSetting.rotationLerp * RoleState.angleSpeedMult);
@@ -105,6 +106,25 @@ namespace XiaoCao
                 RotateLootAtWithAnim(tempLookAt, moveSetting.rotationLerp * RoleState.angleSpeedMult);
             }
 
+            //有移动则取消后摇
+            if (Data_R.skillState.Data is ESkillState.SkillEnd)
+            {
+                if (owner.IsPlayer)
+                {
+                    DebugGUI.Log("moveDir", moveDir.ToString(), isInput, lookMoveDir);
+                }
+            }
+            
+            if (Data_R.skillState.Data is ESkillState.SkillEnd)
+            {
+                if (isInput)
+                {
+                    Data_R.skillState.SetValue(ESkillState.Idle);
+                    //Debug.Log($"--- 过渡效果 TODO");
+                    owner.Anim?.CrossFade(AnimHash.Idle, 0.1f);
+                }
+            }
+            
             CheckBackToIdle(isInput);
 
             float baseSpeed = overridBaseMoveSpeed > 0 ? overridBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
@@ -173,12 +193,7 @@ namespace XiaoCao
         {
             //DebugGUI.Log("skillState", Data_R.skillState);
             //有移动则取消后摇
-            if (Data_R.skillState.Data is ESkillState.SkillEnd && isInput)
-            {
-                Data_R.skillState.SetValue(ESkillState.Idle);
-                //Debug.Log($"--- 过渡效果 TODO");
-                //owner.Anim?.CrossFade(AnimHash.Idle, 0.1f);
-            }
+
         }
 
 

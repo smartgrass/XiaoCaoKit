@@ -42,12 +42,9 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
 
     private HpBar hpBar;
 
-    public bool noHurt;
-
     public UnityEvent unLockEvent;
 
-    [XCHeader("bodyRenderer")]
-    public EMatColorName colorName;
+    [XCHeader("bodyRenderer")] public EMatColorName colorName;
     public Color norColor;
     public Color lockColor;
 
@@ -71,6 +68,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
             SoundMgr.Inst.PlayClip(unlockClip);
             unLockEvent?.Invoke();
         }
+
         noHurt = isNoHurt;
         if (colorName != EMatColorName.None)
         {
@@ -78,6 +76,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
             var color = isNoHurt ? lockColor : norColor;
             renderer.material.DoColorTween(colorName.ToString(), color, 0.5f);
         }
+
         Transform lockEffect = transform.Find("LockEffect");
         if (lockEffect)
         {
@@ -112,15 +111,13 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         {
             SoundMgr.Inst.PlayClip(hitClip);
         }
+
         if (tween != null)
         {
             tween.Kill();
         }
 
-        tween = body.DOShakePosition(0.3f, shakeLen).OnComplete(() =>
-        {
-            body.localPosition = startBodyPos;
-        });
+        tween = body.DOShakePosition(0.3f, shakeLen).OnComplete(() => { body.localPosition = startBodyPos; });
     }
 
     private void SetHpBar()
@@ -129,9 +126,16 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         {
             hpBar = UIMgr.Inst.battleHud.AddItemHpBar(transform, hpBarOffset);
         }
+
         hpBar.UpdateHealthBar((float)hp / maxHp);
     }
 
+
+    [Button("ToDead", enabledMode: EButtonEnableMode.Playmode)]
+    public void ToDead()
+    {
+        OnDead(new AtkInfo());
+    }
 
     private void OnDead(AtkInfo ackInfo)
     {
@@ -146,7 +150,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         SendMapMsg();
 
         DoExploded();
-        //Òş²ØÔ­body
+        //éšè—åŸbody
         HideSelf();
         UIMgr.Inst.battleHud.RemoveItemHpBar(transform);
 
@@ -161,13 +165,8 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         }
     }
 
-    [Button("TestDead", enabledMode: EButtonEnableMode.Playmode)]
-    public void TestDead()
-    {
-        OnDead(new AtkInfo());
-    }
 
-    #region ±¬Õ¨¶¯»­
+    #region çˆ†ç‚¸åŠ¨ç”»
 
     [Button(enabledMode: EButtonEnableMode.Playmode)]
     void DoExploded()
@@ -175,20 +174,19 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         var mesh = body.GetComponent<MeshFilter>().mesh;
         Vector3 explodePos = explodePoint ? explodePoint.position : mesh.bounds.center;
 
-        //×ÓÎïÌåÒÆµ½Íâ²ã,¸ø×ÓÎïÌåÊ©Á¦
+        //å­ç‰©ä½“ç§»åˆ°å¤–å±‚,ç»™å­ç‰©ä½“æ–½åŠ›
         ExplodedPos(explodePos);
     }
 
-    [XCHeader("±¬Õ¨Éè¶¨")]
-
-    [SerializeField] private float _explosionRadius = 5;
+    [XCHeader("çˆ†ç‚¸è®¾å®š")] [SerializeField] private float _explosionRadius = 5;
     [SerializeField] private float _explosionForce = 500;
+
     private void ExplodedPos(Vector3 centerPos)
     {
         int len = body.childCount;
         for (int i = 0; i < len; i++)
         {
-            //ÓÉÓÚSetParent¸Ä±ä, ËùÒÔÖ»ĞèÒªÄÃµ½Child(0)
+            //ç”±äºSetParentæ”¹å˜, æ‰€ä»¥åªéœ€è¦æ‹¿åˆ°Child(0)
             Transform child = body.GetChild(0);
             child.SetParent(transform, true);
             child.gameObject.SetActive(true);
@@ -205,6 +203,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         {
             col.enabled = false;
         }
+
         body.gameObject.SetActive(false);
 
         if (fadeTime > 0 && fadeEffect != FadeEffect.None)
@@ -221,7 +220,6 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         else
         {
             var timer = XCTime.DelayTimer(4f, HideAll);
-
         }
     }
 
@@ -269,14 +267,14 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
 
     #endregion
 
-    [Button("×é¼ş¼ì²é/°ó¶¨")]
+    [Button("ç»„ä»¶æ£€æŸ¥/ç»‘å®š")]
     void Check()
     {
         Debug.Log($"--- set Layer and Tag");
         gameObject.layer = Layers.WALL;
         gameObject.tag = Tags.ITEM;
 
-        Debug.Log($"--- ×ÓÎïÌåcol");
+        Debug.Log($"--- å­ç‰©ä½“col");
         bool find = false;
         int childCount = transform.childCount;
         for (int i = 0; i < childCount; i++)
@@ -296,8 +294,6 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
                     item.gameObject.SetActive(false);
                 }
             }
-
-
         }
 
         if (!find)
@@ -320,7 +316,6 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
             explodePoint = new GameObject("explodePoint").transform;
             explodePoint.SetParent(transform);
         }
-
     }
 
 

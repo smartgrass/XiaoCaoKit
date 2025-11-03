@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using cfg;
 using TEngine;
 using UnityEngine;
 
@@ -29,11 +30,19 @@ namespace XiaoCao
             CreateIdRole(savaData.prefabId);
             if (isMainPlayer)
             {
-                idRole.bodyName = ConfigMgr.GetSettingSkinName();
+                int selectRole = ConfigMgr.LocalRoleSetting.selectRole;
+                var setting = LubanTables.GetLevelSetting(MapMgr.CurLevelName);
+                if (setting.RoleId < 0)
+                {
+                    selectRole = 0;
+                }
+                idRole.bodyName = selectRole == 0 ? ConfigMgr.GetSettingSkinName() : $"Role_{selectRole}";
                 AddTag(RoleTagCommon.MainPlayer);
                 GameDataCommon.Current.player0 = this;
                 GameDataCommon.Current.localPlayerId = this.id;
+                BattleData.Current.curBodyName = idRole.bodyName;
             }
+
             CreateRoleBody(idRole.bodyName);
             SetTeam(XCSetting.PlayerTeam);
 
@@ -41,6 +50,7 @@ namespace XiaoCao
             GetPlayerCmdList(true);
             data_R.playerAttr.lv = savaData.lv;
             InitRoleData();
+            RoleIdentityType = RoleIdentityType.Player;
 
             component.input = new PlayerInput(this);
             component.control = new PlayerControl(this);
@@ -69,7 +79,6 @@ namespace XiaoCao
             {
                 seting.skillIdList = AiCmdSetting.cmdSkillList;
             }
-
         }
 
         protected override void OnUpdate()
@@ -90,11 +99,11 @@ namespace XiaoCao
             {
                 DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
             }
+
             if (Anim.speed > 1)
             {
                 DebugGUI.Log("Anim", Anim.speed);
             }
-
         }
 
 
@@ -127,6 +136,26 @@ namespace XiaoCao
             }
         }
 
+        public void PlayFriendRoleSKill(int index = 0)
+        {
+            if (playerData.friends.Count < index)
+            {
+                return;
+            }
+
+            var role = playerData.friends[index].GetRoleById();
+
+            if (role.IsDie)
+            {
+                return;
+            }
+
+            //读取配置, 获取技能id
+            string skillId = playerData.GetFriendSkillId();
+            BaseMsg baseMsg = new BaseMsg() { strMsg = skillId };
+            role.ReceiveMsg(EntityMsgType.PlayNextSkill, id, baseMsg);
+        }
+
         public override void OnBreak()
         {
             component.control.BreakAllBusy();
@@ -154,7 +183,9 @@ namespace XiaoCao
 
     public class PlayerComponent : RoleComponent<Player0>
     {
-        public PlayerComponent(Player0 _owner) : base(_owner) { }
+        public PlayerComponent(Player0 _owner) : base(_owner)
+        {
+        }
 
         public PlayerData0 Data_P => owner.playerData;
     }
@@ -177,6 +208,8 @@ namespace XiaoCao
 
         public PlayerSetting playerSetting;
 
+        public List<int> friends = new List<int>();
+
         internal string GetBarSkillId(int index)
         {
             if (index < 0)
@@ -189,7 +222,31 @@ namespace XiaoCao
             {
                 return list[index];
             }
+
             return list[index % list.Count];
+        }
+
+        public void AddFriend(Role owner)
+        {
+            if (friends.Contains(owner.id))
+            {
+                return;
+            }
+
+            friends.Add(owner.id);
+        }
+
+
+        public string GetFriendSkillId()
+        {
+            //清空
+            BattleData.Current.fightValue = 0;
+            return "4";
+        }
+
+        public float GetFriendSkillProcess()
+        {
+            return (100 - BattleData.Current.fightValue) / 100;
         }
     }
 
@@ -206,17 +263,12 @@ namespace XiaoCao
     {
         public float X
         {
-            get
-            {
-                return x + localInput.x;
-            }
+            get { return x + localInput.x; }
         }
+
         public float Y
         {
-            get
-            {
-                return y + localInput.y;
-            }
+            get { return y + localInput.y; }
         }
 
         private float x;
@@ -231,13 +283,15 @@ namespace XiaoCao
         public int skillInput = -1; //-1无效值
 
 
-        public KeyCode[] CheckKeyCode = new KeyCode[] {
+        public KeyCode[] CheckKeyCode = new KeyCode[]
+        {
             KeyCode.Alpha0, KeyCode.Alpha1
         };
 
 
-        public KeyCode[] CheckKeyCode2 = new KeyCode[] {
-            KeyCode.K, KeyCode.L , KeyCode.U,KeyCode.I,KeyCode.O
+        public KeyCode[] CheckKeyCode2 = new KeyCode[]
+        {
+            KeyCode.K, KeyCode.L, KeyCode.U, KeyCode.I, KeyCode.O
         };
 
 
@@ -261,7 +315,6 @@ namespace XiaoCao
         }
 
 
-
         //public void Copy(PlayerInputData data)
         //{
         //    this.x = data.x;
@@ -269,7 +322,6 @@ namespace XiaoCao
         //    this.inputs = data.inputs;
         //    skillInput = data.skillInput;
         //}
-
     }
 
     public static class InputKey
@@ -280,6 +332,7 @@ namespace XiaoCao
         public const int Tab = 3;
         public const int Focus = 4;
     }
+
     public class PlayerAttr
     {
         public int lv;
@@ -288,11 +341,13 @@ namespace XiaoCao
         public float hp; //实时数值
         public float mp;
 
-        public float MapHp => GetAttribute(EAttr.MaxHp).CurrentValue;
-        public int MapMp => (int)GetAttribute(EAttr.MaxMp).CurrentValue;
+        public float MaxHp =>  GetAttribute(EAttr.MaxHp).CurrentValue;
+        public int MaxMp => (int)GetAttribute(EAttr.MaxMp).CurrentValue;
         public int Atk => (int)GetAttribute(EAttr.Atk).CurrentValue;
         public int Def => (int)GetAttribute(EAttr.Def).CurrentValue;
+
         public float Crit => GetAttribute(EAttr.Crit).CurrentValue;
+
         //吸血 
         public float AtkRecoverHp => GetAttribute(EAttr.AtkRecoverHp).CurrentValue;
 
@@ -306,6 +361,7 @@ namespace XiaoCao
             {
                 lv = 1;
             }
+
             RoleId = roleId;
             this.lv = lv;
             if (setting.id == 0)
@@ -324,7 +380,6 @@ namespace XiaoCao
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
             GetAttribute(EAttr.NoDamage).BaseValue = 0;
-
         }
 
         public AttributeValue GetAttribute(EAttr eAttr, float defaultValue = 0)
@@ -337,6 +392,7 @@ namespace XiaoCao
                     BaseValue = defaultValue,
                 };
             }
+
             return attrDic[key];
         }
 
@@ -363,6 +419,7 @@ namespace XiaoCao
                     BaseValue = defaultValue,
                 };
             }
+
             return attrDic[key].CurrentValue;
         }
 
@@ -382,11 +439,11 @@ namespace XiaoCao
                     isSendMsg = false;
                     return;
             }
+
             if (isSendMsg)
             {
                 GameEvent.Send<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), eAttr, delta);
             }
-
         }
     }
 
@@ -402,5 +459,4 @@ namespace XiaoCao
     }
 
     #endregion
-
 }

@@ -118,6 +118,15 @@ namespace XiaoCao
 
         public void LoadSkillSprite()
         {
+            if (slotType == SlotType.RoleSkill)
+            {
+                int index = ConfigMgr.LocalRoleSetting.GetFriendRoleIndex(); 
+                string roleKey = $"Role_{index}";
+                image.sprite = SpriteResHelper.LoadRoleIcon(roleKey);
+                return; 
+            }
+            
+            
             string id = PlayerData.GetBarSkillId(index);
             image.sprite = SpriteResHelper.LoadSkillIcon(id);
         }
@@ -126,23 +135,39 @@ namespace XiaoCao
         {
             if (!isColdLastFrame)
             {
-                if (slotType == SlotType.SkillIndex)
+                switch (slotType)
                 {
-                    playerInput.skillInput = index;
+                    case SlotType.SkillIndex:
+                        playerInput.skillInput = index;
+                        break;
+                    case SlotType.Inputs:
+                        playerInput.inputs[index] = true;
+                        break;
+                    case SlotType.RoleSkill:
+                        GameDataCommon.LocalPlayer.PlayFriendRoleSKill();
+                        break;
                 }
-                else
-                {
-                    playerInput.inputs[index] = true;
-                }
+
                 PlayEffect();
             }
         }
 
         public void CheckSlotUI(string skillId)
         {
-
             float process = AtkTimer.GetWaitTimeProccess(skillId);
 
+            UpdateProcess(process);
+        }
+        
+        public void CheckFriendSkillUI()
+        {
+            float process = PlayerData.GetFriendSkillProcess();
+            UpdateProcess(process);
+        }
+
+
+        private void UpdateProcess(float process)
+        {
             bool isCd = process != 0;
             if (isColdLastFrame && !isCd)
             {
@@ -159,13 +184,12 @@ namespace XiaoCao
             //更新进度
             OnUpdate(process);
         }
-
-
     }
 
     public enum SlotType
     {
         SkillIndex,
         Inputs, //roll, jump
+        RoleSkill
     }
 }

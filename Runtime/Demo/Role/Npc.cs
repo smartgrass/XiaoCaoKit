@@ -1,4 +1,4 @@
-﻿using NaughtyAttributes;
+using NaughtyAttributes;
 using System;
 using UnityEngine;
 
@@ -149,7 +149,14 @@ namespace XiaoCao
 
         public void SetAnimClip()
         {
+#if UNITY_EDITOR
             AnimationUtils.AddAndPlayClip(Animator, animClip);
+#else
+            if (Animator != null && animClip != null)
+            {
+                Animator.Play(animClip.name);
+            }
+#endif
         }
     }
 }

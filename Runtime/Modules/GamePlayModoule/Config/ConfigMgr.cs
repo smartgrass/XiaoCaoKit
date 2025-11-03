@@ -62,6 +62,8 @@ namespace XiaoCao
         private static LocalSetting _localSetting;
 
         private static StaticSettingSo _staticSettingSo;
+        
+        private static UIPrefabSo _uiPrefabSo;
 
         #endregion
 
@@ -75,6 +77,7 @@ namespace XiaoCao
             EnemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
             ModelConfigDataSo = ConfigMgr.LoadSoConfig<ModelConfigSo>();
+            _uiPrefabSo = ConfigMgr.LoadSoConfig<UIPrefabSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
             GetTestEnemyList();
@@ -244,7 +247,9 @@ namespace XiaoCao
         public bool saveSkillBar;
 
         public List<string> skillBarSetting;
-
+        
+        public int selectRole;
+        
         public static LocalRoleSetting Load()
         {
             var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
@@ -264,8 +269,24 @@ namespace XiaoCao
             return ret;
         }
 
-        //TODO
-        public static void SaveSetting()
+        public int GetFriendRoleIndex()
+        {
+            //与当前角色不同
+            return (selectRole+1) % GetRoleCount();
+        }
+
+        //根据关卡进度获取, 最少为2
+        public int GetRoleCount()
+        {
+            return 2;
+        }
+        
+        public void Sava()
+        {
+            SaveMgr.SaveData<LocalRoleSetting>(this);
+        }
+        
+        public static void Save()
         {
             SaveMgr.SaveData<LocalRoleSetting>(ConfigMgr.LocalRoleSetting);
         }

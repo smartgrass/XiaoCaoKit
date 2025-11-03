@@ -10,6 +10,8 @@ public class CameraCapture : MonoBehaviour
     [Range(128, 2048)] public int textureHeight = 512; // 输出图像高度
 
     public float modelDistance = 8;
+    [ReadOnly]
+    public CharacterImage characterImage;
 
     private RenderTexture _renderTexture; // 临时渲染纹理
 
@@ -63,10 +65,10 @@ public class CameraCapture : MonoBehaviour
     [Button("保存位置")]
     void EditorSaveTransformInfos()
     {
-        SaveTranformConfig(false);
+        SaveTranformConfig();
     }
 
-    void SaveTranformConfig(bool hasTexture)
+    void SaveTranformConfig()
     {
         if (string.IsNullOrEmpty(EditorGetKey))
         {
@@ -110,7 +112,6 @@ public class CameraCapture : MonoBehaviour
         entry.localEulerAngles = localEulerAngles;
         entry.size = size;
         entry.roleKey = EditorGetKey;
-        entry.hasTexture = hasTexture;
 
         if (existingIndex < 0)
         {
@@ -148,7 +149,7 @@ public class CameraCapture : MonoBehaviour
         }
 
         // 拍摄图像
-        Texture2D capturedTexture = EditorGetTexture();
+        Texture2D capturedTexture = EditorGetTexture(captureCamera.targetTexture);
 
         if (capturedTexture == null)
         {
@@ -193,23 +194,23 @@ public class CameraCapture : MonoBehaviour
             DestroyImmediate(capturedTexture);
         }
 
-        SaveTranformConfig(true);
+        SaveTranformConfig();
     }
 
     /// <summary>
     /// 拍摄并转换纹理为Texture2D
     /// </summary>
     /// <returns>Texture2D对象</returns>
-    private Texture2D EditorGetTexture()
+    private Texture2D EditorGetTexture(RenderTexture texture)
     {
-        Texture2D texture2D = new Texture2D(_renderTexture.width, _renderTexture.height, TextureFormat.RGBA32, false);
-
-        // 从当前激活的RenderTexture读取像素数据
-        texture2D.ReadPixels(new Rect(0, 0, _renderTexture.width, _renderTexture.height), 0, 0);
-
-        // 应用更改
+        // 拍摄并转换纹理为Texture2D
+        RenderTexture.active = texture;
+        Texture2D texture2D = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+        texture2D.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
         texture2D.Apply();
+        RenderTexture.active = null;
         return texture2D;
     }
+
 #endif
 }

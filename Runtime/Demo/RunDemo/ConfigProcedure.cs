@@ -41,6 +41,7 @@ namespace XiaoCao
             if (Application.isEditor)
             {
                 GameAllData.GameAllDataInit();
+                GameAllData.commonData.firstSceneName = SceneManager.GetActiveScene().name;
             }
 
             if (DebugSetting.IsMobilePlatform)
@@ -117,7 +118,7 @@ namespace XiaoCao
                 data0.lv = PlayerPrefs.GetInt("playerLv");
             }
 
-            if (DebugSetting.IsSkillEditor &&
+            if (DebugSetting.IsDebug &&
                 ConfigMgr.MainCfg.TryGetValue("Setting", "PlayerStartLevel", out string lvStr))
             {
                 if (!string.IsNullOrEmpty(lvStr))
@@ -228,6 +229,7 @@ namespace XiaoCao
 
         public async UniTask Run()
         {
+            await UniTask.WaitUntil(() => (MapMgr.Inst != null));
             await MapMgr.Inst.LoadLevelObject();
             IsFinish = true;
             Debuger.Log("==== MapProcedure Finish ====");

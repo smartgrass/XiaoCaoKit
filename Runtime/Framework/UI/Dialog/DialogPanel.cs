@@ -10,8 +10,7 @@ namespace XiaoCao.UI
     /// </summary>
     public class DialogPanel : MonoBehaviour
     {
-        [Header("UI Components")]
-        public TMP_Text titleText;
+        [Header("UI Components")] public TMP_Text titleText;
         public TMP_Text contentText;
         public Button confirmButton;
         public Button cancelButton;
@@ -28,6 +27,16 @@ namespace XiaoCao.UI
                 cancelButton.onClick.AddListener(OnCancelClick);
         }
 
+        private void OnEnable()
+        {
+            BattleData.Current.UIEnter = true;
+        }
+        
+        private void OnDisable()
+        {
+            BattleData.Current.UIEnter = false;
+        }
+
         /// <summary>
         /// 显示对话框
         /// </summary>
@@ -39,11 +48,15 @@ namespace XiaoCao.UI
         {
             gameObject.SetActive(true);
 
-            if (titleText != null)
+            if (titleText)
+            {
                 titleText.text = title;
+            }
 
-            if (contentText != null)
+            if (contentText)
+            {
                 contentText.text = content;
+            }
 
             onConfirm = onConfirmCallback;
             onCancel = onCancelCallback;

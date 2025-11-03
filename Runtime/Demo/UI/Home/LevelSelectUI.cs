@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,12 +11,13 @@ namespace XiaoCaoKit
         public Image img;
         public Button btn;
         public TMP_Text text;
-
-        public Sprite[] sprites;
+        public Image imgLock;
+        public Image imgNoPass;
+        
 
         public void Show(int chapter, int index)
         {
-            text.text = $"{chapter}-{index}";
+            text.text = LocalizeKey.GetLevelName(chapter, index);
 
             // 根据关卡状态设置显示
             LevelPassState passState = GetPassState(chapter, index);
@@ -39,12 +41,15 @@ namespace XiaoCaoKit
         public void SetSprite(int index)
         {
             //3种 未解锁0,未通关1,已通过2
-            img.sprite = sprites[index];
+            bool showLock = index == 0;
+            imgLock.enabled = showLock;
+            bool showNoPass = index == 1;
+            imgNoPass.enabled = showNoPass;
         }
 
         private LevelPassState GetPassState(int chapter, int index)
         {
-            return PlayerSaveData.LocalSavaData.GetPassState(chapter, index);
+            return PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapter, index);
         }
     }
 }

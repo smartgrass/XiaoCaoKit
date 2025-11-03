@@ -2,6 +2,7 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
 using System.Linq;
+using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +13,9 @@ namespace XiaoCao
         public Joystick joystick;
 
         public Transform slotParent;
-        [ReadOnly]
-        public List<SkillSlot> slots;
+        [ReadOnly] public List<SkillSlot> slots;
 
+        public SkillSlot roleSkillBtn;
         public SkillSlot rollBtn;
         public Button jumpBtn;
         public Button norAtkBtn;
@@ -24,6 +25,7 @@ namespace XiaoCao
         public PlayerSetting PlayerSetting => PlayerData.playerSetting;
 
         private PlayerAtkTimer _atkTimer;
+
         public PlayerAtkTimer AtkTimer
         {
             get
@@ -32,11 +34,13 @@ namespace XiaoCao
                 {
                     _atkTimer = GameDataCommon.LocalPlayer.component.atkTimers;
                 }
+
                 return _atkTimer;
             }
         }
 
         public PlayerData0 _playerData;
+
         public PlayerData0 PlayerData
         {
             get
@@ -45,12 +49,10 @@ namespace XiaoCao
                 {
                     _playerData = GameDataCommon.LocalPlayer.playerData;
                 }
+
                 return _playerData;
             }
         }
-
-
-
 
         public override void OnGameStart()
         {
@@ -60,15 +62,37 @@ namespace XiaoCao
             rollBtn.slotType = SlotType.Inputs;
             rollBtn.index = InputKey.LeftShift;
 
-            norAtkBtn.onClick.AddListener(() =>
-            {
-                PlayerInput.inputs[InputKey.NorAck] = true;
-            });
-            jumpBtn.onClick.AddListener(() =>
-            {
-                PlayerInput.inputs[InputKey.Space] = true;
-            });
+            norAtkBtn.onClick.AddListener(() => { PlayerInput.inputs[InputKey.NorAck] = true; });
+            jumpBtn.onClick.AddListener(() => { PlayerInput.inputs[InputKey.Space] = true; });
 
+            if (_tempRole == null)
+            {
+                roleSkillBtn.gameObject.SetActive(false);
+            }
+
+            GameEvent.AddEventListener<int>(EGameEvent.AddFriend.Int(), CheckRoleSkillBtn);
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            GameEvent.RemoveEventListener<int>(EGameEvent.AddFriend.Int(), CheckRoleSkillBtn);
+        }
+
+        //当友方生成时触发
+        void CheckRoleSkillBtn(int roleId)
+        {
+            AddRoleSkillBtn(roleId.GetRoleById());
+        }
+
+        private Role _tempRole;
+
+        public void AddRoleSkillBtn(Role role)
+        {
+            roleSkillBtn.gameObject.SetActive(true);
+            _tempRole = role;
+            roleSkillBtn.slotType = SlotType.RoleSkill;
+            roleSkillBtn.LoadSkillSprite();
         }
 
         private void Update()
@@ -77,6 +101,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             CheckBtnInput();
 
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
@@ -94,7 +119,12 @@ namespace XiaoCao
                 var solt = slots[i];
                 solt.CheckSlotUI(PlayerData.GetBarSkillId(i));
             }
+
             rollBtn.CheckSlotUI(PlayerSetting.rollSkillId);
+            if (roleSkillBtn.isActiveAndEnabled)
+            {
+                roleSkillBtn.CheckFriendSkillUI();
+            }
         }
 
 
@@ -116,5 +146,3 @@ namespace XiaoCao
         }
     }
 }
-
-

@@ -53,6 +53,14 @@ public class XCTime
 
         action();
     }
+    
+    public static async UniTask DelayRunMono(float time, Action action,Component mono)
+    {
+        var token =  mono.GetCancellationTokenOnDestroy();
+        await UniTask.Delay(TimeSpan.FromSeconds(time), cancellationToken: token);
+
+        action();
+    }
 
     //UniTask取消方法2
     void TestCancel()

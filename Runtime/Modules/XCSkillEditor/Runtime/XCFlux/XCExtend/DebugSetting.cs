@@ -85,13 +85,7 @@ namespace XiaoCao
 
             return playMode;
         }
-
-        //Demo专用配置
-        public static bool IsSkillEditor
-        {
-            get => SceneManager.GetActiveScene().name.StartsWith("SkillEditor");
-        }
-
+        
         public static GameVersionType GetGameVersionType => GameSetting.VersionType;
 
         public static int PauseFrame;

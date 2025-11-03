@@ -37,6 +37,7 @@ public class EnemyShowAction : BaseShowAction
         {
             case ShowActKeys.FollowPlayer:
                 enemy0.AiControl.FollowPlayer();
+                isOverrideRunAct = true;
                 break;
             case ShowActKeys.SetTargetMove:
                 isOverrideRunAct = true;

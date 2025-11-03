@@ -58,6 +58,10 @@ public sealed class Layers
     
     public const int WALL_MASK = 4096;
     
+    public const int WALL_BLOCK = 13;
+    
+    public const int WALL_BLOCK_MASK = 8192;
+    
     public const int WATER = 4;
     
     public const int WATER_MASK = 16;

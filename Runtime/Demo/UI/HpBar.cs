@@ -42,7 +42,7 @@ namespace XiaoCao
         public void SetBarColors(bool isBlue)
         {
             fillImage.color = White;
-            ColorSettingSo settingSo = UIPrefabMgr.Inst.hpBarColorSettingSo;
+            ColorSettingSo settingSo = UIPrefabSo.Inst.hpBarColorSettingSo;
             var colorArray = settingSo.values;
             int startIndex = 0;
 

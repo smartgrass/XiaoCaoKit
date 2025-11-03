@@ -9,7 +9,6 @@ using Object = UnityEngine.Object;
 
 namespace XiaoCao
 {
-
     /// <summary>
     /// 小草做的编辑器窗口  特性只用于编辑器
     /// </summary>
@@ -19,11 +18,22 @@ namespace XiaoCao
 
         private Editor editor = null;
 
-        public virtual Object DrawTarget { get => this; }
+        public virtual Object DrawTarget => this;
+
+        public virtual object DrawDebugTarget => this;
+
+        public virtual bool IsDebugView => false;
+
+        private Dictionary<int, List<MethodInfo>> _methodDic;
+
 
         public virtual void OnEnable()
         {
             editor = Editor.CreateEditor(DrawTarget);
+            if (IsDebugView)
+            {
+                _methodDic = NaughtyInspector.GetMethodInfoDic(DrawTarget, out var sortList);
+            }
         }
 
         public static T OpenWindow<T>(string title = "") where T : XiaoCaoWindow
@@ -32,6 +42,7 @@ namespace XiaoCao
             {
                 title = typeof(T).Name;
             }
+
             T win = GetWindow<T>(title);
             win.Show();
             return win;
@@ -44,13 +55,25 @@ namespace XiaoCao
             if (EditorApplication.isCompiling)
                 return;
 
-            m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition, GUI.skin.horizontalScrollbar, GUI.skin.verticalScrollbar);
+            m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition, GUI.skin.horizontalScrollbar,
+                GUI.skin.verticalScrollbar);
 
             GUIUtility.GetControlID(645789, FocusType.Passive);
 
             DrawHead();
 
-            editor.OnInspectorGUI();
+            if (IsDebugView)
+            {
+                ComponentViewHelper.Draw(DrawDebugTarget);
+                foreach (var kv in _methodDic)
+                {
+                    NaughtyEditorGUI.ButtonList(DrawTarget, kv.Value);
+                }
+            }
+            else
+            {
+                editor.OnInspectorGUI();
+            }
 
             EditorGUILayout.EndScrollView();
 
@@ -59,9 +82,6 @@ namespace XiaoCao
 
         public virtual void DrawHead()
         {
-
         }
-
     }
-
 }

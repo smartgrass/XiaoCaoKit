@@ -1,15 +1,17 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
+using XiaoCao.UI;
 
 
 public class SettingPanel : TabPanel
 {
     public Button reloadBtn;
+
+    public DialogPanel dialogPanel;
     public override UIPanelType panelType => UIPanelType.SettingPanel;
 
     public override void Init()
@@ -18,6 +20,7 @@ public class SettingPanel : TabPanel
         {
             return;
         }
+
         base.Init();
 
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
@@ -43,7 +46,8 @@ public class SettingPanel : TabPanel
 
     private void OnReload()
     {
-        GameMgr.Inst.ReloadScene();
+        dialogPanel.Show("", LocalizeKey.IsExitLevel.ToLocalizeStr(),
+            GameMgr.Inst.ReloadScene, GameMgr.Inst.BackHome);
     }
 
     public override void Hide()
@@ -58,5 +62,3 @@ public class SettingPanel : TabPanel
         curPanel?.Show();
     }
 }
-
-

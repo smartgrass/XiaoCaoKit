@@ -21,6 +21,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);EnemyLvList = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); EnemyLvList.Add(_e0);}}
         ImgName = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Reward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); Reward.Add(_e0);}}
+        RoleId = _buf.ReadInt();
     }
 
     public static LevelSetting DeserializeLevelSetting(ByteBuf _buf)
@@ -42,15 +43,20 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// </summary>
     public readonly string ImgName;
     /// <summary>
-    /// 奖励
+    /// 奖励:HolyRelic,&quot;name&quot;,1|HolyRelic,&quot;name&quot;,1
     /// </summary>
     public readonly System.Collections.Generic.List<XiaoCao.Item> Reward;
+    /// <summary>
+    /// #default=-1
+    /// </summary>
+    public readonly int RoleId;
    
     public const int __ID__ = -865590708;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -66,6 +72,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         + "enemyLvList:" + Luban.StringUtil.CollectionToString(EnemyLvList) + ","
         + "imgName:" + ImgName + ","
         + "reward:" + Luban.StringUtil.CollectionToString(Reward) + ","
+        + "roleId:" + RoleId + ","
         + "}";
     }
 }

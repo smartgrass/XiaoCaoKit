@@ -28,9 +28,24 @@ namespace XiaoCao
         public static string BuildTime = "BuildTime";
         public static string SwapCameraSpeed = "SwapCameraSpeed";
         public static string AnglePower = "AnglePower";
-        public static string Tip = "Tip";
         public static string IsExitLevel = "IsExitLevel";
+        public static string LevelFinish = "LevelFinish";
+        public static string LevelSuccess = "LevelSuccess";
+        public static string LevelFail = "LevelFail";
+        public static string LevelTimeCount = "LevelTimeCount";
+        public static string KillCount = "KillCount";
 
+        public static string GetLevelName(int chapter,int level)
+        {
+            string key = $"level_{chapter}_{level}";
+            if (LocalizeMgr.Inst.HasKey(key))
+            {
+                key.ToLocalizeStr();
+            }
+            string name = $"level_{chapter}".ToLocalizeStr();
+            return $"{name}-{level}";
+        }
+        
         public static string GetSkillNameKey(int skillId)
         {
             return $"skill_{skillId}";

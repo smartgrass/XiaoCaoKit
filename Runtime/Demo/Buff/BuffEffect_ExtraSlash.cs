@@ -1,4 +1,5 @@
-﻿using TEngine;
+﻿using Cysharp.Threading.Tasks;
+using TEngine;
 using UnityEngine;
 
 namespace XiaoCao.Buff
@@ -25,6 +26,7 @@ namespace XiaoCao.Buff
             player = TargetId.GetPlayerById();
             triggerCount = (int)buff.addInfo[0];
         }
+
         public override void RemoveEffect()
         {
             GameEvent.RemoveEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), OnPlaySkill);
@@ -49,12 +51,19 @@ namespace XiaoCao.Buff
             GameObject b = PoolMgr.Inst.Get(BulletPath, lifeTime);
             b.transform.position = data.Tran.position;
             b.transform.rotation = data.Tran.rotation;
-            b.GetComponent<Rigidbody>().linearVelocity = data.Tran.forward * Speed;
+            Rigidbody rb = b.GetComponent<Rigidbody>();
+            rb.linearVelocity = (data.Tran.forward) * Speed;
+            rb.linearVelocity += Vector3.down;
+            // XCTime.DelayRunMono(1.5f, () => { Down(rb); }, rb).Forget();
             var info = AtkInfoHelper.CreatInfo(player, Buff.ToString());
             var Atker = b.GetComponent<Atker>();
             Atker.InitAtkInfo(info);
             Atker.AddTriggerByCollider();
         }
-    }
 
+        public void Down(Rigidbody rb)
+        {
+            rb.linearVelocity += Vector3.down;
+        }
+    }
 }

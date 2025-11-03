@@ -25,6 +25,12 @@ public static class SpriteResHelper
             string path = $"Assets/_Res/Sprite/ItemIcon/{item.id}.png";
             ResMgr.LoadAseetOrDefault<Sprite>(path, DefaultItemSpritePath);
         }
+
         return null;
+    }
+
+    public static Sprite LoadRoleIcon(string roleKey)
+    {
+        return ResMgr.LoadAseet<Sprite>(XCPathConfig.GetRoleTexturePath(roleKey));
     }
 }

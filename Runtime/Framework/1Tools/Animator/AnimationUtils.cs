@@ -1,6 +1,8 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor.Animations;
 using System.Linq;
+#endif
 
 public static class AnimationUtils
 {
@@ -10,6 +12,7 @@ public static class AnimationUtils
     /// <param name="animator">目标Animator组件</param>
     /// <param name="clip">要添加的动画片段</param>
     /// <param name="layerIndex">动画层索引，默认为0</param>
+#if UNITY_EDITOR
     public static void AddAndPlayClip(Animator animator, AnimationClip clip, int layerIndex = 0)
     {
         // 验证参数有效性
@@ -62,10 +65,12 @@ public static class AnimationUtils
         // 播放新添加的动画
         animator.Play(clip.name, layerIndex);
     }
+#endif
 
     /// <summary>
     /// 检查动画片段是否已存在于控制器中, 根据名字判断
     /// </summary>
+#if UNITY_EDITOR
     private static bool IsClipExistsInControllerPlay(AnimatorController controller, AnimationClip clip)
     {
         // 检查所有层中的所有状态
@@ -105,4 +110,5 @@ public static class AnimationUtils
 
         return false;
     }
+#endif
 }

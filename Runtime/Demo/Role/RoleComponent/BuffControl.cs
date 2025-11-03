@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using System.Collections.Generic;
+// 移除了错误的引用，该命名空间不存在于 Unity.VisualScripting 中
 using UnityEngine;
 using XiaoCao.Buff;
 

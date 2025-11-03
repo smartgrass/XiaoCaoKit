@@ -1,5 +1,6 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
+using GG.Extensions;
 using UnityEngine;
 using Plane = EzySlice.Plane;
 #if UNITY_EDITOR
@@ -12,8 +13,6 @@ namespace XiaoCao
     public class Test_SliceObject : MonoBehaviour
     {
 #if UNITY_EDITOR
-
-        public GameObject game;
 
         public Material crossSectionMaterial;
 
@@ -28,20 +27,21 @@ namespace XiaoCao
         private Vector3 tempCenter;
         private float tempTotalVolume = 1;
 
-        [Button("«–∏Ó")]
+        [Button("ÂàáÂâ≤")]
         void DoSlice()
         {
-            //ªÒ»°ÀÊª˙«–∏Ó√Ê
-            Plane[] planes = GetRandomPlanes(game);
+            transform.DestroyChildren();
+            //Ëé∑ÂèñÈöèÊú∫ÂàáÂâ≤Èù¢
+            Plane[] planes = GetRandomPlanes(gameObject);
             List<GameObject> list = new List<GameObject>();
 
-            if (game.TryGetComponent<Rigidbody>(out Rigidbody rb))
+            if (gameObject.TryGetComponent<Rigidbody>(out Rigidbody rb))
             {
                 tempMass = rb.mass;
             }
 
-            list.Add(game);
-            Material mat = crossSectionMaterial ? crossSectionMaterial : GetMat(game);
+            list.Add(gameObject);
+            Material mat = crossSectionMaterial ? crossSectionMaterial : GetMat(gameObject);
             for (int i = 0; i < cutCount; i++)
             {
                 var retList = DoSliceObjects(list, planes[i], mat);
@@ -60,6 +60,7 @@ namespace XiaoCao
                         }
                     });
                 }
+
                 list.Clear();
                 list.AddRange(retList);
             }
@@ -67,7 +68,7 @@ namespace XiaoCao
             list.ForEach(o =>
             {
                 //Vector3 pos = o.transform.localPosition;
-                o.transform.SetParent(game.transform);
+                o.transform.SetParent(gameObject.transform);
                 o.transform.localPosition = Vector3.zero;
                 var rb = o.GetOrAddComponent<Rigidbody>();
                 var mesh = o.GetComponent<MeshFilter>().sharedMesh;
@@ -79,10 +80,9 @@ namespace XiaoCao
             tempList = list;
         }
 
-        [Button("«–∏Ó & ±£¥Êmesh")]
-        void SavaAllMesh()
+        [Button("‰øùÂ≠òmesh")]
+        void SavaMesh()
         {
-            DoSlice();
             int i = 1;
             foreach (var item in tempList)
             {
@@ -92,7 +92,15 @@ namespace XiaoCao
             }
         }
 
-        //ªÒ»°ÃÂª˝
+        [Button("ÂàáÂâ≤ & ‰øùÂ≠òmesh")]
+        void SavaAllMesh()
+        {
+            DoSlice();
+            SavaMesh();
+        }
+        
+        
+        //Ëé∑Âèñ‰ΩìÁßØ
         private float GetVolume(Mesh mesh)
         {
             Vector3 size = mesh.bounds.size;
@@ -155,6 +163,7 @@ namespace XiaoCao
                     list.Add(obj);
                 }
             }
+
             return list;
         }
 
@@ -175,11 +184,12 @@ namespace XiaoCao
                     float x = bounds.size.x * Random.Range(-0.4f, 0.4f);
                     center += new Vector3(x, y);
                 }
+
                 planes[i] = new Plane(center, Random.onUnitSphere);
             }
+
             return planes;
         }
-
 
 
         [SerializeField] private float _triggerForce = 0.5f;
@@ -187,6 +197,7 @@ namespace XiaoCao
         [SerializeField] private GameObject _particles;
 
         [SerializeField] private float _testExplosionRadius = 5;
+
         private void DoExploded(Vector3 centerPos)
         {
             var surroundingObjects = Physics.OverlapSphere(centerPos, _testExplosionRadius);
@@ -200,7 +211,6 @@ namespace XiaoCao
             }
             //Instantiate(_particles, transform.position, Quaternion.identity);
         }
-
 
 
         public void SavaMesh(GameObject game)

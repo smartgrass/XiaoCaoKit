@@ -6,17 +6,17 @@ using UnityEngine;
 
 namespace XiaoCao
 {
-    //控制敌人生成, 地图生成, 敌人奖励等等
-    public class LevelControl : GameStartMono, IMapMsgReciver
+    //TODO没啥用,等着把逻辑抽离mono
+    public class LevelControl : GameStartMono, IMapMsgReceiver
     {
         public Transform startPoint;
 
+        public Transform endPoint;
         //[HideInInspector]
         //public RewardPoolSo enemyKillRewardSo;
 
+        //TODO 全都走luban配置得了
         public string[] rewardPools = { "0", "1", "2" };
-
-        public int rewardLevel;
 
         public LevelData LevelData => BattleData.Current.levelData;
 
@@ -26,31 +26,26 @@ namespace XiaoCao
 
             GameMgr.Inst.levelControl = this;
 
-            LevelData.RewardLevel = rewardLevel;
-
-            SetEnmeys();
+            SetEnemy();
 
             //enemyKillRewardSo = ConfigMgr.enemyKillRewardSo;
 
             GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
         }
+
         public override void RemoveListener()
         {
             base.RemoveListener();
             if (isGameStarted)
             {
                 GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-                GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+                GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
             }
         }
-        private void SetEnmeys()
-        {
-            if (string.IsNullOrEmpty(LevelData.LevelBranch))
-            {
-                return;
-            }
 
+        private void SetEnemy()
+        {
             Transform actionTf = transform.Find("LevelAction");
             if (!actionTf)
             {
@@ -77,6 +72,7 @@ namespace XiaoCao
         void OnEnemyDeadEvent(int id)
         {
             Debug.Log($"--- {id}");
+            LevelData.Current.killCount++;
             if (EntityMgr.Inst.FindEntity<Enemy0>(id, out Enemy0 enemy))
             {
                 var deadInfo = enemy.enemyData.deadInfo;
@@ -116,9 +112,30 @@ namespace XiaoCao
             {
                 return startPoint.position;
             }
-
         }
 
+        public Vector3 GetEndPos()
+        {
+            if (!endPoint)
+            {
+                endPoint = transform.Find("endPoint");
+                if (endPoint)
+                {
+                    return endPoint.position;
+                }
+
+                if (EnemyGroupComponent.Current)
+                {
+                    return EnemyGroupComponent.Current.transform.position;
+                }
+
+                return GameDataCommon.LocalPlayer.transform.position;
+            }
+            else
+            {
+                return endPoint.position;
+            }
+        }
 
 
         [Button("引爆所有机关")]
@@ -129,14 +146,14 @@ namespace XiaoCao
             {
                 if (!group.isDead)
                 {
-                    group.TestDead();
+                    group.ToDead();
                 }
             }
         }
 
-        public void OnReciveMsg(string reciveMsg)
+        public void OnReceiveMsg(string receiveMsg)
         {
-            if (reciveMsg == "BreakAll")
+            if (receiveMsg == "BreakAll")
             {
                 TestTriggerAllLevelGroup();
             }

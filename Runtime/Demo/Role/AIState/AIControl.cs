@@ -1,7 +1,8 @@
-﻿using GG.Extensions;
+using GG.Extensions;
 using System;
+using TEngine;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
+// 移除了错误的引用，不应该在运行时代码中引用 UnityEditor 命名空间
 
 namespace XiaoCao
 {
@@ -10,7 +11,10 @@ namespace XiaoCao
     /// </summary>
     public partial class AIControl : RoleControl<Role>, IDisposable
     {
-        public AIControl(Role _owner) : base(_owner) { }
+        public AIControl(Role _owner) : base(_owner)
+        {
+        }
+
         /*
          AI配置的矛盾点:
         一个角色可以有多种行为
@@ -27,9 +31,12 @@ namespace XiaoCao
 
         //每隔1s检查 敌人和cd
         private float searchTargetTime = 1; //无目标 每隔1s检查
-        private float searchTime_hasTarget = 5;//有目标 每隔5s检查
+        private float searchTime_hasTarget = 5; //有目标 每隔5s检查
         private float searchTimer = 0; //查找
 
+        //新增距离检测定时器
+        private float checkDistanceTimer = 0;
+        private float checkDistanceInterval = 0.5f; //每隔0.5s检测一次距离
 
         public Transform transform => owner.transform;
         public RoleMovement Movement => owner.data_R.movement;
@@ -38,6 +45,9 @@ namespace XiaoCao
 
         //处于表演状态
         public bool IsOnShowAction { get; set; }
+        private FriendState _friendState;
+        private bool IsFriendRole => _friendState != FriendState.NoFriend;
+        private Role _friend;
 
         public Role targetRole;
         public float tempActDis = 1.5f;
@@ -45,6 +55,12 @@ namespace XiaoCao
         public Vector3 idlePos;
         private bool HasAddAction;
 
+        private enum FriendState
+        {
+            NoFriend,
+            Idle,
+            Follow,
+        }
 
 
         public AIControl Init(string aiId)
@@ -57,6 +73,7 @@ namespace XiaoCao
                 configPath = XCPathConfig.GetAIPath("0").LogStr("--");
                 so = ResMgr.LoadAseet(configPath) as MainDataFSM;
             }
+
             mainDataFSM = ScriptableObject.Instantiate(so);
             mainDataFSM.name = so.name;
             mainDataFSM.InitReset(this);
@@ -68,6 +85,7 @@ namespace XiaoCao
                 HasAddAction = true;
                 owner.OnDamageAct += OnDamageAct;
             }
+
             return this;
         }
 
@@ -78,6 +96,7 @@ namespace XiaoCao
                 owner.OnDamageAct -= OnDamageAct;
             }
         }
+
         private void OnDamageAct(AtkInfo info, bool arg2)
         {
             if (!owner.IsAiOn && owner.HasTag(RoleTagCommon.EnableAiIfHurt))
@@ -100,12 +119,19 @@ namespace XiaoCao
             if (!owner.IsAiOn) return;
             if (!IsAIFree) return;
 
-            //屏蔽原本ai逻辑
-            if (IsOnShowAction)
+
+            if (_friendState != FriendState.NoFriend)
             {
-                ForceFollowTagerUpdate();
+                CheckFriendMove();
+            }
+
+            //屏蔽原本ai逻辑
+            if (IsOnShowAction || _friendState == FriendState.Follow)
+            {
+                ForceFollowTargetUpdate();
                 return;
             }
+
 
             CheckTarget();
 
@@ -125,29 +151,6 @@ namespace XiaoCao
             targetRole = GameAllData.commonData.player0;
         }
 
-        void ForceFollowTagerUpdate()
-        {
-            if (TargetPosTypeValue == TargetPosType.Stop)
-            {
-                MoveStop();
-                return;
-            }
-
-            Vector3 targetPos = GetTargetPos();
-            CheckDistancePoint(targetPos);
-
-            if (tempTargetDis >= TargetStopDistance)
-            {
-                //移速处理
-                owner.AIMoveTo(targetPos, MoveSpeedShowAction, MoveSpeedShowAction);
-            }
-            else
-            {
-
-                //到达则停止
-                TargetPosTypeValue = TargetPosType.Stop;
-            }
-        }
         public enum TargetPosType
         {
             Default,
@@ -167,6 +170,11 @@ namespace XiaoCao
 
         public Vector3 GetTargetPos()
         {
+            if (_friendState == FriendState.Follow)
+            {
+                return _friend.transform.position + _friend.transform.forward;
+            }
+
             switch (TargetPosTypeValue)
             {
                 case TargetPosType.Default:
@@ -174,6 +182,7 @@ namespace XiaoCao
                     {
                         return targetRole.transform.position;
                     }
+
                     break;
                 case TargetPosType.Point:
                     return TargetPos;
@@ -182,10 +191,12 @@ namespace XiaoCao
                     {
                         return TargetTf.position;
                     }
+
                     break;
                 default:
                     return TargetPos;
             }
+
             return TargetPos;
         }
 
@@ -208,7 +219,14 @@ namespace XiaoCao
                 //无目标 每隔1s检查
                 if (searchTimer > searchTargetTime)
                 {
-                    OnSearchTarget(null);
+                    if (IsFriendRole)
+                    {
+                        OnSearchTarget(_friend.data_R.lastEnemy);
+                    }
+                    else
+                    {
+                        OnSearchTarget(null);
+                    }
                 }
             }
 
@@ -227,7 +245,8 @@ namespace XiaoCao
 
             float seeAngle = mainDataFSM.setting.seeAngle;
 
-            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, seeR, seeAngle, out float maxS, owner.team);
+            var findRole =
+                RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, seeR, seeAngle, out float maxS, owner.team);
 
             if (findRole == null)
             {
@@ -242,17 +261,19 @@ namespace XiaoCao
 
 
         #region Move
+
         public void Move(float speedRate = 1)
         {
-            Vector3 dir = targetRole == null ? transform.forward :
-                  (targetRole.transform.position - transform.position).normalized;
+            Vector3 dir = targetRole == null
+                ? transform.forward
+                : (targetRole.transform.position - transform.position).normalized;
 
             owner.AIMoveVector(dir, speedRate);
         }
 
         public void MoveStop()
         {
-            owner.AIMoveVector(Vector3.zero,0);
+            owner.AIMoveVector(Vector3.zero, 0);
         }
 
         public void Lock(bool isMoveBack = false)
@@ -274,7 +295,8 @@ namespace XiaoCao
             if (isMoveBack)
             {
                 float deltaAngle = Vector3.Angle(dir, transform.forward);
-                float sin = -1 * Mathf.Sin(deltaAngle * Mathf.Deg2Rad); ;
+                float sin = -1 * Mathf.Sin(deltaAngle * Mathf.Deg2Rad);
+                ;
                 owner.AIMoveVector(dir * sin, 1, false);
             }
             else
@@ -292,6 +314,7 @@ namespace XiaoCao
         {
             tempTargetDis = Vector3.Distance(transform.position, pos);
         }
+
         private float GetDistance(Transform tf)
         {
             return Vector3.Distance(transform.position, tf.position);
@@ -299,5 +322,94 @@ namespace XiaoCao
 
         #endregion
 
+        #region Distance Check And Move Logic
+
+        private void ForceFollowTargetUpdate()
+        {
+            bool isMove = TargetPosTypeValue != TargetPosType.Stop || _friendState == FriendState.Follow;
+            if (isMove)
+            {
+                Vector3 targetPos = GetTargetPos();
+                CheckDistancePoint(targetPos);
+
+                if (tempTargetDis >= TargetStopDistance)
+                {
+                    //移速处理
+                    owner.AIMoveTo(targetPos, MoveSpeedShowAction, MoveSpeedShowAction);
+                }
+                else
+                {
+                    //到达则停止
+                    TargetPosTypeValue = TargetPosType.Stop;
+                    if (_friendState == FriendState.Follow)
+                    {
+                        _friendState = FriendState.Idle;
+                    }
+                }
+            }
+            else
+            {
+                MoveStop();
+            }
+        }
+
+
+        private float nearFriendDistance = 6;
+
+        /// <summary>
+        /// 每隔0.5s检测一次与玩家的距离,
+        /// 当周围没有敌人时,则向玩家移动
+        /// 如果距离大于10,则移动到玩家附近,
+        /// 如果距离大于20,则传送到玩家
+        /// </summary>
+        private void CheckFriendMove()
+        {
+            checkDistanceTimer += Time.deltaTime;
+            if (checkDistanceTimer >= checkDistanceInterval)
+            {
+                checkDistanceTimer = 0;
+
+                float distanceToPlayer = Vector3.Distance(transform.position, _friend.transform.position);
+
+                //  周围有敌人则不执行
+                if (targetRole != null)
+                {
+                    _friendState = FriendState.Idle;
+                    return;
+                }
+
+                idlePos = _friend.transform.position + _friend.transform.forward;
+                // 距离大于20，则传送到玩家身边
+                if (distanceToPlayer > 20f)
+                {
+                    // 传送到玩家身边（稍微偏移一点避免完全重合）
+                    Vector3 teleportPosition = _friend.transform.position - _friend.transform.forward * 2f;
+                    owner.Movement.MoveToImmediate(teleportPosition);
+                }
+                // 距离大于nearFriendDistance，则移动到玩家附近
+                else if (distanceToPlayer > nearFriendDistance)
+                {
+                    // 继续执行原有的寻路和移动逻辑
+                    _friendState = FriendState.Follow;
+                    TargetStopDistance = 2f;
+                }
+
+                if (_friend.data_R.lastEnemy != null)
+                {
+                    targetRole = _friend.data_R.lastEnemy;
+                }
+            }
+        }
+
+        #endregion
+
+        public void SetFriend(Player0 localPlayer)
+        {
+            _friend = localPlayer;
+            _friendState = FriendState.Follow;
+            owner.RoleIdentityType = RoleIdentityType.PlayerFriend;
+            localPlayer.playerData.AddFriend(owner);
+            GameEvent.Send<int>(EGameEvent.AddFriend.Int(), owner.id);
+        }
     }
 }

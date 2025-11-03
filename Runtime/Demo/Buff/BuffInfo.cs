@@ -1,8 +1,8 @@
-﻿using cfg;
+using cfg;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+// 移除了错误的引用，该命名空间不存在于 Unity.VisualScripting 中
 using UnityEngine;
 using static Cinemachine.DocumentationSortingAttribute;
 

@@ -3,10 +3,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
+using XiaoCao.UI;
 
 //单向传送门
 public class ItemPortal : MonoBehaviour, IMapMsgSender
 {
+    public PortalType type;
+
     public float stayTime = 1.2f;
 
     public Transform targetPoint;
@@ -15,12 +18,11 @@ public class ItemPortal : MonoBehaviour, IMapMsgSender
 
     public UnityEvent exitEvent;
 
-    public UnityEvent triggerSucceeEvent;
+    public UnityEvent triggerSuccessEvent;
 
     private Coroutine coroutine;
 
     private bool isRunning;
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(Tags.PLAYER))
@@ -32,6 +34,7 @@ public class ItemPortal : MonoBehaviour, IMapMsgSender
                 {
                     StopCoroutine(coroutine);
                 }
+
                 //TODO 表现
                 triggerEvent?.Invoke();
                 coroutine = StartCoroutine(IEDelayTrigger(idRole));
@@ -45,6 +48,8 @@ public class ItemPortal : MonoBehaviour, IMapMsgSender
         exitEvent?.Invoke();
     }
 
+
+
     IEnumerator IEDelayTrigger(IdRole idRole)
     {
         isRunning = true;
@@ -53,10 +58,24 @@ public class ItemPortal : MonoBehaviour, IMapMsgSender
         {
             yield break;
         }
-        var player = idRole.GetEntity() as Player0;
-        player.Movement.MoveToImmediate(targetPoint.position);
-        isRunning = false;
-        triggerSucceeEvent?.Invoke();
-    }
 
+        if (type == PortalType.Move)
+        {
+            var player = idRole.GetEntity() as Player0;
+            player.Movement.MoveToImmediate(targetPoint.position);
+            triggerSuccessEvent?.Invoke();
+        }
+        else if (type == PortalType.LevelEnd)
+        {
+            GameMgr.Inst.ShowLevelResultUI();
+            triggerSuccessEvent?.Invoke();
+        }
+    }
+}
+
+
+public enum PortalType
+{
+    Move,
+    LevelEnd
 }

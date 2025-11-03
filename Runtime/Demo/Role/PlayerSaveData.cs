@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace XiaoCao
 {
+    [Serializable]
     public class PlayerSaveData
     {
         public static PlayerSaveData LocalSavaData => GameAllData.playerSaveData;
@@ -27,13 +28,15 @@ namespace XiaoCao
         //ItemUI
         public Inventory inventory = new Inventory();
 
+        public int coin;
+        
         //持有物
         public List<Item> holdItems = new List<Item>();
 
         public List<Item> equippedHolyRelics = new List<Item>();
 
         // 如果没有完成任何剧情，则认为是新玩家
-        public bool IsNewPlayer => storyProgress.completedStoryIds.Count == 0;
+        public bool IsNewPlayer => !levelPassData.chapterPassDic.ContainsKey(0);
 
         //反序列化读取的数据, 可能会出现空的现象
         internal void CheckNull()
@@ -98,40 +101,54 @@ namespace XiaoCao
             return dict;
         }
 
-        public static void Sava()
+        public static void SavaData()
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);
-        }
-
-        public LevelPassState GetPassState(int chapter, int index)
-        {
-            //判断章节是否解锁
-            bool isChapterUnlock = chapter <= levelPassData.maxChapter;
-            bool isLevelPass = index <= levelPassData.maxLevel;
-            if (!isChapterUnlock)
-            {
-                return LevelPassState.Lock;
-            }
-            
-            if (isLevelPass)
-            {
-                return LevelPassState.Pass;
-            }
-
-            if (index == levelPassData.maxLevel + 1)
-            {
-                return LevelPassState.Unlock;
-            }
-
-            return LevelPassState.Lock;
         }
     }
 
     [Serializable]
     public class LevelPassData
     {
-        public int maxChapter;
-        public int maxLevel;
+        //记录章节通过状态 maxChapter,maxIndex
+        [NaughtyAttributes.ShowNonSerializedField]
+        public Dictionary<int, int> chapterPassDic = new Dictionary<int, int>();
+
+        public LevelPassState GetPassState(int chapter, int index)
+        {
+            //判断章节是否解锁
+            if (chapterPassDic.TryGetValue(chapter, out int maxIndex))
+            {
+                if (index <= maxIndex)
+                {
+                    return LevelPassState.Pass;
+                }
+                //后一关解锁
+                else if (index - 1 == maxIndex)
+                {
+                    return LevelPassState.Unlock;
+                }
+            }
+            else if (chapter == 0 && index == 0)
+            {
+                // 默认第一章第一节是解锁的
+                return LevelPassState.Unlock;
+            }
+
+            return LevelPassState.Lock;
+        }
+
+        public void SetPassState(int chapter, int index)
+        {
+            if (!chapterPassDic.ContainsKey(chapter))
+            {
+                chapterPassDic[chapter] = index;
+            }
+            else
+            {
+                chapterPassDic[chapter] = Mathf.Max(chapterPassDic[chapter], index);
+            }
+        }
     }
 
     public enum LevelPassState

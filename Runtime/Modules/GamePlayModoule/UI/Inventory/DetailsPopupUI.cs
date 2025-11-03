@@ -30,12 +30,12 @@ namespace XiaoCao
 
         public static void ClosePopup(GameObject gameObject)
         {
-            UIPrefabMgr.Inst.PopupUIPool.Release(gameObject);
+            UIPrefabSo.Inst.PopupUIPool.Release(gameObject);
         }
 
         public static DetailsPopupUI GetPop()
         {
-            return UIPrefabMgr.Inst.PopupUIPool.Get().GetComponent<DetailsPopupUI>();
+            return UIPrefabSo.Inst.PopupUIPool.Get().GetComponent<DetailsPopupUI>();
         }
     }
 }

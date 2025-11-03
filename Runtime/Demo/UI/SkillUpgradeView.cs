@@ -31,7 +31,7 @@ namespace XiaoCao
                 return;
             }
             isInit = true;
-            itemCellPool = new AssetPool(UIPrefabMgr.Inst.itemCellPrefab);
+            itemCellPool = new AssetPool(UIPrefabSo.Inst.itemCellPrefab);
             sureBtn.onClick.AddListener(OnUpgrade);
         }
 
@@ -57,7 +57,7 @@ namespace XiaoCao
                     inventory.ConsumeItem(item.Key, item.num);
                 }
                 GameAllData.playerSaveData.AddSkillLevel(skillId);
-                PlayerSaveData.Sava();
+                PlayerSaveData.SavaData();
                 SkillPanel.UpdateUI();
             }
             else
@@ -78,7 +78,7 @@ namespace XiaoCao
 			{
 				var cellGo = itemCellPool.Get();
 				ItemCell cell = cellGo.GetComponent<ItemCell>();
-				cell.SetItem(item,true);
+				cell.SetItem(item, UIItemTextType.NeedNum);
             }
 		}
 

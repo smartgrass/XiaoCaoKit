@@ -15,16 +15,17 @@ namespace XiaoCaoKit
         public RectTransform rootRt;
         public Vector2 moveX;
 
-        
+
         public void Awake()
         {
             hideBtn.onClick.AddListener(Hide);
         }
+
         public void Show()
         {
             //获取select Level
-            LevelInfo levelInfo = MapNames.GetLevelInfoByName(GameDataCommon.Current.selectLevel);
-            titleText.text = $"{levelInfo.GetIndexStr()}\n{GameDataCommon.Current.selectLevel.ToLocalizeStr()}";
+            LevelInfo levelInfo = MapNames.GetLevelInfoByName(GameDataCommon.Current.uiSelectLevel);
+            titleText.text = levelInfo.GetLevelName();
             canvasGroup.alpha = 1;
             canvasGroup.blocksRaycasts = true;
             rootRt.DOUIMoveX(moveX.x, 0.2f);

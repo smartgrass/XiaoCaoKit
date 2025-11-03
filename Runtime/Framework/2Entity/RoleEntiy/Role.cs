@@ -1,5 +1,4 @@
-﻿
-using cfg;
+﻿using cfg;
 using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,14 @@ namespace XiaoCao
 
         public abstract RoleType RoleType { get; }
 
-        public bool IsPlayer { get => RoleType == RoleType.Player; }
+        public bool IsPlayer
+        {
+            get => RoleType == RoleType.Player;
+        }
+
+        public RoleIdentityType RoleIdentityType { get; set; }
+
+        public bool IsEnemyIdentity => RoleIdentityType == RoleIdentityType.Enemy;
 
         //roleData
         public RoleData data_R;
@@ -35,14 +41,27 @@ namespace XiaoCao
 
         public Action<AtkInfo> AtkDamageAct;
 
-        public int Level { get => PlayerAttr.lv; }
-        public override int Hp { get => (int)Math.Round(PlayerAttr.hp); set => PlayerAttr.hp = value; }
-        public override float MaxHp { get => PlayerAttr.MapHp; }
+        public int Level
+        {
+            get => PlayerAttr.lv;
+        }
+
+        public override int Hp
+        {
+            get => (int)Math.Round(PlayerAttr.hp);
+            set => PlayerAttr.hp = value;
+        }
+
+        public override float MaxHp
+        {
+            get => PlayerAttr.MaxHp;
+        }
+        
+        
 
         public float ShowArmorPercentage => data_R.breakData.ShowPercentage;
 
-        [ShowNativeProperty]
-        public override bool IsDie => data_R.bodyState == EBodyState.Dead;
+        [ShowNativeProperty] public override bool IsDie => data_R.bodyState == EBodyState.Dead;
         public bool IsFree => data_R.IsStateFree;
 
         public bool IsHiding = false; //隐身
@@ -68,6 +87,7 @@ namespace XiaoCao
         public Action<AtkInfo, bool> OnDamageAct;
 
         #region Get
+
         internal Animator Anim => idRole.animator;
         public bool isBodyCreated => body != null;
 
@@ -139,6 +159,7 @@ namespace XiaoCao
             {
                 item.gameObject.layer = layer;
             }
+
             gameObject.layer = Layers.BODY_PHYSICS;
         }
 
@@ -174,7 +195,6 @@ namespace XiaoCao
             //TODO 暴击音效
             if (ackInfo.isCrit)
             {
-
             }
 
             data_R.breakData.OnHit((int)setting.BreakPower);
@@ -189,6 +209,7 @@ namespace XiaoCao
             {
                 HitStop.Do(setting.HitStop);
             }
+
             HitTween(ackInfo, setting, data_R.breakData.IsBreak);
 
             if (data_R.breakData.IsBreak)
@@ -211,9 +232,10 @@ namespace XiaoCao
                 {
                     Anim.TryPlayAnim(AnimHash.Hit);
                 }
-                data_R.movement.SetUnMoveTime(0.35f);
 
+                data_R.movement.SetUnMoveTime(0.35f);
             }
+
             //playerMover.SetNoGravityT(setting.NoGravityT);
             HitHelper.ShowHitEffect(transform, ackInfo);
         }
@@ -275,6 +297,8 @@ namespace XiaoCao
             }
         }
 
+        private int tempHpProcces;
+        
         // 排除异常情况:如死亡
         // 如果需要计算其他值,用ref
         private bool BaseDamageCheck(AtkInfo atkInfo)
@@ -283,16 +307,24 @@ namespace XiaoCao
             {
                 return false;
             }
+            float hurtProcess = atkInfo.atk / MaxHp;
+            if (Hp / MaxHp > tempHpProcces)
+            {
+                //小兵为10 boss可能为30
+                BattleData.Current.AddFightVale(hurtProcess * 10);
+            }
+            
             Debug.Log($"--- atkInfo.atk {atkInfo.atk}");
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
             if (targetHp <= 0)
             {
                 Hp = 0;
-
                 OnDie(atkInfo);
                 return false;
             }
+
             Hp -= atkInfo.atk;
+
 
             HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
             return true;
@@ -300,6 +332,7 @@ namespace XiaoCao
 
         public override void OnDie(AtkInfo atkInfo)
         {
+            Hp = 0;
             base.OnDie(atkInfo);
             data_R.roleControl.BreakAllBusy();
             data_R.bodyState = EBodyState.Dead;
@@ -307,7 +340,23 @@ namespace XiaoCao
             {
                 Anim.SetBool(AnimHash.IsDead, true);
             }
+
             DeadAct?.Invoke(this);
+
+            if (RoleIdentityType == RoleIdentityType.PlayerFriend)
+            {
+                XCTime.DelayRunMono(5, OnReborn, idRole);
+            }
+        }
+
+        //复活
+        public void OnReborn()
+        {
+            Hp = (int)MaxHp;
+
+            data_R.bodyState = EBodyState.Ready;
+
+            Anim.SetBool(AnimHash.IsDead, false);
         }
 
         public void InitRoleData()
@@ -320,10 +369,12 @@ namespace XiaoCao
                 AddEnemyData aiData = idRole.gameObject.GetComponent<AddEnemyData>();
                 attrSettingId = aiData.attSettingId;
             }
+
             if (!setting.ContainsKey(attrSettingId))
             {
                 Debug.LogError($"--- attrSettingId no {attrSettingId}");
             }
+
             AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
 
             data_R.breakData.SetAttr(attr);
@@ -354,15 +405,17 @@ namespace XiaoCao
                 float recover = info.atk * AtkRecoverHp;
                 PlayerAttr.ChangeNowValue(ENowAttr.Hp, recover);
             }
+
             AtkDamageAct?.Invoke(info);
         }
 
         private void StopTimeSpeed(bool isOn)
         {
-            if (IsPlayer)
+            if (!IsEnemyIdentity)
             {
                 return;
             }
+
             //处理击飞
             if (!isOn)
             {
@@ -382,7 +435,6 @@ namespace XiaoCao
                 {
                     Anim.SetBool(AnimHash.IsDead, true);
                 }
-
             }
 
             data_R.roleControl.StopTimeSpeed(isOn);
@@ -402,7 +454,7 @@ namespace XiaoCao
                     break;
                 case EntityMsgType.SetUnMoveTime:
                     SetUnMoveTime(msg);
-                    break;                
+                    break;
                 case EntityMsgType.SetUnRotate:
                     SetUnRotateTime(msg);
                     break;
@@ -452,6 +504,7 @@ namespace XiaoCao
             {
                 data_R.roleControl.BreakAllBusy();
             }
+
             data_R.roleControl.TryPlaySkill(skillId);
         }
 
@@ -531,6 +584,7 @@ namespace XiaoCao
                 //body.gameObject.SetActive(true);
             }
         }
+
         private void OnBodyPhantom(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;
@@ -543,7 +597,6 @@ namespace XiaoCao
             {
                 p.StopAnim();
             }
-
         }
 
         private void OnCameraShake(object msg)
@@ -572,6 +625,7 @@ namespace XiaoCao
         {
             data_R.roleControl.DefaultAutoDirect();
         }
+
         private void SetUnMoveTime(object msg)
         {
             float t = ((BaseMsg)msg).numMsg;
@@ -583,7 +637,7 @@ namespace XiaoCao
             float t = ((BaseMsg)msg).numMsg;
             data_R.movement.SetUnRotateTime(t);
         }
-        
+
         private void AddTag(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;
@@ -609,7 +663,6 @@ namespace XiaoCao
             {
                 data_R.movement.SetSkillNoGravityT(0);
             }
-
         }
 
         /// <summary>
@@ -640,7 +693,6 @@ namespace XiaoCao
         {
             if (actType == ActMsgType.Skill)
             {
-
             }
         }
 
@@ -655,7 +707,6 @@ namespace XiaoCao
             {
                 return false;
             }
-
         }
 
         public const string WeaponPointName = "WeaponPoint";
@@ -670,6 +721,7 @@ namespace XiaoCao
             {
                 return tf != null;
             }
+
             tf = transform.FindChildEx(pointName);
             pointCache[pointName] = tf;
             return tf != null;
@@ -718,6 +770,7 @@ namespace XiaoCao
     }
 
     #region Component
+
     public class RoleComponent<T> : EntityComponent where T : Role
     {
         public T owner;
@@ -732,11 +785,8 @@ namespace XiaoCao
 
         public virtual void OnDestroy()
         {
-
         }
     }
-
-
 
 
     public class EntityComponent
@@ -744,19 +794,24 @@ namespace XiaoCao
         /// <summary>
         /// no base
         /// </summary>
-        public virtual void Update() { }
+        public virtual void Update()
+        {
+        }
+
         /// <summary>
         /// no base
         /// </summary>
-        public virtual void FixedUpdate() { }
-
+        public virtual void FixedUpdate()
+        {
+        }
     }
+
     #endregion
 
     #region Datas
+
     public class RoleData
     {
-
         public string tempCurSkillId = "";
 
         public EBodyState bodyState;
@@ -780,7 +835,7 @@ namespace XiaoCao
 
         public Role lastEnemy;
 
-        public bool IsStateFree => bodyState is not EBodyState.Break or EBodyState.Dead;
+        public bool IsStateFree => bodyState is not (EBodyState.Break or EBodyState.Dead);
 
         public bool IsBusy => roleControl.IsBusy();
 
@@ -809,16 +864,14 @@ namespace XiaoCao
 
         public float animMoveSpeed = 0;
 
-        public Vector3 inputDir = Vector3.zero;// 暂无用处
+        public Vector3 inputDir = Vector3.zero; // 暂无用处
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
-
 
 
         public void Used()
         {
             inputDir = Vector3.zero;
         }
-
     }
 
     public enum BreakCdState
@@ -829,7 +882,6 @@ namespace XiaoCao
 
     public class BreakData
     {
-
         public float maxArmor = 4;
 
         public float recoverCdOnBreak = 4; //进入Break后多久触发恢复/眩晕时间
@@ -843,10 +895,11 @@ namespace XiaoCao
 
         //死亡处理
         public float deadTimer = 0;
-        public float deadTime = 3f;//结束时回收
+        public float deadTime = 3f; //结束时回收
 
         #region runtimeData
-        public float armor = 4;  //虽说有小数, 实际用整数
+
+        public float armor = 4; //虽说有小数, 实际用整数
 
         private float _recoverCdTimer = 0;
 
@@ -856,11 +909,12 @@ namespace XiaoCao
 
         public bool HasHit { get; set; }
 
-        public bool isHover { get; set; }//是否滞空
+        public bool isHover { get; set; } //是否滞空
         public bool IsBreak => armor <= 0;
         public float ShowPercentage => armor / maxArmor;
 
         private BreakCdState _state;
+
         public BreakCdState SetState
         {
             set
@@ -869,9 +923,11 @@ namespace XiaoCao
                 {
                     OnBreakStateChange(_state, value);
                 }
+
                 _state = value;
             }
         }
+
         #endregion
 
         public bool UpdateDeadEnd()
@@ -961,6 +1017,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             _noBreakTimer = time;
             if (armor <= 0)
             {
@@ -968,9 +1025,11 @@ namespace XiaoCao
             }
         }
     }
+
     #endregion
 
     #region Flag & interface
+
     public static class RoleTagCommon
     {
         public const int NoHpBar = 0;
@@ -978,11 +1037,12 @@ namespace XiaoCao
         public const int Boss = 2;
         public const int EnableAiIfHurt = 100;
     }
+
     public enum EBodyState
     {
         Ready,
         Break, //被打断的中,眩晕中
-        Dead  //最高优先级
+        Dead //最高优先级
     }
 
     public enum ESkillState
@@ -991,7 +1051,6 @@ namespace XiaoCao
         Skill,
         SkillEnd //后摇
     }
-
 
     public enum ENowAttr
     {
@@ -1010,6 +1069,7 @@ namespace XiaoCao
         SkillCDOff,
         AtkRecoverHp,
         MoveSpeedMult,
+
         //非基础属性 分界线
         NorAtkSpeedAdd,
         NoDamage, //无伤
@@ -1037,6 +1097,6 @@ namespace XiaoCao
 
         public void FixedUpdate();
     }
-    #endregion
 
+    #endregion
 }

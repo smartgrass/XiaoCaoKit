@@ -16,32 +16,38 @@ namespace XiaoCao
         public TextMeshProUGUI text;
 
 
-        /// <param name="isNeedItem">是否显示需求数量</param>
-        public void SetItem(Item Item,bool isNeedItem =false)
+        public void SetItem(Item item, UIItemTextType textType = UIItemTextType.Default)
         {
-            this.Item = Item;
+            this.Item = item;
 
-            if (isNeedItem)
+            if (textType == UIItemTextType.NeedNum)
             {
-                int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(Item.Key);
-                text.text = $"{hasCount}/{Item.num}";
+                int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(item.Key);
+                text.text = $"{hasCount}/{item.num}";
             }
             else
             {
-                text.text = Item.num.ToString();
+                text.text = item.num.ToString();
             }
+        }
 
+        public void SetNum(int num)
+        {
+            text.text = num.ToString();
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
-
         }
     }
 
+    public enum UIItemTextType
+    {
+        Default,
+        NeedNum
+    }
 }

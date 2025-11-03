@@ -204,6 +204,13 @@ namespace XiaoCaoEditor
             component.Execute();
         }
 
+        [MenuItem("CONTEXT/Transform/GenBoxCollider", priority = 10)]
+        private static void GenBoxCollider(MenuCommand menuCommand)
+        {
+            Transform tf = menuCommand.context as Transform;
+            BuildingTool.AddBoxCollider(tf);
+        }
+        
 
         [MenuItem("CONTEXT/Component/AutoBind", priority = 10)]
         private static void AutoBind(MenuCommand menuCommand)

@@ -1,11 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
 using NaughtyAttributes;
 using System.Collections.Generic;
-using TEngine;
 using UnityEngine;
-using UnityEngine.UIElements;
 using XiaoCao;
-using EGameEvent = XiaoCao.EGameEvent;
 using System;
 using GG.Extensions;
 
@@ -40,11 +37,15 @@ public class EnemyCreator : GameStartMono, IExecute
 
     [Multiline] public string taskLines;
 
+    [Dropdown(nameof(GetShowActKeyList))] [OnValueChanged(nameof(OnTestShowActKeyChange))] [Label("ActKey")]
+    public string testShowActKey;
+
     private int curGenCount;
     private int deadCount;
     private List<int> _enemyList = new List<int>();
     public Action<EnemyCreator> enemyAllDead;
 
+    public Role TargetRole { get; set; }
 
     public override void OnGameStart()
     {
@@ -105,7 +106,9 @@ public class EnemyCreator : GameStartMono, IExecute
 
                 enemy.enemyData.movement.MoveToImmediate(genPos);
 
+
                 enemy.enemyData.movement.LookToDir(transform.forward);
+
 
                 enemy.IsAiOn = createMode is EnemyCreateMode.AI or EnemyCreateMode.LoadAI;
                 if (createMode == EnemyCreateMode.LoadNoAI)
@@ -123,6 +126,8 @@ public class EnemyCreator : GameStartMono, IExecute
                 curGenCount++;
 
                 _enemyList.Add(enemy.id);
+                
+                enemy.AiControl.targetRole = TargetRole;
 
                 posIndex++;
 
@@ -136,6 +141,16 @@ public class EnemyCreator : GameStartMono, IExecute
         }
     }
 
+    public static Enemy0 GenFriend(string roleKey, Vector3 genPos, int level = 10, string id = "E_0")
+    {
+        Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, level, roleKey);
+        enemy.SetTeam(XCSetting.PlayerTeam);
+        enemy.IsAiOn = true;
+        enemy.enemyData.movement.MoveToImmediate(genPos);
+        enemy.SetFriend(GameDataCommon.LocalPlayer);
+        return enemy;
+    }
+    
     void ActiveEnemyAI()
     {
         foreach (var enemyId in _enemyList)
@@ -203,6 +218,17 @@ public class EnemyCreator : GameStartMono, IExecute
     private List<string> GetDirAllFileName()
     {
         return PathTool.GetDirAllFileName("Assets/_Res/Role/IdRole");
+    }
+
+
+    public List<string> GetShowActKeyList()
+    {
+        return ShowActKeys.GetShortKeys();
+    }
+
+    void OnTestShowActKeyChange()
+    {
+        taskLines += $"\n{testShowActKey}:";
     }
 }
 

@@ -54,8 +54,10 @@ namespace XiaoCao
 
         protected override void OnUpdate()
         {
-            if (BattleData.IsTimeStop)
+            if (BattleData.IsTimeStop && IsEnemyIdentity)
+            {
                 return;
+            }
 
             component.aiControl.Update();
             component.aiControl.OnTaskUpdate();
@@ -65,8 +67,10 @@ namespace XiaoCao
 
         protected override void OnFixedUpdate()
         {
-            if (BattleData.IsTimeStop)
+            if (BattleData.IsTimeStop && IsEnemyIdentity)
+            {
                 return;
+            }
 
             component.aiControl.FixedUpdate();
             component.movement.FixedUpdate();
@@ -125,11 +129,12 @@ namespace XiaoCao
                     break;
             }
         }
-
-        //internal void AddTag(object forceFollow)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        
+        public void SetFriend(Player0 localPlayer)
+        {
+            //定时检测, 当与玩家距离过远时,传送到玩家附近
+            component.aiControl.SetFriend(localPlayer);
+        }
     }
 
 

@@ -5,6 +5,8 @@ using DG.Tweening;
 using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCao.UI;
+using XiaoCaoKit;
 
 namespace XiaoCao
 {
@@ -33,6 +35,8 @@ namespace XiaoCao
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
         public TalkPanel talkPanel;
+        
+        public LevelResultPanel levelResultPanel;
 
         [ReadOnly] public PanelBase lastPanel;
 
@@ -146,6 +150,12 @@ namespace XiaoCao
                 can = false;
             }
 
+            // if (GameAllData.battleData.isDialogShow)
+            // {
+            //     Debug.Log($"-- GameAllData.battleData.isDialogShow");
+            //     can = false;
+            // }
+            
             GameAllData.battleData.CanPlayerControl.SetValue(can);
         }
 
@@ -184,7 +194,15 @@ namespace XiaoCao
             ;
         }
 
-        public static void PopToast(string str, float time = 1)
+        public static void PopToastKey(string key)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                PopToast(key.ToLocalizeStr());
+            }
+        }
+
+        public static void PopToast(string str, float time = 1.5f)
         {
             Toast.Show(str, time);
         }

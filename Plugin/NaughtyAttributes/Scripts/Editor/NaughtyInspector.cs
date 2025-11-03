@@ -16,10 +16,12 @@ namespace NaughtyAttributes.Editor
     {
         private List<SerializedProperty> _serializedProperties = new List<SerializedProperty>();
         private IEnumerable<FieldInfo> _nonSerializedFields;
+
         private IEnumerable<PropertyInfo> _nativeProperties;
+
         //private IEnumerable<MethodInfo> _methods;
-        private Dictionary<int, List<MethodInfo>> methodDic;
-        private Dictionary<string, IXCDrawAttribute> layoutDic;
+        private Dictionary<int, List<MethodInfo>> _methodDic;
+        private Dictionary<string, IXCDrawAttribute> _layoutDic;
         private List<int> methPosSortList;
 
         private Dictionary<string, SavedBool> _foldouts = new Dictionary<string, SavedBool>();
@@ -46,27 +48,30 @@ namespace NaughtyAttributes.Editor
             {
                 //layoutDic.Add(field.GetValue )
             }
-
         }
 
         private void GetSortMethods()
         {
-            IEnumerable<MethodInfo> allMethods = ReflectionUtility.GetAllMethods(target, m => true);
-            methPosSortList = new List<int>();
-            methodDic = new Dictionary<int, List<MethodInfo>>();
+            _methodDic = GetMethodInfoDic(target, out var sortList);
+            methPosSortList = sortList;
+        }
 
+        public static Dictionary<int, List<MethodInfo>> GetMethodInfoDic(object target, out List<int> sortList)
+        {
+            IEnumerable<MethodInfo> allMethods = ReflectionUtility.GetAllMethods(target, m => true);
+            var methodDic = new Dictionary<int, List<MethodInfo>>();
+            sortList = new List<int>();
             foreach (var item in allMethods)
             {
                 var ButtonAttributes = item.GetCustomAttributes(typeof(ButtonAttribute), true);
                 if (ButtonAttributes.Length > 0)
                 {
-
                     ButtonAttribute att = ButtonAttributes[0] as ButtonAttribute;
                     if (!methodDic.ContainsKey(att.Pos))
                     {
                         //nmae
                         methodDic.Add(att.Pos, new List<MethodInfo>() { item });
-                        methPosSortList.Add(att.Pos);
+                        sortList.Add(att.Pos);
                     }
                     else
                     {
@@ -74,7 +79,9 @@ namespace NaughtyAttributes.Editor
                     }
                 }
             }
-            methPosSortList.Sort();
+
+            sortList.Sort();
+            return methodDic;
         }
 
 
@@ -87,7 +94,7 @@ namespace NaughtyAttributes.Editor
         /// <summary>
         /// 绘制
         ///SerializedProperty property = this.serializedObject.GetIterator();
-	    ///NaughtyInspector.DrawContent(property);
+        ///NaughtyInspector.DrawContent(property);
         /// </summary>
         /// <param name="property"></param>
         public static void DrawContent(SerializedProperty property)
@@ -103,7 +110,8 @@ namespace NaughtyAttributes.Editor
                         EditorGUI.BeginChangeCheck();
 
 
-                        EditorGUILayout.PropertyField(property, new GUIContent(PropertyUtility.GetLabel(property)), true);
+                        EditorGUILayout.PropertyField(property, new GUIContent(PropertyUtility.GetLabel(property)),
+                            true);
 
 
                         if (EditorGUI.EndChangeCheck())
@@ -114,6 +122,7 @@ namespace NaughtyAttributes.Editor
                         }
                     }
                 }
+
                 isExpend = false; //关闭展开子项
                 index++;
             }
@@ -123,7 +132,8 @@ namespace NaughtyAttributes.Editor
         {
             GetSerializedProperties(ref _serializedProperties);
 
-            bool anyNaughtyAttribute = _serializedProperties.Any(p => PropertyUtility.GetAttribute<INaughtyAttribute>(p) != null);
+            bool anyNaughtyAttribute =
+                _serializedProperties.Any(p => PropertyUtility.GetAttribute<INaughtyAttribute>(p) != null);
             if (!anyNaughtyAttribute && methPosSortList.Count == 0)
             {
                 DrawDefaultInspector();
@@ -141,7 +151,6 @@ namespace NaughtyAttributes.Editor
             {
                 ComponentViewHelper.Draw(target);
             }
-
         }
 
         public bool IsDrawDebug(Type type)
@@ -160,7 +169,7 @@ namespace NaughtyAttributes.Editor
             {
                 if (item >= 0)
                 {
-                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, methodDic[item], item != 0);
+                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, _methodDic[item], item != 0);
                 }
             }
         }
@@ -175,8 +184,7 @@ namespace NaughtyAttributes.Editor
                     do
                     {
                         outSerializedProperties.Add(serializedObject.FindProperty(iterator.name));
-                    }
-                    while (iterator.NextVisible(false));
+                    } while (iterator.NextVisible(false));
                 }
             }
         }
@@ -231,10 +239,8 @@ namespace NaughtyAttributes.Editor
                         var xcLayout = xcLayouts[j];
                         if (length == 1)
                         {
-                            xcLayout.OnDraw(serializedObject.targetObject, () =>
-                            {
-                                NaughtyEditorGUI.PropertyField_Layout(property, true);
-                            });
+                            xcLayout.OnDraw(serializedObject.targetObject,
+                                () => { NaughtyEditorGUI.PropertyField_Layout(property, true); });
                             continue;
                         }
 
@@ -260,14 +266,13 @@ namespace NaughtyAttributes.Editor
                         if (isLast)
                         {
                             xcLayout.OnDraw(serializedObject.targetObject, () =>
-                             {
-                                 if (hasHor)
-                                 {
-                                     GUILayout.EndHorizontal();
-                                 }
-                             });
+                            {
+                                if (hasHor)
+                                {
+                                    GUILayout.EndHorizontal();
+                                }
+                            });
                         }
-
 
 
                         if (!isFrist && !isLast)
@@ -279,17 +284,18 @@ namespace NaughtyAttributes.Editor
 
 
                 //按钮
-                if (methodDic.ContainsKey(-i))
+                if (_methodDic.ContainsKey(-i))
                 {
-                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, methodDic[-i]);
+                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, _methodDic[-i]);
                 }
+
                 i++;
             }
             ///<see cref="FoldoutAttribute"/>
             //Obsolete BoxGroupAttribute 
             // Draw grouped serialized properties
 
-            /* 
+            /*
             foreach (var group in GetGroupedProperties(_serializedProperties))
             {
                 IEnumerable<SerializedProperty> visibleProperties = group.Where(p => PropertyUtility.IsVisible(p));
@@ -331,7 +337,7 @@ namespace NaughtyAttributes.Editor
                     }
                 }
             }
-            
+
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -343,6 +349,7 @@ namespace NaughtyAttributes.Editor
             {
                 return false;
             }
+
             using (new EditorGUI.DisabledScope(disabled: true))
             {
                 if (property.objectReferenceValue == null)
@@ -356,6 +363,7 @@ namespace NaughtyAttributes.Editor
                     NaughtyEditorGUI.PropertyField_Layout(property, true);
                 }
             }
+
             return true;
         }
 
@@ -369,7 +377,8 @@ namespace NaughtyAttributes.Editor
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Non-Serialized Fields", GetHeaderGUIStyle());
                     NaughtyEditorGUI.HorizontalLine(
-                        EditorGUILayout.GetControlRect(false), HorizontalLineAttribute.DefaultHeight, HorizontalLineAttribute.DefaultColor.GetColor());
+                        EditorGUILayout.GetControlRect(false), HorizontalLineAttribute.DefaultHeight,
+                        HorizontalLineAttribute.DefaultColor.GetColor());
                 }
 
                 foreach (var field in _nonSerializedFields)
@@ -388,7 +397,8 @@ namespace NaughtyAttributes.Editor
                     EditorGUILayout.Space();
                     EditorGUILayout.LabelField("Native Properties", GetHeaderGUIStyle());
                     NaughtyEditorGUI.HorizontalLine(
-                        EditorGUILayout.GetControlRect(false), HorizontalLineAttribute.DefaultHeight, HorizontalLineAttribute.DefaultColor.GetColor());
+                        EditorGUILayout.GetControlRect(false), HorizontalLineAttribute.DefaultHeight,
+                        HorizontalLineAttribute.DefaultColor.GetColor());
                 }
 
                 foreach (var property in _nativeProperties)
@@ -403,7 +413,8 @@ namespace NaughtyAttributes.Editor
             return properties;
         }
 
-        private static IEnumerable<SerializedProperty> GetNonGroupedProperties(IEnumerable<SerializedProperty> properties)
+        private static IEnumerable<SerializedProperty> GetNonGroupedProperties(
+            IEnumerable<SerializedProperty> properties)
         {
             return properties.Where(p => PropertyUtility.GetAttribute<IGroupAttribute>(p) == null);
         }
@@ -415,7 +426,8 @@ namespace NaughtyAttributes.Editor
         //        .GroupBy(p => PropertyUtility.GetAttribute<BoxGroupAttribute>(p).Name);
         //}
 
-        private static IEnumerable<IGrouping<string, SerializedProperty>> GetFoldoutProperties(IEnumerable<SerializedProperty> properties)
+        private static IEnumerable<IGrouping<string, SerializedProperty>> GetFoldoutProperties(
+            IEnumerable<SerializedProperty> properties)
         {
             return properties
                 .Where(p => PropertyUtility.GetAttribute<FoldoutAttribute>(p) != null)

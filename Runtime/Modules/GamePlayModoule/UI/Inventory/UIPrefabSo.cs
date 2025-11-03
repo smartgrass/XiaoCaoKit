@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+using System;
+using UnityEngine;
 
 namespace XiaoCao
 {
-    public class UIPrefabMgr : MonoBehaviour
+    [CreateAssetMenu(menuName = "SO/UIPrefabSo", fileName = "UIPrefabSo")]
+    public class UIPrefabSo : ScriptableObject
     {
-        public static UIPrefabMgr Inst;
-        private void Awake()
+        public static UIPrefabSo Inst;
+
+        private void OnEnable()
         {
             Inst = this;
         }
@@ -17,7 +20,7 @@ namespace XiaoCao
 
         public ColorSettingSo hpBarColorSettingSo;
 
-        public SimpleImageTween btnGlowEffect;
+        public GameObject btnGlowEffect;
 
         public GameObject btnRedDot;
 
@@ -32,6 +35,7 @@ namespace XiaoCao
                 {
                     popupUIPool = new AssetPool(popupUIPrefab);
                 }
+
                 return popupUIPool;
             }
         }

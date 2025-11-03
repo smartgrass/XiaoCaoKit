@@ -2,11 +2,13 @@
 using DG.Tweening.Plugins.Options;
 using DG.Tweening;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using XiaoCao;
 using UnityEngine.UI;
 using TMPro;
+using Object = UnityEngine.Object;
 
 public static class XCExtend
 {
@@ -17,6 +19,7 @@ public static class XCExtend
             animator.Play(hash);
             return true;
         }
+
         Debuger.LogError($"--- no hash {hash}");
         return false;
     }
@@ -37,13 +40,13 @@ public static class XCExtend
             var newObject = new GameObject(childrenName);
             newObject.transform.SetParent(tf, false);
         }
+
         return ret;
     }
-
+    
     // 递归方法来查找子物体
     public static Transform FindChildEx(this Transform parent, string name)
     {
-
         // 遍历所有子物体
         int len = parent.childCount;
         for (int i = 0; i < len; i++)
@@ -62,6 +65,7 @@ public static class XCExtend
                 return result;
             }
         }
+
         return null;
     }
 
@@ -76,8 +80,6 @@ public static class XCExtend
     /// <returns></returns>
     public static bool RoateY_Slow(this Transform transform, Vector3 targetPos, float rotationSpeed, float minDetal = 1)
     {
-
-
         Vector3 direction = targetPos - transform.position;
         direction.y = 0;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
@@ -107,7 +109,8 @@ public static class XCExtend
 
     public static TweenerCore<Color, Color, ColorOptions> DOColor(this TMP_Text target, Color endValue, float duration)
     {
-        TweenerCore<Color, Color, ColorOptions> t = DOTween.To(() => target.color, x => target.color = x, endValue, duration);
+        TweenerCore<Color, Color, ColorOptions> t = DOTween.To(() => target.color, x => target.color = x, endValue,
+            duration);
         t.SetTarget(target);
         return t;
     }
@@ -117,27 +120,28 @@ public static class XCExtend
         color.a = alpha;
         return color;
     }
-    
+
     public static TweenerCore<Vector3, Vector3, VectorOptions> DOUIMoveX(
         this RectTransform target,
         float endValue,
         float duration,
         bool snapping = false)
     {
-        TweenerCore<Vector3, Vector3, VectorOptions> t = DOTween.To((DOGetter<Vector3>) (() => target.anchoredPosition), (DOSetter<Vector3>) (x => target.anchoredPosition = x), new Vector3(endValue, 0.0f, 0.0f), duration);
-        t.SetOptions(AxisConstraint.X, snapping).SetTarget<Tweener>((object) target);
+        TweenerCore<Vector3, Vector3, VectorOptions> t = DOTween.To((DOGetter<Vector3>)(() => target.anchoredPosition),
+            (DOSetter<Vector3>)(x => target.anchoredPosition = x), new Vector3(endValue, 0.0f, 0.0f), duration);
+        t.SetOptions(AxisConstraint.X, snapping).SetTarget<Tweener>((object)target);
         return t;
     }
 
     //自动检测长度
     public static float GetArrayValue(this float[] array, int index)
     {
-        if(array.Length > 0)
+        if (array.Length > 0)
         {
             return array[index % array.Length];
         }
+
         Debug.LogError("--- array len 0");
         return 0;
     }
-
 }

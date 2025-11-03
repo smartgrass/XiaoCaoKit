@@ -14,7 +14,7 @@ using Debug = UnityEngine.Debug;
 namespace XiaoCao
 {
     ///<see cref="GameDataCommon"/>
-    public class GameMgr : MonoSingleton<GameMgr>, IMgr
+    public class GameMgr : MonoSingleton<GameMgr>, IMgr, IMapMsgReceiver
     {
         #region AllMgr
 
@@ -30,7 +30,6 @@ namespace XiaoCao
         public LevelControl levelControl;
         public PoolMgr poolMgr;
 
-        //��̬
         public SaveMgr saveMgr;
         public ConfigMgr configMgr;
 
@@ -56,11 +55,14 @@ namespace XiaoCao
         {
             base.Init();
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
         }
 
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
         }
 
         public void SetGameState(GameState gameState)
@@ -70,14 +72,20 @@ namespace XiaoCao
             GameEvent.Send<GameState, GameState>(EGameEvent.GameStateChange.Int(), oldState, gameState);
         }
 
-        public void LevelFinish()
+      public  void OnReceiveMsg(string msg)
         {
-            GameMgr.Inst.SetGameState(GameState.Finish);
+            if (msg == ShowActKeys.LevelFinish.ToString())
+            {
+                LevelFinish();
+            }
         }
+
 
         #region Scene
 
         private string curScene;
+
+        public static string firstScene;
 
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode arg1)
@@ -90,20 +98,47 @@ namespace XiaoCao
             }
         }
 
-        //完成
-        public void LevelEnd()
-        {
-            string title = LocalizeKey.Tip.ToString();
-            string content = LocalizeKey.IsExitLevel.ToString();
-            SetGameState(GameState.Finish); 
-            DialogManager.ShowDialog(title,content, BackHome);
-        }
-
         public void BackHome()
         {
             SetGameState(GameState.Exit);
             SceneManager.LoadScene(SceneNames.Home);
         }
+
+        //完成
+        public void LevelFinish()
+        {
+            LevelData.Current.finishLevelTime = Time.time;
+            GameEvent.Send<int>(EGameEvent.LevelEnd.Int(), 1);
+            BattleData.Current.levelData.levelResult = ELevelResult.Success;
+            UIMgr.PopToastKey(LocalizeKey.LevelFinish);
+            //写入存档
+            LevelInfo levelInfo = GameDataCommon.Current.GetLevelInfo;
+            Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");
+            PlayerSaveData.LocalSavaData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
+            PlayerSaveData.SavaData();
+            CreatePortalLevelEnd();
+        }
+
+        public void ShowLevelResultUI()
+        {
+            UIMgr.Inst.levelResultPanel.ShowUI();
+        }
+        
+
+        void CreatePortalLevelEnd()
+        {
+            string path = "Assets/_Res/Item/PortalLevelEnd.prefab";
+            GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
+            portal.transform.position = MapMgr.Inst.GetEndPos();
+        }
+
+        public DialogPanel ShowLevelEndDialog()
+        {
+            string title = "";
+            string content = LocalizeKey.IsExitLevel.ToLocalizeStr();
+            return DialogManager.ShowDialog(title, content, GameMgr.Inst.ShowLevelResultUI);
+        }
+
 
         public void ReloadScene()
         {
@@ -126,7 +161,7 @@ namespace XiaoCao
         /// <see cref="MapNames"/>
         public void LoadLevelScene(string levelId)
         {
-            MapMgr.Inst.MapName = levelId;
+            MapMgr.CurLevelName = levelId;
 
             GameMgr.Inst.LoadScene(SceneNames.Level);
         }
@@ -179,7 +214,6 @@ namespace XiaoCao
             Debug.Log($"--- ClearSceneData ");
             PoolMgr.Inst.ClearAllPool(true);
             TimerManager.ClearSelf();
-            MapMgr.ClearSelf();
             GameAllData.battleData = new BattleData();
         }
     }
@@ -207,9 +241,9 @@ namespace XiaoCao
     {
         //story与level拆开,方便跳过剧情
         //如果是在游戏中 则不是无法跳过,或者做其他定制化的处理
-        public static readonly string Level0 = "story_0_0";
+        public static readonly string Level1 = "level_0_1";
 
-        public static string GetLevelName(int chapter, int index)
+        public static string GetLevelKey(int chapter, int index)
         {
             return $"level_{chapter}_{index}";
         }
@@ -231,9 +265,9 @@ namespace XiaoCao
         public int chapter;
         public int index;
 
-        public string GetIndexStr()
+        public string GetLevelName()
         {
-            return $"{chapter}-{index}";
+            return LocalizeKey.GetLevelName(chapter, index);
         }
     }
 }

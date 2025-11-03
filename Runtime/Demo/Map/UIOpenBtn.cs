@@ -31,7 +31,7 @@ namespace XiaoCao
                 {
                     if (redTf == null)
                     {
-                        redTf = Instantiate(UIPrefabMgr.Inst.btnRedDot, transform).transform;
+                        redTf = Instantiate(UIPrefabSo.Inst.btnRedDot, transform).transform;
                         (redTf.transform as RectTransform).anchoredPosition = new Vector2(-5, -5);
                         redTf.name = "RedDot";
                     }

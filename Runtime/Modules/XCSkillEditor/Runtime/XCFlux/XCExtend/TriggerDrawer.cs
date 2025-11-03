@@ -74,7 +74,6 @@ public class TriggerDrawer : MonoBehaviour
         var size = meshInfo.GetSize;
 
         Gizmos.color = drawColor;
-        //坐标系选为targetTran
         Gizmos.matrix = Matrix4x4.TRS(targetTran.position, rotation, targetTran.lossyScale);
 
         if (meshInfo.meshType == MeshType.Box)

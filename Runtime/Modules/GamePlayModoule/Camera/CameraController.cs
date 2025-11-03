@@ -1,7 +1,9 @@
-﻿using Cinemachine;
+using Cinemachine;
 using MFPC;
 using NaughtyAttributes;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace XiaoCao
@@ -22,9 +24,14 @@ namespace XiaoCao
         private Transform _curFollow;
 
 
-        public CameraMode Mode { get => _mode; set => _mode = value; }
+        public CameraMode Mode
+        {
+            get => _mode;
+            set => _mode = value;
+        }
 
         private Cinemachine3rdPersonFollow _3rd;
+
         public Cinemachine3rdPersonFollow V3rdPF
         {
             get
@@ -33,10 +40,13 @@ namespace XiaoCao
                 {
                     _3rd = vcam_topDown.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
                 }
+
                 return _3rd;
             }
         }
+
         public CinemachineFramingTransposer _cft;
+
         public CinemachineFramingTransposer CFT
         {
             get
@@ -45,12 +55,13 @@ namespace XiaoCao
                 {
                     _cft = vcam_topDown.GetCinemachineComponent<CinemachineFramingTransposer>();
                 }
-                return _cft;
 
+                return _cft;
             }
         }
 
         private CinemachineBasicMultiChannelPerlin _cPerlin;
+
         public CinemachineBasicMultiChannelPerlin CPerlin
         {
             get
@@ -59,13 +70,13 @@ namespace XiaoCao
                 {
                     _cPerlin = vcam_topDown.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
                 }
+
                 return _cPerlin;
             }
         }
 
 
-        [OnValueChanged(nameof(TurnMode))]
-        [SerializeField]
+        [OnValueChanged(nameof(TurnMode))] [SerializeField]
         private CameraMode _mode;
 
         private bool isInited = false;
@@ -82,6 +93,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             isInited = true;
             TurnMode();
         }
@@ -91,23 +103,9 @@ namespace XiaoCao
             vcam_topDown.gameObject.SetActive(true);
             TopDownInit();
         }
+
         public void OnUpdate()
         {
-            //if (ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.MouseView))
-            //{
-            //    Mode = CameraMode.ThirdPerson;
-            //}
-            //else
-            //{
-            //    Mode = CameraMode.TowDown;
-            //}
-
-            //if (Mode == CameraMode.ThirdPerson)
-            //{
-            //    _inputLook.x = Input.GetAxis("Mouse X");
-            //    _inputLook.y = Input.GetAxis("Mouse Y");
-            //}
-
             SetLocalSwipeDirection();
 
             if (shakeTimer > 0)
@@ -134,6 +132,48 @@ namespace XiaoCao
             }
         }
 
+        private float lastTransparentUpdate = 0f;
+        private const float transparentUpdateInterval = 0.1f; // 每0.1秒更新一次
+
+        private RaycastHit[] _raycastHits = new RaycastHit[8];
+
+        private List<Material> _materialList = new List<Material>();
+        
+        private void TransparentObjects()
+        {
+            Vector3 selfPosition = player0.transform.position + Vector3.up;
+            Vector3 cameraPosition = CameraMgr.Main.transform.position;
+            var rayDistance = Vector3.Distance(selfPosition, cameraPosition);
+            Vector3 direction = Vector3.Normalize(cameraPosition - selfPosition);
+            Debug.DrawLine(selfPosition, cameraPosition, Color.red);
+
+            var layerMask = Layers.WALL_BLOCK_MASK;
+            var size = Physics.RaycastNonAlloc(selfPosition, direction, this._raycastHits, rayDistance, layerMask);
+            List<Material> materials = new List<Material>();
+            for (int i = 0; i < size; i++)
+            {
+                var meshRenderers = this._raycastHits[i].collider.GetComponentsInChildren<MeshRenderer>();
+                foreach (var variable in meshRenderers)
+                {
+                    materials.AddRange(variable.materials);
+                }
+            }
+
+            var transparentList = materials.Except(_materialList).ToList();
+            var opaqueList = _materialList.Except(materials).ToList();
+            foreach (var variable in transparentList)
+            {
+                MaterialTransparent.SetMaterialTransparent(true, variable, 0.4f);
+            }
+
+            foreach (var variable in opaqueList)
+            {
+                MaterialTransparent.SetMaterialTransparent(false, variable);
+            }
+
+            _materialList = materials;
+        }
+
         public void OnFixedUpdate()
         {
             if (Mode == CameraMode.ThirdPerson)
@@ -143,6 +183,12 @@ namespace XiaoCao
             else
             {
                 TopDownFixedUpdate();
+            }
+            
+            if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
+            {
+                TransparentObjects();
+                lastTransparentUpdate = Time.time;
             }
         }
 
@@ -158,12 +204,14 @@ namespace XiaoCao
                 FixUpdateCamRotate(vcam_topDown.transform);
             }
         }
+
         void TopDownInit()
         {
             curAngleX = setting_topDown.defaultAngle.x;
             curAngleY = setting_topDown.defaultAngle.y;
             CFT.m_CameraDistance = setting_topDown.camDistance;
         }
+
         void TopDownFixedUpdate()
         {
             CheckPlayer();
@@ -211,6 +259,7 @@ namespace XiaoCao
                 {
                     player0.data_R.lastEnemy = null;
                 }
+
                 Role findRole = player0.data_R.lastEnemy;
                 if (findRole == null || findRole.IsDie)
                 {
@@ -239,6 +288,7 @@ namespace XiaoCao
                 }
             }
         }
+
         //自动回正
         void AutoDirect()
         {
@@ -284,7 +334,8 @@ namespace XiaoCao
 
             if (isStoping)
             {
-                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.stopAngleX, setting_topDown.aimLerp * Time.fixedDeltaTime);
+                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.stopAngleX,
+                    setting_topDown.aimLerp * Time.fixedDeltaTime);
             }
             else
             {
@@ -294,7 +345,8 @@ namespace XiaoCao
                 //    addX = Mathf.Lerp(setting_topDown.nearAddAngleX, 0, distance / 10);
                 //}
 
-                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x + addX, setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
+                curAngleX = Mathf.Lerp(curAngleX, setting_topDown.defaultAngle.x + addX,
+                    setting_topDown.aimLerp * Time.fixedDeltaTime * 2);
             }
 
 
@@ -307,6 +359,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             //抖动原因: 目标处于安全角边界, 刚移出时, 触发回正
             //可能解决办法: 符号控制, 左转, 右转需要等待一个静止帧
             if (lastDeltaAngle * deltaAngle < 0)
@@ -322,18 +375,20 @@ namespace XiaoCao
 
             if (isStoping)
             {
-                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime * setting_topDown.smoothTime);
+                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle,
+                    setting_topDown.aimLerp * Time.fixedDeltaTime * setting_topDown.smoothTime);
             }
             else
             {
-                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle, setting_topDown.aimLerp * Time.fixedDeltaTime);
+                curAngleY = Mathf.Lerp(curAngleY, curAngleY - deltaAngle,
+                    setting_topDown.aimLerp * Time.fixedDeltaTime);
             }
 
             // curAngleY = Mathf.SmoothDamp(curAngleY, curAngleY - deltaAngle, ref tempSpeed, setting_topDown.smoothTime);
-
-
         }
+
         private bool swipe;
+
         void SetLocalSwipeDirection()
         {
             if (!PlayerInputData.LocalSwipeDirection.IsZore())
@@ -341,6 +396,7 @@ namespace XiaoCao
                 autoLookForwardWait = setLookForwardWaitTime;
                 swipe = true;
             }
+
             float speed = ConfigMgr.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
             if (Application.isMobilePlatform)
             {
@@ -363,6 +419,7 @@ namespace XiaoCao
             {
                 TopDownInit();
             }
+
             CameraMgr.Inst.aimer.SetAim(lookAt, 0);
         }
 
@@ -393,14 +450,15 @@ namespace XiaoCao
             CPerlin.m_AmplitudeGain = shakeIntensity;
             shakeTimer = Mathf.Max(shakeTimer, shakeTime);
         }
-
     }
+
     [Serializable]
     public class CamData3rd
     {
         public float TopClamp = 45.0f;
         public float BottomClamp = -15.0f;
     }
+
     [Serializable]
     public class CamDataTopDown
     {
@@ -411,16 +469,11 @@ namespace XiaoCao
         public float minCamDistance = 1;
         public float aimLerp = 0.1f;
         public float smoothTime = 0.5f;
-        [XCLabel("安全角度范围")]
-        public float aimSafeAngle = 5;
+        [XCLabel("安全角度范围")] public float aimSafeAngle = 5;
         public float seeR = 8;
         public float seeAngle = 45;
 
-        [Header("滑动转向速度")]
-        public float swipeSpeedX = 0.1f;
+        [Header("滑动转向速度")] public float swipeSpeedX = 0.1f;
         public float swipeSpeedY = 0.5f;
     }
-
 }
-
-

@@ -6,9 +6,12 @@ using TEngine;
 using UnityEngine;
 using UnityEngine.Events;
 using XiaoCao;
+using XiaoCao.UI;
 
 public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 {
+    public static EnemyGroupComponent Current;
+    
     public UnityEvent enterEvent;
 
     public float radus = 8;
@@ -17,13 +20,18 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     public string mapMsg;
 
-    private int triggerTimer;
-
-    private int maxTriggerTime;
-
     private List<EnemyCreator> creators = new List<EnemyCreator>();
 
-    public bool IsPreLoad;
+    public bool isPreLoad;
+
+    public string popToastKey;
+
+    private int _triggerTimer;
+    private int _maxTriggerTime;
+    private float _lastCheckTime;
+    private float _maxHighDelta = 2; //高度差超过这个值则不触发
+    public Vector3 triggerPos;
+    public Role TargetRole { get; set; }
 
     private void Awake()
     {
@@ -44,13 +52,13 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
             //creator.gameObject.SetActive(false);
         }
 
-        maxTriggerTime = creators.Count;
+        _maxTriggerTime = creators.Count;
     }
 
     private void OnEnemyDeadEvent(EnemyCreator creator)
     {
-        triggerTimer++;
-        if (triggerTimer >= maxTriggerTime)
+        _triggerTimer++;
+        if (_triggerTimer >= _maxTriggerTime)
         {
             SendMapMsg();
             allKillEvent?.Invoke();
@@ -60,6 +68,7 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     public void SendMapMsg()
     {
         GameEvent.Send<string>(EGameEvent.MapMsg.Int(), mapMsg);
+        UIMgr.PopToastKey(popToastKey);
     }
 
     private void Update()
@@ -69,14 +78,33 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
             return;
         }
 
+        //每隔0.5s检测一次
+        if (Time.timeSinceLevelLoad - _lastCheckTime < 0.5f)
+        {
+            return;
+        }
+
+        _lastCheckTime = Time.timeSinceLevelLoad;
+
         if (GameDataCommon.Current.gameState != GameState.Running) return;
         if (GameDataCommon.LocalPlayer == null || !GameDataCommon.LocalPlayer.isBodyCreated) return;
 
-        float dis = Vector3.Distance(transform.position, GameDataCommon.LocalPlayer.transform.position);
+        TargetRole = GameDataCommon.LocalPlayer;
+        Transform localPlayerTf = TargetRole.transform;
+        triggerPos = localPlayerTf.position;
+        float dis = Vector3.Distance(transform.position, localPlayerTf.position);
         if (dis < radus)
         {
+            //高度差超过这个值则不触发
+            float heightDelta = Math.Abs(transform.position.y - localPlayerTf.position.y);
+            if (heightDelta > _maxHighDelta)
+            {
+                return;
+            }
+
             enabled = false;
             enterEvent?.Invoke();
+            Current = this;
             OnTriggerAct();
         }
     }
@@ -86,6 +114,7 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     {
         foreach (var creator in creators)
         {
+            creator.TargetRole = TargetRole;
             creator.Execute();
         }
     }
@@ -93,7 +122,10 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(transform.position, radus);
+        if (enabled)
+        {
+            Gizmos.DrawWireSphere(transform.position, radus);
+        }
     }
 
 

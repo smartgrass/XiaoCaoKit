@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,12 +8,12 @@ using Cinemachine.Utility;
 //矩形排列, TODO: 圆形排列
 public static class MathLayoutTool
 {
-    #region   矩形排列XYZ
+    #region 矩形排列XYZ
+
     //一维化
     public class GridArrangementTool
 
     {
-
         public int XLen { get; private set; } // X
 
         public int ZLen { get; private set; } // Z
@@ -22,7 +21,6 @@ public static class MathLayoutTool
         public int Layers { get; private set; } // Y方向上的层数
 
         public bool IsHollow { get; private set; } // 是否为空心网格
-
 
 
         public GridArrangementTool(int x, int z, int y, bool isHollow)
@@ -45,11 +43,10 @@ public static class MathLayoutTool
             {
                 int count = XLen * ZLen * Layers;
 
-                int off = GetMinMult(XLen - 2) * (ZLen - 2) * Layers;
+                int off = GetMinMult(XLen - 2) * GetMinMult(ZLen - 2) * Layers;
 
                 return count - off;
             }
-
         }
 
         private int GetMinMult(int num)
@@ -58,9 +55,9 @@ public static class MathLayoutTool
             {
                 return 0;
             }
+
             return num;
         }
-
 
 
         // 通过x, y, z计算位置序号n的方法
@@ -75,9 +72,7 @@ public static class MathLayoutTool
 
 
             return y * ZLen * XLen + z * XLen + x;
-
         }
-
 
 
         // 通过序号n计算出x, y, z的方法
@@ -88,12 +83,12 @@ public static class MathLayoutTool
             {
                 throw new ArgumentOutOfRangeException("Index is out of range.");
             }
+
             if (IsHollow)
             {
                 int pY = 0;
                 if (index < XLen * 2)
                 {
-
                     //前边界
                     if (index < XLen * 1)
                     {
@@ -131,7 +126,7 @@ public static class MathLayoutTool
 
     #endregion
 
-    #region   矩形排列
+    #region 矩形排列
 
     public enum Alignment
     {
@@ -139,13 +134,15 @@ public static class MathLayoutTool
         Center,
         Right
     }
+
     private const int objectWidth = 0;
     private const int objectHeight = 0;
 
     //矩形排列
     //int x = i % xCount;
     //int y = i / xCount;
-    public static Vector2 GetRectPos(int x, int y, int xCount, Alignment alignment, float spacingX = 10, float spacingY = 10)
+    public static Vector2 GetRectPos(int x, int y, int xCount, Alignment alignment, float spacingX = 10,
+        float spacingY = 10)
     {
         float startX = 0;
         float startY = 0;
@@ -162,14 +159,15 @@ public static class MathLayoutTool
                 endX += (objectWidth - spacingX) * (xCount - 1);
                 break;
         }
+
         //Left不需要任何处理
         return new Vector2(endX, startY);
     }
 
-
     #endregion
 
     #region 圆形排列 TODO
+
     /// <summary>
     /// 扇形排布
     /// </summary>
@@ -201,7 +199,8 @@ public static class MathLayoutTool
     /// <param name="segments">分割数</param>
     /// <param name="innerRadius">内圈半径</param>
     /// <returns></returns>
-    public static Mesh GetSectorMesh(float angledegree, float outerRadius, float Height, int segments, float innerRadius = 0)
+    public static Mesh GetSectorMesh(float angledegree, float outerRadius, float Height, int segments,
+        float innerRadius = 0)
     {
         float angleRad = Mathf.Deg2Rad * angledegree;
         float angleStart = -angleRad / 2; // 扇形开始角度
@@ -225,6 +224,7 @@ public static class MathLayoutTool
             vertex[i] = new Vector3(outerRadius * cosA, halfH, outerRadius * sinA);
             angleCur += angledelta; // 从左到右
         }
+
         // 小扇形弧上的顶点
         angleCur = angleStart;
         for (int i = vertexCount; i < vertexCount * 2; i++)
@@ -234,6 +234,7 @@ public static class MathLayoutTool
             vertex[i] = new Vector3(innerRadius * cosA, halfH, innerRadius * sinA);
             angleCur += angledelta; // 从左到右
         }
+
         // 下表面两条弧的顶点
         for (int i = vertexCount * 2; i < vertexCount * 4; i++)
         {
@@ -278,6 +279,7 @@ public static class MathLayoutTool
             triangles[i + 11] = vertexCount + startIndex;
             verticeIndex++;
         }
+
         startTriangleIndex = topTriangleCount * 2 * 3;
 
         // 前，后表面三角形，顶点索引
@@ -308,6 +310,7 @@ public static class MathLayoutTool
             triangles[i + 11] = startVertexCount + startIndex + 1;
             verticeIndex++;
         }
+
         startTriangleIndex += frontTriangleCount * 2 * 3;
 
         // 左，右 表面三角形，顶点索引
@@ -356,12 +359,14 @@ public static class MathLayoutTool
         // mesh.uv = uvs;
         return mesh;
     }
+
     #endregion
 }
 
 public static class MathTool
 {
     #region Value
+
     //先慢后快 t -> [0,1]
     public static float RLerp(float start, float end, float t)
     {
@@ -372,6 +377,7 @@ public static class MathTool
     {
         return value >= closedLeft && value < openRight;
     }
+
     /// <summary>
     /// probability 概率
     /// </summary>
@@ -391,6 +397,7 @@ public static class MathTool
             return false;
         }
     }
+
     /// <summary>
     /// 随机球点
     /// </summary>
@@ -432,6 +439,7 @@ public static class MathTool
     {
         return Math.Abs(value - value2) < 0.00001f;
     }
+
     //返回float最近的Int->四舍五入
     public static void GetIntExample(float value)
     {
@@ -446,18 +454,23 @@ public static class MathTool
     }
 
     #endregion
+
     #region Vector & Rotate
+
     public static bool IsZore(this Vector2 v)
     {
         return v == Vector2.zero || float.IsNaN(v.x) || float.IsNaN(v.y);
     }
+
     public static bool IsZore(this Vector3 v)
     {
         return v == Vector3.zero;
     }
+
     public static bool IsZoreOrNaN(this Vector3 v)
     {
-        return v == Vector3.zero || float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z); ;
+        return v == Vector3.zero || float.IsNaN(v.x) || float.IsNaN(v.y) || float.IsNaN(v.z);
+        ;
     }
 
     public static Vector3 SetY(this Vector3 v, float value)
@@ -549,6 +562,7 @@ public static class MathTool
         {
             angleDegrees += 360;
         }
+
         return (float)angleDegrees;
     }
 
@@ -664,11 +678,10 @@ public static class MathTool
         transform.eulerAngles = new Vector3(transform.eulerAngles.x, newTargetAngleInRadians, transform.eulerAngles.z);
     }
 
-
-
     #endregion
 
     #region 曲线
+
     //二阶贝塞尔
     public static Vector3 GetBezierPoint2(Vector3 begin, Vector3 end, Vector3 handle, float t)
     {
@@ -678,6 +691,7 @@ public static class MathTool
         float z = pow * begin.z + 2 * t * (1 - t) * handle.z + t * t * end.z;
         return new Vector3(x, y, z);
     }
+
     //求导
     public static Vector3 GetBezierPoint2_Speed(Vector3 begin, Vector3 end, Vector3 handle, float t)
     {
@@ -687,6 +701,7 @@ public static class MathTool
         float z = pow_s * begin.z + (2 - 4 * t) * handle.z + 2 * t * end.z;
         return new Vector3(x, y, z);
     }
+
     //获得尽量平滑的Handle点
     public static Vector3 GetAutoHandle(Vector3 A, Vector3 B, Vector3 C, float rate = 0.8f)
     {
@@ -726,7 +741,8 @@ public static class MathTool
 
 
     //三阶段贝塞尔
-    public static Vector3 GetBezierPoint3(float time, Vector3 startPosition, Vector3 endPosition, Vector3 startTangent, Vector3 endTangent)
+    public static Vector3 GetBezierPoint3(float time, Vector3 startPosition, Vector3 endPosition, Vector3 startTangent,
+        Vector3 endTangent)
     {
         float t = time;
         float u = 1f - t;
@@ -750,6 +766,7 @@ public static class MathTool
         end -= start;
         return end * t + start;
     }
+
     #endregion
 }
 
@@ -759,16 +776,17 @@ public static class WorldScreenHelper
 {
     public static Vector2 WorldToAnchorPos(Vector3 position, RectTransform canvasRectTransform)
     {
-        Vector3 screenPoint3 = Camera.main.WorldToScreenPoint(position);//世界坐标转换为屏幕坐标
+        Vector3 screenPoint3 = Camera.main.WorldToScreenPoint(position); //世界坐标转换为屏幕坐标
         if (screenPoint3.z < 0)
         {
             //背面
             screenPoint3 = -screenPoint3;
         }
+
         Vector2 screenPoint = screenPoint3;
         Vector2 screenSize = new Vector2(Screen.width, Screen.height);
-        screenPoint -= screenSize / 2;//将屏幕坐标变换为以屏幕中心为原点
-        Vector2 anchorPos = screenPoint / screenSize * canvasRectTransform.sizeDelta;//缩放得到UGUI坐标
+        screenPoint -= screenSize / 2; //将屏幕坐标变换为以屏幕中心为原点
+        Vector2 anchorPos = screenPoint / screenSize * canvasRectTransform.sizeDelta; //缩放得到UGUI坐标
         return anchorPos;
     }
 }

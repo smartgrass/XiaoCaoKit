@@ -68,7 +68,7 @@ namespace XiaoCao
         public PlayMode playMode;
 
         public GameState gameState;
-        
+
         public Player0 player0;
 
         //需要保存
@@ -76,9 +76,18 @@ namespace XiaoCao
 
         public string NextSceneName { get; set; }
 
-        public string mapName;
+        public string levelName;
         
-        public string selectLevel;
+        public LevelInfo GetLevelInfo => MapNames.GetLevelInfoByName(levelName);
+        
+        //暂无使用
+        // public int selectRole;
+
+        public string firstSceneName;
+        
+        public string uiSelectLevel;
+        
+        
         
         public static Player0 LocalPlayer
         {
@@ -134,7 +143,9 @@ namespace XiaoCao
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
 
         public bool UIEnter;
-
+        public bool isDialogShow;
+        public float fightValue = 50;//战斗值 0~100
+        public string curBodyName;
 
         ///<see cref="BattleFlagNames"/>
         ///使用Map可以更好地清空数据
@@ -160,6 +171,15 @@ namespace XiaoCao
             {
                 tempNumDic.TryGetValue(BattleNumKeys.DamageMult_E, out mult);
                 return 1 + mult;
+            }
+        }
+
+        public void AddFightVale(float i)
+        {
+            fightValue += i;
+            if (fightValue > 100)
+            {
+                fightValue = 100;
             }
         }
     }
@@ -242,8 +262,13 @@ namespace XiaoCao
         Loading,
         Running,
         Pause,
-        Finish,
         Exit
+    }
+
+    public enum ELevelResult
+    {
+        Fail,
+        Success
     }
     
 
@@ -251,6 +276,7 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
+        LevelEnd=2,//关卡结束 0失败 1成功
 
         ///<see cref="GameStartMono"/>
         GameStartFinsh = 2,
@@ -258,6 +284,8 @@ namespace XiaoCao
         RoleChange = 4,
         UIPanelBtnGlow = 5,
         OnGetItem = 6, //捡到物品时
+        AddFriend = 7,
+        OnCoinChange = 8,//资源变化
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,

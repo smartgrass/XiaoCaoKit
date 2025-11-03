@@ -68,6 +68,15 @@ namespace XiaoCao
             Debug.Log($"--- ChangeCurLang {lang}");
             _instance.OnLanguageChanged?.Invoke();
         }
+
+        public bool HasKey(string key)
+        {
+            if (localizeData.TryGetFristValue(key, out string value))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
 

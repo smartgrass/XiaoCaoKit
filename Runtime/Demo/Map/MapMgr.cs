@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Threading.Tasks;
+using GG.Extensions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using YooAsset;
@@ -7,64 +8,92 @@ using YooAsset;
 namespace XiaoCao
 {
     //与CameraController类似是在Scene里面预配置的
-    public class MapMgr : MonoSingleton<MapMgr>, IMgr
+    public class MapMgr : MonoBehaviour, IMgr
     {
+        private static MapMgr _instance = null;
+
+        public static MapMgr Inst => _instance;
+
         public bool dontLoadMap;
 
         public string testLevelName = "";
 
-        public string MapName
+
+        private bool testLoad;
+
+        public static string CurLevelName
         {
-            get => GameDataCommon.Current.mapName;
-            set => GameDataCommon.Current.mapName = value;
+            get => GameDataCommon.Current.levelName;
+            set => GameDataCommon.Current.levelName = value;
         }
 
-        public LevelData LevelData { get => BattleData.Current.levelData; }
+        public LevelData LevelData
+        {
+            get => BattleData.Current.levelData;
+        }
+        
+        public LevelControl LevelControl { get; set; }
 
-        private LevelControl levelControl;
- 
         private void Awake()
         {
             _instance = this;
         }
 
+        public void OnDestroy()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+        }
 
         public IEnumerator LoadLevelObject()
         {
             GetSetting();
 #if UNITY_EDITOR
-            if (dontLoadMap)
+            if (testLoad && dontLoadMap)
             {
                 yield break;
             }
 #endif
 
-            if (string.IsNullOrEmpty(MapName))
+            if (string.IsNullOrEmpty(CurLevelName))
             {
                 yield break;
             }
+
             HideOtherLevel();
 
-            Transform tf = transform.Find(MapName);
+            Transform tf = transform.Find(CurLevelName);
             if (tf != null)
             {
-                levelControl = tf.GetComponent<LevelControl>();
+                LevelControl = tf.GetOrAddComponent<LevelControl>();
                 tf.gameObject.SetActive(true);
                 yield break;
             }
-            Debug.Log($"--- load map {MapName}");
-            string path = $"Assets/_Res/Map/{MapName}.prefab";
+
+            Debug.Log($"--- load map {CurLevelName}");
+            string path = $"Assets/_Res/Map/{CurLevelName}.prefab";
             AssetHandle handle = ResMgr.LoadPrefabAsyncHandle(path);
             yield return handle;
             GameObject obj = handle.InstantiateSync(transform);
-            obj.name = MapName;
-            levelControl = obj.GetComponent<LevelControl>();
+            obj.name = CurLevelName;
+            LevelControl = obj.GetOrAddComponent<LevelControl>();
         }
 
         private void GetSetting()
         {
-
-            if (DebugSetting.IsSkillEditor || DebugSetting.IsDebug)
+#if UNITY_EDITOR
+            //当处于启动界面时,设置测试场景
+            testLoad = GameAllData.commonData.firstSceneName == SceneManager.GetActiveScene().name;
+            if (testLoad && !string.IsNullOrEmpty(testLevelName) && !dontLoadMap)
+            {
+                CurLevelName = testLevelName;
+                testLevelName = "";
+                return;
+            }
+#endif
+            if (DebugSetting.IsDebug)
             {
                 var cfg = ConfigMgr.MainCfg;
                 string getLevelBranch = cfg.GetValue("Setting", "LevelBranch", "");
@@ -74,24 +103,20 @@ namespace XiaoCao
                 }
 
                 string levelName = cfg.GetValue("Setting", "DebugLevelName", "");
-                if (!string.IsNullOrEmpty(levelName)) {
-                    MapName = levelName;
-                }
-
-                if (Application.isEditor && !string.IsNullOrEmpty(testLevelName))
+                if (!string.IsNullOrEmpty(levelName))
                 {
-                    MapName = testLevelName;
+                    CurLevelName = levelName;
                 }
             }
         }
 
         public void SetPlayerStartPos()
         {
-            if (levelControl != null)
+            if (LevelControl != null)
             {
                 if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
                 {
-                    GameDataCommon.LocalPlayer.Movement.MoveToImmediate(levelControl.GetStartPos());
+                    GameDataCommon.LocalPlayer.Movement.MoveToImmediate(GetStartPos());
                 }
                 else
                 {
@@ -100,16 +125,35 @@ namespace XiaoCao
             }
         }
 
+        private Vector3 GetStartPos()
+        {
+            if (!LevelControl)
+            {
+                return Vector3.zero;
+            }
+
+            return LevelControl.GetStartPos();
+        }
+
         public void HideOtherLevel()
         {
             foreach (Transform child in transform)
             {
-                if (child.name != MapName && child.name.StartsWith("level"))
+                if (child.name != CurLevelName && child.name.StartsWith("level"))
                 {
                     child.gameObject.SetActive(false);
                 }
             }
         }
 
+        public Vector3 GetEndPos()
+        {
+            if (!LevelControl)
+            {
+                return GameDataCommon.LocalPlayer.transform.position;
+            }
+
+            return LevelControl.GetEndPos();
+        }
     }
 }

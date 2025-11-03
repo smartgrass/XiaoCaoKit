@@ -8,15 +8,27 @@ using XiaoCao;
 public class DebugGUI : MonoBehaviour
 {
     // 静态方法，用于在外部调用时自动获取单例对象并设置调试信息
-    [Conditional("DEBUG")]
+//     [Conditional("DEBUG")]
+//     public static void Log(string key, params object[] value)
+//     {
+// #if DEBUG
+//         GetInstance().AddDebugInfo(key, value);
+// #endif
+//     }
+// #if DEBUG
+
     public static void Log(string key, params object[] value)
     {
-#if DEBUG
-        GetInstance().AddDebugInfo(key, value);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (DebugSetting.DebugGUI_IsShow.GetKeyBool())
+        {
+            GetInstance().AddDebugInfo(key, value);
+        }
 #endif
     }
-#if DEBUG
 
+    
+    
     private GUIStyle guiStyle = new GUIStyle();
     private Dictionary<string, object> debugInfo = new Dictionary<string, object>();
     private float lastClearTime;
@@ -96,5 +108,4 @@ public class DebugGUI : MonoBehaviour
     {
         debugInfo.Clear();
     }
-#endif
 }

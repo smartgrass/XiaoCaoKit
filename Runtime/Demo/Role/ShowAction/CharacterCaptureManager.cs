@@ -72,7 +72,6 @@ public class CharacterCaptureManager : MonoSingleton<CharacterCaptureManager>, I
         }
 
         ModelLoader loader = new ModelLoader();
-        loader.offsetIndex = _index++;
         loader.Init(speakerName);
         ModelLoaderDic[speakerName] = loader;
         return loader;

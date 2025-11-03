@@ -66,9 +66,13 @@ namespace XiaoCao
             if (owner.lifeState != BehaviorLifeState.WillDestroy
                 && Data_R.breakData.UpdateDeadEnd())
             {
-                owner.lifeState = BehaviorLifeState.WillDestroy;
-                owner.Enable = false;
-                owner.DestroySelf();
+                //敌人自动销毁, 友军等复活
+                if (owner.RoleIdentityType == RoleIdentityType.Enemy)
+                {
+                    owner.lifeState = BehaviorLifeState.WillDestroy;
+                    owner.Enable = false;
+                    owner.DestroySelf();
+                }
             };
         }
 

@@ -10,12 +10,16 @@ namespace cfg
     public class LubanTables : Singleton<LubanTables>
     {
         #region Get
+
         private static SkillSettingReader SkillSettingReader => LubanTables.Inst.Tables.SkillSettingReader;
         private static LevelSettingReader LevelSettingReader => LubanTables.Inst.Tables.LevelSettingReader;
         private static ChapterSettingReader ChapterSettingReader => LubanTables.Inst.Tables.ChapterSettingReader;
-        private static SkillUpgradeSettingReader SkillUpgradeSettingReader => LubanTables.Inst.Tables.SkillUpgradeSettingReader;
 
-        private static CreateEnemyGroupsReader CreateEnemyGroupsReader => LubanTables.Inst.Tables.CreateEnemyGroupsReader;
+        private static SkillUpgradeSettingReader SkillUpgradeSettingReader =>
+            LubanTables.Inst.Tables.SkillUpgradeSettingReader;
+
+        private static CreateEnemyGroupsReader CreateEnemyGroupsReader =>
+            LubanTables.Inst.Tables.CreateEnemyGroupsReader;
 
         public static ChapterSetting GetChapterSetting(int key)
         {
@@ -25,6 +29,7 @@ namespace cfg
                 //默认值
                 ret = ChapterSettingReader.DataList[0];
             }
+
             return ret;
         }
 
@@ -40,11 +45,19 @@ namespace cfg
 
         public static LevelSetting GetLevelSetting(string key)
         {
+            if (string.IsNullOrEmpty(key))
+            {
+                Debug.LogError($"--- LevelSetting key is null");
+                return LevelSettingReader.DataList[0];
+            }
+
             var ret = LevelSettingReader.GetOrDefault(key);
             if (ret == null)
             {
+                Debuger.Log($"---! no find LevelSetting {key}");
                 ret = LevelSettingReader.DataList[0];
             }
+
             return ret;
         }
 
@@ -65,11 +78,13 @@ namespace cfg
             {
                 ret = SkillSettingReader.GetOrDefault(fallback);
             }
+
             if (ret == null)
             {
                 //默认值
                 ret = SkillSettingReader.DataList[0];
             }
+
             return ret;
         }
 
@@ -127,7 +142,6 @@ namespace cfg
         /// </summary>
         /// <param name="file">FileName</param>
         /// <returns>ByteBuf</returns>
-
         private ByteBuf LoadByteBuf(string file)
         {
             string path = GetLubanPath(file);

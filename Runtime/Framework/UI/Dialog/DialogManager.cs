@@ -19,7 +19,9 @@ namespace XiaoCao.UI
         /// <param name="content">对话框内容</param>
         /// <param name="onConfirm">确认回调</param>
         /// <param name="onCancel">取消回调</param>
-        public static void ShowDialog(string title, string content, Action onConfirm = null, Action onCancel = null)
+        /// <param name="isOnly">只允许出现一个</param>
+        public static DialogPanel ShowDialog(string title, string content, Action onConfirm = null,
+            Action onCancel = null)
         {
             if (dialogPanelPrefab == null)
             {
@@ -32,7 +34,7 @@ namespace XiaoCao.UI
                 else
                 {
                     Debug.LogError("DialogPanel prefab not found in Resources!");
-                    return;
+                    return null;
                 }
             }
 
@@ -41,6 +43,7 @@ namespace XiaoCao.UI
             dialog.transform.SetParent(GetCanvasRoot(), false);
             dialog.Show(title, content, onConfirm, onCancel);
             currentDialog = dialog;
+            return dialog;
         }
 
         /// <summary>

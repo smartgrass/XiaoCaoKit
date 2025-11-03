@@ -18,14 +18,23 @@ namespace XiaoCao
 
 
     /// <summary>
-    /// 比较枚举,使用int的好处,序列化方便
-    /// 而使用odin序列化则没啥问题
+    /// 代码层类型判断
     /// </summary>
     public enum RoleType
     {
         Enemy = 0,
         Player = 1,
     }
+
+    //身份类型
+    public enum RoleIdentityType
+    {
+        Enemy = 0,
+        Player = 1,
+        [InspectorName("友军")]
+        PlayerFriend = 2,
+    }
+    
     public enum MeshType
     {
         Box = 0,

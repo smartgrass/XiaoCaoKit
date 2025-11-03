@@ -711,10 +711,20 @@ namespace GG.Extensions
 			    var child = transform.GetChild(i);
 			    children.Add(child);
 		    }
-
-		    foreach (var child in children)
+		    
+		    if (Application.isPlaying)
 		    {
-			    Object.Destroy(child.gameObject);
+			    foreach (var child in children)
+			    {
+				    Object.Destroy(child.gameObject);
+			    }
+		    }
+		    else
+		    {
+			    foreach (var child in children)
+			    {
+				    Object.DestroyImmediate(child.gameObject);
+			    }
 		    }
 	    }
 

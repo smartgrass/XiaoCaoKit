@@ -17,7 +17,9 @@ public class ItemIdComponent : IdComponent
 
     [ReadOnly]
     public DeadInfo deadInfo;
-
+    
+    public bool noHurt;
+    
     public virtual void OnDamage(AtkInfo atkInfo)
     {
         HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);

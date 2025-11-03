@@ -79,5 +79,28 @@ namespace XiaoCao
 
             curDis = Mathf.Max(0.1f, dir.magnitude);
         }
+
+
+        public void KillEnemy(float distance = 30)
+        {
+            if (distance > 0)
+            {
+                Vector3 playerPos = Camera.main.transform.position;
+                //击杀指定距离内的敌人
+                foreach (var role in Inst.roleDic.Values)
+                {
+                    if (role.IsPlayer || !role.Enable || role.IsDie)
+                    {
+                        continue;
+                    }
+
+                    if (Vector3.Distance(role.transform.position,
+                            playerPos) < distance)
+                    {
+                        role.OnDie(new AtkInfo());
+                    }
+                }
+            }
+        }
     }
 }

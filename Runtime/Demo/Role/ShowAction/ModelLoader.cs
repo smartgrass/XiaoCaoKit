@@ -8,7 +8,7 @@ public class ModelLoader
 {
     public string roleKey;
 
-    public int offsetIndex;
+    public static int OffsetIndex;
 
     public GameObject loadedModel; // 保存当前加载的模型引用
 
@@ -45,7 +45,8 @@ public class ModelLoader
     {
         GameObject cameraCaptureObject = ResMgr.LoadInstan(CameraCapture.PrefabPath);
         cameraCapture = cameraCaptureObject.GetComponent<CameraCapture>();
-        cameraCaptureObject.transform.position = new Vector3(0, -200, 0) + Vector3.right * offsetIndex * 50;
+        OffsetIndex ++;
+        cameraCaptureObject.transform.position = new Vector3(0, -200, 0) + Vector3.right * OffsetIndex * 50;
         LoadModel();
         cameraCapture.Model = loadedModel;
         cameraCapture.ModelLoader = this;
@@ -62,6 +63,10 @@ public class ModelLoader
         loadedModel.transform.localPosition = config.localPosition;
         loadedModel.transform.localEulerAngles = config.localEulerAngles;
         loadedModel.transform.localScale = config.size * Vector3.one;
+        
+        cameraCapture.captureCamera.transform.localPosition = config.cameraLocalPosition;
+        cameraCapture.captureCamera.transform.localEulerAngles = config.cameraLocalEulerAngles;
+        
         if (!string.IsNullOrEmpty(config.anim))
         {
             string path = XCPathConfig.GetAnimatorControllerPath(config.anim);

@@ -14,7 +14,9 @@ namespace cfg
     public enum ItemType
     {
         Consumable = 0,
-        Equipment = 1,
+        HolyRelic = 1,
+        Coin = 2,
+        Buff = 3,
     }
 
 } 

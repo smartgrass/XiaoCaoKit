@@ -27,7 +27,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
     }
 
     /// <summary>
-    /// 关卡/组/分支,
+    /// 关卡/组/分支(分支可省略)
     /// </summary>
     public readonly string Key;
     /// <summary>

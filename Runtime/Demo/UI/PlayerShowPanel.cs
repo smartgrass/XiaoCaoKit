@@ -62,7 +62,7 @@ namespace XiaoCao
 
         private string HpStrGetter()
         {
-            return $"{(int)PlayerAttr.hp}/{(int)PlayerAttr.MapHp}";
+            return $"{(int)PlayerAttr.hp}/{(int)PlayerAttr.MaxHp}";
         }
     }
 }
