@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63b068c9c07c44f47ad013d3176e8618, type: 3}
+  m_Name: MoveSettingEnemy_BigSlow
+  m_EditorClassIdentifier: 
+  id: 0
+  des: 
+  baseMoveSpeed: 3.8
+  moveSmooth: 0.05
+  rotationLerp: 0.05
+  angleSpeed: 4
+  g: -91.43
+  GOnGroundMult: 0.8
+  MaxGOnGroundMult: 4
+  idleValue: 0.5
+  fightIdleValue: 0
+  weight: 10
+  CamFollewOffset: {x: 0, y: 0.83, z: 0}
+  deadTime: 8

@@ -39,7 +39,7 @@ namespace XiaoCao
                     throw new Exception(" cmdSkillList count 0");
                 }
 
-                Debug.LogError("--- auto skill");
+                Debug.LogError($"--- auto skill {index}/{cmdSkillList.Count}");
                 return cmdSkillList[index % cmdSkillList.Count];
             }
         }

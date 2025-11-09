@@ -15,6 +15,8 @@ namespace XiaoCaoEditor
 
     public static class XCEditorTools
     {
+
+
         ///<see cref="XCEditorMenu"/>
         public const string AssetCheck = "Assets/Check/";
 
@@ -44,12 +46,14 @@ namespace XiaoCaoEditor
         public const string ExampleWindow_1 = "XiaoCao/XiaoCaoWindow示例";
         public const string XCToolWindow = "XiaoCao/XiaoCao调试面板";
         public const string XCFindWindow = "XiaoCao/查询面板";
+        public const string XCAnimModifyWindow ="XiaoCao/XCAnimModifyWindow";
 
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
         public const string ShatterTool = "XiaoCao/ShatterTool";
         public const string AddAnimParamWindow = "XiaoCao/AddAnimParamWindow";
         public const string PlayerSaveDataWindow = "XiaoCao/玩家存档面板";
+        
 
         //其他
         ///打包相关 <see cref="BuildTool"/>

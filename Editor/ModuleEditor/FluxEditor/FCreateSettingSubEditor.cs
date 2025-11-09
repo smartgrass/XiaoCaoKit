@@ -35,16 +35,20 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
         string editorControllerPath = "Assets/XiaoCaoKit/Res/EditorRes/EditorPlayerAnim.controller";
         string targetControllerPath = $"Assets/_Res/Role/AnimController/{raceId}.controller";
 
-        // 使用 AssetDatabase 复制文件
-        if (AssetDatabase.CopyAsset(sourceControllerPath, targetControllerPath))
+        if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(targetControllerPath) == null)
         {
-            AssetDatabase.Refresh();
+            // 使用 AssetDatabase 复制文件
+            if (AssetDatabase.CopyAsset(sourceControllerPath, targetControllerPath))
+            {
+                AssetDatabase.Refresh();
+            }
+            else
+            {
+                Debug.LogError($"复制文件 {sourceControllerPath} 到 {targetControllerPath} 失败。");
+                return;
+            }
         }
-        else
-        {
-            Debug.LogError($"复制文件 {sourceControllerPath} 到 {targetControllerPath} 失败。");
-            return;
-        }
+
 
         // 3. 新创建的XCSeqSetting的targetAnimtorController赋值为步骤2创建的controller, 并赋值raceId
         RuntimeAnimatorController targetController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(targetControllerPath);

@@ -32,5 +32,7 @@ namespace XiaoCao
         public float weight = 1; //角色质量, 默认1,减少击退距离
 
         public Vector3 CamFollewOffset = new Vector3(0,0.83f,0);
+        
+        public float deadTime = 3;//死亡后回收时间
     }
 }

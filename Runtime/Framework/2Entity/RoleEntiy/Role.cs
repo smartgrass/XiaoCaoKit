@@ -347,6 +347,8 @@ namespace XiaoCao
             {
                 XCTime.DelayRunMono(5, OnReborn, idRole);
             }
+
+            gameObject.layer = Layers.WITHOUT_BODY;
         }
 
         //复活
@@ -356,6 +358,8 @@ namespace XiaoCao
 
             data_R.bodyState = EBodyState.Ready;
 
+            gameObject.layer = Layers.BODY_PHYSICS;
+            
             Anim.SetBool(AnimHash.IsDead, false);
         }
 
@@ -378,6 +382,7 @@ namespace XiaoCao
             AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
 
             data_R.breakData.SetAttr(attr);
+            data_R.breakData.deadTime = data_R.moveSetting.deadTime;
             data_R.playerAttr.Init(id, lv, attr);
         }
 

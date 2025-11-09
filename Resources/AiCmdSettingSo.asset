@@ -49,4 +49,9 @@ MonoBehaviour:
     - 404
     - 405
     - 406
-    rollId: 404
+    rollId: 40
+  - CmdSettingId: 41
+    des: "\u72AC"
+    cmdSkillList:
+    - 4101
+    rollId: 41

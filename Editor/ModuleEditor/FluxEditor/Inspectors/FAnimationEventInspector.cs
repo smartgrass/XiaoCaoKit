@@ -182,6 +182,7 @@ namespace FluxEditor
 				{
 					EditorGUI.BeginChangeCheck();
 					EditorGUILayout.IntSlider( _startOffset, 0, _animEvent.GetMaxStartOffset() );
+					EditorGUILayout.IntSlider( _blendLength, 0, _animEvent.Length );
 					if( EditorGUI.EndChangeCheck() )
 						rebuildTrack = true;
 				}

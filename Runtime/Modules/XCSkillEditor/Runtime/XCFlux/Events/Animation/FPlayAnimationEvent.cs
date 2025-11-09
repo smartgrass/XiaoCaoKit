@@ -4,6 +4,9 @@ using XiaoCao;
 
 namespace Flux
 {
+	/// <summary>
+	/// Editor->FAnimationEventInspector
+	/// </summary>
 	[FEvent("Animation/Play Animation", typeof(FAnimationTrack))]
 	public class FPlayAnimationEvent : FEvent
 	{
