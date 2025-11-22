@@ -17,7 +17,8 @@ MonoBehaviour:
     posList:
     - {x: -607, y: 143}
     - {x: -230, y: -161}
-    - {x: 379, y: 121}
+    - {x: 222, y: 121}
+    - {x: 636, y: -196}
     lines: []
   - id: 1
     posList:

@@ -11,7 +11,7 @@ using XiaoCao.UI;
 public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 {
     public static EnemyGroupComponent Current;
-    
+
     public UnityEvent enterEvent;
 
     public float radus = 8;
@@ -35,6 +35,20 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     private void Awake()
     {
+        CheckChildGroup();
+
+        foreach (var creator in creators)
+        {
+            creator.enemyAllDead += OnEnemyDeadEvent;
+            //creator.gameObject.SetActive(false);
+        }
+
+        _maxTriggerTime = creators.Count;
+    }
+
+    private void CheckChildGroup()
+    {
+        if (creators.Count != 0) return;
         //有顺序要求
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -44,15 +58,6 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
                 creators.Add(creator);
             }
         }
-
-
-        foreach (var creator in creators)
-        {
-            creator.enemyAllDead += OnEnemyDeadEvent;
-            //creator.gameObject.SetActive(false);
-        }
-
-        _maxTriggerTime = creators.Count;
     }
 
     private void OnEnemyDeadEvent(EnemyCreator creator)
@@ -131,6 +136,7 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     public void GetCreateEnemyInfoFromConfig(string key)
     {
+        CheckChildGroup();
         var group = LubanTables.GetCreateEnemyGroups(key);
         for (int i = 0; i < creators.Count; i++)
         {

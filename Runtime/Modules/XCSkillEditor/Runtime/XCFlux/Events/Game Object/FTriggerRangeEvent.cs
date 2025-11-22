@@ -29,7 +29,7 @@ namespace Flux
     [Serializable]
     public class MeshInfo
     {
-        [EnumLabel("ÀàÐÍ")]
+        [EnumLabel("ç±»åž‹")]
         public MeshType meshType;
 
         [Header("[Size],[eulerAngles],[center]")]
@@ -39,10 +39,10 @@ namespace Flux
         public Vector3 GetEulerAngles => values[1];
         public Vector3 GetCenter => values[2];
 
-        //ÉÈÐÎ
-        public float GetRadius => GetSize.x; //°ë¾¶
-        public float GetHight => GetSize.y; //¸ß
-        public float GetRadian => GetSize.z;  //»¡¶È
+        //æ‰‡å½¢
+        public float GetRadius => GetSize.x; //åŠå¾„
+        public float GetHight => GetSize.y; //é«˜
+        public float GetRadian => GetSize.z;  //å¼§åº¦
     }
 
 }

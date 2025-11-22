@@ -88,7 +88,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly float BreakPower;
     /// <summary>
-    /// 音效
+    /// 音效,空为无音效
     /// </summary>
     public readonly string HitClip;
     /// <summary>

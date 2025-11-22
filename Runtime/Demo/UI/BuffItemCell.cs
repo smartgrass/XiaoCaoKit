@@ -14,12 +14,11 @@ namespace XiaoCao
 
         public Image icon;
 
-        public ColorSettingSo colorSetting;
+        private ColorSettingSo ColorSetting => UIPrefabSo.Inst.buffColorSettingSo;
 
         public SpriteSettingSo spriteSetting;
 
-        [XCHeader("DebugView")]
-        public BuffItem buffItem;
+        [XCHeader("DebugView")] public BuffItem buffItem;
 
         public BuffItemCell TempItemCell { get; set; }
 
@@ -58,7 +57,6 @@ namespace XiaoCao
             {
                 OnButonClick();
             }
-
         }
 
         void RightClick()
@@ -100,6 +98,7 @@ namespace XiaoCao
             {
                 return;
             }
+
             OnDragAct?.Invoke(eventData.position);
             TempItemCell.transform.position = eventData.position;
         }
@@ -141,6 +140,7 @@ namespace XiaoCao
                     ExChange(nextCell);
                 }
             }
+
             RefreshView();
             EnableRayCast(true);
         }
@@ -151,15 +151,17 @@ namespace XiaoCao
             //升级设计: Ex, 同类型, 同等级
             EBuffType nextType = nextCell.buffItem.GetBuffType;
             if (nextType == EBuffType.Ex && buffItem.GetBuffType == EBuffType.Ex
-                && buffItem.GetFirstEBuff == nextCell.buffItem.GetFirstEBuff)
+                                         && buffItem.GetFirstEBuff == nextCell.buffItem.GetFirstEBuff)
             {
                 if (buffItem.IsMaxLevel)
                 {
                     isMaxLevel = true;
                     return false;
                 }
+
                 return true;
             }
+
             return false;
             //return nextCell.buffItem.CanUpGradeItem(buffItem);
         }
@@ -173,6 +175,7 @@ namespace XiaoCao
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -198,7 +201,6 @@ namespace XiaoCao
             }
 
             return null;
-
         }
 
         public void ReGetValue()
@@ -222,36 +224,21 @@ namespace XiaoCao
                 icon.enabled = false;
                 return;
             }
+
             icon.sprite = spriteSetting.values[index];
             icon.enabled = true;
         }
 
         public void SetBgColor()
         {
-            int len = colorSetting.values.Length;
-            if (buffItem.GetBuffType == EBuffType.None)
-            {
-                bg.color = colorSetting.values[len - 1];
-                return;
-            }
-
-            int index = buffItem.level;
-            if (index < 0)
-            {
-                index = len - 1;
-            }
-            if (index >= colorSetting.values.Length)
-            {
-                index = colorSetting.values.Length - 1;
-            }
-            bg.color = colorSetting.values[index];
+            bg.color = buffItem.GetColor();
         }
 
         private void SetFade()
         {
             icon.enabled = false;
-            int len = colorSetting.values.Length;
-            bg.color = colorSetting.values[len - 1];
+            int len = ColorSetting.values.Length;
+            bg.color = ColorSetting.values[len - 1];
             EnableRayCast(false);
         }
 
@@ -267,5 +254,4 @@ namespace XiaoCao
             SetBgColor();
         }
     }
-
 }

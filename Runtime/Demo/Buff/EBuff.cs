@@ -9,47 +9,36 @@ namespace XiaoCao
     {
         None = 0,
 
-        [InspectorName("击杀回血3% HP")]
-        KillRecoverHpMult,
+        [InspectorName("击杀回血3% HP")] KillRecoverHpMult,
 
-        [InspectorName("吸血1%")]
-        AtkRecoverHpMult,
+        [InspectorName("吸血1%")] AtkRecoverHpMult,
 
-        [InspectorName("增加攻击力2.5%")]
-        AtkMult,
-        [InspectorName("最大生命5%")]
-        MaxHpMult,
+        [InspectorName("增加攻击力2.5%")] AtkMult,
+        [InspectorName("最大生命5%")] MaxHpMult,
 
-        [InspectorName("暴击率提升2.5%")]
-        CritAdd,
+        [InspectorName("暴击率提升2.5%")] CritAdd,
 
-        [InspectorName("技能冷缩 5%")]
-        SkillCDOff,
+        [InspectorName("技能冷缩 5%")] SkillCDOff,
 
-        [InspectorName("移速增加 5%")]
-        MoveSpeedMultAdd,
+        [InspectorName("移速增加 5%")] MoveSpeedMultAdd,
 
-        [InspectorName("大招能量恢复 20%")]
-        UltimateEnergyRestore,
+        [InspectorName("大招能量恢复 20%")] UltimateEnergyRestore,
 
         //相对的 有大招伤害
-        [InspectorName("主动技能伤害5%")]
-        SkillDamageMult,
+        [InspectorName("主动技能伤害5%")] SkillDamageMult,
 
-        [InspectorName("普攻速度增加15%")]
-        NorAtkSpeedAdd,
+        [InspectorName("普攻速度增加15%")] NorAtkSpeedAdd,
 
-        [InspectorName("exBuff分界线")]
-        NorBuffEndIndex = 100,
+        [InspectorName("exBuff分界线")] NorBuffEndIndex = 100,
 
-        [InspectorName("自动召唤魔法导弹,cd{5}s")]
-        MagicMissile = 101,
+        [InspectorName("自动召唤魔法导弹")] MagicMissile = 101,
 
-        [InspectorName("产生额外剑气")]
-        ExtraSlash = 102,
+        [InspectorName("产生额外剑气")] ExtraSlash = 102,
 
-        [InspectorName("闪避成功,使周围目标陷入时停3s")]
-        LimitDash
+        [InspectorName("受到攻击时,回复3%最大生命,cd10s")]
+        HurtRecover = 103,
+
+        [InspectorName("闪避成功,使周围目标陷入时停3s")] LimitDash
     }
 
     public static class BuffSetting
@@ -60,6 +49,7 @@ namespace XiaoCao
             {
                 return EBuffType.None;
             }
+
             int index = (int)buff;
             if (index < (int)EBuff.NorBuffEndIndex)
             {

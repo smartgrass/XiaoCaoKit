@@ -12,6 +12,8 @@ namespace XiaoCao
         public int Id => id;
 
         public float baseMoveSpeed = 3.8f;
+        
+        public float backMoveSpeedMult = 0.5f;
 
         public float moveSmooth = 0.05f;
 

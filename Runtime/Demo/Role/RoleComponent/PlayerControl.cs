@@ -160,6 +160,11 @@ namespace XiaoCao
                 return;
             }
 
+            if (owner.IsDie)
+            {
+                return;
+            }
+
             AtkTimers.SetSkillEnterCD(RollName);
 
             //停止&打断当前动作

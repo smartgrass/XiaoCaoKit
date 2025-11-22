@@ -15,6 +15,7 @@ MonoBehaviour:
   array:
   - desc: "\u73A9\u5BB6"
     id: 0
+    special: 0
     maxLevel: 50
     endHp: 6000
     endMp: 1200
@@ -28,6 +29,7 @@ MonoBehaviour:
     noHurtRecoverSpeed: 0.2
   - desc: "\u654C\u4EBA-\u57FA\u672C"
     id: 1
+    special: 0
     maxLevel: 50
     endHp: 7000
     endMp: 1200
@@ -41,10 +43,11 @@ MonoBehaviour:
     noHurtRecoverSpeed: 0.2
   - desc: "\u654C\u4EBA-boss"
     id: 2
+    special: 1
     maxLevel: 50
-    endHp: 21000
+    endHp: 25000
     endMp: 1200
-    endAtk: 180
+    endAtk: 200
     endDef: 500
     offsetLevel: 10
     maxArmor: 30

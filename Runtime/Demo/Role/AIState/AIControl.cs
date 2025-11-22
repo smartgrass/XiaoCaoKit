@@ -2,6 +2,7 @@ using GG.Extensions;
 using System;
 using TEngine;
 using UnityEngine;
+
 // 移除了错误的引用，不应该在运行时代码中引用 UnityEditor 命名空间
 
 namespace XiaoCao
@@ -77,7 +78,7 @@ namespace XiaoCao
             mainDataFSM = ScriptableObject.Instantiate(so);
             mainDataFSM.name = so.name;
             mainDataFSM.InitReset(this);
-            Movement.overridBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
+            Movement.curBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
             idlePos = transform.position;
             //只添加一次
             if (!HasAddAction)
@@ -268,12 +269,22 @@ namespace XiaoCao
                 ? transform.forward
                 : (targetRole.transform.position - transform.position).normalized;
 
-            owner.AIMoveVector(dir, speedRate);
+            if (speedRate < 0)
+            {
+                dir = -dir;
+            }
+
+            owner.AIMoveVector(dir, speedRate, false);
         }
 
         public void MoveStop()
         {
             owner.AIMoveVector(Vector3.zero, 0);
+        }
+
+        public void MoveSpeedDown(float time)
+        {
+            owner.Movement.speedDownTime = time;
         }
 
         public void Lock(bool isMoveBack = false)

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   des: 
-  baseMoveSpeed: 3.8
+  baseMoveSpeed: 3.2
+  backMoveSpeedMult: 0.5
   moveSmooth: 0.05
   rotationLerp: 0.2
   angleSpeed: 10
@@ -22,4 +23,7 @@ MonoBehaviour:
   GOnGroundMult: 0.8
   MaxGOnGroundMult: 4
   idleValue: 0.5
+  fightIdleValue: 0
+  weight: 1
   CamFollewOffset: {x: 0, y: 0.83, z: 0}
+  deadTime: 3

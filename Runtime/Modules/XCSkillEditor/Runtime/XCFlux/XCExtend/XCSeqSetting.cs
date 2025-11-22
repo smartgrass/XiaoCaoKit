@@ -11,7 +11,7 @@ namespace XiaoCao
 
         public RoleType type;
 
-        [InfoBox("raceId 为职业,影响配置选择,\n如移速,武器种类,技能等等")]
+        [InfoBox("raceId 为职业,影响配置选择,固定为数字,\n如移速,武器种类,技能等等")]
         [Label("raceId")]
         public string raceId;
 

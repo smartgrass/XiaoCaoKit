@@ -9,6 +9,8 @@ using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System.Linq;
 using System.IO;
+using NUnit.Framework;
+using XiaoCao;
 
 namespace FluxEditor
 {
@@ -58,13 +60,17 @@ namespace FluxEditor
         private int _selectedSequenceIndex;
 
         // update mode UI variables
-        private GUIContent _updateModeLabel = new GUIContent("Update Mode", "How does the sequence update:\n\tNormal: uses Time.time in Update()\n\tAnimatePhysics: uses Time.fixedTime in FixedUpdate()\n\tUnscaledTime: uses Time.unscaledTime in Update()");
+        private GUIContent _updateModeLabel = new GUIContent("Update Mode",
+            "How does the sequence update:\n\tNormal: uses Time.time in Update()\n\tAnimatePhysics: uses Time.fixedTime in FixedUpdate()\n\tUnscaledTime: uses Time.unscaledTime in Update()");
+
         private Rect _updateModeLabelRect;
         private Rect _updateModeFieldRect;
         private bool _showUpdadeMode;
 
         // framerate UI variables
-        private GUIContent _framerateLabel = new GUIContent("Frame Rate", "How many frames does the sequence have per second");
+        private GUIContent _framerateLabel =
+            new GUIContent("Frame Rate", "How many frames does the sequence have per second");
+
         private Rect _framerateLabelRect;
         private Rect _framerateFieldRect;
         private bool _showFramerate;
@@ -84,7 +90,9 @@ namespace FluxEditor
         private Rect _openInspectorRect;
 
         private GUIContent _savaDataLabel = new GUIContent(string.Empty, "_savaData");
+
         private Rect _savaDataRect;
+
         // cached number field style, since we want numbers centered
         private GUIStyle _numberFieldStyle;
 
@@ -109,7 +117,8 @@ namespace FluxEditor
         private void RebuildSequenceList()
         {
             _sequences = GameObject.FindObjectsOfType<FSequence>();
-            System.Array.Sort<FSequence>(_sequences, delegate (FSequence x, FSequence y) { return x.name.CompareTo(y.name); });
+            System.Array.Sort<FSequence>(_sequences,
+                delegate(FSequence x, FSequence y) { return x.name.CompareTo(y.name); });
 
             _sequenceNames = new GUIContent[_sequences.Length + 2];
             for (int i = 0; i != _sequences.Length; ++i)
@@ -168,7 +177,7 @@ namespace FluxEditor
             _showAddContainer = reminderWidth >= 0;
 
             _openInspectorRect.xMin = _openInspectorRect.xMax - 22;
-            //±£¥Ê∞¥≈•
+            //‰øùÂ≠òÊåâÈíÆ
             _savaDataRect.xMax = _openInspectorRect.xMin - 4;
             _savaDataRect.xMin = _savaDataRect.xMax - 24;
 
@@ -198,9 +207,12 @@ namespace FluxEditor
             _numberFieldStyle = new GUIStyle(EditorStyles.numberField);
             _numberFieldStyle.alignment = TextAnchor.MiddleCenter;
         }
+
         #region XiaoCao
+
         public const int LINE = 2;
-        //◊Û…œΩ«Œ™(0,0)
+
+        //Â∑¶‰∏äËßí‰∏∫(0,0)
         public Rect rect_0;
         public Rect[] lineRects = new Rect[LINE];
         public Rect[] xcRects = new Rect[10];
@@ -209,7 +221,7 @@ namespace FluxEditor
         public const int ONE_LINE_HEIGHT = 20;
 
 
-        private void DrawAllShow()
+        private void DrawAllShow(FSequence sequence)
         {
             int len = _showAttrs.Count;
             for (int i = 0; i < len; i++)
@@ -226,14 +238,80 @@ namespace FluxEditor
                 {
                     labelRect.width = attr.width * 0.4f;
                 }
+
                 labelRect.y += 2;
 
                 rect.xMin = labelRect.xMax + LABEL_SPACE;
                 EditorGUI.PrefixLabel(labelRect, content);
+                EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(rect, pro, GUIContent.none);
 
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Debug.Log($"-- change {pro.name}");
+                    OnPropertyChange(pro, sequence);
+                }
             }
         }
+
+        private void OnPropertyChange(SerializedProperty pro, FSequence sequence)
+        {
+            if (pro.name == "sequenceAction")
+            {
+                Assert.NotNull(sequence);
+                if (sequence == null)
+                {
+                    Debug.Log($"-- seq null");
+                    return;
+                }
+
+                FSequence.ESequenceAction action = (FSequence.ESequenceAction)pro.enumValueIndex;
+                //Â§çÂéü
+                pro.enumValueIndex = (int)FSequence.ESequenceAction.None;
+                if (action == FSequence.ESequenceAction.CheckCmdSetting)
+                {
+                    //Ëé∑ÂèñraceId
+                    var raceId = int.Parse(sequence.SeqSetting.raceId);
+                    //Êü•ÊâæcmdSetting
+                    var setting =
+                        AssetDatabase.LoadAssetAtPath<AiCmdSettingSo>(
+                            "Assets/XiaoCaoKit/Resources/AiCmdSettingSo.asset");
+                    Assert.NotNull(setting);
+
+                    if (!setting.ContainsKey(raceId))
+                    {
+                        List<AiSkillCmdSetting> list = new List<AiSkillCmdSetting>(setting.array);
+                        var newOne = new AiSkillCmdSetting();
+                        newOne.CmdSettingId = raceId;
+                        newOne.cmdSkillList = new List<string>();
+                        list.Add(newOne);
+                        setting.array = list.ToArray();
+                        setting.hasInited = false;
+                        setting.ContainsKey(raceId);
+                    }
+                    var raceCmd = setting.map[raceId];
+                    //Âà§Êñ≠ÊòØÂê¶Â≠òÂú®ÂâçÊäÄËÉΩid
+                    bool hasSkillId = false;
+                    foreach (var skillId in raceCmd.cmdSkillList)
+                    {
+                        if (skillId == sequence._skillId)
+                        {
+                            hasSkillId = true;
+                        }
+                    }
+
+                    //Ê≤°ÊúâÂàôËá™Âä®Ê∑ªÂä†
+                    if (!hasSkillId)
+                    {
+                        raceCmd.cmdSkillList.Add(sequence._skillId);
+                        _sequenceWindow.ShowNotification(
+                            new GUIContent($"Ê∑ªÂä†skillId {sequence._skillId} Âà∞ raceId {raceId}"));
+                        EditorUtility.SetDirty(setting);
+                    }
+                }
+            }
+        }
+
 
         private void InitAllRects()
         {
@@ -263,11 +341,13 @@ namespace FluxEditor
         }
 
         #endregion
+
         public void OnGUI()
         {
             FSequence sequence = _sequenceWindow.GetSequenceEditor().Sequence;
 
-            if ((_selectedSequenceIndex < 0 && sequence != null) || (_selectedSequenceIndex >= 0 && _sequences[_selectedSequenceIndex] != sequence))
+            if ((_selectedSequenceIndex < 0 && sequence != null) ||
+                (_selectedSequenceIndex >= 0 && _sequences[_selectedSequenceIndex] != sequence))
             {
                 for (int i = 0; i != _sequences.Length; ++i)
                 {
@@ -278,19 +358,21 @@ namespace FluxEditor
                     }
                 }
             }
+
             if (Event.current.type == EventType.ContextClick && rect_0.Contains(Event.current.mousePosition))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("±‡º≠ΩÁ√Ê¥˙¬Î"), false, this.EditorCode);
-                menu.AddItem(new GUIContent("¥¥Ω®–¬≈‰÷√π§æﬂ"), false, this.CreateSetting);
-                menu.AddItem(new GUIContent("«–ªªƒ£–Õ"), false, this.SwitchModel);
-                menu.AddItem(new GUIContent("∞Ô÷˙Œƒµµ"), false, this.ShowHelp);
+                menu.AddItem(new GUIContent("ÁºñËæëÁïåÈù¢‰ª£Á†Å"), false, this.EditorCode);
+                menu.AddItem(new GUIContent("ÂàõÂª∫Êñ∞ÈÖçÁΩÆÂ∑•ÂÖ∑"), false, this.CreateSetting);
+                menu.AddItem(new GUIContent("ÂàáÊç¢Ê®°Âûã"), false, this.SwitchModel);
+                menu.AddItem(new GUIContent("Â∏ÆÂä©ÊñáÊ°£"), false, this.ShowHelp);
                 menu.ShowAsContext();
                 Event.current.Use();
             }
 
 
-            if (Event.current.type == EventType.MouseDown && Event.current.alt && _sequencePopupRect.Contains(Event.current.mousePosition))
+            if (Event.current.type == EventType.MouseDown && Event.current.alt &&
+                _sequencePopupRect.Contains(Event.current.mousePosition))
             {
                 Selection.activeObject = sequence;
                 Event.current.Use();
@@ -319,6 +401,7 @@ namespace FluxEditor
                     _sequenceWindow.GetSequenceEditor().OpenSequence(_sequences[_selectedSequenceIndex]);
                     _sequenceWindow.RemoveNotification();
                 }
+
                 EditorGUIUtility.keyboardControl = 0; // deselect it
                 EditorGUIUtility.ExitGUI();
             }
@@ -358,7 +441,8 @@ namespace FluxEditor
                 {
                     if (newFrameRate == -1)
                     {
-                        FChangeFrameRateWindow.Show(new Vector2(_framerateLabelRect.xMin, _framerateLabelRect.yMax), sequence, FSequenceInspector.Rescale);
+                        FChangeFrameRateWindow.Show(new Vector2(_framerateLabelRect.xMin, _framerateLabelRect.yMax),
+                            sequence, FSequenceInspector.Rescale);
                     }
                     else
                     {
@@ -370,7 +454,9 @@ namespace FluxEditor
             if (_showLength)
             {
                 EditorGUI.PrefixLabel(_lengthLabelRect, _lengthLabel);
-                _sequenceLength.intValue = Mathf.Clamp(EditorGUI.IntField(_lengthFieldRect, _sequenceLength.intValue, _numberFieldStyle), 1, int.MaxValue);
+                _sequenceLength.intValue =
+                    Mathf.Clamp(EditorGUI.IntField(_lengthFieldRect, _sequenceLength.intValue, _numberFieldStyle), 1,
+                        int.MaxValue);
             }
 
             GUIStyle s = new GUIStyle(EditorStyles.miniButton);
@@ -394,7 +480,7 @@ namespace FluxEditor
                 SaveXCTask.SavaCurSeq();
             }
 
-            DrawAllShow();
+            DrawAllShow(sequence);
 
             _sequenceSO.ApplyModifiedProperties();
 
@@ -419,6 +505,7 @@ namespace FluxEditor
                 Debug.Log($"--- cur sequence null");
                 return;
             }
+
             MonoScript script = MonoScript.FromMonoBehaviour(editor.Sequence);
             //FSequence
             var fileAssetPath = AssetDatabase.GetAssetPath(script);
@@ -448,7 +535,8 @@ namespace FluxEditor
                     }
                 }
             }
-            return 0; // »Áπ˚Œ¥’“µΩ£¨∑µªÿ0
+
+            return 0; // Â¶ÇÊûúÊú™ÊâæÂà∞ÔºåËøîÂõû0
         }
 
 
@@ -470,13 +558,15 @@ namespace FluxEditor
 
             if (!hasDefaultContainers)
             {
-                _sequenceWindow.GetSequenceEditor().CreateContainer(new FColorSetting("Default", FGUI.DefaultContainerColor()));
+                _sequenceWindow.GetSequenceEditor()
+                    .CreateContainer(new FColorSetting("Default", FGUI.DefaultContainerColor()));
                 return;
             }
 
             menu.AddSeparator(null);
 
-            menu.AddItem(new GUIContent("[Default New Container]"), false, CreateContainer, new FColorSetting("Default", FGUI.DefaultContainerColor()));
+            menu.AddItem(new GUIContent("[Default New Container]"), false, CreateContainer,
+                new FColorSetting("Default", FGUI.DefaultContainerColor()));
 
             menu.ShowAsContext();
         }

@@ -54,4 +54,5 @@ MonoBehaviour:
     des: "\u72AC"
     cmdSkillList:
     - 4101
+    - 4102
     rollId: 41

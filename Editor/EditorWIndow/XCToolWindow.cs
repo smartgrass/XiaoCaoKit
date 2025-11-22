@@ -159,7 +159,7 @@ namespace AssetEditor.Editor
         {
             foreach (var role in RoleMgr.Inst.roleDic.Values)
             {
-                if (!role.IsPlayer && role.Enable && !role.IsDie)
+                if (!role.IsPlayer && role.Enable && !role.IsDie && role.IsAiOn)
                 {
                     role.OnDie(new AtkInfo());
                 }
@@ -202,6 +202,10 @@ namespace AssetEditor.Editor
         [Button("LevelEnd", Line3, enabledMode: EButtonEnableMode.Playmode)]
         void LevelEnd()
         {
+            var endPos = MapMgr.Inst.GetEndPos();
+            Vector3 offset = (endPos - GameDataCommon.LocalPlayer.transform.position).ToY0().normalized * -3;
+            GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos+ offset + Vector3.up);
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), "LevelFinish");
             GameMgr.Inst.LevelFinish();
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TEngine;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace XiaoCao
                 timer = Mathf.Max(time, timer);
                 return;
             }
+
             timer = time;
             BattleData.IsTimeStop = true;
             //1.敌人停止动画
@@ -49,6 +51,7 @@ namespace XiaoCao
             Recover();
             Debug.Log($"--- 恢复");
         }
+
         private static void Recover()
         {
             GameEvent.Send<bool>(EGameEvent.TimeSpeedStop.Int(), false);
@@ -57,8 +60,23 @@ namespace XiaoCao
             XCTime.timeScale = 1;
         }
 
+        public static HashSet<string> uiStopTimeTag = new HashSet<string>();
+
+        public static void UIStopTime(bool isOn, string tag)
+        {
+            if (isOn)
+            {
+                uiStopTimeTag.Add(tag);
+                Time.timeScale = 0;
+            }
+            else
+            {
+                uiStopTimeTag.Remove(tag);
+                if (uiStopTimeTag.Count == 0)
+                {
+                    Time.timeScale = 1;
+                }
+            }
+        }
     }
-
 }
-
-

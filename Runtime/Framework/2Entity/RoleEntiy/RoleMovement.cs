@@ -26,7 +26,7 @@ namespace XiaoCao
 
         public float maxAnimMoveSpeed = 1;
 
-        public float overridBaseMoveSpeed = 0;
+        public float curBaseMoveSpeed = 0;
 
         public CharacterController cc => owner.idRole.cc;
         public Transform transform => owner.idRole.transform;
@@ -50,6 +50,7 @@ namespace XiaoCao
         public void Init()
         {
             owner.Anim.SetFloat(AnimNames.IdleValue, moveSetting.idleValue);
+            curBaseMoveSpeed = moveSetting.baseMoveSpeed;
         }
 
         public override void FixedUpdate()
@@ -85,18 +86,20 @@ namespace XiaoCao
             {
                 moveDir = Vector3.zero;
             }
+
             if (Data_R.IsBusy || !Data_R.IsStateFree || owner.IsAnimBreak)
             {
                 moveDir = Vector3.zero;
             }
+
 
             bool isInput = (Mathf.Abs(moveDir.x) + Mathf.Abs(moveDir.z)) > 0;
 
             bool lookMoveDir = isLookMoveDir || (!tempLookAt);
 
             ComputeMoveValue(isInput, lookMoveDir, moveDir);
-            
-            
+
+
             if (lookMoveDir)
             {
                 RotateByMoveDir(moveDir, moveSetting.rotationLerp * RoleState.angleSpeedMult);
@@ -114,7 +117,7 @@ namespace XiaoCao
                     DebugGUI.Log("moveDir", moveDir.ToString(), isInput, lookMoveDir);
                 }
             }
-            
+
             if (Data_R.skillState.Data is ESkillState.SkillEnd)
             {
                 if (isInput)
@@ -124,10 +127,16 @@ namespace XiaoCao
                     owner.Anim?.CrossFade(AnimHash.Idle, 0.1f);
                 }
             }
-            
+
             CheckBackToIdle(isInput);
 
-            float baseSpeed = overridBaseMoveSpeed > 0 ? overridBaseMoveSpeed : Data_R.moveSetting.baseMoveSpeed;
+
+            float baseSpeed = curBaseMoveSpeed;
+            if (Data_R.roleState.animMoveSpeed < 0.1f)
+            {
+                baseSpeed *= moveSetting.backMoveSpeedMult;
+            }
+
 
             float speed = baseSpeed * Data_R.roleState.moveAnimMult * Data_R.playerAttr.GetValue(EAttr.MoveSpeedMult);
 
@@ -157,7 +166,7 @@ namespace XiaoCao
 
             moveDelta.y += velocityY * XCTime.fixedDeltaTime;
 #if UNITY_EDITOR
-            if (DebugSetting.PauseFrame +1 == Time.frameCount)
+            if (DebugSetting.PauseFrame + 1 == Time.frameCount)
             {
                 isMovingThisFrame = true;
             }
@@ -173,7 +182,6 @@ namespace XiaoCao
             }
 
             FixUpdateLockTime();
-
         }
 
         public void Used()
@@ -193,9 +201,7 @@ namespace XiaoCao
         {
             //DebugGUI.Log("skillState", Data_R.skillState);
             //有移动则取消后摇
-
         }
-
 
 
         public void RotateByMoveDir(Vector3 worldMoveDir, float lerp = 1)
@@ -250,10 +256,27 @@ namespace XiaoCao
             }
         }
 
+        public float speedDownTime;
+        public float speedDownStep = 1;
+
         //计算移动动画速度, 同时会影响移速倍率
         void ComputeMoveValue(bool isInput, bool lookMoveDir, Vector3 moveDir)
         {
             float inputTotal = isInput ? 1 : 0;
+
+            //减速处理
+            if (speedDownTime > 0)
+            {
+                speedDownTime -= Time.deltaTime;
+                maxAnimMoveSpeed -= speedDownStep * Time.deltaTime;
+                inputDir = inputDir.normalized * maxAnimMoveSpeed;
+                if (maxAnimMoveSpeed <= 0.1)
+                {
+                    speedDownTime = 0;
+                    maxAnimMoveSpeed = 0;
+                    inputDir = Vector3.zero;
+                }
+            }
 
             //限制最大移速动画
             inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
@@ -265,7 +288,10 @@ namespace XiaoCao
                 moveSmooth = moveSmooth / XCTime.timeScale;
             }
 
+
             float targetAnimMoveSpeed = inputTotal;
+
+
             if (!lookMoveDir && tempLookAt)
             {
                 Vector3 lookDir = tempLookAt.position - transform.position;
@@ -274,7 +300,7 @@ namespace XiaoCao
                 float angleCos = Mathf.Cos(angle * Mathf.Deg2Rad); //angleCos>0 前
                 if (!owner.IsPlayer)
                 {
-                    DebugGUI.Log("angle", angle.ToString("N2"), angleCos.ToString("N2"));
+                    DebugGUI.Log("angle", angle.ToString("N2"), angleCos.ToString("N2"), moveDir);
                 }
 
                 //float angleSin = Mathf.Sin(angle); //左到右 1到-1
@@ -285,12 +311,18 @@ namespace XiaoCao
                         targetAnimMoveSpeed = -targetAnimMoveSpeed;
                     }
                 }
-                //owner.Anim.SetFloat(AnimNames.MoveDirect, angleSin * RoleState.animMoveSpeed);
-                //Debug.Log($"--- angle {angle} {targetAnimMoveSpeed} {moveDir} ");
             }
 
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, targetAnimMoveSpeed, ref _tempAnimMoveSmooth, moveSmooth);
+            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, targetAnimMoveSpeed,
+                ref _tempAnimMoveSmooth, moveSmooth);
+
+
+            if (!owner.IsPlayer)
+            {
+                DebugGUI.Log("animMoveSpeed", Data_R.roleState.animMoveSpeed.ToString("N1"),
+                    targetAnimMoveSpeed.ToString("N1"));
+            }
 
             float absAnimMoveSpeed = Mathf.Abs(RoleState.animMoveSpeed);
 
@@ -321,7 +353,6 @@ namespace XiaoCao
             {
                 RoleState.moveLockTime = Mathf.Max(t, RoleState.moveLockTime);
             }
-
         }
 
         internal void SetUnRotateTime(float t)
@@ -335,16 +366,18 @@ namespace XiaoCao
                 RoleState.rotateLockTime = Mathf.Max(t, RoleState.rotateLockTime);
             }
         }
-        
-        
+
+
         private void GroundedCheck()
         {
             float GroundedOffset = -0.14f;
             float GroundedRadius = 0.28f;
             // set sphere position, with offset
-            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
+            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
+                transform.position.z);
 
-            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK, QueryTriggerInteraction.Ignore);
+            isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK,
+                QueryTriggerInteraction.Ignore);
 
             // update animator if using character
             if (owner.Anim)
@@ -365,6 +398,15 @@ namespace XiaoCao
                         offset = offset.normalized * XCTime.fixedDeltaTime;
                         //排斥角色之间, 防重叠
                         cc.Move(offset);
+                        if (Application.isEditor)
+                        {
+                            if (!offset.IsZore())
+                            {
+                                Debug.Log($"-- {owner.gameObject} offsetMove {offset} {cols[i].gameObject}");
+                            }
+                        }
+
+
                         break;
                     }
                 }
@@ -386,10 +428,12 @@ namespace XiaoCao
                 skillNoGravityTimer -= Time.fixedDeltaTime;
             }
         }
+
         public void SetSkillNoGravityT(float time)
         {
             skillNoGravityTimer = time;
         }
+
         public void SetNoGravityT(float time)
         {
             //Debug.Log($"--- SetNoGravityT {time} ");
@@ -400,12 +444,14 @@ namespace XiaoCao
         }
 
         RoleGrappling grappling;
+
         public void Startgrappling()
         {
             if (grappling == null)
             {
                 grappling = new RoleGrappling(this);
             }
+
             Vector3 addVec = camForward * 15;
             //if (addVec.y < 3) {
             addVec.y = 5;
@@ -460,7 +506,5 @@ namespace XiaoCao
             movement.SetUnMoveTime(-1);
             yield return null;
         }
-
     }
-
 }

@@ -60,7 +60,7 @@ namespace XiaoCao
                 if (child.name.StartsWith("Group"))
                 {
                     var key = LevelData.GetLevelEnemyInfoKey(child.name);
-                    child.GetComponentsInChildren<EnemyGroupComponent>().ForEach(x =>
+                    child.GetComponentsInChildren<EnemyGroupComponent>(true).ForEach(x =>
                     {
                         x.GetCreateEnemyInfoFromConfig(key);
                     });

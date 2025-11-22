@@ -2,6 +2,7 @@
 using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
+using NaughtyAttributes;
 using XiaoCao;
 
 /**
@@ -58,9 +59,21 @@ namespace Flux
         [SerializeField]
         [SeqHeaderShow(1, 380, 100, "声音")]
         public bool isPlayClip = true;
+        
+        [SerializeField]
+        [SeqHeaderShow(1, 500, 100, "操作")]
+        public ESequenceAction sequenceAction;
 
         public XCSeqSetting SeqSetting { get => _seqSetting; set => _seqSetting = value; }
         public string Des { get => _des; set => _des = value; }
+        
+        public enum ESequenceAction
+        {
+	        None,
+			[InspectorName("检查出招配置")]
+	        CheckCmdSetting
+        }
+        
         #endregion
 
 

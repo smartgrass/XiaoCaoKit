@@ -26,6 +26,7 @@ namespace XiaoCao
                 {
                     buffs = new List<BuffInfo>();
                 }
+
                 return buffs;
             }
         }
@@ -39,6 +40,7 @@ namespace XiaoCao
                 {
                     return EBuffType.None;
                 }
+
                 return buffs[0].eBuff.GetBuffType();
             }
         }
@@ -52,26 +54,21 @@ namespace XiaoCao
                 {
                     return EBuff.None;
                 }
+
                 return buffs[0].eBuff;
             }
         }
 
         public bool IsEnable
         {
-            get
-            {
-                return GetBuffType != EBuffType.None;
-            }
+            get { return GetBuffType != EBuffType.None; }
         }
 
         public bool IsMaxLevel
         {
-            get
-            {
-                return level >= ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
-            }
-
+            get { return level >= ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff); }
         }
+
         public int GetExBuffMaxLevel
         {
             get => ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
@@ -102,10 +99,10 @@ namespace XiaoCao
                         return;
                     }
                 }
+
                 buffs.Add(costItem.buffs[0]);
                 level++;
             }
-
         }
 
         public void Clear()
@@ -151,9 +148,32 @@ namespace XiaoCao
             {
                 return null;
             }
+
             return so.values[index];
         }
 
+        public Color GetColor()
+        {
+            var colorSetting = UIPrefabSo.Inst.buffColorSettingSo;
+            int len = colorSetting.values.Length;
+            if (GetBuffType == EBuffType.None)
+            {
+                return colorSetting.values[len - 1];
+            }
+
+            int index = level;
+            if (index < 0)
+            {
+                index = len - 1;
+            }
+
+            if (index >= colorSetting.values.Length)
+            {
+                index = colorSetting.values.Length - 1;
+            }
+
+            return colorSetting.values[index];
+        }
     }
 
     //词条Buff的最基础单位
@@ -177,6 +197,7 @@ namespace XiaoCao
                     list.Add(item);
                 }
             }
+
             var get = list.GetRandom();
             return get;
         }
@@ -214,6 +235,7 @@ namespace XiaoCao
                     list.AddRange(item.buffs);
                 }
             }
+
             return list;
         }
 
@@ -240,6 +262,7 @@ namespace XiaoCao
                     dic[key] = buff;
                 }
             }
+
             return new List<BuffInfo>(dic.Values);
         }
 
@@ -289,10 +312,8 @@ namespace XiaoCao
             {
                 floats[i] = array1[i] + array2[i];
             }
+
             return floats;
         }
-
     }
-
-
 }

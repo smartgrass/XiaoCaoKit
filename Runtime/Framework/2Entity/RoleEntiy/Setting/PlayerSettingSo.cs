@@ -47,6 +47,9 @@ namespace XiaoCao
         public int id = 0;
         public int Id => id;
 
+        [Header("1为boss")]
+        public int special;
+        
         public int maxLevel = 50;
 
         //线性增长 设定50级
@@ -70,6 +73,7 @@ namespace XiaoCao
 
         public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
 
+        public bool IsBoss => special == 1;
     }
 
 

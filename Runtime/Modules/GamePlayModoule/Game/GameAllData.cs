@@ -77,18 +77,17 @@ namespace XiaoCao
         public string NextSceneName { get; set; }
 
         public string levelName;
-        
+
         public LevelInfo GetLevelInfo => MapNames.GetLevelInfoByName(levelName);
-        
+
         //暂无使用
         // public int selectRole;
 
         public string firstSceneName;
-        
+
         public string uiSelectLevel;
-        
-        
-        
+
+
         public static Player0 LocalPlayer
         {
             get { return Current.player0; }
@@ -101,7 +100,6 @@ namespace XiaoCao
         }
 
         public bool loadMod = false;
-
     }
 
     /// <summary>
@@ -144,7 +142,7 @@ namespace XiaoCao
 
         public bool UIEnter;
         public bool isDialogShow;
-        public float fightValue = 50;//战斗值 0~100
+        public float fightValue = 50; //战斗值 0~100
         public string curBodyName;
 
         ///<see cref="BattleFlagNames"/>
@@ -250,6 +248,25 @@ namespace XiaoCao
             dic.TryGetValue(skillId, out int level);
             return level;
         }
+
+        public static bool IsLocalPlayerCollider(Collider other, out Player0 player)
+        {
+            if (other.CompareTag(Tags.PLAYER))
+            {
+                var idRole = other.GetComponent<IdRole>();
+                if (idRole)
+                {
+                    if (idRole.GetEntity() == GameDataCommon.LocalPlayer)
+                    {
+                        player = GameDataCommon.LocalPlayer;
+                        return true;
+                    }
+                }
+            }
+
+            player = null;
+            return false;
+        }
     }
 
     public enum PlayMode
@@ -270,13 +287,13 @@ namespace XiaoCao
         Fail,
         Success
     }
-    
+
 
     public enum EGameEvent : uint
     {
         None = 0,
         GameStateChange = 1,
-        LevelEnd=2,//关卡结束 0失败 1成功
+        LevelEnd = 2, //关卡结束 0失败 1成功
 
         ///<see cref="GameStartMono"/>
         GameStartFinsh = 2,
@@ -285,7 +302,7 @@ namespace XiaoCao
         UIPanelBtnGlow = 5,
         OnGetItem = 6, //捡到物品时
         AddFriend = 7,
-        OnCoinChange = 8,//资源变化
+        OnCoinChange = 8, //资源变化
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,

@@ -116,7 +116,10 @@ namespace XiaoCao
             Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");
             PlayerSaveData.LocalSavaData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
             PlayerSaveData.SavaData();
-            CreatePortalLevelEnd();
+            if (MapMgr.Inst)
+            {
+                XCTime.DelayRunMono(0.5f,CreatePortalLevelEnd, MapMgr.Inst);
+            }
         }
 
         public void ShowLevelResultUI()

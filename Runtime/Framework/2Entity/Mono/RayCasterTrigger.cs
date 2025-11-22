@@ -29,17 +29,22 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     //与Atker在同个GameObject, 坐标要从本地坐标换算
     //旋转方向也需要从本地旋转中叠加
-    Vector3 WorldCenter { get { return transform.TransformPoint(meshInfo.GetCenter); } }
+    Vector3 WorldCenter
+    {
+        get { return transform.TransformPoint(meshInfo.GetCenter); }
+    }
 
-    Vector3 WorldEulerAngles { get { return transform.eulerAngles + meshInfo.GetEulerAngles; } }
+    Vector3 WorldEulerAngles
+    {
+        get { return transform.eulerAngles + meshInfo.GetEulerAngles; }
+    }
 
     Vector3 Direction
     {
-        get
-        {
-            return Quaternion.Euler(WorldEulerAngles) * Vector3.right;
-        }
+        get { return Quaternion.Euler(WorldEulerAngles) * Vector3.right; }
     }
+
+    private Vector3 SelfSize => transform.lossyScale;
 
     private Vector3 lastPoint;
     private PreviewCondition preview = PreviewCondition.Editor;
@@ -47,7 +52,9 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     public void SetMeshInfo(MeshInfo meshInfo)
     {
         this.meshInfo = meshInfo;
+        transform.localScale = Vector3.one;
     }
+
     public void InitListener(Action<Collider> action)
     {
         layerMask = Layers.DEFAULT_MASK | Layers.PLAYER_MASK | Layers.ENEMY_MASK;
@@ -110,9 +117,11 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         {
             dir = Direction * 0.01f;
         }
-        
+
         float curDistance = dir.magnitude;
-        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, meshInfo.GetSize / 2, dir.normalized, hits, Quaternion.Euler(WorldEulerAngles), curDistance, layerMask, preview: preview);
+        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, Vector3.Cross(SelfSize, meshInfo.GetSize / 2),
+            dir.normalized, hits,
+            Quaternion.Euler(WorldEulerAngles), curDistance, layerMask, preview: preview);
         if (hitCount > 0)
         {
             for (int i = 0; i < hitCount; i++)
@@ -120,12 +129,15 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
                 DoTrigger(hits[i].collider);
             }
         }
+
         lastPoint = WorldCenter;
     }
 
     private void OnBox()
     {
-        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, meshInfo.GetSize / 2, Direction, hits, Quaternion.Euler(WorldEulerAngles), distance, layerMask, preview: preview);
+        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, Vector3.Cross(SelfSize, meshInfo.GetSize / 2), Direction,
+            hits,
+            Quaternion.Euler(WorldEulerAngles), distance, layerMask, preview: preview);
         if (hitCount > 0)
         {
             for (int i = 0; i < hitCount; i++)
@@ -137,7 +149,9 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     private void OnSphere()
     {
-        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius, Direction, hits, distance, layerMask);
+        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits,
+            distance, layerMask,
+            preview);
         if (hitCount > 0)
         {
             for (int i = 0; i < hitCount; i++)
@@ -153,7 +167,8 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     /// </summary>
     private void OnSector()
     {
-        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius, Direction, hits, distance, layerMask, preview: preview);
+        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits, distance, layerMask,
+            preview: preview);
         if (hitCount > 0)
         {
             for (int i = 0; i < hitCount; i++)
@@ -189,13 +204,13 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         {
             float angle = -testAngleRange / 2 + i * testAngleRange / 4;
             var dir = MathTool.RotateY(Vector3.right, angle);
-            Physics.Raycast(WorldCenter, Quaternion.Euler(WorldEulerAngles) * dir, meshInfo.GetRadius + 1, preview: preview);
+            Physics.Raycast(WorldCenter, Quaternion.Euler(WorldEulerAngles) * dir, meshInfo.GetRadius + 1,
+                preview: preview);
         }
     }
 
     static bool IsPointInAngelRange(Vector3 localPoint, float angle)
     {
-
         // 计算点相对于圆心的角度（在xz平面上，从x轴正方向逆时针测量）
         float angleToPoint = Mathf.Atan2(localPoint.z, localPoint.x);
 
@@ -204,6 +219,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         {
             angleToPoint += 2 * Mathf.PI;
         }
+
         // 假设扇形从x轴正方向开始，逆时针测量角度范围
         float startAngle = -angle / 2; // 可以根据需要修改这个值
         float endAngle = startAngle + angle;
@@ -211,14 +227,12 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         {
             endAngle -= 2 * Mathf.PI;
         }
+
         Debug.Log($"--- angleToPoint {angleToPoint} {startAngle} {endAngle}");
 
         // 检查点是否在扇形角度范围内
         bool isWithinSector = (angleToPoint >= startAngle && angleToPoint <= endAngle) ||
-
                               (endAngle < startAngle && (angleToPoint >= startAngle || angleToPoint <= endAngle));
         return isWithinSector;
-
     }
-
 }

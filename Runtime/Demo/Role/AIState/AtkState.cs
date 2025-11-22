@@ -83,16 +83,18 @@ namespace XiaoCao
                 Timer += Time.deltaTime;
                 if (isAutoLock)
                 {
-                    control.Lock(true);
-                    //control.owner.AISetLookTarget(TargetRole.transform);
-                    ////control.owner.AIMsg(ActMsgType.AutoLock, atkMsg);
-
+                    control.Lock(false);
                 }
+                //移速应该为0
                 if (Timer > beforeAtk)
                 {
                     AtkStart();
                     curAtkState++;
                     Timer = 0;
+                }
+                else
+                {
+                    control.MoveSpeedDown(0.5f);
                 }
             }
             else
@@ -107,12 +109,17 @@ namespace XiaoCao
                 {
                     OnExit();
                 }
+                else
+                {
+                    control.MoveSpeedDown(0.1f);
+                }
             }
         }
 
 
         private void AtkStart()
         {
+            control.MoveSpeedDown(0);
             control.owner.AIMsg(ActMsgType.Skill, atkMsg);
         }
     }

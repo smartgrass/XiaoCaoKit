@@ -1,4 +1,4 @@
-﻿using EasyUI.Toast;
+using EasyUI.Toast;
 using NaughtyAttributes;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -35,8 +35,11 @@ namespace XiaoCao
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
         public TalkPanel talkPanel;
-        
+
         public LevelResultPanel levelResultPanel;
+
+        // Buff选择面板
+        public BuffSelectPanel buffSelectPanel;
 
         [ReadOnly] public PanelBase lastPanel;
 
@@ -52,6 +55,7 @@ namespace XiaoCao
             playerPanel?.Init();
             transform.SetParent(null);
             talkPanel.Init();
+            buffSelectPanel.Init();
             OnChangeInputType(GameSetting.UserInputType);
         }
 
@@ -102,9 +106,21 @@ namespace XiaoCao
             CheckPlayInputAble();
         }
 
-        public void MidCanvasEnable(bool enable)
+        // 显示Buff选择界面
+        public void ShowBuffSelection(List<BuffItem> buffItems, System.Action<BuffItem> onSelect)
         {
-            midCanvas.enabled = enable;
+            buffSelectPanel.ShowWith(buffItems, onSelect);
+        }
+
+        public void MidCanvasEnable(bool isOn)
+        {
+            midCanvas.enabled = isOn;
+        }
+
+        public void PopUIEnable(bool isOn, string uiName)
+        {
+            MidCanvasEnable(!isOn);
+            TimeStopMgr.UIStopTime(isOn, uiName);
         }
 
         private void Update()
@@ -155,7 +171,7 @@ namespace XiaoCao
             //     Debug.Log($"-- GameAllData.battleData.isDialogShow");
             //     can = false;
             // }
-            
+
             GameAllData.battleData.CanPlayerControl.SetValue(can);
         }
 

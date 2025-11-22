@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   des: 
-  baseMoveSpeed: 3.8
+  baseMoveSpeed: 3.2
+  backMoveSpeedMult: 0.5
   moveSmooth: 0.05
   rotationLerp: 0.05
   angleSpeed: 4

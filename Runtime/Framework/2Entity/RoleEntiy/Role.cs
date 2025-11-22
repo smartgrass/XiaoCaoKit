@@ -56,8 +56,7 @@ namespace XiaoCao
         {
             get => PlayerAttr.MaxHp;
         }
-        
-        
+
 
         public float ShowArmorPercentage => data_R.breakData.ShowPercentage;
 
@@ -230,7 +229,12 @@ namespace XiaoCao
             {
                 if (!BattleData.IsTimeStop && !data_R.IsBusy)
                 {
-                    Anim.TryPlayAnim(AnimHash.Hit);
+                    //boss处理下
+                    if (data_R.breakData.IsHitAnimCdFinish)
+                    {
+                        Anim.TryPlayAnim(AnimHash.Hit);
+                        data_R.breakData.lastHitAnimTime = Time.time;
+                    }
                 }
 
                 data_R.movement.SetUnMoveTime(0.35f);
@@ -298,7 +302,7 @@ namespace XiaoCao
         }
 
         private int tempHpProcces;
-        
+
         // 排除异常情况:如死亡
         // 如果需要计算其他值,用ref
         private bool BaseDamageCheck(AtkInfo atkInfo)
@@ -307,13 +311,14 @@ namespace XiaoCao
             {
                 return false;
             }
+
             float hurtProcess = atkInfo.atk / MaxHp;
             if (Hp / MaxHp > tempHpProcces)
             {
                 //小兵为10 boss可能为30
                 BattleData.Current.AddFightVale(hurtProcess * 10);
             }
-            
+
             Debug.Log($"--- atkInfo.atk {atkInfo.atk}");
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
             if (targetHp <= 0)
@@ -359,7 +364,7 @@ namespace XiaoCao
             data_R.bodyState = EBodyState.Ready;
 
             gameObject.layer = Layers.BODY_PHYSICS;
-            
+
             Anim.SetBool(AnimHash.IsDead, false);
         }
 
@@ -380,9 +385,9 @@ namespace XiaoCao
             }
 
             AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
+            
+            data_R.breakData.SetAttr(attr, this);
 
-            data_R.breakData.SetAttr(attr);
-            data_R.breakData.deadTime = data_R.moveSetting.deadTime;
             data_R.playerAttr.Init(id, lv, attr);
         }
 
@@ -867,7 +872,7 @@ namespace XiaoCao
 
         public float angleSpeedMult = 1;
 
-        public float animMoveSpeed = 0;
+        public float animMoveSpeed = 0; //最大为1 maxAnimMoveSpeed
 
         public Vector3 inputDir = Vector3.zero; // 暂无用处
         public bool IsMoveLock => moveLockFlag || moveLockTime > 0;
@@ -897,6 +902,7 @@ namespace XiaoCao
 
         public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
 
+        public bool isBoss;
 
         //死亡处理
         public float deadTimer = 0;
@@ -917,6 +923,11 @@ namespace XiaoCao
         public bool isHover { get; set; } //是否滞空
         public bool IsBreak => armor <= 0;
         public float ShowPercentage => armor / maxArmor;
+
+        public float lastHitAnimTime;
+        public bool IsHitAnimCdFinish => Time.time - lastHitAnimTime > hitAnimSpan;
+
+        public float hitAnimSpan = 0.5f;
 
         private BreakCdState _state;
 
@@ -1006,7 +1017,7 @@ namespace XiaoCao
             }
         }
 
-        internal void SetAttr(AttrSetting attr)
+        internal void SetAttr(AttrSetting attr, Role role)
         {
             maxArmor = attr.maxArmor;
             armor = attr.maxArmor;
@@ -1014,6 +1025,10 @@ namespace XiaoCao
             recoverCdIfOnHurt = attr.recoverCdIfOnHurt;
             actionRecover = attr.actionRecover;
             noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
+            deadTime = role.data_R.moveSetting.deadTime;
+            isBoss = attr.IsBoss;
+            role.AddTag(RoleTagCommon.Boss);
+            hitAnimSpan = isBoss ? 0.5f : 0.1f;
         }
 
         public void SetNoBreakTime(float time, bool isForce = false)
