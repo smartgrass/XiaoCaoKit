@@ -32,7 +32,7 @@ namespace XiaoCao
     {
         public static void GetGameVersion()
         {
-            VersionType = ConfigMgr.StaticSettingSo.versionType;
+            VersionType = ConfigMgr.Inst.StaticSettingSo.versionType;
             UserInputType = DebugSetting.IsMobilePlatform ? UserInputType.Touch : UserInputType.Mouse;
         }
 
@@ -209,7 +209,7 @@ namespace XiaoCao
             return player.id == id;
         }
 
-        public static void AddBuff(int id, BuffItem buff)
+        public static void AddBuff(int id, BuffItem buff, bool showGetUI = true)
         {
             GetPlayerBuffControl(id).AddBuff(buff);
             if (id.IsLocalPlayerId())
@@ -218,6 +218,10 @@ namespace XiaoCao
             }
 
             GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel, true);
+            if (showGetUI)
+            {
+                GameEvent.Send<Item>(EGameEvent.OnGetItem.Int(), buff.ToItem());
+            }
         }
 
         public static PlayerBuffs LocalPlayerBuffs
@@ -310,6 +314,7 @@ namespace XiaoCao
         LocalPlayerChangeNowAttr = 103,
         PlayerCreatNorAtk = 104,
         PlayerGetBuffItem = 105,
+        RoleHurt = 107,
 
 
         //Enemy

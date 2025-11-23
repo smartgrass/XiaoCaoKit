@@ -56,7 +56,13 @@ MonoBehaviour:
     - 4
   - eBuff: 103
     addInfo:
-    - 3
+    - 4
+    - 10
+  - eBuff: 104
+    addInfo:
+    - 0.5
+    - 0.4
+  readme: "exBuffInfos\u7528\u4E8E\u5B58\u653E2\u7EA7\u4EE5\u4E0A\u7684\u4FE1\u606F,\u6709cd\u65F6\u95F4\u7684buff\u90FD\u5E94\u8BE5\u914D\u7F6E\u5728\u8FD9"
   exBuffInfos:
   - eBuff: 102
     maxLevel: 2
@@ -65,3 +71,21 @@ MonoBehaviour:
       - 8
     - values:
       - 10
+  - eBuff: 103
+    maxLevel: 2
+    addInfoArray:
+    - values:
+      - 8
+      - 10
+    - values:
+      - 10
+      - 10
+  - eBuff: 104
+    maxLevel: 2
+    addInfoArray:
+    - values:
+      - 1
+      - 0.3
+    - values:
+      - 1.5
+      - 0.2

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using TMPro;
@@ -22,44 +22,44 @@ public class BasicSettingPanel : SubPanel
         toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
 
         var slider = AddSlider(LocalizeKey.SwapCameraSpeed, OnSliderCameraSpeed, new Vector2(0.5f, 3f));
-        slider.SetValueWithoutNotify(ConfigMgr.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1));
+        slider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1));
 
         var anglePowerSlider = AddSlider(LocalizeKey.AnglePower, OnSliderAnglePower, new Vector2(0, 1f));
-        anglePowerSlider.SetValueWithoutNotify(ConfigMgr.LocalSetting.GetValue(LocalizeKey.AnglePower, 0.5f));
+        anglePowerSlider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.AnglePower, 0.5f));
 
         //toggle3 = AddToggle(LocalizeKey.MouseView, OnToggleMouseView); 
     }
 
     private void OnSliderAnglePower(float num)
     {
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.AnglePower, num);
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.AnglePower, num);
     }
 
     private void OnSliderCameraSpeed(float num)
     {
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.SwapCameraSpeed, num);
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.SwapCameraSpeed, num);
     }
 
     public override void RefreshUI()
     {
-        toggle.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
-        toggle2.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
-        //toggle3.SetIsOnWithoutNotify(ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
+        toggle.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
+        toggle2.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
+        //toggle3.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
     }
 
     private void OnToggleMouseView(bool isOn)
     {
-        ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.MouseView, isOn);
+        ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.MouseView, isOn);
     }
 
     private void OnToggleLockCam(bool isOn)
     {
-        ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.LockCam, isOn);
+        ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.LockCam, isOn);
     }
 
     private void OnToggleLockEnemy(bool isOn)
     {
-        ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.AutoLockEnemy, isOn);
+        ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.AutoLockEnemy, isOn);
     }
 
     private void AddLanguageDropDown()

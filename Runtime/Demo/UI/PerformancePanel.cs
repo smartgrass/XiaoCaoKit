@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -19,12 +19,12 @@ public class PerformancePanel : SubPanel
         Debug.Log($"--- targetFrameRate: {Application.targetFrameRate} QualityLevel:{QualitySettings.GetQualityLevel()}");
 
         QualityDropDown = AddDropdown(LocalizeKey.RenderQuality, OnQualityChange, qualityList, false);
-        int quality = (int)ConfigMgr.LocalSetting.GetValue(LocalizeKey.RenderQuality, QualitySettings.GetQualityLevel());
+        int quality = (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.RenderQuality, QualitySettings.GetQualityLevel());
         QualityDropDown.SetValueWithoutNotify(quality);
 
 
         frameRateDropDown = AddDropdown(LocalizeKey.FrameRate, OnFrameRateChange, frameRateList, false);
-        float frameRate = ConfigMgr.LocalSetting.GetValue(LocalizeKey.FrameRate, 60);
+        float frameRate = ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.FrameRate, 60);
         int index = (int)((frameRate - 30) / 15);
         frameRateDropDown.SetValueWithoutNotify(index);
     }
@@ -33,12 +33,12 @@ public class PerformancePanel : SubPanel
     {
         int frameRate = int.Parse(frameRateList[index]);
         Application.targetFrameRate = frameRate;
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.FrameRate, frameRate);
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.FrameRate, frameRate);
     }
 
     private void OnQualityChange(int index)
     {
         QualitySettings.SetQualityLevel(index);
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.RenderQuality, index);
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.RenderQuality, index);
     }
 }

@@ -66,12 +66,12 @@ namespace XiaoCao
 
         public bool IsMaxLevel
         {
-            get { return level >= ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff); }
+            get { return level >= ConfigMgr.Inst.BuffConfigSo.GetMaxLevel(GetFirstEBuff); }
         }
 
         public int GetExBuffMaxLevel
         {
-            get => ConfigMgr.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
+            get => ConfigMgr.Inst.BuffConfigSo.GetMaxLevel(GetFirstEBuff);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace XiaoCao
             {
                 level = (costItem.level + 1 + level);
                 level = Math.Min(level, costItem.GetExBuffMaxLevel);
-                buffs[0] = ConfigMgr.BuffConfigSo.GetLevelBuffInfo(costItem.buffs[0].eBuff, level);
+                buffs[0] = ConfigMgr.Inst.BuffConfigSo.GetLevelBuffInfo(costItem.buffs[0].eBuff, level);
             }
             else
             {
@@ -209,7 +209,7 @@ namespace XiaoCao
             buffItem.buffs = new List<BuffInfo>()
             {
                 //读取配置
-                ConfigMgr.BuffConfigSo.GetBuffInfo(eBuff)
+                ConfigMgr.Inst.BuffConfigSo.GetBuffInfo(eBuff)
             };
             return buffItem;
         }

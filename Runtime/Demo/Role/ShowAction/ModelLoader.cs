@@ -15,7 +15,7 @@ public class ModelLoader
     public CameraCapture cameraCapture;
 
     // 引用配置数据
-    private ModelConfigSo ConfigSo => ConfigMgr.ModelConfigDataSo;
+    private ModelConfigSo ConfigSo => ConfigMgr.Inst.ModelConfigDataSo;
 
     public void Init(string key)
     {

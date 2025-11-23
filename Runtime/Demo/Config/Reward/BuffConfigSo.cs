@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-
 namespace XiaoCao
 {
     [CreateAssetMenu(menuName = "SO/BuffConfigSo", fileName = "BuffConfigSo")]
@@ -12,9 +11,11 @@ namespace XiaoCao
     {
         public List<BuffInfo> buffs = new List<BuffInfo>();
 
-        private Dictionary<EBuff, BuffInfo> _buffDic;
+        public string readme = "exBuffInfos用于存放2级以上的信息,有cd时间的buff都应该配置在这";
 
         public List<ExBuffInfo> exBuffInfos = new List<ExBuffInfo>();
+
+        private Dictionary<EBuff, BuffInfo> _buffDic;
 
         private void OnEnable()
         {
@@ -42,20 +43,38 @@ namespace XiaoCao
             }
         }
 
-        private ExBuffInfo GetExBuffInfo(EBuff eBuff)
+        private bool GetExBuffInfo(EBuff eBuff, out ExBuffInfo info)
         {
-            foreach (var exBuff in exBuffInfos)
+            if (HasExInfo(eBuff))
             {
-                if (exBuff.eBuff == eBuff)
-                {
-                    return exBuff;
-                }
+                info = _exBuffDic[eBuff];
+                return true;
             }
+
+            info = null;
             Debug.LogError($"--- no ex buff config {eBuff}");
-            // 返回一个默认的 ExBuffInfo，避免空引用
-            return null;
+            return false;
         }
 
+        private Dictionary<EBuff, ExBuffInfo> _exBuffDic;
+
+        public bool HasExInfo(EBuff buff)
+        {
+            InitExBuffDic();
+            return _exBuffDic.ContainsKey(buff);
+        }
+
+        void InitExBuffDic()
+        {
+            if (_exBuffDic == null)
+            {
+                _exBuffDic = new Dictionary<EBuff, ExBuffInfo>();
+                foreach (var exBuff in exBuffInfos)
+                {
+                    _exBuffDic[exBuff.eBuff] = exBuff;
+                }
+            }
+        }
 
         public BuffInfo GetLevelBuffInfo(EBuff eBuff, int level)
         {
@@ -65,9 +84,7 @@ namespace XiaoCao
                 return level0Info;
             }
 
-            ExBuffInfo exBuffInfo = GetExBuffInfo(eBuff);
-
-            if (exBuffInfo == null)
+            if (!GetExBuffInfo(eBuff, out var exBuffInfo))
             {
                 return level0Info;
             }
@@ -108,6 +125,7 @@ namespace XiaoCao
                     Debug.Log($"--- Add -> {item}");
                 }
             }
+
             if (!change)
             {
                 Debug.Log($"--- All ready");
@@ -132,11 +150,11 @@ namespace XiaoCao
 
         public int GetMaxLevel(EBuff buff)
         {
-            var exBuffInfo = GetExBuffInfo(buff);
-            if (exBuffInfo != null)
+            if (GetExBuffInfo(buff, out var info))
             {
-                return exBuffInfo.maxLevel;
+                return info.maxLevel;
             }
+
             return 0;
         }
     }
@@ -146,14 +164,14 @@ namespace XiaoCao
     {
         public EBuff eBuff;
         public int maxLevel = 1;
-        [SerializeField]
-        public List<FloatArray> addInfoArray;
+        [SerializeField] public List<FloatArray> addInfoArray;
     }
 
     [Serializable]
     public struct FloatArray
     {
         public float[] values;
+
         public float this[int index]
         {
             get => values[index];
@@ -161,4 +179,3 @@ namespace XiaoCao
         }
     }
 }
-

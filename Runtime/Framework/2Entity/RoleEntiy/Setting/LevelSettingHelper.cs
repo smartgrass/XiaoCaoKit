@@ -107,7 +107,7 @@ namespace XiaoCao
                 rewardLevel = BattleData.Current.levelData.RewardLevel;
             }
 
-            RewardPoolSo so = ConfigMgr.EnemyKillRewardSo;
+            RewardPoolSo so = ConfigMgr.Inst.EnemyKillRewardSo;
             //获取奖励池
             BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
             //背包 pick
@@ -131,14 +131,9 @@ namespace XiaoCao
 
             BuffItem buffItem = BuffItem.Create(item);
 
-            PlayerHelper.AddBuff(GameDataCommon.Current.localPlayerId, buffItem);
+            PlayerHelper.AddBuff(GameDataCommon.Current.localPlayerId, buffItem,true);
 
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
-
-            //Item item = new Item { type = ItemType.Coin, id = "金币", count = 10 };
-            //
-
-            GameEvent.Send<Item>(EGameEvent.OnGetItem.Int(), buffItem.ToItem());
         }
         //特殊的转换规则,可以取随机
     }

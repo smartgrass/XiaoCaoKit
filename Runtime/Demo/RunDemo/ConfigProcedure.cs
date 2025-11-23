@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -41,6 +41,7 @@ namespace XiaoCao
             if (Application.isEditor)
             {
                 GameAllData.GameAllDataInit();
+                ConfigMgr.ClearCache();
                 GameAllData.commonData.firstSceneName = SceneManager.GetActiveScene().name;
             }
 
@@ -67,7 +68,7 @@ namespace XiaoCao
             }
 
             LocalizeMgr localizeMgr = LocalizeMgr.Inst;
-            ConfigMgr.Init();
+            ConfigMgr.Inst.Init();
             IsFinish = true;
         }
 
@@ -119,7 +120,7 @@ namespace XiaoCao
             }
 
             if (DebugSetting.IsDebug &&
-                ConfigMgr.MainCfg.TryGetValue("Setting", "PlayerStartLevel", out string lvStr))
+                ConfigMgr.Inst.MainCfg.TryGetValue("Setting", "PlayerStartLevel", out string lvStr))
             {
                 if (!string.IsNullOrEmpty(lvStr))
                 {

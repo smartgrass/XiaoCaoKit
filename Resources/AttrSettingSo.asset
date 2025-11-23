@@ -23,6 +23,7 @@ MonoBehaviour:
     endDef: 500
     offsetLevel: 10
     maxArmor: 4
+    armorDef: 0.5
     recoverCdOnBreak: 4
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
@@ -36,11 +37,12 @@ MonoBehaviour:
     endAtk: 180
     endDef: 500
     offsetLevel: 10
-    maxArmor: 4
+    maxArmor: 8
+    armorDef: 0.3
     recoverCdOnBreak: 4
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
-    noHurtRecoverSpeed: 0.2
+    noHurtRecoverSpeed: 0.1
   - desc: "\u654C\u4EBA-boss"
     id: 2
     special: 1
@@ -50,8 +52,9 @@ MonoBehaviour:
     endAtk: 200
     endDef: 500
     offsetLevel: 10
-    maxArmor: 30
-    recoverCdOnBreak: 4
+    maxArmor: 20
+    armorDef: 0.9
+    recoverCdOnBreak: 3
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.1

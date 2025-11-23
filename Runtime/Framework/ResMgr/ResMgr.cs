@@ -208,7 +208,7 @@ public class ResMgr
 
     public static async UniTask InitExtraPackage()
     {
-        foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
+        foreach (IniSection section in ConfigMgr.Inst.MainCfg.SectionList)
         {
             if (section.SectionName.StartsWith("Mod"))
             {

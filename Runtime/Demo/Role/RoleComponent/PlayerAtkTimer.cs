@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace XiaoCao
@@ -52,7 +52,7 @@ namespace XiaoCao
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.baseCd = ConfigMgr.SkillDataSo.GetOrDefault(skillIndex).cd;
+                skillCdData.baseCd = ConfigMgr.Inst.SkillDataSo.GetOrDefault(skillIndex).cd;
                 skillCdData.CdOff = GetSkillCDOff;
                 dic[skillIndex] = skillCdData;
             }

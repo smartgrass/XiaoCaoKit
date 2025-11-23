@@ -332,6 +332,9 @@ namespace XiaoCao
 
 
             HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
+
+            GameEvent.Send<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), id, IsPlayer, atkInfo);
+
             return true;
         }
 
@@ -370,7 +373,7 @@ namespace XiaoCao
 
         public void InitRoleData()
         {
-            var setting = ConfigMgr.CommonSettingSo;
+            var setting = ConfigMgr.Inst.CommonSettingSo;
             int lv = data_R.playerAttr.lv;
             int attrSettingId = 0;
             if (!IsPlayer)
@@ -385,7 +388,7 @@ namespace XiaoCao
             }
 
             AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
-            
+
             data_R.breakData.SetAttr(attr, this);
 
             data_R.playerAttr.Init(id, lv, attr);
@@ -912,6 +915,8 @@ namespace XiaoCao
 
         public float armor = 4; //虽说有小数, 实际用整数
 
+        public float armorDef = 0;
+
         private float _recoverCdTimer = 0;
 
         private float _lastHitTime;
@@ -967,7 +972,7 @@ namespace XiaoCao
                 return;
             }
 
-            armor -= hitArmor;
+            armor -= Mathf.Max(0, hitArmor - armorDef);
             _lastHitTime = Time.time;
             HasHit = true;
 
@@ -1021,6 +1026,7 @@ namespace XiaoCao
         {
             maxArmor = attr.maxArmor;
             armor = attr.maxArmor;
+            armorDef = attr.armorDef;
             recoverCdOnBreak = attr.recoverCdOnBreak;
             recoverCdIfOnHurt = attr.recoverCdIfOnHurt;
             actionRecover = attr.actionRecover;

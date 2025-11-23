@@ -258,7 +258,7 @@ namespace XiaoCao
                 _damageTextTweens.Add(new DamageTextTween { text = item });
             }
         }
-
+        
         public void ShowDamageText(string num, Vector3 mTarget, ETextColor eTextColor = ETextColor.Nor)
         {
             //获取屏幕坐标  
@@ -297,6 +297,8 @@ namespace XiaoCao
                 if (eTextColor == ETextColor.Recover)
                 {
                     t.text = $"+{num}";
+                    mScreen.x += DamageUITSetting.offset.x;
+                    mScreen.y += DamageUITSetting.offset.y;
                 }
                 else
                 {

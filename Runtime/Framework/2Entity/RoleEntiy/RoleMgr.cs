@@ -23,14 +23,14 @@ namespace XiaoCao
         //夹角越小分数越高 as = cos(x)
         //旧目标加分计算 暂无
         public Role SearchEnemyRole(Transform self, float seeR, float seeAngle, out float maxS,
-            int team = TeamTag.Enemy)
+            int selfTeam)
         {
             float hearR = seeR * 0.4f;
             Role role = null;
             maxS = 0;
             foreach (var item in roleDic.Values)
             {
-                if (item.team != team && !item.IsDie && !item.IsHiding)
+                if (item.team != selfTeam && !item.IsDie && !item.IsHiding)
                 {
                     GetAngleAndDistance(self, item.transform, out float curAngle, out float curDis);
 
@@ -68,6 +68,32 @@ namespace XiaoCao
             }
 
             return role;
+        }
+
+        //获取半径内的所有敌人
+        public List<Role> SearchEnemyInRadius(Vector3 pos, float radius, int team = TeamTag.Player,
+            Transform self = null)
+        {
+            List<Role> list = new List<Role>();
+            bool isHasSelf = self != null;
+            foreach (var item in roleDic.Values)
+            {
+                if (item.team != team && !item.IsDie && !item.IsHiding)
+                {
+                    if (Vector3.Distance(item.transform.position, pos) < radius)
+                    {
+                        //跳过自身
+                        if (isHasSelf && item.transform == self)
+                        {
+                            continue;
+                        }
+
+                        list.Add(item);
+                    }
+                }
+            }
+
+            return list;
         }
 
         //计算两个物体正前方夹角 和距离

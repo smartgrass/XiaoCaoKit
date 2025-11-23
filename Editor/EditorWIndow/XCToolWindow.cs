@@ -44,6 +44,11 @@ namespace AssetEditor.Editor
 
         [MiniBtn(nameof(SetFrameRate))] public int frameRate = 30;
 
+        [HorLayout(true)] [MiniBtn(nameof(AddBuff))]
+        public EBuff buff;
+
+        [HorLayout(false)] public bool autoAddBuff;
+
 
         public override void OnEnable()
         {
@@ -70,6 +75,11 @@ namespace AssetEditor.Editor
                     OnTimeScale();
                     GetBuffs();
                     OnHidingChange();
+                }
+
+                if (autoAddBuff)
+                {
+                    AddBuff();
                 }
             }
         }
@@ -139,7 +149,7 @@ namespace AssetEditor.Editor
         {
             var playerTf = GameDataCommon.LocalPlayer.transform;
             Vector3 pos = playerTf.position + playerTf.forward * 3;
-            string roleKey = $"Role_{ConfigMgr.LocalRoleSetting.GetFriendRoleIndex()}";
+            string roleKey = $"Role_{ConfigMgr.Inst.LocalRoleSetting.GetFriendRoleIndex()}";
             Enemy0 enemy0 = EnemyCreator.GenFriend(roleKey, pos, GameDataCommon.LocalPlayer.Level);
         }
 
@@ -204,7 +214,7 @@ namespace AssetEditor.Editor
         {
             var endPos = MapMgr.Inst.GetEndPos();
             Vector3 offset = (endPos - GameDataCommon.LocalPlayer.transform.position).ToY0().normalized * -3;
-            GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos+ offset + Vector3.up);
+            GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos + offset + Vector3.up);
             GameEvent.Send<string>(EGameEvent.MapMsg.Int(), "LevelFinish");
             GameMgr.Inst.LevelFinish();
         }
@@ -292,6 +302,17 @@ namespace AssetEditor.Editor
         private void SetFrameRate()
         {
             Application.targetFrameRate = frameRate;
+        }
+
+        void AddBuff()
+        {
+            if (buff == EBuff.None)
+            {
+                return;
+            }
+
+            var buffItem = BuffHelper.CreatBuffItem(buff);
+            PlayerHelper.AddBuff(0, buffItem);
         }
 
         [Button("LogAllLocalize", Line99)]

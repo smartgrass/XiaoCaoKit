@@ -73,6 +73,8 @@ namespace XiaoCao
         {
             Debug.Log($"--- {id}");
             LevelData.Current.killCount++;
+            //TODO 击杀暂无奖励
+            return;
             if (EntityMgr.Inst.FindEntity<Enemy0>(id, out Enemy0 enemy))
             {
                 var deadInfo = enemy.enemyData.deadInfo;
@@ -82,6 +84,7 @@ namespace XiaoCao
                     //获取奖励等级
                     int rewardLevel = enemy.enemyData.rewardLevel;
 
+                    /*
                     //获取奖池id
                     string rewardPoolId = rewardPools[Mathf.Min(rewardLevel, rewardPools.Length - 1)];
 
@@ -93,6 +96,7 @@ namespace XiaoCao
                     Item item = RewardHelper.GetItemWithPool(rewardPoolId, rewardLevel);
 
                     RewardHelper.RewardItem(item);
+                    */
                 }
             }
             else

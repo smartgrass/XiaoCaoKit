@@ -35,10 +35,13 @@ namespace XiaoCao
 
         [InspectorName("产生额外剑气")] ExtraSlash = 102,
 
-        [InspectorName("受到攻击时,回复3%最大生命,cd10s")]
-        HurtRecover = 103,
+        [InspectorName("暴击时,触发闪电传递,冷缩5s")] ThunderExplode = 103,
 
-        [InspectorName("闪避成功,使周围目标陷入时停3s")] LimitDash
+
+        //小分支: 防御系纹章>=200
+        [InspectorName("受到攻击时,回复3%最大生命,冷缩10s")]
+        HurtRecover = 200,
+        // [InspectorName("闪避成功,使周围目标陷入时停3s")] LimitDash
     }
 
     public static class BuffSetting

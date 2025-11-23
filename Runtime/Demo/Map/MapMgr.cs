@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Threading.Tasks;
 using GG.Extensions;
 using UnityEngine;
@@ -31,7 +31,7 @@ namespace XiaoCao
         {
             get => BattleData.Current.levelData;
         }
-        
+
         public LevelControl LevelControl { get; set; }
 
         private void Awake()
@@ -95,7 +95,7 @@ namespace XiaoCao
 #endif
             if (DebugSetting.IsDebug)
             {
-                var cfg = ConfigMgr.MainCfg;
+                var cfg = ConfigMgr.Inst.MainCfg;
                 string getLevelBranch = cfg.GetValue("Setting", "LevelBranch", "");
                 if (!string.IsNullOrEmpty(getLevelBranch))
                 {

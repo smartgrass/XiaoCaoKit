@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -44,7 +44,7 @@ namespace XiaoCao
 
         void ReadGroupSetting(string group,float defaultValue = 1)
         {
-            SetVolume(group, ConfigMgr.LocalSetting.GetValue(group, defaultValue));
+            SetVolume(group, ConfigMgr.Inst.LocalSetting.GetValue(group, defaultValue));
         }
 
         ///<see cref="SoundPanel.MainVolumeKey"/>
@@ -108,12 +108,12 @@ namespace XiaoCao
             }
             //Default,Sword,Break
 
-            if (!ConfigMgr.SoundCfg.IsHas(tag))
+            if (!ConfigMgr.Inst.SoundCfg.IsHas(tag))
             {
                 return;
             }
 
-            var array = ConfigMgr.SoundCfg.Dic[tag];
+            var array = ConfigMgr.Inst.SoundCfg.Dic[tag];
             int count = array.Count;
             var path = array[Random.Range(0, count)];
 

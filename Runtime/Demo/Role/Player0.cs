@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using cfg;
 using TEngine;
@@ -30,13 +30,13 @@ namespace XiaoCao
             CreateIdRole(savaData.prefabId);
             if (isMainPlayer)
             {
-                int selectRole = ConfigMgr.LocalRoleSetting.selectRole;
+                int selectRole = ConfigMgr.Inst.LocalRoleSetting.selectRole;
                 var setting = LubanTables.GetLevelSetting(MapMgr.CurLevelName);
                 if (setting.RoleId < 0)
                 {
                     selectRole = 0;
                 }
-                idRole.bodyName = selectRole == 0 ? ConfigMgr.GetSettingSkinName() : $"Role_{selectRole}";
+                idRole.bodyName = selectRole == 0 ? ConfigMgr.Inst.GetSettingSkinName() : $"Role_{selectRole}";
                 AddTag(RoleTagCommon.MainPlayer);
                 GameDataCommon.Current.player0 = this;
                 GameDataCommon.Current.localPlayerId = this.id;
@@ -46,7 +46,7 @@ namespace XiaoCao
             CreateRoleBody(idRole.bodyName);
             SetTeam(XCSetting.PlayerTeam);
 
-            playerData.playerSetting = ConfigMgr.PlayerSettingSo.GetOrDefault(raceId, 0);
+            playerData.playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
             GetPlayerCmdList(true);
             data_R.playerAttr.lv = savaData.lv;
             InitRoleData();
@@ -71,9 +71,9 @@ namespace XiaoCao
             seting.rollSkillId = AiCmdSetting.rollId;
 
 
-            if (isLoadByConfig && ConfigMgr.LocalRoleSetting.saveSkillBar)
+            if (isLoadByConfig && ConfigMgr.Inst.LocalRoleSetting.saveSkillBar)
             {
-                seting.skillIdList = ConfigMgr.LocalRoleSetting.skillBarSetting;
+                seting.skillIdList = ConfigMgr.Inst.LocalRoleSetting.skillBarSetting;
             }
             else
             {

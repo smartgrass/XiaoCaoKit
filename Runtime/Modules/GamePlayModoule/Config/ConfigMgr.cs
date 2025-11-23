@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using OdinSerializer;
 using SerializationUtility = OdinSerializer.SerializationUtility;
@@ -18,11 +18,11 @@ namespace XiaoCao
     ///<see cref="MoveSettingSo"/>
     ///<see cref="XiaoCao.PlayerSettingSo"/>
     ///<see cref="LocalizeMgr"/>
-    public class ConfigMgr
+    public class ConfigMgr : Singleton<ConfigMgr>, IClearCache
     {
         #region public
 
-        public static StaticSettingSo StaticSettingSo
+        public StaticSettingSo StaticSettingSo
         {
             get
             {
@@ -35,49 +35,49 @@ namespace XiaoCao
             }
         }
 
-        public static PlayerSettingSo PlayerSettingSo;
+        public PlayerSettingSo PlayerSettingSo;
 
-        public static SkillDataSo SkillDataSo;
+        public SkillDataSo SkillDataSo;
 
-        public static AttrSettingSo CommonSettingSo;
+        public AttrSettingSo CommonSettingSo;
 
-        public static RewardPoolSo EnemyKillRewardSo;
+        public RewardPoolSo EnemyKillRewardSo;
 
-        public static BuffConfigSo BuffConfigSo;
+        public BuffConfigSo BuffConfigSo;
 
-        public static ModelConfigSo ModelConfigDataSo;
+        public ModelConfigSo ModelConfigDataSo;
 
-        public static List<string> SkinList;
+        public List<string> SkinList;
 
-        public static List<string> TestEnmeyList;
+        public List<string> TestEnmeyList;
 
         #endregion
 
         #region private
 
-        private static IniFile _mainConfig;
+        private IniFile _mainConfig;
 
-        private static InitArrayFile _soundCfg;
+        private InitArrayFile _soundCfg;
 
-        private static LocalSetting _localSetting;
+        private LocalSetting _localSetting;
 
-        private static StaticSettingSo _staticSettingSo;
-        
-        private static UIPrefabSo _uiPrefabSo;
+        private StaticSettingSo _staticSettingSo;
+
+        private UIPrefabSo _uiPrefabSo;
 
         #endregion
 
 
-        public static void Init()
+        public void Init()
         {
             var init = MainCfg;
-            PlayerSettingSo = ConfigMgr.LoadSoConfig<PlayerSettingSo>();
-            CommonSettingSo = ConfigMgr.LoadSoConfig<AttrSettingSo>();
-            SkillDataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
-            EnemyKillRewardSo = ConfigMgr.LoadSoConfig<RewardPoolSo>();
-            BuffConfigSo = ConfigMgr.LoadSoConfig<BuffConfigSo>();
-            ModelConfigDataSo = ConfigMgr.LoadSoConfig<ModelConfigSo>();
-            _uiPrefabSo = ConfigMgr.LoadSoConfig<UIPrefabSo>();
+            PlayerSettingSo = LoadSoConfig<PlayerSettingSo>();
+            CommonSettingSo = LoadSoConfig<AttrSettingSo>();
+            SkillDataSo = LoadSoConfig<SkillDataSo>();
+            EnemyKillRewardSo = LoadSoConfig<RewardPoolSo>();
+            BuffConfigSo = LoadSoConfig<BuffConfigSo>();
+            ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
+            _uiPrefabSo = LoadSoConfig<UIPrefabSo>();
             var soundCfg = SoundCfg;
             GetSkinList();
             GetTestEnemyList();
@@ -89,11 +89,11 @@ namespace XiaoCao
             return FileTool.ReadFileString(strFullPath);
         }
 
-        private static void GetSkinList()
+        private void GetSkinList()
         {
             List<string> list = new List<string>();
             list.Add("Body_Skin_0");
-            foreach (IniSection section in ConfigMgr.MainCfg.SectionList)
+            foreach (IniSection section in MainCfg.SectionList)
             {
                 if (section.SectionName.StartsWith("Mod"))
                 {
@@ -110,9 +110,9 @@ namespace XiaoCao
             SkinList = list;
         }
 
-        private static void GetTestEnemyList()
+        private void GetTestEnemyList()
         {
-            var config = ConfigMgr.MainCfg.GetSection("TestEnmey");
+            var config = MainCfg.GetSection("TestEnmey");
             if (config == null)
             {
                 TestEnmeyList = new List<string>();
@@ -125,13 +125,13 @@ namespace XiaoCao
             TestEnmeyList = list;
         }
 
-        public static string GetSettingSkinName()
+        public string GetSettingSkinName()
         {
-            int index = (int)ConfigMgr.LocalSetting.GetValue(LocalizeKey.SkinList, 0);
+            int index = (int)LocalSetting.GetValue(LocalizeKey.SkinList, 0);
             return GetSkinName(index);
         }
 
-        public static string GetSkinName(int index)
+        public string GetSkinName(int index)
         {
             if (index == 0)
             {
@@ -141,7 +141,7 @@ namespace XiaoCao
             return SkinList[index % SkinList.Count];
         }
 
-        public static string GetTestEnmeyName(int index)
+        public string GetTestEnmeyName(int index)
         {
             if (index == 0)
             {
@@ -182,7 +182,7 @@ namespace XiaoCao
             return ret;
         }
 
-        public static IniFile MainCfg
+        public IniFile MainCfg
         {
             get
             {
@@ -197,7 +197,7 @@ namespace XiaoCao
             }
         }
 
-        public static InitArrayFile SoundCfg
+        public InitArrayFile SoundCfg
         {
             get
             {
@@ -212,7 +212,7 @@ namespace XiaoCao
             }
         }
 
-        public static LocalSetting LocalSetting
+        public LocalSetting LocalSetting
         {
             get
             {
@@ -225,9 +225,9 @@ namespace XiaoCao
             }
         }
 
-        private static LocalRoleSetting _localRoleSetting;
+        private LocalRoleSetting _localRoleSetting;
 
-        public static LocalRoleSetting LocalRoleSetting
+        public LocalRoleSetting LocalRoleSetting
         {
             get
             {
@@ -247,9 +247,9 @@ namespace XiaoCao
         public bool saveSkillBar;
 
         public List<string> skillBarSetting;
-        
+
         public int selectRole;
-        
+
         public static LocalRoleSetting Load()
         {
             var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
@@ -258,11 +258,12 @@ namespace XiaoCao
             }
 
             //修改时, 需要修改saveSkillBar ,恢复默认则清除saveSkillBar
-            SkillDataSo dataSo = ConfigMgr.LoadSoConfig<SkillDataSo>();
+            SkillDataSo dataSo = ConfigMgr.Inst.SkillDataSo;
             if (!ret.saveSkillBar)
             {
                 int raceId = 0;
-                AiSkillCmdSetting AiCmdSetting = ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
+                AiSkillCmdSetting AiCmdSetting =
+                    ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
                 ret.skillBarSetting = AiCmdSetting.cmdSkillList;
             }
 
@@ -272,7 +273,7 @@ namespace XiaoCao
         public int GetFriendRoleIndex()
         {
             //与当前角色不同
-            return (selectRole+1) % GetRoleCount();
+            return (selectRole + 1) % GetRoleCount();
         }
 
         //根据关卡进度获取, 最少为2
@@ -280,15 +281,15 @@ namespace XiaoCao
         {
             return 2;
         }
-        
+
         public void Sava()
         {
             SaveMgr.SaveData<LocalRoleSetting>(this);
         }
-        
+
         public static void Save()
         {
-            SaveMgr.SaveData<LocalRoleSetting>(ConfigMgr.LocalRoleSetting);
+            SaveMgr.SaveData<LocalRoleSetting>(ConfigMgr.Inst.LocalRoleSetting);
         }
     }
 
@@ -334,7 +335,7 @@ namespace XiaoCao
 
         public static void SaveSetting()
         {
-            SaveMgr.SaveData<LocalSetting>(ConfigMgr.LocalSetting);
+            SaveMgr.SaveData<LocalSetting>(ConfigMgr.Inst.LocalSetting);
         }
 
         public void SetDefaultSetting()

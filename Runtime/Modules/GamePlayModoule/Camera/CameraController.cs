@@ -237,7 +237,7 @@ namespace XiaoCao
         //相机索敌
         public void CheckPlayer()
         {
-            bool isAutoLockEnmey = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
+            bool isAutoLockEnmey = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
 
 
             player0 = GameDataCommon.LocalPlayer;
@@ -292,7 +292,7 @@ namespace XiaoCao
         //自动回正
         void AutoDirect()
         {
-            bool isLockCam = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
+            bool isLockCam = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
             if (isLockCam)
             {
                 return;
@@ -397,7 +397,7 @@ namespace XiaoCao
                 swipe = true;
             }
 
-            float speed = ConfigMgr.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
+            float speed = ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
             if (Application.isMobilePlatform)
             {
                 speed *= 5;

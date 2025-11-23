@@ -38,6 +38,7 @@ public class TalkPanel : MonoBehaviour
         gameObject.SetActive(true);
         // 显示对话面板
         dialoguePanel.SetActive(true);
+
         // 更新头像和名字
         UpdateSpeakerInfo(node.GetSpeakerAvatar(), node.Str2);
 
@@ -175,7 +176,7 @@ public enum TalkType
     Text = 0, // 对话
     End = 1,
     Choice = 2, // 选择
-    Event = 3, // 事件
+    MapMsg = 3, // 事件
     ShowCanvas = 4,
     List = 5, //连续节点
     DelayNext = 6,

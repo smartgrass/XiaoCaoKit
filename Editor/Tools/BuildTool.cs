@@ -12,7 +12,6 @@ using YooAsset.Editor;
 
 namespace XiaoCaoEditor
 {
-
     public static class BuildTool
     {
         static string PathKey = "EditorBuildDir";
@@ -29,8 +28,8 @@ namespace XiaoCaoEditor
             {
                 Scene currentScene = SceneManager.GetActiveScene();
                 if (EditorUtility.DisplayDialog("Scene 未保存",
-                    "是否继续?", "保存并继续",
-                    "取消"))
+                        "是否继续?", "保存并继续",
+                        "取消"))
                 {
                     bool save = EditorSceneManager.SaveScene(currentScene);
                     if (!save)
@@ -62,8 +61,6 @@ namespace XiaoCaoEditor
         public static void ClearStreamingAssets()
         {
             Debug.Log($"--- ClearStreamingAssets");
-
-
         }
 
         [MenuItem(XCEditorTools.CopyExtraResToWin)]
@@ -76,6 +73,7 @@ namespace XiaoCaoEditor
             {
                 buildDir = PathTool.GetProjectPath() + "/Build";
             }
+
             CopyDirToWindowBuild(buildDir);
         }
 
@@ -92,7 +90,6 @@ namespace XiaoCaoEditor
             {
                 CopyDirToWindowBuild(buildDir);
             }
-
         }
 
         [MenuItem(XCEditorTools.CopyZipToAndroidBuild)]
@@ -129,7 +126,8 @@ namespace XiaoCaoEditor
                 var _buildReport = BuildReport.Deserialize(jsonData);
                 if (_buildReport.Summary.BuildTarget != BuildTarget.StandaloneWindows64)
                 {
-                    Debug.LogError($"returen : {_buildReport.Summary.BuildPackageName} is {_buildReport.Summary.BuildTarget}");
+                    Debug.LogError(
+                        $"returen : {_buildReport.Summary.BuildPackageName} is {_buildReport.Summary.BuildTarget}");
                     return;
                 }
             }
@@ -162,6 +160,7 @@ namespace XiaoCaoEditor
                     return;
                 }
             }
+
             if (isAndriod)
             {
                 BuildTool.CopyZipToAndroidBuild();
@@ -170,17 +169,16 @@ namespace XiaoCaoEditor
             {
                 BuildTool.DeleteExtraResZip();
             }
-            ConfigMgr.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            ConfigMgr.Inst.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
 
             if (IsBuildPackage)
             {
                 BuildTool.ProjectBuild();
             }
-
         }
     }
-
 }
 
 

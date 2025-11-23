@@ -92,7 +92,7 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly string HitClip;
     /// <summary>
-    /// 击中特效
+    /// 击中特效(-1为空)
     /// </summary>
     public readonly int HitEffect;
     /// <summary>

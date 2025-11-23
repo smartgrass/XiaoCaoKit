@@ -1,4 +1,4 @@
-﻿using NaughtyAttributes;
+using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEditor;
 using XiaoCao;
@@ -19,7 +19,7 @@ namespace AssetEditor.Editor
         {
             base.OnEnable();
             buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            staticSetting = ConfigMgr.StaticSettingSo;
+            staticSetting = ConfigMgr.Inst.StaticSettingSo;
         }
 
         #region StaticSetting

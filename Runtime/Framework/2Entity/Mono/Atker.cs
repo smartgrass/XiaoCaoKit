@@ -19,6 +19,7 @@ public class Atker : BaseAtker
         {
             return;
         }
+
         //只对Trigger造成伤害
         if (!other.isTrigger)
         {
@@ -32,7 +33,7 @@ public class Atker : BaseAtker
             OnHitRole(role);
         }
         else if (rb.CompareTag(Tags.ITEM) && GetEntity().HasTag(RoleTagCommon.MainPlayer) &&
-            rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
+                 rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
         {
             InitHitInfo(other);
             item.OnDamage(ackInfo);
@@ -46,7 +47,8 @@ public class Atker : BaseAtker
             //时停时玩家不受伤害
             return;
         }
-        ProcessAtkInfo(ackInfo);
+
+        AtkInfoHelper.ProcessAtkInfo(ackInfo);
         role.OnDamage(ackInfo);
 
         curTriggerTime++;
@@ -55,12 +57,7 @@ public class Atker : BaseAtker
             OnTriggerTimeOut();
         }
     }
-    //伤害修正
-    private void ProcessAtkInfo(AtkInfo ackInfo)
-    {
-        float GetDamageFactor = BattleData.Current.GetDamageFactor(ackInfo.team);
-        ackInfo.atk = (int)(ackInfo.atk * GetDamageFactor);
-    }
+
 
     internal void AddTriggerByCollider()
     {
@@ -74,12 +71,13 @@ public abstract class BaseAtker : IdComponent
 {
     public int maxTriggerTime;
 
-    [ReadOnly]
-    public int curTriggerTime;
+    [ReadOnly] public int curTriggerTime;
 
     public AtkInfo ackInfo { get; set; }
 
-    public virtual void ReceiveTriggerEnter(Collider collider) { }
+    public virtual void ReceiveTriggerEnter(Collider collider)
+    {
+    }
 
     //碰撞次数耗光
     public virtual void OnTriggerTimeOut()
@@ -97,6 +95,7 @@ public abstract class BaseAtker : IdComponent
                 {
                     Debug.LogError("---  ackInfo null");
                 }
+
                 if (entity.team != ackInfo.team && !entity.IsDie)
                 {
                     role = entity;
@@ -104,6 +103,7 @@ public abstract class BaseAtker : IdComponent
                 }
             }
         }
+
         role = null;
         return false;
     }
@@ -115,6 +115,7 @@ public abstract class BaseAtker : IdComponent
         ackInfo = info;
         gameObject.layer = XCSetting.GetTeamAtkLayer(info.team);
     }
+
     public void InitHitInfo(Collider other)
     {
         ackInfo.ackObjectPos = transform.position;
@@ -151,7 +152,7 @@ public class AtkInfo
     public int atker; //攻击者
     public int beAtker; //被攻击者
     public int atk = 1; //倍率计算后
-    public int baseAtk = 1;  //角色基础攻击力.
+    public int baseAtk = 1; //角色基础攻击力.
     public bool isCrit; //暴击
 
     public string skillId;
@@ -166,10 +167,7 @@ public class AtkInfo
 
     public bool IsLocalPlayer
     {
-        get
-        {
-            return atker.IsLocalPlayerId();
-        }
+        get { return atker.IsLocalPlayerId(); }
     }
 
 
@@ -181,6 +179,7 @@ public class AtkInfo
             {
                 return LubanTables.GetSkillSetting(skillId, subSkillId);
             }
+
             return setting;
         }
     }
@@ -193,6 +192,9 @@ public class AtkInfo
 
 public class AtkInfoHelper
 {
+    /// <summary>
+    /// <see cref="Atker.ProcessAtkInfo"/>
+    /// </summary>
     public static AtkInfo CreatInfo(Role player, string skillId)
     {
         PlayerAttr attr = player.PlayerAttr;
@@ -209,5 +211,10 @@ public class AtkInfoHelper
         info.AutoSetAtkValue();
         return info;
     }
-}
 
+    public static void ProcessAtkInfo(AtkInfo ackInfo)
+    {
+        float GetDamageFactor = BattleData.Current.GetDamageFactor(ackInfo.team);
+        ackInfo.atk = (int)(ackInfo.atk * GetDamageFactor);
+    }
+}

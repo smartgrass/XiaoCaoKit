@@ -38,7 +38,7 @@ namespace XiaoCao
 
             if (!touchField.GetSwipeDirection.IsZore())
             {
-                float speed = ConfigMgr.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
+                float speed = ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1);
                 cameraCapture.Model.transform.localEulerAngles -=
                     Vector3.up * (Time.deltaTime * touchField.GetSwipeDirection.x * speed);
             }

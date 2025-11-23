@@ -120,7 +120,7 @@ namespace XiaoCao
         {
             if (slotType == SlotType.RoleSkill)
             {
-                int index = ConfigMgr.LocalRoleSetting.GetFriendRoleIndex(); 
+                int index = ConfigMgr.Inst.LocalRoleSetting.GetFriendRoleIndex(); 
                 string roleKey = $"Role_{index}";
                 image.sprite = SpriteResHelper.LoadRoleIcon(roleKey);
                 return; 

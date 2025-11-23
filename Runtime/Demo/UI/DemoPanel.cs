@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 #endif
 using TMPro;
 using XiaoCao;
@@ -46,20 +46,20 @@ public class DemoPanel : SubPanel
 
     private void AddSkinDropDown()
     {
-        skinDrop = AddDropdown(LocalizeKey.SkinList, OnSkinChange, ConfigMgr.SkinList);
-        int index = (int)ConfigMgr.LocalSetting.GetValue(LocalizeKey.SkinList, 0);
+        skinDrop = AddDropdown(LocalizeKey.SkinList, OnSkinChange, ConfigMgr.Inst.SkinList);
+        int index = (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SkinList, 0);
         skinDrop.SetValueWithoutNotify((int)index);
     }
     private void AddTestEnmeyDropDown()
     {
-        skinDrop = AddDropdown(LocalizeKey.TestEnmeyList, OnTestEnmeyChange, ConfigMgr.TestEnmeyList);
-        //int index = (int)ConfigMgr.LocalSetting.GetValue(LocalizeKey.TestEnmeyList, 0);
+        skinDrop = AddDropdown(LocalizeKey.TestEnmeyList, OnTestEnmeyChange, ConfigMgr.Inst.TestEnmeyList);
+        //int index = (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.TestEnmeyList, 0);
         skinDrop.SetValueWithoutNotify(0);
     }
 
     public void OnTestEnmeyChange(int index)
     {
-        string testChangeToEnmey = ConfigMgr.GetTestEnmeyName(index);
+        string testChangeToEnmey = ConfigMgr.Inst.GetTestEnmeyName(index);
         if (string.IsNullOrEmpty(testChangeToEnmey))
         {
             return;
@@ -72,8 +72,8 @@ public class DemoPanel : SubPanel
     {
         Debug.Log($"--- SkinChange {index}");
 
-        ConfigMgr.LocalSetting.SetValue(LocalizeKey.SkinList, index);
-        GameDataCommon.LocalPlayer.ChangeBody(ConfigMgr.GetSkinName(index));
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.SkinList, index);
+        GameDataCommon.LocalPlayer.ChangeBody(ConfigMgr.Inst.GetSkinName(index));
 
     }
 }

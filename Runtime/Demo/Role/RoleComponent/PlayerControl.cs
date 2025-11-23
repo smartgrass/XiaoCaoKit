@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using DG.Tweening;
 using EasyUI.Helpers;
@@ -105,8 +105,8 @@ namespace XiaoCao
 
         private void SwitchFocus()
         {
-            bool isOn = ConfigMgr.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
-            ConfigMgr.LocalSetting.SetBoolValue(LocalizeKey.LockCam, !isOn);
+            bool isOn = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
+            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.LockCam, !isOn);
         }
 
         public void TryJump()

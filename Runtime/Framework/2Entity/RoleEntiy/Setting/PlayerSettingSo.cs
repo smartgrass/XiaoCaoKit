@@ -65,6 +65,8 @@ namespace XiaoCao
 
         public float maxArmor = 4;
 
+        public float armorDef = 0.8f; //霸体减免,boss持有,克制多段伤害
+
         public float recoverCdOnBreak = 4; //进入Break后多久触发恢复/眩晕时间
 
         public float recoverCdIfOnHurt = 4; //角色未受伤后多久触发恢复

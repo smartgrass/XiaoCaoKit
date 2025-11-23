@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 using XiaoCao;
 
 //读取数据
-public class TalkMgr : Singleton<TalkMgr>
+public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
 {
     // 使用栈来保存对话状态，支持嵌套任务
     private Stack<ChapterTalkState> talkStateStack = new Stack<ChapterTalkState>();
@@ -114,15 +115,13 @@ public class TalkMgr : Singleton<TalkMgr>
             }
             UIMgr.Inst.MidCanvasEnable(isShow);
         }
-        else if (node.talkType == TalkType.Event)
+        else if (node.talkType == TalkType.MapMsg)
         {
-            //执行后直接继续
-            // if (node.Str1 == "DoSkill")
-            // {
-            //     string skillId = node.Str2;
-            //     string[] cmdList = skillId.Split("|");
-            //     GameDataCommon.LocalPlayer.component.control.DoActCombol(cmdList);
-            // }
+            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), node.Str1);
+            if (node.array.Length > 2 && node.Str2 == "Next")
+            {
+                MoveNextTalk();
+            }
         }
 
         // 如果有选项，等待文本完成后显示选项

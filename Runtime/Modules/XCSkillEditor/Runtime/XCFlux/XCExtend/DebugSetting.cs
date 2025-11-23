@@ -37,7 +37,7 @@ namespace XiaoCao
                 //判断playerPrefr
                 string time = PlayerPrefs.GetString(LocalizeKey.BuildTime, "");
 
-                if (ConfigMgr.StaticSettingSo.buildTime != time)
+                if (ConfigMgr.Inst.StaticSettingSo.buildTime != time)
                 {
                     return true;
                 }
@@ -65,7 +65,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    if (ConfigMgr.MainCfg.GetValue("Setting", "DebugLog", "0") == "1")
+                    if (ConfigMgr.Inst.MainCfg.GetValue("Setting", "DebugLog", "0") == "1")
                     {
                         return true;
                     }

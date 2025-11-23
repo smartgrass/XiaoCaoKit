@@ -19,6 +19,10 @@ public static class HitHelper
     public static void ShowHitEffect(Transform transform, AtkInfo ackInfo)
     {
         SkillSetting setting = ackInfo.GetSkillSetting;
+        if (setting.HitEffect < 0)
+        {
+            return;
+        }
         var effect = RunTimePoolMgr.Inst.GetHitEffect(setting.HitEffect);
         effect.SetActive(true);
         effect.transform.SetParent(transform, true);

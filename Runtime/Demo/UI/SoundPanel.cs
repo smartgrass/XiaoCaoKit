@@ -1,4 +1,4 @@
-﻿using OdinSerializer.Utilities;
+using OdinSerializer.Utilities;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
@@ -64,32 +64,32 @@ public class SoundPanel : SubPanel
 
     private void OnMainChange(float value)
     {
-        ConfigMgr.LocalSetting.SetValue(MainVolumeKey, value);
+        ConfigMgr.Inst.LocalSetting.SetValue(MainVolumeKey, value);
         SoundMgr.Inst.SetVolume(MusicVolumeKey, value);
     }
 
     private void OnMusicChange(float value)
     {
-        ConfigMgr.LocalSetting.SetValue(MusicVolumeKey, value);
+        ConfigMgr.Inst.LocalSetting.SetValue(MusicVolumeKey, value);
         SoundMgr.Inst.SetVolume(MusicVolumeKey, value);
     }
 
     private void OnSFXChange(float value)
     {
-        ConfigMgr.LocalSetting.SetValue(SFXVolumeKey, value);
+        ConfigMgr.Inst.LocalSetting.SetValue(SFXVolumeKey, value);
         SoundMgr.Inst.SetVolume(SFXVolumeKey, value);
     }
 
     private float MainVolumeGetter()
     {
-        return ConfigMgr.LocalSetting.GetValue(MainVolumeKey, 1);
+        return ConfigMgr.Inst.LocalSetting.GetValue(MainVolumeKey, 1);
     }
     private float MusicVolumeGetter()
     {
-        return ConfigMgr.LocalSetting.GetValue(MusicVolumeKey, 0.5f);
+        return ConfigMgr.Inst.LocalSetting.GetValue(MusicVolumeKey, 0.5f);
     }
     private float SFXVolumeGetter()
     {
-        return ConfigMgr.LocalSetting.GetValue(SFXVolumeKey, 1);
+        return ConfigMgr.Inst.LocalSetting.GetValue(SFXVolumeKey, 1);
     }
 }

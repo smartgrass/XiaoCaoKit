@@ -18,16 +18,16 @@ namespace XiaoCaoKit
         {
             fightBtn.onClick.AddListener(() => { HomeHud.Inst.SwitchPanel(EHomePanel.FightPanel); });
             switchRoleBtn.onClick.AddListener(OnSwitchRole);
-            characterImage.config.roleKey = $"Role_{ConfigMgr.LocalRoleSetting.selectRole}";
+            characterImage.config.roleKey = $"Role_{ConfigMgr.Inst.LocalRoleSetting.selectRole}";
             roleNameText.text = characterImage.config.roleKey.ToLocalizeStr();
         }
 
         private void OnSwitchRole()
         {
-            var setting = ConfigMgr.LocalRoleSetting;
+            var setting = ConfigMgr.Inst.LocalRoleSetting;
             int roleId = setting.selectRole + 1;
             roleId %= setting.GetRoleCount();
-            ConfigMgr.LocalRoleSetting.selectRole = roleId;
+            ConfigMgr.Inst.LocalRoleSetting.selectRole = roleId;
             LocalRoleSetting.Save();
             string roleKey = $"Role_{roleId}";
             // 切换角色
