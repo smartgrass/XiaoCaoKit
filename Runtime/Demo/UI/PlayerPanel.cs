@@ -9,9 +9,9 @@ namespace XiaoCao
     /// <summary>
     /// 背包, 技能界面
     /// </summary>
-    public class PlayerPanel : TabPanel
+    public class PlayerPanel : TabStandardPanel
     {
-        public override UIPanelType panelType => UIPanelType.PlayerPanel;
+        public override UIPanelType PanelType => UIPanelType.PlayerPanel;
         public override void Init()
         {
             if (IsInited)

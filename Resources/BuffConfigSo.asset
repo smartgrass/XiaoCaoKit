@@ -50,15 +50,14 @@ MonoBehaviour:
     addInfo: []
   - eBuff: 101
     addInfo:
-    - 2
+    - 3
+  - eBuff: 102
+    addInfo:
+    - 4
   - eBuff: 102
     addInfo:
     - 4
   - eBuff: 103
-    addInfo:
-    - 4
-    - 10
-  - eBuff: 104
     addInfo:
     - 0.5
     - 0.4
@@ -80,7 +79,7 @@ MonoBehaviour:
     - values:
       - 10
       - 10
-  - eBuff: 104
+  - eBuff: 103
     maxLevel: 2
     addInfoArray:
     - values:

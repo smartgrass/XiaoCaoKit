@@ -70,9 +70,8 @@ namespace XiaoCao
                 //连线: 起点不变,终点变为过玩家方向上x距离
                 Vector3 oldDelta = moveEvent.endVec - moveEvent.startVec;
                 //高度差保持不变
-                float endY = worldStartVec.y + oldDelta.y;
                 Vector3 xzDir = (worldEndVec - worldStartVec).SetY(0).normalized;
-                worldEndVec = worldStartVec + xzDir * oldDelta.magnitude + new Vector3(0, endY, 0);
+                worldEndVec = worldStartVec + xzDir * oldDelta.magnitude + new Vector3(0, oldDelta.y, 0);
             }
             else
             {

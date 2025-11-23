@@ -292,11 +292,12 @@ namespace AssetEditor.Editor
             }
         }
 
-        [Button("Test Config", Line99)]
+        [Button("ReLoadConfig ", Line99)]
         void TestConfig()
         {
-            Debug.Log($"{Application.dataPath}" +
-                      $"{Application.consoleLogPath} {PathTool.GetProjectPath()}");
+            ConfigMgr.ClearCache();
+            ConfigMgr.Inst.Init();
+            Debug.Log($"-- ReLoadConfig");
         }
 
         private void SetFrameRate()

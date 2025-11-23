@@ -22,8 +22,6 @@ namespace XiaoCao
 
         public BattleHud battleHud;
 
-        public LevelPanel levelPanel;
-
         public SettingPanel settingPanel;
 
         public PlayerPanel playerPanel;
@@ -34,6 +32,7 @@ namespace XiaoCao
 
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
+
         public TalkPanel talkPanel;
 
         public LevelResultPanel levelResultPanel;
@@ -41,7 +40,7 @@ namespace XiaoCao
         // Buff选择面板
         public BuffSelectPanel buffSelectPanel;
 
-        [ReadOnly] public PanelBase lastPanel;
+        [ReadOnly] public PanelBase lastpanel;
 
         public Canvas Canvas => topCanvas;
         //BlackScreenUI
@@ -71,17 +70,23 @@ namespace XiaoCao
             standaloneInputHud.SetTouchShow(isTouch);
         }
 
-        public void ShowView(UIPanelType type)
+        public void ShowView(UIPanelType type, IUIData data = null)
         {
             PanelBase panel = GetPanel(type);
-            panel.Show();
+            if (panel.NeedUIData && data == null)
+            {
+                Debug.LogError($"-- need uiData");
+                return;
+            }
+
+            panel.Show(data);
             if (IsHideMid(type))
             {
                 midCanvas.enabled = false;
             }
 
             showingPanels.Add(panel);
-            lastPanel = panel;
+            lastpanel = panel;
             CheckPlayInputAble();
             GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), type, false);
         }
@@ -94,7 +99,6 @@ namespace XiaoCao
                 return;
             }
 
-            panel.IsShowing = false;
             panel.Hide();
             showingPanels.Remove(panel);
 
@@ -102,14 +106,9 @@ namespace XiaoCao
             {
                 midCanvas.enabled = true;
             }
+             
 
             CheckPlayInputAble();
-        }
-
-        // 显示Buff选择界面
-        public void ShowBuffSelection(List<BuffItem> buffItems, System.Action<BuffItem> onSelect)
-        {
-            buffSelectPanel.ShowWith(buffItems, onSelect);
         }
 
         public void MidCanvasEnable(bool isOn)
@@ -119,7 +118,6 @@ namespace XiaoCao
 
         public void PopUIEnable(bool isOn, string uiName)
         {
-            MidCanvasEnable(!isOn);
             TimeStopMgr.UIStopTime(isOn, uiName);
         }
 
@@ -141,9 +139,9 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    if (lastPanel != null && lastPanel.IsShowing)
+                    if (lastpanel != null && lastpanel.IsShowing)
                     {
-                        lastPanel.Hide();
+                        lastpanel.Hide();
                     }
                 }
             }
@@ -177,21 +175,18 @@ namespace XiaoCao
 
         public PanelBase GetPanel(UIPanelType type)
         {
-            if (type == UIPanelType.LevelPanel)
+            switch (type)
             {
-                return levelPanel;
+                case UIPanelType.SettingPanel:
+                    return settingPanel;
+                case UIPanelType.PlayerPanel:
+                    return playerPanel;
+                case UIPanelType.BuffSelectPanel:
+                    return buffSelectPanel;
+                default:
+                    Debuger.LogError($"--- no panel {type}");
+                    return null;
             }
-            else if (type == UIPanelType.SettingPanel)
-            {
-                return settingPanel;
-            }
-            else if (type == UIPanelType.PlayerPanel)
-            {
-                return playerPanel;
-            }
-
-            Debuger.LogError($"--- no panel {type}");
-            return null;
         }
 
         public bool IsHideMid(UIPanelType type)

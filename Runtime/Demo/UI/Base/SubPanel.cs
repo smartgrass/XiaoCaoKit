@@ -17,7 +17,7 @@ public abstract class SubPanel
 
     public UIPrefabs Prefabs;
 
-    public TabPanel panel;
+    public TabStandardPanel standardPanel;
 
     public Transform transform => gameObject.transform;
 
@@ -38,7 +38,7 @@ public abstract class SubPanel
     public void Show()
     {
         gameObject.SetActive(true);
-        panel.SwitchPanel(subPanelName);
+        standardPanel.SwitchPanel(subPanelName);
         RefreshUI();
 
     }

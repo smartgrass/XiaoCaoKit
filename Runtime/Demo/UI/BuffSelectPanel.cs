@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using XiaoCao;
 using DG.Tweening;
+using UnityEngine.UIElements;
 using XiaoCaoKit.Runtime.Demo.UI;
+using Button = UnityEngine.UI.Button;
 
 namespace XiaoCao.UI
 {
     /// <summary>
     /// <see cref="BuffItemDetail"/>
+    /// <see cref="BuffSelectPanelData"/>
     /// </summary>
-    public class BuffSelectPanel : MonoBehaviour
+    public class BuffSelectPanel : PanelBase
     {
+        public override UIPanelType PanelType => UIPanelType.BuffSelectPanel;
+        public override bool NeedUIData => true;
         public Transform buffContainer;
         public Button sureBtn;
 
@@ -26,6 +30,12 @@ namespace XiaoCao.UI
         // 记录当前选中的详情项
         private BuffItemDetail selectedDetail;
 
+        public override void Show(IUIData data)
+        {
+            BuffSelectPanelData uiData = (BuffSelectPanelData)data;
+            ShowWith(uiData.buffItems, uiData.onSelect);
+        }
+
 
         public void Init()
         {
@@ -36,7 +46,8 @@ namespace XiaoCao.UI
             buffItemPrefab.transform.SetParent(prefabRoot.transform);
         }
 
-        public void ShowWith(List<BuffItem> buffs, System.Action<BuffItem> onSelect)
+
+        private void ShowWith(List<BuffItem> buffs, System.Action<BuffItem> onSelect)
         {
             gameObject.SetActive(true);
 
@@ -80,6 +91,10 @@ namespace XiaoCao.UI
                     }
                 }
             }
+
+
+            //自动选中
+            OnBuffDetailSelected(buffItemDetails[0]);
         }
 
         private void OnBuffDetailSelected(BuffItemDetail buffDetail)
@@ -110,10 +125,11 @@ namespace XiaoCao.UI
         private void OnConfirmButtonClicked()
         {
             onSelectCallback?.Invoke(selectedBuff);
-            Hide();
+            UIMgr.Inst.HideView(this.PanelType);
         }
 
-        private void Hide()
+
+        public override void Hide()
         {
             // 清理引用
             onSelectCallback = null;
@@ -132,8 +148,20 @@ namespace XiaoCao.UI
             buffItemDetails.Clear();
 
             UIMgr.Inst.PopUIEnable(false, name);
-            
+
             gameObject.SetActive(false);
+        }
+    }
+
+    public struct BuffSelectPanelData : IUIData
+    {
+        public List<BuffItem> buffItems;
+        public System.Action<BuffItem> onSelect;
+
+        public BuffSelectPanelData(List<BuffItem> buffItems, System.Action<BuffItem> onSelect)
+        {
+            this.buffItems = buffItems;
+            this.onSelect = onSelect;
         }
     }
 }

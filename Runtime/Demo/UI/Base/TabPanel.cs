@@ -6,18 +6,15 @@ using UnityEngine.UI;
 using XiaoCao;
 using XiaoCao.UI;
 
-public abstract class TabPanel : PanelBase
+public abstract class TabStandardPanel : StandardPanel
 {
-    [NonSerialized]
-    public List<SubPanel> list = new List<SubPanel>();
-    [NonSerialized]
-    public SubPanel curPanel;
+    [NonSerialized] public List<SubPanel> list = new List<SubPanel>();
+    [NonSerialized] public SubPanel curPanel;
 
     public UIPrefabs Prefabs;
     public Transform PANELS;
     public Transform TABS;
     public TextMeshProUGUI Title;
-
 
 
     protected T AddPanel<T>(string panelName, string findPanel = "") where T : SubPanel, new()
@@ -36,17 +33,14 @@ public abstract class TabPanel : PanelBase
         }
 
 
-        subPanel.panel = this;
+        subPanel.standardPanel = this;
         subPanel.Prefabs = Prefabs;
         subPanel.subPanelName = panelName;
 
         GameObject tabBtnGo = Instantiate(Prefabs.tabBtn, TABS);
         var tabBtn = tabBtnGo.GetComponentInChildren<Button>();
         subPanel.TabBtn = tabBtn;
-        tabBtn.onClick.AddListener(() =>
-        {
-            subPanel.Show();
-        });
+        tabBtn.onClick.AddListener(() => { subPanel.Show(); });
         tabBtnGo.GetComponentInChildren<Button>().Select();
         tabBtnGo.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
 
@@ -88,6 +82,7 @@ public abstract class TabPanel : PanelBase
         GameObject panelGo = PANELS.Find(findPanel).gameObject;
         subPanel.gameObject = panelGo;
     }
+
     public void SetSubTitle(string str)
     {
         this.Title.BindLocalizer(str);
@@ -103,20 +98,18 @@ public abstract class TabPanel : PanelBase
     public override void Hide()
     {
         gameObject.SetActive(false);
-        UIMgr.Inst.HideView(panelType);
+        UIMgr.Inst.HideView(PanelType);
     }
 
-    public override void Show()
+    public override void Show(IUIData uiData = null)
     {
         if (!IsInited)
         {
             Init();
         }
-        IsShowing = true;
+
         gameObject.SetActive(true);
     }
 
     #endregion
 }
-
-

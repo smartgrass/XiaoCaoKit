@@ -7,12 +7,12 @@ using XiaoCao;
 using XiaoCao.UI;
 
 
-public class SettingPanel : TabPanel
+public class SettingPanel : TabStandardPanel
 {
     public Button reloadBtn;
 
     public DialogPanel dialogPanel;
-    public override UIPanelType panelType => UIPanelType.SettingPanel;
+    public override UIPanelType PanelType => UIPanelType.SettingPanel;
 
     public override void Init()
     {
@@ -56,7 +56,7 @@ public class SettingPanel : TabPanel
         LocalSetting.SaveSetting();
     }
 
-    public override void Show()
+    public override void Show(IUIData uiData = null)
     {
         base.Show();
         curPanel?.Show();

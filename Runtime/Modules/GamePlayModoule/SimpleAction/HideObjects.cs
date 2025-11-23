@@ -13,7 +13,10 @@ namespace XiaoCao
         {
             foreach (GameObject obj in objects)
             {
-                obj.SetActive(isActive);
+                if (obj)
+                {
+                    obj.SetActive(isActive);
+                }
             }
         }
     }
