@@ -80,7 +80,7 @@ namespace XiaoCao
 
         public static string GetExtraPackageDir()
         {
-            string platformName = DebugSetting.IsMobilePlatform ? "Android" : "StandaloneWindows64";
+            string platformName = DebugSetting.IsMobileOffice ? "Android" : "StandaloneWindows64";
             return $"{GetBuildExtraResDir()}/{platformName}";
         }
         //BuildTool.AfterBuild 在打包后将复制配置
@@ -93,14 +93,14 @@ namespace XiaoCao
         //获取ExtraRes目录
         public static string GetBuildExtraResDir()
         {
-            if (DebugSetting.IsMobilePlatform)
+            if (DebugSetting.IsMobileOffice)
             {
                 return $"{Application.persistentDataPath}/ExtraRes";
             }
             return $"{PathTool.GetProjectPath()}/ExtraRes";
         }
 
-        public static string GetExtraResZipPath()
+        public static string GetStreamingAssetsExtraResZipPath()
         {
             return $"{Application.streamingAssetsPath}/ExtraRes.zip";
         }

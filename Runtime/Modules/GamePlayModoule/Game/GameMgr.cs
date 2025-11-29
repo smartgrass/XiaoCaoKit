@@ -217,7 +217,7 @@ namespace XiaoCao
             Debug.Log($"--- ClearSceneData ");
             PoolMgr.Inst.ClearAllPool(true);
             TimerManager.ClearSelf();
-            GameAllData.battleData = new BattleData();
+            GameAllData.ClearBattleData();
         }
     }
 
@@ -262,7 +262,9 @@ namespace XiaoCao
             };
         }
     }
-
+    
+    
+    /// <see cref="MapNames.GetLevelInfoByName"/>
     public struct LevelInfo
     {
         public int chapter;
@@ -271,6 +273,11 @@ namespace XiaoCao
         public string GetLevelName()
         {
             return LocalizeKey.GetLevelName(chapter, index);
+        }
+
+        public static LevelInfo ParseString(string levelName)
+        {
+            return MapNames.GetLevelInfoByName(levelName);
         }
     }
 }

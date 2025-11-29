@@ -6,6 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
 
+/// <summary>
+/// <<see cref="PlayerDataProcedure.SetDefaultPlayerSetting"/>
+/// </summary>
 public class BasicSettingPanel : SubPanel
 {
     Toggle toggle;
@@ -21,8 +24,8 @@ public class BasicSettingPanel : SubPanel
         toggle = AddToggle(LocalizeKey.LockCam, OnToggleLockCam);
         toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
 
-        var slider = AddSlider(LocalizeKey.SwapCameraSpeed, OnSliderCameraSpeed, new Vector2(0.5f, 3f));
-        slider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 1));
+        var slider = AddSlider(LocalizeKey.SwapCameraSpeed, OnSliderCameraSpeed, new Vector2(1f, 5f));
+        slider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 2.5f));
 
         var anglePowerSlider = AddSlider(LocalizeKey.AnglePower, OnSliderAnglePower, new Vector2(0, 1f));
         anglePowerSlider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.AnglePower, 0.5f));

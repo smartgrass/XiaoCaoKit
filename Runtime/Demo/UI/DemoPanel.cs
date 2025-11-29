@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 #endif
+using cfg;
 using TMPro;
 using XiaoCao;
 using Debug = UnityEngine.Debug;
@@ -15,7 +16,9 @@ public class DemoPanel : SubPanel
     {
         AddSkinDropDown();
         AddTestEnmeyDropDown();
-        if (!DebugSetting.IsMobilePlatform)
+        AddUnlockAllLevelBtn();
+
+        if (!DebugSetting.IsMobileOffice)
         {
             AddMobileInput();
         }
@@ -27,8 +30,8 @@ public class DemoPanel : SubPanel
         mobileInputToggle = AddToggle(LocalizeKey.MobileInput, OnAddMobileInput);
 #if UNITY_EDITOR
         bool isMobileInput = UnityEditor.EditorPrefs.GetBool(LocalizeKey.MobileInput, false);
-        mobileInputToggle.isOn = isMobileInput; 
-        OnAddMobileInput(isMobileInput);//由于UI的没有显示,所以需要手动调用
+        mobileInputToggle.isOn = isMobileInput;
+        OnAddMobileInput(isMobileInput); //由于UI的没有显示,所以需要手动调用
 #endif
     }
 
@@ -50,12 +53,23 @@ public class DemoPanel : SubPanel
         int index = (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SkinList, 0);
         skinDrop.SetValueWithoutNotify((int)index);
     }
+
     private void AddTestEnmeyDropDown()
     {
         skinDrop = AddDropdown(LocalizeKey.TestEnmeyList, OnTestEnmeyChange, ConfigMgr.Inst.TestEnmeyList);
         //int index = (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.TestEnmeyList, 0);
         skinDrop.SetValueWithoutNotify(0);
     }
+
+    private void AddUnlockAllLevelBtn()
+    {
+        AddButton(LocalizeKey.UnlockAllLevel, () =>
+        {
+            GameDebugTool.UnlockAllLevel(GameAllData.playerSaveData);
+            SaveMgr.SaveData(GameAllData.playerSaveData);
+        });
+    }
+
 
     public void OnTestEnmeyChange(int index)
     {
@@ -64,7 +78,8 @@ public class DemoPanel : SubPanel
         {
             return;
         }
-        Player0 player0 = GameAllData.commonData.player0;
+
+        Player0 player0 = GameAllData.CommonData.Player0;
         player0.ChangeToTestEnemy(testChangeToEnmey);
     }
 
@@ -74,6 +89,5 @@ public class DemoPanel : SubPanel
 
         ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.SkinList, index);
         GameDataCommon.LocalPlayer.ChangeBody(ConfigMgr.Inst.GetSkinName(index));
-
     }
 }

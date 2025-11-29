@@ -32,7 +32,7 @@ namespace XiaoCao
             {
                 if (_atkTimer == null)
                 {
-                    _atkTimer = GameDataCommon.LocalPlayer.component.atkTimers;
+                    _atkTimer = GameDataCommon.LocalPlayer.component.atkTimer;
                 }
 
                 return _atkTimer;
@@ -97,7 +97,7 @@ namespace XiaoCao
 
         private void Update()
         {
-            if (GameAllData.commonData.gameState != GameState.Running)
+            if (GameAllData.CommonData.gameState != GameState.Running)
             {
                 return;
             }

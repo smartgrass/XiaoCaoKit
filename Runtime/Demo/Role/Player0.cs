@@ -38,7 +38,7 @@ namespace XiaoCao
                 }
                 idRole.bodyName = selectRole == 0 ? ConfigMgr.Inst.GetSettingSkinName() : $"Role_{selectRole}";
                 AddTag(RoleTagCommon.MainPlayer);
-                GameDataCommon.Current.player0 = this;
+                GameDataCommon.Current.Player0 = this;
                 GameDataCommon.Current.localPlayerId = this.id;
                 BattleData.Current.curBodyName = idRole.bodyName;
             }
@@ -57,7 +57,7 @@ namespace XiaoCao
             component.buffControl = new BuffControl(this);
             data_R.roleControl = component.control;
             //component.aiControl = new AIControl(this);
-            component.atkTimers = new PlayerAtkTimer(this);
+            component.atkTimer = new PlayerAtkTimer(this);
             component.movement = new RoleMovement(this);
             data_R.movement = component.movement;
 
@@ -454,7 +454,7 @@ namespace XiaoCao
         public PlayerInput input;
         public PlayerControl control;
         public RoleMovement movement;
-        public PlayerAtkTimer atkTimers;
+        public PlayerAtkTimer atkTimer;
         public BuffControl buffControl;
     }
 

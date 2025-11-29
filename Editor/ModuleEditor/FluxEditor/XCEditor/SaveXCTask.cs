@@ -57,7 +57,7 @@ public class SaveXCTask
 
         FSequence[] seqs = GameObject.FindObjectsOfType<FSequence>();
 
-        seqs.LogListStr();
+        seqs.LogListstr();
 
         foreach (var seq in seqs)
         {

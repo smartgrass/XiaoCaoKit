@@ -15,7 +15,7 @@ namespace XiaoCao
 
         public PlayerData0 Data_P => owner.playerData;
         public PlayerInputData InputData => owner.playerData.inputData;
-        public PlayerAtkTimer AtkTimers => owner.component.atkTimers;
+        public PlayerAtkTimer AtkTimer => owner.component.atkTimer;
         public Tween JumpTween { get; set; }
 
         public string RollName => Data_P.playerSetting.rollSkillId;
@@ -66,7 +66,7 @@ namespace XiaoCao
                     TimeStopMgr.Inst.StopTimeSpeed();
                 }
 
-                owner.component.atkTimers.ClearAllCd();
+                owner.component.atkTimer.ClearAllCd();
             }
 
             if (InputData.inputs[InputKey.Focus])
@@ -92,12 +92,12 @@ namespace XiaoCao
             }
 
             //判断冷缩
-            if (!AtkTimers.IsSkillReady(skillId))
+            if (!AtkTimer.IsSkillReady(skillId))
             {
                 return;
             }
 
-            AtkTimers.SetSkillEnterCD(skillId);
+            AtkTimer.SetSkillEnterCD(skillId);
 
             RcpPlaySkill(skillId);
         }
@@ -153,9 +153,9 @@ namespace XiaoCao
             }
 
             //判断冷缩
-            if (!AtkTimers.IsSkillReady(RollName))
+            if (!AtkTimer.IsSkillReady(RollName))
             {
-                Debug.Log($"rollId cd {AtkTimers.GetWaitTime(RollName)}");
+                Debug.Log($"rollId cd {AtkTimer.GetWaitTime(RollName)}");
                 //UIMgr.PopToast($"rollId is in cd {AtkTimers.GetWaitTime(AnimNames.Roll).ToString("N2")}s");
                 return;
             }
@@ -165,7 +165,7 @@ namespace XiaoCao
                 return;
             }
 
-            AtkTimers.SetSkillEnterCD(RollName);
+            AtkTimer.SetSkillEnterCD(RollName);
 
             //停止&打断当前动作
             if (IsBusy())
@@ -225,7 +225,7 @@ namespace XiaoCao
 
         private void NorAck()
         {
-            int nextNorAckIndex = AtkTimers.GetNextNorAckIndex();
+            int nextNorAckIndex = AtkTimer.GetNextNorAckIndex();
 
             Data_P.curNorAckIndex = nextNorAckIndex;
 

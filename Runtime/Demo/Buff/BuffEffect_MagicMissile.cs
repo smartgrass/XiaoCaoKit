@@ -36,7 +36,7 @@ namespace XiaoCao.Buff
             Key = key;
             this.TargetId = targetId;
             player = TargetId.GetPlayerById();
-            atkTimers = player.component.atkTimers;
+            atkTimers = player.component.atkTimer;
             atkTimers.AddKey(key, buff.addInfo[0]);
             loopTimer = new LoopTimer(0.3f);
             bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);

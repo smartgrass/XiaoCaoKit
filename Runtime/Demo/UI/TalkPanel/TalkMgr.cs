@@ -32,6 +32,7 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
         //进入对话模式,屏蔽操作
         UIMgr.Inst.MidCanvasEnable(false);
         isTalking = true;
+        UIMgr.Inst.CheckPlayInputAble();
     }
 
     public void EndTalk(bool isReShowCanvas = true)
@@ -56,6 +57,7 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
             if (isReShowCanvas)
             {
                 UIMgr.Inst.MidCanvasEnable(true);
+                UIMgr.Inst.CheckPlayInputAble();
             }
         }
     }

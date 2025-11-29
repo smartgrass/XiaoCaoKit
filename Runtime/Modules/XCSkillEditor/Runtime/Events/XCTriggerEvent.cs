@@ -14,7 +14,7 @@ namespace XiaoCao
     public class XCTriggerEvent : XCEvent
     {
         public static string[] TriggerNames = new[]
-        { "BoxTrigger", "SphereTrigger", "SectorTrigger", "OtherTrigger" };
+            { "BoxTrigger", "SphereTrigger", "SectorTrigger", "OtherTrigger" };
 
         public int maxTriggerTime = 0;
 
@@ -45,6 +45,7 @@ namespace XiaoCao
             SetAtkInfo();
         }
 
+
         void GetTrigger()
         {
             if (UseRayCast())
@@ -64,6 +65,7 @@ namespace XiaoCao
             {
                 return false;
             }
+
             return true;
         }
 
@@ -128,27 +130,39 @@ namespace XiaoCao
             ClearCache();
         }
 
+        public void PreWarm()
+        {
+            CreateAtkerPool(MeshType.Sector);
+        }
+
+
         public Dictionary<MeshType, AssetPool> dicPool = new Dictionary<MeshType, AssetPool>();
 
 
         public static Atker GetTrigger(MeshType meshType)
         {
-            if (Inst.dicPool.TryGetValue(meshType, out AssetPool assetPool))
+            if (!Inst.dicPool.TryGetValue(meshType, out AssetPool assetPool))
             {
-                return assetPool.Get().GetComponent<Atker>();
+                assetPool = CreateAtkerPool(meshType);
             }
+            
+            return assetPool.Get().GetComponent<Atker>();
+        }
 
+        private static AssetPool CreateAtkerPool(MeshType meshType)
+        {
+            AssetPool assetPool;
             var newObject = new GameObject(XCTriggerEvent.TriggerNames[(int)meshType]);
-            var trigger = newObject.AddComponent<Atker>();
+            newObject.AddComponent<Atker>();
             assetPool = new AssetPool(newObject);
+            newObject.SetActive(false);
             Inst.dicPool[meshType] = assetPool;
-            return assetPool.Get().GetComponent<Atker>(); ;
+            return assetPool;
         }
 
         public static void Release(MeshType meshType, GameObject gameObject)
         {
             Inst.dicPool[meshType].Release(gameObject);
         }
-
     }
 }

@@ -135,14 +135,14 @@ namespace XiaoCao.Buff
                 Add = buff.addInfo[0]
             };
             player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
-            player.component.atkTimers.UpdataCdOff();
+            player.component.atkTimer.UpdataCdOff();
         }
 
         public override void RemoveEffect()
         {
             base.RemoveEffect();
             var player = TargetId.GetPlayerById();
-            player.component.atkTimers.UpdataCdOff();
+            player.component.atkTimer.UpdataCdOff();
         }
     }
 

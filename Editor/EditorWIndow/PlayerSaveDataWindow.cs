@@ -1,5 +1,6 @@
 using System;
 using AssetEditor.Editor;
+using cfg;
 using NaughtyAttributes;
 using UnityEditor;
 using UnityEngine;
@@ -44,6 +45,14 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     private void ResetData()
     {
         playerSaveData = new PlayerSaveData();
+        Save();
+    }
+
+    [Button("解锁全部关卡",Pos: 2)]
+    void UnlockAllLevel()
+    {
+        playerSaveData = SaveMgr.ReadData<PlayerSaveData>(out var isSuc);
+        GameDebugTool.UnlockAllLevel(playerSaveData);
         Save();
     }
 }

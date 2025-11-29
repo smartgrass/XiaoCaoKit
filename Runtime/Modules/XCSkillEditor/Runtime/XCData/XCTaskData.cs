@@ -112,6 +112,13 @@ namespace XiaoCao
 
             State = XCState.Running;
             HasStart = true;
+            
+#if UNITY_EDITOR
+            if (Time.deltaTime > XCSetting.FramePerSec * 1.5f)
+            {
+                Debuger.LogWarning($"-- 帧率异常 {Time.deltaTime:N2} > {XCSetting.FramePerSec * 1.5f} {info.skillId}:{ObjectPath}");
+            }
+#endif
         }
 
         private void CheckAtkMsg(TaskInfo info)

@@ -108,7 +108,7 @@ public static class YooAssetBuildHelper
         str.LogStr($"BuiltinBuildParameters {parameters.PackageName}");
     }
 
-    private static List<string> GetYooAssetBuildPackageNames()
+    public static List<string> GetYooAssetBuildPackageNames()
     {
         List<string> result = new List<string>();
         foreach (var package in AssetBundleCollectorSettingData.Setting.Packages)

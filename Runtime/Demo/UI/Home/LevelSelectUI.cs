@@ -13,7 +13,8 @@ namespace XiaoCaoKit
         public TMP_Text text;
         public Image imgLock;
         public Image imgNoPass;
-        
+        public Color[] colors;
+
 
         public void Show(int chapter, int index)
         {
@@ -21,6 +22,7 @@ namespace XiaoCaoKit
 
             // 根据关卡状态设置显示
             LevelPassState passState = GetPassState(chapter, index);
+            text.color = colors[(int)(passState)];
             switch (passState)
             {
                 case LevelPassState.Lock:

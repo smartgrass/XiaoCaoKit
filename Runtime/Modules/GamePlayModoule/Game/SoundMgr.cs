@@ -148,7 +148,7 @@ namespace XiaoCao
             string bgm = LocalizeKey.Bgm.GetKeyString();
             if (bgm == "")
             {
-                PlayFristBgm();
+                //PlayFristBgm();
             }
             else
             {

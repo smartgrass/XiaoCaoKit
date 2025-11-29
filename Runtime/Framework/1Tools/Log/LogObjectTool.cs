@@ -96,7 +96,7 @@ namespace XiaoCao
             {
                 var items = targetObj as IList;
                 string title = type.IsGenericType ? $"List<{GetGenArgumentStr(type)}>" : $"{type.GetElementType()}[]";
-                return items.LogListStr(title, isLog: false);
+                return items.LogListstr(title, isLog: false);
             }
             else if (typetype == EnumTypeType.IDic)
             {
@@ -237,11 +237,15 @@ namespace XiaoCao
             return str;
         }
 
-        public static string LogListStr(this IList ieStr, string title = "", bool isLog = true)
+        public static string LogListstr(this IList ieStr, string title = "", bool isLog = true)
         {
             int len = ieStr.Count;
             title = $"{title} (len = " + len + ")\n";
-            string res = string.Join(" ", ieStr);
+            string res = "";
+            foreach (var t in ieStr)
+            {
+                res += $"{t}\n";
+            }
             string end = $"{title}{res}";
             if (isLog)
                 Debug.Log(end);

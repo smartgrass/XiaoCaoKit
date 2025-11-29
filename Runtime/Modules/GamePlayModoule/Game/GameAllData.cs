@@ -10,7 +10,8 @@ namespace XiaoCao
     public class GameAllData
     {
         //不会清空
-        public static GameDataCommon commonData = new GameDataCommon();
+        public static GameDataCommon CommonData => _commonData;
+        private static GameDataCommon _commonData = new GameDataCommon();
 
         //过关卡时请空
         public static BattleData battleData = new BattleData();
@@ -18,11 +19,17 @@ namespace XiaoCao
         //由玩家缓存数据读取 , 不需要初始值
         public static PlayerSaveData playerSaveData = null;
 
+
         //RuntimeInitializeOnLoadMethod
         public static void GameAllDataInit()
         {
             Debug.Log($"-- GameAllDataInit");
-            commonData = new GameDataCommon();
+            _commonData = new GameDataCommon();
+            battleData = new BattleData();
+        }
+
+        public static void ClearBattleData()
+        {
             battleData = new BattleData();
         }
     }
@@ -32,8 +39,8 @@ namespace XiaoCao
     {
         public static void GetGameVersion()
         {
-            VersionType = ConfigMgr.Inst.StaticSettingSo.versionType;
-            UserInputType = DebugSetting.IsMobilePlatform ? UserInputType.Touch : UserInputType.Mouse;
+            VersionType = ConfigMgr.StaticSettingSo.versionType;
+            UserInputType = DebugSetting.IsMobileOffice ? UserInputType.Touch : UserInputType.Mouse;
         }
 
         public static GameVersionType VersionType;
@@ -63,13 +70,13 @@ namespace XiaoCao
 
     public class GameDataCommon
     {
-        public static GameDataCommon Current => GameAllData.commonData;
+        public static GameDataCommon Current => GameAllData.CommonData;
 
         public PlayMode playMode;
 
         public GameState gameState;
 
-        public Player0 player0;
+        public Player0 Player0 { get; set; }
 
         //需要保存
         public int localPlayerId;
@@ -88,15 +95,12 @@ namespace XiaoCao
         public string uiSelectLevel;
 
 
-        public static Player0 LocalPlayer
-        {
-            get { return Current.player0; }
-        }
+        public static Player0 LocalPlayer => Current.Player0;
 
         public static Player0 GetPlayer(int id = 0)
         {
             //封装, 方便多玩家时处理
-            return Current.player0;
+            return Current.Player0;
         }
 
         public bool loadMod = false;
@@ -204,7 +208,7 @@ namespace XiaoCao
 
         public static bool IsLocalPlayerId(this int id)
         {
-            var player = GameDataCommon.Current.player0;
+            var player = GameDataCommon.Current.Player0;
             if (player == null) return false;
             return player.id == id;
         }
@@ -421,5 +425,19 @@ namespace XiaoCao
         //    v.SetValueQuiet (wrapper);
         //    return v;
         //}
+    }
+
+    //处理存档修改
+    public static class GameDebugTool
+    {
+        public static void UnlockAllLevel(PlayerSaveData playerSaveData)
+        {
+            var allLevelSetting = LubanTables.GetAllLevelSetting();
+            foreach (var levelSetting in allLevelSetting)
+            {
+                LevelInfo levelInfo = LevelInfo.ParseString(levelSetting.Id);
+                playerSaveData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
+            }
+        }
     }
 }

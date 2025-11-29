@@ -85,7 +85,7 @@ namespace XiaoCao
         {
 #if UNITY_EDITOR
             //当处于启动界面时,设置测试场景
-            testLoad = GameAllData.commonData.firstSceneName == SceneManager.GetActiveScene().name;
+            testLoad = GameAllData.CommonData.firstSceneName == SceneManager.GetActiveScene().name;
             if (testLoad && !string.IsNullOrEmpty(testLevelName) && !dontLoadMap)
             {
                 CurLevelName = testLevelName;

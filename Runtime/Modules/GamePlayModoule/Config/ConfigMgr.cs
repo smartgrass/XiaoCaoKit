@@ -22,7 +22,8 @@ namespace XiaoCao
     {
         #region public
 
-        public StaticSettingSo StaticSettingSo
+        //在配置加载前加载 需要static
+        public static StaticSettingSo StaticSettingSo
         {
             get
             {
@@ -33,6 +34,13 @@ namespace XiaoCao
 
                 return _staticSettingSo;
             }
+        }
+
+        private static StaticSettingSo _staticSettingSo;
+
+        public static void ClearStatic()
+        {
+            _staticSettingSo = null;
         }
 
         public PlayerSettingSo PlayerSettingSo;
@@ -57,20 +65,46 @@ namespace XiaoCao
 
         private IniFile _mainConfig;
 
+        public IniFile MainCfg
+        {
+            get
+            {
+                if (_mainConfig == null)
+                {
+                    IniFile ini = new IniFile();
+                    ini.LoadFromFile("main.ini");
+                    _mainConfig = ini;
+                }
+
+                return _mainConfig;
+            }
+        }
+
+        public InitArrayFile SoundCfg
+        {
+            get
+            {
+                if (_soundCfg == null)
+                {
+                    InitArrayFile ini = new InitArrayFile();
+                    ini.LoadFromFile("sound.ini");
+                    _soundCfg = ini;
+                }
+
+                return _soundCfg;
+            }
+        }
+
         private InitArrayFile _soundCfg;
 
-        private LocalSetting _localSetting;
-
-        private StaticSettingSo _staticSettingSo;
 
         private UIPrefabSo _uiPrefabSo;
 
         #endregion
 
-
-        public void Init()
+        public void Load()
         {
-            var init = MainCfg;
+            Debug.Log($"-- ConfigMgr Load");
             PlayerSettingSo = LoadSoConfig<PlayerSettingSo>();
             CommonSettingSo = LoadSoConfig<AttrSettingSo>();
             SkillDataSo = LoadSoConfig<SkillDataSo>();
@@ -78,9 +112,12 @@ namespace XiaoCao
             BuffConfigSo = LoadSoConfig<BuffConfigSo>();
             ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
             _uiPrefabSo = LoadSoConfig<UIPrefabSo>();
-            var soundCfg = SoundCfg;
             GetSkinList();
             GetTestEnemyList();
+            
+            //增加断言 判断SkillDataSo,ModelConfigDataSo不为空
+            Debug.Assert(SkillDataSo != null, "SkillDataSo is null");
+            Debug.Assert(ModelConfigDataSo != null, "ModelConfigDataSo is null");
         }
 
         public static string GetTalkChapter(string chapterId)
@@ -182,35 +219,6 @@ namespace XiaoCao
             return ret;
         }
 
-        public IniFile MainCfg
-        {
-            get
-            {
-                if (_mainConfig == null)
-                {
-                    IniFile ini = new IniFile();
-                    ini.LoadFromFile("main.ini");
-                    _mainConfig = ini;
-                }
-
-                return _mainConfig;
-            }
-        }
-
-        public InitArrayFile SoundCfg
-        {
-            get
-            {
-                if (_soundCfg == null)
-                {
-                    InitArrayFile ini = new InitArrayFile();
-                    ini.LoadFromFile("sound.ini");
-                    _soundCfg = ini;
-                }
-
-                return _soundCfg;
-            }
-        }
 
         public LocalSetting LocalSetting
         {
@@ -224,6 +232,8 @@ namespace XiaoCao
                 return _localSetting;
             }
         }
+
+        private LocalSetting _localSetting;
 
         private LocalRoleSetting _localRoleSetting;
 

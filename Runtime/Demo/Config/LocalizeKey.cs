@@ -34,6 +34,8 @@ namespace XiaoCao
         public static string LevelFail = "LevelFail";
         public static string LevelTimeCount = "LevelTimeCount";
         public static string KillCount = "KillCount";
+        
+        public static string UnlockAllLevel = "UnlockAllLevel";
 
         public static string GetLevelName(int chapter,int level)
         {

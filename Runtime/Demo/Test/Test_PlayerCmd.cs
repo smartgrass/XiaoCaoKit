@@ -44,16 +44,24 @@ public class Test_PlayerCmd : MonoBehaviour
     public string testChangeBodyName = "Body_E_2_Gun";
     void ChangeToTestBody()
     {
-        GameAllData.commonData.player0.ChangeBody(testChangeBodyName);
+        GameAllData.CommonData.Player0.ChangeBody(testChangeBodyName);
     }
 
     [MiniBtn(nameof(ChangeToTestEnemy))]
     public string testChangeToEnmey = "E_2_Gun";
     void ChangeToTestEnemy()
     {
-        Player0 player0 = GameAllData.commonData.player0;
+        Player0 player0 = GameAllData.CommonData.Player0;
         player0.ChangeToTestEnemy(testChangeToEnmey);
     }
+    [MiniBtn(nameof(PlayRoleSKill))]
+    public string testSkillCmd = "1";
 
+    void PlayRoleSKill()
+    {
+        int.TryParse(testSkillCmd, out int msgNum);
+        Player0 player0 = GameAllData.CommonData.Player0;
+        player0.component.control.TryPlaySkill(testSkillCmd);
+    }
 #endif
 }

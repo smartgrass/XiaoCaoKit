@@ -61,6 +61,10 @@ namespace cfg
             return ret;
         }
 
+        public static List<LevelSetting> GetAllLevelSetting()
+        {
+           return  LevelSettingReader.DataList;
+        }
 
         public static SkillSetting GetSkillSetting(string skillId, int subSkillId)
         {

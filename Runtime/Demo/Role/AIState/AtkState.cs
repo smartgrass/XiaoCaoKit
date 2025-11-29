@@ -85,8 +85,9 @@ namespace XiaoCao
                 {
                     control.Lock(false);
                 }
+                //这里如果突然被攻击，需要清除Hit状态
                 //移速应该为0
-                if (Timer > beforeAtk)
+                if (Timer > beforeAtk && control.IsAIFree)
                 {
                     AtkStart();
                     curAtkState++;

@@ -95,17 +95,24 @@ namespace XiaoCaoEditor
         [MenuItem(XCEditorTools.CopyZipToAndroidBuild)]
         public static void CopyZipToAndroidBuild()
         {
+            //旧的存在则删掉
+            DeleteStreamingAssetsExtraResZip();
             string zipPath = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
             string sourceDir = $"{PathTool.GetProjectPath()}/ExtraRes/{BuildTarget.Android}";
             string sourceDir2 = $"{PathTool.GetProjectPath()}/ExtraRes/GameConfig";
             ZipHelper.CompressFolders(new[] { sourceDir, sourceDir2 }, zipPath);
             AssetDatabase.Refresh();
+            Debug.Log($"-- CopyZip to streamingAssetsPath");
         }
 
-        public static void DeleteExtraResZip()
+        public static void DeleteStreamingAssetsExtraResZip()
         {
             string zipPath = Path.Combine(Application.streamingAssetsPath, "ExtraRes.zip");
-            File.Delete(zipPath);
+            if (File.Exists(zipPath))
+            {
+                File.Delete(zipPath);
+                Debug.Log($"-- 删除 streamingAssetsPath/ExtraRes.zip");
+            }
         }
 
         private static void CopyDirToWindowBuild(string buildDir)
@@ -167,10 +174,10 @@ namespace XiaoCaoEditor
             }
             else
             {
-                BuildTool.DeleteExtraResZip();
+                BuildTool.DeleteStreamingAssetsExtraResZip();
             }
 
-            ConfigMgr.Inst.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            ConfigMgr.StaticSettingSo.buildTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
 
             if (IsBuildPackage)

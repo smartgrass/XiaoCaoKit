@@ -31,6 +31,8 @@ namespace XiaoCao
     {
         public override bool LoadOnlyOnce => true;
 
+        public override float Cost => 30;
+
         public override void Start()
         {
             Run().Forget();
@@ -42,10 +44,19 @@ namespace XiaoCao
             {
                 GameAllData.GameAllDataInit();
                 ConfigMgr.ClearCache();
-                GameAllData.commonData.firstSceneName = SceneManager.GetActiveScene().name;
+                ConfigMgr.ClearStatic();
+                GameAllData.CommonData.firstSceneName = SceneManager.GetActiveScene().name;
             }
 
-            if (DebugSetting.IsMobilePlatform)
+            GameSetting.GetGameVersion();
+            if (GameSetting.VersionType == GameVersionType.Debug)
+            {
+                OpenLogConsole();
+            }
+
+            AddFinishCost(10);
+
+            if (DebugSetting.IsMobileOffice)
             {
                 Debug.Log($"-- MobilePlatform");
                 Debug.Log($"--- GetStreamingAssetsPath {XCPathConfig.GetStreamingAssetsPath()}");
@@ -54,21 +65,16 @@ namespace XiaoCao
 
                 if (DebugSetting.IsNeedUnCompressedZip)
                 {
+                    //等待用户点击确定 才快开始解压
                     Debug.Log($"--- NeedUnCompressedZip");
                     await UnCompressedZip();
                 }
             }
 
-            GameSetting.GetGameVersion();
-
-
-            if (GameSetting.VersionType == GameVersionType.Debug)
-            {
-                OpenLogConsole();
-            }
-
+            AddFinishCost(10);
+            ConfigMgr.Inst.Load();
             LocalizeMgr localizeMgr = LocalizeMgr.Inst;
-            ConfigMgr.Inst.Init();
+            AddFinishCost(10);
             IsFinish = true;
         }
 
@@ -89,6 +95,8 @@ namespace XiaoCao
             await ZipHelper.ExtractZip(destPath, Application.persistentDataPath);
             DebugCostTime.StopTime($"ExtractZip {fileName}");
 
+            //记录资源解压完成时间
+            LocalizeKey.BuildTime.SetKeyString(ConfigMgr.StaticSettingSo.buildTime);
             //删除Zip
             File.Delete(destPath);
         }
@@ -138,11 +146,19 @@ namespace XiaoCao
             {
                 Debuger.Log($"--- creat newData");
                 SaveMgr.SaveData(data0);
+                SetDefaultPlayerSetting();
+                //创建默认配置
             }
 
             GameAllData.playerSaveData = data0;
 
             IsFinish = true;
+        }
+
+        void SetDefaultPlayerSetting()
+        {
+            LocalizeKey.LockCam.SetKeyBool(true);
+            LocalizeKey.AutoLockEnemy.SetKeyBool(true);
         }
     }
 
@@ -152,6 +168,7 @@ namespace XiaoCao
         public override void Start()
         {
             LoadPlayerData();
+            PreWarmPlayerAsset();
             IsFinish = true;
         }
 
@@ -170,6 +187,11 @@ namespace XiaoCao
             var data0 = GameAllData.playerSaveData;
 
             player.Init(data0, true);
+        }
+
+        private void PreWarmPlayerAsset()
+        {
+            TriggerCache.Inst.PreWarm();
         }
     }
 

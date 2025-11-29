@@ -8,23 +8,32 @@ namespace XiaoCao
     //Key Map
     public abstract class KeyMapSo<T> : ScriptableObject where T : IKey
     {
-        [Label("描述")]
-        public string Des;
+        [Label("描述")] public string Des;
 
         public Dictionary<string, T> map;
 
         public T[] array;
 
-        [NonSerialized]
-        public bool hasInited = false;
+        private bool _inited = false;
+
         private void OnEnable()
         {
-            OnInit();
+#if UNITY_EDITOR
+            _inited = false;
+#endif
+        }
+
+        private void Check()
+        {
+            if (!_inited)
+            {
+                InitMap(array);
+            }
         }
 
         public void InitMap(T[] array)
         {
-            hasInited = true;
+            _inited = true;
             map = ArrayToMap(array);
         }
 
@@ -34,15 +43,6 @@ namespace XiaoCao
             return map.ContainsKey(key);
         }
 
-        void Check()
-        {
-#if UNITY_EDITOR
-            if (!hasInited)
-            {
-                InitMap(array);
-            }
-#endif
-        }
 
         public T GetOrDefault(string key)
         {
@@ -62,19 +62,15 @@ namespace XiaoCao
             }
         }
 
-        public static Dictionary<string, T2> ArrayToMap<T2>(T2[] array) where T2 : IKey
+        private static Dictionary<string, T2> ArrayToMap<T2>(T2[] array) where T2 : IKey
         {
             Dictionary<string, T2> dic = new Dictionary<string, T2>();
             foreach (var item in array)
             {
                 dic[item.Key] = item;
             }
-            return dic;
-        }
 
-        public void OnInit()
-        {
-            hasInited = false;
+            return dic;
         }
     }
 
@@ -85,24 +81,24 @@ namespace XiaoCao
 
         public T[] array;
 
-        public bool hasInited = false;
+        private bool _inited = false;
 
-        public void InitMap(T[] array)
+        private void InitMap(T[] array)
         {
-            hasInited = true;
+            _inited = true;
             map = ArrayToMap(array);
         }
 
-        public T GetOrFrist(string key)
+        public T GetOrFirst(string key)
         {
-            if (!hasInited)
+            if (!_inited)
             {
                 InitMap(array);
             }
 
-            if (map.ContainsKey(key))
+            if (map.TryGetValue(key, out var result))
             {
-                return map[key];
+                return result;
             }
             else if (array.Length > 0)
             {
@@ -114,19 +110,15 @@ namespace XiaoCao
             }
         }
 
-        public static Dictionary<string, T2> ArrayToMap<T2>(T2[] array) where T2 : IKey
+        private static Dictionary<string, T2> ArrayToMap<T2>(T2[] array) where T2 : IKey
         {
             Dictionary<string, T2> dic = new Dictionary<string, T2>();
             foreach (var item in array)
             {
                 dic[item.Key] = item;
             }
-            return dic;
-        }
 
-        public void OnInit()
-        {
-            hasInited = false;
+            return dic;
         }
     }
 

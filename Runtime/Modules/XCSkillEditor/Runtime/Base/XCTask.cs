@@ -122,16 +122,18 @@ namespace XiaoCao
                 {
                     if (_curFrame >= e.Start)
                     {
+                        //Trigger和Update同时执行
                         e.OnTrigger(_curTime - _events[i].StartTime);
+                        e.UpdateEvent(_curFrame, _curTime - _events[i].StartTime);
+                        
+                        break;
                     }
                     else
                     {
                         break;
                     }
                 }
-
-                //Trigger和Update同时执行
-                if (e.State == XCState.Running)
+                else if (e.State == XCState.Running)
                 {
                     if (_curFrame < e.range.End)
                     {

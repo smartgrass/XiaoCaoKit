@@ -74,7 +74,7 @@ namespace XiaoCao
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="startOffsetTime">³¬³ö´¥·¢Ê±¼äµÄÆ«ÒÆÁ¿,Ò»°ãÓÃ²»ÉÏ</param>
+        /// <param name="startOffsetTime">è¶…å‡ºè§¦å‘æ—¶é—´çš„åç§»é‡,ä¸€èˆ¬ç”¨ä¸ä¸Š</param>
         public virtual void OnTrigger(float startOffsetTime)
         {
             State = XCState.Running;
@@ -89,7 +89,7 @@ namespace XiaoCao
         /// 
         /// </summary>
         /// <param name="frame"></param>
-        /// <param name="timeSinceTrigger">ÊÂ¼ş´¥·¢ºóµÄÏà¶ÔÊ±¼ä,´ÓÊÂ¼şµÄstratÖ¡×÷Îª0¿ªÊ¼¼ÆÊ±</param>
+        /// <param name="timeSinceTrigger">äº‹ä»¶è§¦å‘åçš„ç›¸å¯¹æ—¶é—´,ä»äº‹ä»¶çš„stratå¸§ä½œä¸º0å¼€å§‹è®¡æ—¶</param>
         public void UpdateEvent(int frame, float timeSinceTrigger)
         {
             OnUpdateEvent(frame, timeSinceTrigger);
@@ -98,9 +98,9 @@ namespace XiaoCao
 
     public enum XCState
     {
-        Sleep, //Î´¼¤»î
-        Running, //ÒÑ¼¤»î,Ö´ĞĞÖĞ
-        Stopped  //½áÊø/Íê³É
+        Sleep, //æœªæ¿€æ´»
+        Running, //å·²æ¿€æ´»,æ‰§è¡Œä¸­
+        Stopped  //ç»“æŸ/å®Œæˆ
     }
 
     [Serializable]

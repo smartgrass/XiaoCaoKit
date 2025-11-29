@@ -198,11 +198,11 @@ public class ResMgr
 
         await initOperation;
 
-        var operation1 = package.RequestPackageVersionAsync();
-        await operation1;
-        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-        await operation2;
-        Debug.Log($"--- InitPackageEnd {packageName}");
+        // var operation1 = package.RequestPackageVersionAsync();
+        // await operation1;
+        // var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
+        // await operation2;
+        await UpdatePackage(package, initOperation);
     }
 
 
@@ -226,6 +226,7 @@ public class ResMgr
                 Debug.Log($"--- InitPackage {packageName} {defaultHostServer}");
                 string fallbackHostServer = defaultHostServer;
 
+                //ExtraPackage 无论单机还是模拟都使用远端, 区别在远端的地址
                 IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
                 var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
                 var initParameters = new HostPlayModeParameters();
@@ -233,9 +234,8 @@ public class ResMgr
                 initParameters.CacheFileSystemParameters = cacheFileSystem;
 
                 initOperation = package.InitializeAsync(initParameters);
-
+                
                 await UpdatePackage(package, initOperation);
-                Debug.Log($"--- InitPackageEnd {packageName}");
 
                 foreach (var kv in section.Dic)
                 {
@@ -287,7 +287,6 @@ public class ResMgr
         }
 
         await UpdatePackage(package, initOperation);
-        Debug.Log($"--- InitPackageEnd {packageName}");
     }
 
     private static async Task UpdatePackage(ResourcePackage package, InitializationOperation initOperation)
@@ -297,6 +296,8 @@ public class ResMgr
         await operation1;
         var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
         await operation2;
+        
+        Debug.Log($"--- InitPackageEnd {package.PackageName} {operation1.PackageVersion}");
     }
 
     private static ResourcePackage GetOrCreatPackage(string packageName)

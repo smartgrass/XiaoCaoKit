@@ -82,7 +82,7 @@ namespace XiaoCao
             panel.Show(data);
             if (IsHideMid(type))
             {
-                midCanvas.enabled = false;
+                MidCanvasEnable(false);
             }
 
             showingPanels.Add(panel);
@@ -94,21 +94,27 @@ namespace XiaoCao
         public void HideView(UIPanelType type)
         {
             PanelBase panel = GetPanel(type);
-            if (!panel || !panel.IsShowing)
+            if (!panel)
             {
                 return;
             }
 
-            panel.Hide();
-            showingPanels.Remove(panel);
-
-            if (IsHideMid(type))
+            if (showingPanels.Contains(panel))
             {
-                midCanvas.enabled = true;
-            }
-             
+                showingPanels.Remove(panel);
+                CheckPlayInputAble();
 
-            CheckPlayInputAble();
+                //简单处理, 完整应该遍历所有面板
+                if (showingPanels.Count == 0)
+                {
+                    MidCanvasEnable(true);
+                }
+            }
+
+            if (panel.IsShowing)
+            {
+                panel.Hide();
+            }
         }
 
         public void MidCanvasEnable(bool isOn)
@@ -148,7 +154,7 @@ namespace XiaoCao
         }
 
         //屏蔽输入
-        void CheckPlayInputAble()
+        public void CheckPlayInputAble()
         {
             bool can = true;
             foreach (var panel in showingPanels)
@@ -156,6 +162,7 @@ namespace XiaoCao
                 if (panel.StopPlayerControl && panel.IsShowing)
                 {
                     can = false;
+                    break;
                 }
             }
 

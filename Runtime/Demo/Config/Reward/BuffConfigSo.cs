@@ -19,10 +19,21 @@ namespace XiaoCao
 
         private void OnEnable()
         {
+            Reload();
+        }
+
+        private void Reload()
+        {
             _buffDic = new Dictionary<EBuff, BuffInfo>();
             foreach (var item in buffs)
             {
                 _buffDic[item.eBuff] = item;
+            }
+
+            _exBuffDic = new Dictionary<EBuff, ExBuffInfo>();
+            foreach (var exBuff in exBuffInfos)
+            {
+                _exBuffDic[exBuff.eBuff] = exBuff;
             }
         }
 
@@ -31,6 +42,10 @@ namespace XiaoCao
             if (_buffDic.ContainsKey(eBuff))
             {
                 return _buffDic[eBuff];
+            }
+            else if (eBuff.GetBuffType() == EBuffType.Ex && GetExBuffInfo(eBuff, out var info))
+            {
+                return info.ToLevelBuffInfo(0);
             }
             else
             {
@@ -60,51 +75,32 @@ namespace XiaoCao
 
         public bool HasExInfo(EBuff buff)
         {
-            InitExBuffDic();
             return _exBuffDic.ContainsKey(buff);
         }
+        
 
-        void InitExBuffDic()
+        public BuffInfo GetExBuffInfoWithLevel(EBuff eBuff, int level)
         {
-            if (_exBuffDic == null)
+            // BuffInfo level0Info = GetBuffInfo(eBuff);
+            // if (level == 0)
+            // {
+            //     return level0Info;
+            // }
+
+            if (GetExBuffInfo(eBuff, out var exBuffInfo))
             {
-                _exBuffDic = new Dictionary<EBuff, ExBuffInfo>();
-                foreach (var exBuff in exBuffInfos)
+                if (level > exBuffInfo.MaxLevel)
                 {
-                    _exBuffDic[exBuff.eBuff] = exBuff;
+                    Debug.LogError($"--- no level config for {eBuff} {level} max {exBuffInfo.MaxLevel}");
+                    return exBuffInfo.ToLevelBuffInfo(exBuffInfo.MaxLevel);
                 }
-            }
-        }
 
-        public BuffInfo GetLevelBuffInfo(EBuff eBuff, int level)
-        {
-            BuffInfo level0Info = GetBuffInfo(eBuff);
-            if (level == 0)
-            {
-                return level0Info;
+                return exBuffInfo.ToLevelBuffInfo(level);
             }
 
-            if (!GetExBuffInfo(eBuff, out var exBuffInfo))
-            {
-                return level0Info;
-            }
-
-            if (level > exBuffInfo.maxLevel)
-            {
-                Debug.LogError($"--- no level config for {eBuff} {level} max {exBuffInfo.maxLevel}");
-                return level0Info;
-            }
-
-            if (level - 1 < exBuffInfo.addInfoArray.Count)
-            {
-                level0Info.addInfo = exBuffInfo.addInfoArray[level - 1].values;
-            }
-            else
-            {
-                Debug.LogError($"--- out of array {eBuff} {level - 1} {exBuffInfo.addInfoArray.Count} ");
-            }
-
-            return level0Info;
+            Debug.LogError($"--- out of array {eBuff} {level - 1} {exBuffInfo.addInfoArray.Count} ");
+            return GetBuffInfo(eBuff);
+            ;
         }
 
         [Button]
@@ -114,21 +110,43 @@ namespace XiaoCao
             bool change = false;
             foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
             {
-                if (!_buffDic.ContainsKey(item))
+                if (item.GetBuffType() == EBuffType.Nor)
                 {
-                    buffs.Add(new BuffInfo()
+                    if (!_buffDic.ContainsKey(item))
                     {
-                        eBuff = item,
-                        addInfo = new float[1] { 0.1f }
-                    });
-                    change = true;
-                    Debug.Log($"--- Add -> {item}");
+                        buffs.Add(new BuffInfo()
+                        {
+                            eBuff = item,
+                            addInfo = new float[1] { 0.1f }
+                        });
+                        change = true;
+                        Debug.Log($"--- Add -> {item}");
+                    }
+                }
+                else if (item.GetBuffType() == EBuffType.Ex)
+                {
+                    //检查exBuffInfos中是否有 item, 没有则添加
+                    if (!_exBuffDic.ContainsKey(item))
+                    {
+                        exBuffInfos.Add(new ExBuffInfo()
+                        {
+                            eBuff = item,
+                            addInfoArray = new List<FloatArray>()
+                                { new FloatArray() { values = new float[1] { 0.1f } } }
+                        });
+                        change = true;
+                        Debug.Log($"--- Add Ex -> {item}");
+                    }
                 }
             }
 
             if (!change)
             {
                 Debug.Log($"--- All ready");
+            }
+            else
+            {
+                Reload();
             }
 
 #if UNITY_EDITOR
@@ -141,6 +159,7 @@ namespace XiaoCao
         void CheckSort()
         {
             buffs.Sort((x, y) => x.eBuff.CompareTo(y.eBuff));
+            exBuffInfos.Sort((x, y) => x.eBuff.CompareTo(y.eBuff));
 
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.SetDirty(this);
@@ -152,7 +171,7 @@ namespace XiaoCao
         {
             if (GetExBuffInfo(buff, out var info))
             {
-                return info.maxLevel;
+                return info.MaxLevel;
             }
 
             return 0;
@@ -163,8 +182,18 @@ namespace XiaoCao
     public class ExBuffInfo
     {
         public EBuff eBuff;
-        public int maxLevel = 1;
+        public int MaxLevel => addInfoArray.Count - 1;
+
         [SerializeField] public List<FloatArray> addInfoArray;
+
+        public BuffInfo ToLevelBuffInfo(int level)
+        {
+            return new BuffInfo()
+            {
+                eBuff = eBuff,
+                addInfo = addInfoArray[level].values
+            };
+        }
     }
 
     [Serializable]

@@ -129,10 +129,12 @@ namespace XiaoCao
                     return LevelPassState.Unlock;
                 }
             }
-            else if (chapter == 0 && index == 0)
+            
+            if (chapter == 0 && index == 1)
             {
                 // 默认第一章第一节是解锁的
                 return LevelPassState.Unlock;
+                
             }
 
             return LevelPassState.Lock;

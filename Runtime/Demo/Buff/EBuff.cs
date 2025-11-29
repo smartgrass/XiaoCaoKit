@@ -31,15 +31,15 @@ namespace XiaoCao
 
         [InspectorName("exBuff分界线")] NorBuffEndIndex = 100,
 
-        [InspectorName("自动召唤魔法导弹")] MagicMissile = 101,
+        [InspectorName("自动召唤魔法导弹,cd{0:0.#}s")] MagicMissile = 101,
 
-        [InspectorName("产生额外剑气")] ExtraSlash = 102,
+        [InspectorName("使用剑刃攻击时,产生额外剑气,每10次攻击,前{0:0}次触发")] ExtraSlash = 102,
 
-        [InspectorName("暴击时,触发闪电传递,冷缩5s")] ThunderExplode = 103,
+        [InspectorName("攻击敌人时触发闪电传递,造成{0:P0}的伤害,冷缩{1:F2}")] ThunderExplode = 103,
 
 
         //小分支: 防御系纹章>=200
-        [InspectorName("受到攻击时,回复3%最大生命,冷缩10s")]
+        [InspectorName("受到攻击时,回复{0}%最大生命,cd{1:0.#}s")]
         HurtRecover = 200,
         // [InspectorName("闪避成功,使周围目标陷入时停3s")] LimitDash
     }

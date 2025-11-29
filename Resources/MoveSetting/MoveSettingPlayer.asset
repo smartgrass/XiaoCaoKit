@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 0
   des: 
-  baseMoveSpeed: 3.6
+  baseMoveSpeed: 3.2
   backMoveSpeedMult: 0.5
-  moveSmooth: 0.05
-  rotationLerp: 0.2
+  moveSmooth: 0.04
+  rotationLerp: 0.4
   angleSpeed: 10
   g: -73.04
   GOnGroundMult: 0.8

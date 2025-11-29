@@ -14,9 +14,27 @@ public abstract class ProcedureBase
 
     public virtual bool LoadOnlyOnce => false;
 
-    public bool IsReload
+    public virtual float Cost => 10;
+
+    public float waitCost;
+
+    protected bool IsReload
     {
         get { return ProcedureMgr.Inst.LoadedDic.Contains(GetType()); }
+    }
+
+    public void AddFinishCost(float cost)
+    {
+        waitCost -= cost;
+        ProcedureMgr.Inst.curFinishCost += cost;
+    }
+
+    public void End()
+    {
+        if (waitCost > 0)
+        {
+            AddFinishCost(waitCost);
+        }
     }
 }
 
@@ -31,6 +49,12 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
 
     public HashSet<Type> LoadedDic = new HashSet<Type>();
 
+    public float totalCost;
+
+    public float curFinishCost;
+
+    public bool isFinish;
+
     public void AddTask(ProcedureBase p)
     {
         Procedures.Add(p);
@@ -38,6 +62,13 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
 
     public async UniTask Run()
     {
+        isFinish = false;
+        foreach (var item in Procedures)
+        {
+            totalCost += item.Cost;
+            item.waitCost = item.Cost;
+        }
+
         foreach (var item in Procedures)
         {
             if (item.LoadOnlyOnce && LoadedDic.Contains(item.GetType()))
@@ -52,11 +83,24 @@ public class ProcedureMgr : Singleton<ProcedureMgr>
                 await UniTask.Yield();
             }
 
+            item.End();
+
             DebugCostTime.StopTime(item.ToString(), 2);
             LoadedDic.Add(item.GetType());
         }
 
         Procedures.Clear();
+        isFinish = true;
+    }
+
+    public float GetProcess()
+    {
+        if (totalCost == 0)
+        {
+            return 0;
+        }
+
+        return curFinishCost / totalCost;
     }
 }
 

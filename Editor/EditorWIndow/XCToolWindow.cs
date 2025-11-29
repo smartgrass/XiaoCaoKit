@@ -296,7 +296,7 @@ namespace AssetEditor.Editor
         void TestConfig()
         {
             ConfigMgr.ClearCache();
-            ConfigMgr.Inst.Init();
+            var configMgr = ConfigMgr.Inst;
             Debug.Log($"-- ReLoadConfig");
         }
 

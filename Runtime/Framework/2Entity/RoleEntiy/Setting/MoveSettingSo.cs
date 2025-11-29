@@ -19,8 +19,6 @@ namespace XiaoCao
 
         public float rotationLerp = 0.2f;
 
-        public float angleSpeed = 10;
-
         public float g = -73.04f;
 
         public float GOnGroundMult = 0.8f;

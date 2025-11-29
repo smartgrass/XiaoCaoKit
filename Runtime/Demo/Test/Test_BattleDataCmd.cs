@@ -40,7 +40,7 @@ public class Test_BattleDataCmd : GameStartMono
         {
             return;
         }
-        GameDataCommon.Current.player0.ChangeToTestEnemy(testChangeToEnmey);
+        GameDataCommon.Current.Player0.ChangeToTestEnemy(testChangeToEnmey);
     }
 
 }

@@ -85,7 +85,7 @@ namespace XiaoCao
             {
                 level = (costItem.level + 1 + level);
                 level = Math.Min(level, costItem.GetExBuffMaxLevel);
-                buffs[0] = ConfigMgr.Inst.BuffConfigSo.GetLevelBuffInfo(costItem.buffs[0].eBuff, level);
+                buffs[0] = ConfigMgr.Inst.BuffConfigSo.GetExBuffInfoWithLevel(costItem.buffs[0].eBuff, level);
             }
             else
             {

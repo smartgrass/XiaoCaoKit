@@ -149,7 +149,7 @@ namespace XiaoCao
 
         public void FollowPlayer()
         {
-            targetRole = GameAllData.commonData.player0;
+            targetRole = GameAllData.CommonData.Player0;
         }
 
         public enum TargetPosType
