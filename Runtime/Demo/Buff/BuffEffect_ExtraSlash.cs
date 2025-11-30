@@ -52,8 +52,16 @@ namespace XiaoCao.Buff
             b.transform.position = data.Tran.position;
             b.transform.rotation = data.Tran.rotation;
             Rigidbody rb = b.GetComponent<Rigidbody>();
-            rb.linearVelocity = (data.Tran.forward) * Speed;
-            rb.linearVelocity += Vector3.down;
+            Vector3 dir = data.Tran.forward * Speed;
+            if (dir.y > 0)
+            {
+                dir.y -= 1;
+            }
+            else
+            {
+                dir.y = -1;
+            }
+            rb.linearVelocity = dir;
             // XCTime.DelayRunMono(1.5f, () => { Down(rb); }, rb).Forget();
             var info = AtkInfoHelper.CreatInfo(player, Buff.ToString());
             var Atker = b.GetComponent<Atker>();

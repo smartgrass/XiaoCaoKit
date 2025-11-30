@@ -28,7 +28,7 @@ namespace XiaoCao
                 skinName = skinNameSet;
             }
             CreateRoleBody(skinName);
-            SetTeam(XCSetting.EnmeyTeam);
+            SetTeam(XCSetting.EnemyTeam);
             data_R.playerAttr.lv = level;
             InitRoleData();
 

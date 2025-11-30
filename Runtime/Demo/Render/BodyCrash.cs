@@ -13,7 +13,7 @@ namespace XiaoCao.Render
 
         public Vector3 boxOffset;
         public float pushForce = 5.0f;
-
+        
         private Collider[] _results = new Collider[10];
         private Transform selfTf;
 
@@ -62,6 +62,7 @@ namespace XiaoCao.Render
                     if (transform.IsChildOf(other.transform))
                     {
                         selfTf = other.transform;
+                        selfInit = true;
                         continue;
                     }
                 }

@@ -19,7 +19,7 @@ namespace XiaoCao.Buff
         public float startDelay = 0f;
         public float maxMoveTime = 4;
         public float moveSpeed = 4;
-        public int effectIndex = 0;
+        public string effectIndex = "Hit_0";
 
         private Transform target;
         private EBulletState state;

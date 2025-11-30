@@ -40,7 +40,7 @@ namespace XiaoCao
             tf.SetParent(Tran);
 
             Trigger.SetMeshInfo(meshInfo);
-            Trigger.InitListener(AtkCommponent.ReceiveTriggerEnter);
+            Trigger.InitListener(AtkCommponent.ReceiveTriggerEnter,  Info.role.team);
             Trigger.Switch(true);
             SetAtkInfo();
         }
@@ -145,7 +145,7 @@ namespace XiaoCao
             {
                 assetPool = CreateAtkerPool(meshType);
             }
-            
+
             return assetPool.Get().GetComponent<Atker>();
         }
 

@@ -46,7 +46,7 @@ namespace Flux
 		}
 
         #region XCSeq
-        ///<see cref="FSequenceWindowHeader.EditorCode"/>
+        ///<see cref="FSequenceWindowHeader.DrawAllShow"/>
         [SerializeField]
 		[SeqHeaderShow(1,5,80,"SkillId", RaceSetting.README)]
         public string _skillId;

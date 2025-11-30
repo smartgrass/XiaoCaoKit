@@ -7,7 +7,7 @@ using XiaoCao.UI;
 
 namespace XiaoCaoKit
 {
-    public class LevelResultPanel : MonoBehaviour
+    public class LevelResultPanel : PanelBase
     {
         public CharacterImage characterImage;
         public TMP_Text titleText;
@@ -16,14 +16,36 @@ namespace XiaoCaoKit
         public TMP_Text killCountText;
         public TMP_Text levelTimeCountText;
         public Transform rewardParent;
+        public override UIPanelType PanelType => UIPanelType.LevelResultPanel;
+
+        public override void Show(IUIData data = null)
+        {
+            ShowUI();
+        }
+
+        public override void Hide()
+        {
+            gameObject.SetActive(false);
+        }
+
+        private void OnSureBtn()
+        {
+            //由于是直接切换场景, UIMgr会被销毁,不需要调用Hide
+            GameMgr.Inst.BackHome();
+        }
 
         private void Start()
         {
-            sureBtn.onClick.AddListener(GameMgr.Inst.BackHome);
+            sureBtn.onClick.AddListener(OnSureBtn);
         }
 
-        public void ShowUI()
+        private void ShowUI()
         {
+            if (gameObject.activeSelf)
+            {
+                return;
+            }
+
             gameObject.SetActive(true);
             LevelData levelData = LevelData.Current;
             bool isSuccess = levelData.levelResult == ELevelResult.Success;
@@ -54,7 +76,8 @@ namespace XiaoCaoKit
         private void Show(bool isSuccess, string levelName, int killCount, float timeCount)
         {
             levelNameText.text = levelName;
-            titleText.text = isSuccess ? LocalizeKey.LevelSuccess.ToLocalizeStr() : LocalizeKey.LevelFail.ToLocalizeStr();
+            titleText.text =
+                isSuccess ? LocalizeKey.LevelSuccess.ToLocalizeStr() : LocalizeKey.LevelFail.ToLocalizeStr();
             killCountText.text = $"{LocalizeKey.KillCount.ToLocalizeStr()}: {killCount}";
             //时间 分:秒
             int minutes = (int)(timeCount / 60);

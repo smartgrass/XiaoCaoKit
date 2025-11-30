@@ -387,7 +387,7 @@ namespace XiaoCao
 
             if (!isGrounded)
             {
-                int layerMask = XCSetting.GetTeamGroundCheckMash(owner.team);
+                int layerMask = XCSetting.GetTeamInverseLayerMask(owner.team);
                 Collider[] cols = Physics.OverlapSphere(spherePosition, GroundedRadius * 2f, layerMask);
                 if (cols.Length > 0)
                 {

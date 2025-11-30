@@ -17,7 +17,7 @@ namespace XiaoCao
             staticResSoUsing = ResMgr.LoadAseet<StaticResSoUsing>("Assets/_Res/UI/Setting/StaticResSoUsing.asset");
         }
 
-        internal GameObject GetHitEffect(int hitEffect)
+        internal GameObject GetHitEffect(string hitEffect)
         {
             string path = XCPathConfig.GetHitEffectPath(hitEffect);
             GameObject hit = PoolMgr.Inst.Get(path, 3);

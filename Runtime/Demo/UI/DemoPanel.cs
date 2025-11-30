@@ -16,12 +16,11 @@ public class DemoPanel : SubPanel
     {
         AddSkinDropDown();
         AddTestEnmeyDropDown();
-        AddUnlockAllLevelBtn();
-
         if (!DebugSetting.IsMobileOffice)
         {
             AddMobileInput();
         }
+        AddUnlockAllLevelBtn();
     }
 
 

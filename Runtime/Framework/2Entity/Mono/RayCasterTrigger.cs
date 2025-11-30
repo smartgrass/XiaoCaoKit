@@ -55,9 +55,9 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         transform.localScale = Vector3.one;
     }
 
-    public void InitListener(Action<Collider> action)
+    public void InitListener(Action<Collider> action,int atkTeam)
     {
-        layerMask = Layers.DEFAULT_MASK | Layers.PLAYER_MASK | Layers.ENEMY_MASK;
+        layerMask = XCSetting.GetTeamInverseLayerMask(atkTeam);
         TriggerAct = null;
         TriggerAct += action;
         tempColliders.Clear();
@@ -112,32 +112,33 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     private void BoxLine()
     {
+        float curDistance = 0;
         var dir = (WorldCenter - lastPoint);
         if (dir.IsZore())
         {
-            dir = Direction * 0.01f;
+            curDistance = 0;
+        }
+        else
+        {
+            curDistance = dir.magnitude;
         }
 
-        float curDistance = dir.magnitude;
-        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, Vector3.Cross(SelfSize, meshInfo.GetSize / 2),
-            dir.normalized, hits,
-            Quaternion.Euler(WorldEulerAngles), curDistance, layerMask, preview: preview);
-        if (hitCount > 0)
-        {
-            for (int i = 0; i < hitCount; i++)
-            {
-                DoTrigger(hits[i].collider);
-            }
-        }
+        OnBox(curDistance);
 
         lastPoint = WorldCenter;
     }
 
-    private void OnBox()
+    private void OnBox(float dis = 0)
     {
-        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, Vector3.Cross(SelfSize, meshInfo.GetSize / 2), Direction,
+        var selfSize = SelfSize;
+        var size = new Vector3(
+            selfSize.x * meshInfo.GetSize.x,
+            selfSize.y * meshInfo.GetSize.y,
+            selfSize.z * meshInfo.GetSize.z
+        ) * 0.5f;
+        int hitCount = Physics.BoxCastNonAlloc(WorldCenter, size, Direction,
             hits,
-            Quaternion.Euler(WorldEulerAngles), distance, layerMask, preview: preview);
+            Quaternion.Euler(WorldEulerAngles), dis, layerMask, preview: preview);
         if (hitCount > 0)
         {
             for (int i = 0; i < hitCount; i++)
@@ -167,7 +168,8 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     /// </summary>
     private void OnSector()
     {
-        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits, distance, layerMask,
+        int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits,
+            distance, layerMask,
             preview: preview);
         if (hitCount > 0)
         {

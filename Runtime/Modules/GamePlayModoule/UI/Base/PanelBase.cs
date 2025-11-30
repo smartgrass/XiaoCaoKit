@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace XiaoCao
@@ -11,8 +12,15 @@ namespace XiaoCao
 
         public virtual bool IsShowing => gameObject.activeInHierarchy;
 
+        public virtual bool HideEsc => true;
+        
         //是否暂停角色操作
         public virtual bool StopPlayerControl => true;
+
+        public virtual void InputKeyCode(KeyCode key)
+        {
+            
+        }
     }
 
     public abstract class StandardPanel : PanelBase

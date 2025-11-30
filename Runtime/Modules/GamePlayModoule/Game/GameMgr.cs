@@ -124,7 +124,7 @@ namespace XiaoCao
 
         public void ShowLevelResultUI()
         {
-            UIMgr.Inst.levelResultPanel.ShowUI();
+            UIMgr.Inst.ShowView(UIPanelType.LevelResultPanel);
         }
         
 

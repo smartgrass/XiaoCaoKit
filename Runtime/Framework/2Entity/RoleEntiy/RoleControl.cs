@@ -10,7 +10,10 @@ namespace XiaoCao
     //技能通用体
     public abstract class RoleControl<T> : RoleComponent<T>, IRoleControl where T : Role
     {
-        public RoleControl(T _owner) : base(_owner) { AddListener(); }
+        public RoleControl(T _owner) : base(_owner)
+        {
+            AddListener();
+        }
 
         public List<XCTaskRunner> runnerList = new List<XCTaskRunner>();
         public CharacterController cc => owner.idRole.cc;
@@ -29,8 +32,10 @@ namespace XiaoCao
                     return true;
                 }
             }
+
             return false;
         }
+
         private bool IsHighLevelSkill(string skillId)
         {
             //读表 读配置
@@ -45,6 +50,7 @@ namespace XiaoCao
             //
             //curTaskData.Remove(runner);
         }
+
         public void BreakAllBusy()
         {
             int len = runnerList.Count;
@@ -73,7 +79,9 @@ namespace XiaoCao
                     owner.Enable = false;
                     owner.DestroySelf();
                 }
-            };
+            }
+
+            ;
         }
 
         public void OnTaskUpdate()
@@ -108,8 +116,8 @@ namespace XiaoCao
                     }
                 }
             }
-
         }
+
         public void OnMainTaskEnd(XCTaskRunner runner)
         {
             if (!runner.IsBreak)
@@ -137,6 +145,7 @@ namespace XiaoCao
             {
                 _lastAnimSpeed = owner.Anim.speed;
             }
+
             owner.Anim.speed = speed;
         }
 
@@ -154,6 +163,7 @@ namespace XiaoCao
                 cts.Dispose();
                 Debuger.Log("--- cancellationTokenSource");
             }
+
             cts = new CancellationTokenSource();
             animSpeedTask = XCTime.DelayRun(stopTime, () => { SetAnimSpeed(1); }, cts);
         }
@@ -209,6 +219,7 @@ namespace XiaoCao
                 Debug.LogError($"--- task null {skillId} ");
                 return;
             }
+
             runnerList.Add(task);
             task.onMainEndEvent.AddListener(OnMainTaskEnd);
             task.onAllTaskEndEvent.AddListener(OnAllTaskEnd);
@@ -231,12 +242,13 @@ namespace XiaoCao
         private float defaultSeeRadous = 6f;
 
 
-        public virtual void DefaultAutoDirect()
+        public virtual void DefaultAutoDirect(float lerp = 0.4f)
         {
-            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, defaultSeeRadous, defaultSeeAngle, out float maxScore, owner.team);
+            var findRole = RoleMgr.Inst.SearchEnemyRole(owner.gameObject.transform, defaultSeeRadous, defaultSeeAngle,
+                out float maxScore, owner.team);
             if (findRole != null)
             {
-                owner.transform.RotaToPos(findRole.transform.position, 0.4f);
+                owner.transform.RotaToPos(findRole.transform.position, lerp);
                 Debug.Log($"--- findRole RotaToPos {findRole.gameObject}");
             }
             else
@@ -246,6 +258,7 @@ namespace XiaoCao
         }
 
         private float _lastAnimSpeed = 1;
+
         public void StopTimeSpeed(bool isOn)
         {
             if (isOn)
@@ -264,9 +277,7 @@ namespace XiaoCao
                     item.StopTimeSpeed(isOn);
                 }
             }
-
         }
-
     }
 
     public interface IRoleControl
@@ -274,11 +285,11 @@ namespace XiaoCao
         public void TryPlaySkill(string skillId);
 
         public bool IsBusy(int level = 0);
+
         //占用当前
         public void BreakAllBusy();
 
-        public void DefaultAutoDirect();
+        public void DefaultAutoDirect(float lerp = 0.4f);
         void StopTimeSpeed(bool isOn);
     }
-
 }

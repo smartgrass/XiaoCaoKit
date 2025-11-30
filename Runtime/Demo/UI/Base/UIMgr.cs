@@ -79,6 +79,12 @@ namespace XiaoCao
                 return;
             }
 
+            if (panel.IsShowing)
+            {
+                Debug.Log($"-- {panel.PanelType} is showing ");
+                return;
+            }
+
             panel.Show(data);
             if (IsHideMid(type))
             {
@@ -145,9 +151,16 @@ namespace XiaoCao
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
+                    if (lastpanel != null && lastpanel.IsShowing && lastpanel.HideEsc)
+                    {
+                        HideView(lastpanel.PanelType);
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.Space))
+                {
                     if (lastpanel != null && lastpanel.IsShowing)
                     {
-                        lastpanel.Hide();
+                        lastpanel.InputKeyCode(KeyCode.Space);
                     }
                 }
             }
@@ -190,6 +203,8 @@ namespace XiaoCao
                     return playerPanel;
                 case UIPanelType.BuffSelectPanel:
                     return buffSelectPanel;
+                case UIPanelType.LevelResultPanel:
+                    return levelResultPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

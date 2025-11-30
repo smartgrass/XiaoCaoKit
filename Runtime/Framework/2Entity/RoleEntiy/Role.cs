@@ -76,7 +76,8 @@ namespace XiaoCao
         /// 绑定的模型文件
         public string prefabId;
 
-        //势力,相同为友军
+        //势力,相同为友军, 1为玩家 
+        ///<see cref="XCSetting"/>
         public int team;
 
         public GameObject body;
@@ -148,6 +149,10 @@ namespace XiaoCao
             idRole.animator.runtimeAnimatorController = idRole.LoadRuntimeAc;
             idRole.animator.applyRootMotion = false;
             data_R.moveSetting = idRole.moveSetting;
+            if (body.TryGetComponent<RoleBody>(out RoleBody roleBody))
+            {
+                roleBody.OnBodyCreate(this);
+            }
         }
 
         public void SetTeam(int team)

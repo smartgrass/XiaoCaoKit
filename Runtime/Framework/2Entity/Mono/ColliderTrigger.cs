@@ -4,6 +4,7 @@ using System;
 using System.Drawing;
 using UnityEngine;
 using XiaoCao;
+
 /*
  攻击层级, PLAYER_ATK & Layers.ENEMY_ATK
  受击中层级:  PLAYER & ENEMY
@@ -21,10 +22,10 @@ public class ColliderTrigger : MonoBehaviour, ITrigger
         TriggerAct?.Invoke(other);
     }
 
-    public void InitListener(Action<Collider> action)
+    public void InitListener(Action<Collider> action, int atkerTeam)
     {
         TriggerAct = null;
-        TriggerAct += action; 
+        TriggerAct += action;
     }
 
     public void Switch(bool isOn)
@@ -55,7 +56,6 @@ public class ColliderTrigger : MonoBehaviour, ITrigger
                 Debug.LogError($"--- none {meshInfo.meshType}");
                 break;
         }
-
     }
 
     private void OnBox(MeshInfo meshInfo)
@@ -99,14 +99,13 @@ public class ColliderTrigger : MonoBehaviour, ITrigger
 
 public interface ITrigger
 {
-    public Action<Collider> TriggerAct { get; set;}
+    public Action<Collider> TriggerAct { get; set; }
 
-    void InitListener(Action<Collider> action);
+    void InitListener(Action<Collider> action, int atkerTeam);
 
     void SetMeshInfo(MeshInfo meshInfo);
 
     void Switch(bool v);
 
     void OnFinish();
-
 }

@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using XiaoCao;
-using DG.Tweening;
-using UnityEngine.UIElements;
 using XiaoCaoKit.Runtime.Demo.UI;
 using Button = UnityEngine.UI.Button;
 
@@ -16,6 +13,7 @@ namespace XiaoCao.UI
     {
         public override UIPanelType PanelType => UIPanelType.BuffSelectPanel;
         public override bool NeedUIData => true;
+        public override bool HideEsc => false;
         public Transform buffContainer;
         public Button sureBtn;
 
@@ -36,6 +34,29 @@ namespace XiaoCao.UI
             ShowWith(uiData.buffItems, uiData.onSelect);
         }
 
+        
+        public override void Hide()
+        {
+            // 清理引用
+            onSelectCallback = null;
+            selectedBuff = null;
+            selectedDetail = null;
+
+            // 清除现有选项
+            foreach (var detail in buffItemDetails)
+            {
+                if (detail)
+                {
+                    Destroy(detail.gameObject);
+                }
+            }
+
+            buffItemDetails.Clear();
+
+            UIMgr.Inst.PopUIEnable(false, name);
+
+            gameObject.SetActive(false);
+        }
 
         public void Init()
         {
@@ -128,28 +149,12 @@ namespace XiaoCao.UI
             UIMgr.Inst.HideView(this.PanelType);
         }
 
-
-        public override void Hide()
+        public override void InputKeyCode(KeyCode key)
         {
-            // 清理引用
-            onSelectCallback = null;
-            selectedBuff = null;
-            selectedDetail = null;
-
-            // 清除现有选项
-            foreach (var detail in buffItemDetails)
+            if (key == KeyCode.Space)
             {
-                if (detail)
-                {
-                    Destroy(detail.gameObject);
-                }
+                OnConfirmButtonClicked();
             }
-
-            buffItemDetails.Clear();
-
-            UIMgr.Inst.PopUIEnable(false, name);
-
-            gameObject.SetActive(false);
         }
     }
 

@@ -62,7 +62,7 @@ public class Atker : BaseAtker
     internal void AddTriggerByCollider()
     {
         ColliderTrigger colliderTrigger = gameObject.GetOrAddComponent<ColliderTrigger>();
-        colliderTrigger.InitListener(ReceiveTriggerEnter);
+        colliderTrigger.InitListener(ReceiveTriggerEnter,ackInfo.team);
     }
 }
 

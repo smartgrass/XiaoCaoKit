@@ -43,6 +43,7 @@ namespace XiaoCao
         LevelPanel = 0,
         SettingPanel = 1,
         PlayerPanel = 2,
+        LevelResultPanel = 3,
         BuffSelectPanel = 11,  // 添加Buff选择面板类型
         DebugPanel = 99,
     }

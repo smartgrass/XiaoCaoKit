@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using cfg;
 using DG.Tweening;
 using EasyUI.Helpers;
 using TEngine;
@@ -140,7 +141,8 @@ namespace XiaoCao
 
             if (RollName != skillId)
             {
-                DefaultAutoDirect();
+                var setting = LubanTables.GetSkillSetting(skillId, 0);
+                DefaultAutoDirect(setting.AutoDirect);
             }
         }
 

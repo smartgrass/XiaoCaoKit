@@ -9,6 +9,32 @@ namespace XiaoCao
 
         public bool isShoot; //保持速度,等
 
+        public float offset;
+        
+        public float minDistance;
+        
+        public void Init(BaseMsg baseMsg)
+        {
+            isShoot = baseMsg.strMsg == "Shoot";
+            var array = baseMsg.strMsg.Split(",");
+            if (array.Length > 0)
+            {
+                foreach (var str in array)
+                {
+                    if (str.StartsWith("offset"))
+                    {
+                        string numStr = baseMsg.strMsg.Split("_")[1];
+                        offset = float.Parse(numStr);
+                    }
+                    else if(str.StartsWith("min"))
+                    {
+                        string numStr = baseMsg.strMsg.Split("_")[1];
+                        minDistance = float.Parse(numStr);
+                    }
+                }
+            }
+        }
+        
         public bool IsTargetRoleType(RoleType roleType)
         {
             return true;
@@ -16,10 +42,7 @@ namespace XiaoCao
 
         public float minSwitchTime = 0.8f;
 
-        public void Init(BaseMsg baseMsg)
-        {
-            isShoot = baseMsg.strMsg == "Shoot";
-        }
+
 
         public void OnTrigger()
         {
@@ -64,6 +87,18 @@ namespace XiaoCao
             //修改终点,并且修改handle
             Vector3 worldStartVec = task.GetBindTranfrom().position; //获取当前世界坐标
             Vector3 worldEndVec = findRole.transform.position;
+            if (offset != 0)
+            {
+                worldEndVec += (worldEndVec - worldStartVec).normalized * offset;
+            }
+
+            if (minDistance != 0)
+            {
+                if (Vector3.Distance(worldStartVec, worldEndVec) < minDistance)
+                {
+                    worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * minDistance;
+                }
+            }
 
             if (isShoot)
             {
@@ -75,6 +110,7 @@ namespace XiaoCao
             }
             else
             {
+                
                 if (Vector3.Distance(worldStartVec, worldEndVec) > maxDistance)
                 {
                     worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * maxDistance;

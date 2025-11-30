@@ -40,8 +40,8 @@ public abstract class SubPanel
         gameObject.SetActive(true);
         standardPanel.SwitchPanel(subPanelName);
         RefreshUI();
-
     }
+
     public void Hide()
     {
         gameObject.SetActive(false);
@@ -51,7 +51,6 @@ public abstract class SubPanel
 
     public virtual void RefreshUI()
     {
-
     }
 
     public TMP_Text AddTextText(string title, string showStr)
@@ -81,7 +80,8 @@ public abstract class SubPanel
         return slider;
     }
 
-    public TMP_Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents, bool needKey = true)
+    public TMP_Dropdown AddDropdown(string title, UnityAction<int> onValueChange, List<string> contents,
+        bool needKey = true)
     {
         GameObject dropdownPrefab = Prefabs.dropDown;
         GameObject instance = Object.Instantiate(dropdownPrefab, gameObject.transform);
@@ -117,29 +117,31 @@ public abstract class SubPanel
         return toggle;
     }
 
-    public void AddButton(string title, UnityAction onClick, string content = "Btns")
+    public void AddButton(string title, UnityAction onClick, string tile2 = null, UnityAction onClick2 = null,
+        string title3 = null, UnityAction oncClick3 = null)
     {
+        GameObject line = Object.Instantiate(Prefabs.btnLine, gameObject.transform);
 
-        Transform contentTf = gameObject.transform.Find(content);
-        if (!contentTf)
+        for (int i = 0; i < 3; i++)
         {
-            GameObject contentGo = new GameObject(content);
-            contentGo.transform.SetParent(gameObject.transform, false);
-            var layout = contentGo.AddComponent<GridLayoutGroup>();
-            contentTf = layout.transform; //必须重新获取,因为从Transfrom变为RectTransfrom了
-            layout.cellSize = new Vector2Int(240, 120);
-            layout.spacing = new Vector2Int(100, 0);
+            var btnGo = line.transform.GetChild(i);
+            Button button = btnGo.GetComponentInChildren<Button>();
+            TextMeshProUGUI textMesh = btnGo.transform.GetComponentInChildren<TextMeshProUGUI>();
+
+            //根据对应顺序赋值, 如果为null则隐藏btnGo
+            string[] titles = { title, tile2, title3 };
+            UnityAction[] actions = { onClick, onClick2, oncClick3 };
+
+            if (string.IsNullOrEmpty(titles[i]) || actions[i] == null)
+            {
+                btnGo.gameObject.SetActive(false);
+            }
+            else
+            {
+                textMesh.gameObject.GetOrAddComponent<Localizer>().SetLocalize(titles[i]);
+                button.onClick.AddListener(actions[i]);
+                btnGo.gameObject.SetActive(true);
+            }
         }
-
-        GameObject buttonPrefab = Prefabs.btn;
-        GameObject instance = Object.Instantiate(buttonPrefab, contentTf);
-        instance.transform.SetParent(contentTf, false);
-        Debug.Log($"--- AddButton {instance} {contentTf}");
-        Button button = instance.GetComponentInChildren<Button>();
-
-        TextMeshProUGUI textMesh = instance.transform.GetComponentInChildren<TextMeshProUGUI>();
-        textMesh.gameObject.AddComponent<Localizer>().SetLocalize(title);
-        button.onClick.AddListener(onClick);
     }
-
 }

@@ -28,10 +28,12 @@ public sealed partial class SkillSetting : Luban.BeanBase
         ShakeLevel = _buf.ReadInt();
         HitStop = _buf.ReadFloat();
         BreakPower = _buf.ReadFloat();
+        NoBreakTime = _buf.ReadFloat();
         HitClip = _buf.ReadString();
-        HitEffect = _buf.ReadInt();
+        HitEffect = _buf.ReadString();
         ActType = (Skill.EActType)_buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Tags = new System.Collections.Generic.HashSet<string>(/*n0 * 3 / 2*/);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); Tags.Add(_e0);}}
+        AutoDirect = _buf.ReadFloat();
     }
 
     public static SkillSetting DeserializeSkillSetting(ByteBuf _buf)
@@ -88,24 +90,34 @@ public sealed partial class SkillSetting : Luban.BeanBase
     /// </summary>
     public readonly float BreakPower;
     /// <summary>
+    /// 霸体时间
+    /// </summary>
+    public readonly float NoBreakTime;
+    /// <summary>
     /// 音效,空为无音效
     /// </summary>
     public readonly string HitClip;
     /// <summary>
     /// 击中特效(-1为空)
     /// </summary>
-    public readonly int HitEffect;
+    public readonly string HitEffect;
     /// <summary>
     /// 类型
     /// </summary>
     public readonly Skill.EActType ActType;
     public readonly System.Collections.Generic.HashSet<string> Tags;
+    /// <summary>
+    /// 自动索敌权重(默认0.4)
+    /// </summary>
+    public readonly float AutoDirect;
    
     public const int __ID__ = 633610975;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
+        
         
         
         
@@ -139,10 +151,12 @@ public sealed partial class SkillSetting : Luban.BeanBase
         + "shakeLevel:" + ShakeLevel + ","
         + "hitStop:" + HitStop + ","
         + "breakPower:" + BreakPower + ","
+        + "noBreakTime:" + NoBreakTime + ","
         + "hitClip:" + HitClip + ","
         + "hitEffect:" + HitEffect + ","
         + "actType:" + ActType + ","
         + "tags:" + Luban.StringUtil.CollectionToString(Tags) + ","
+        + "autoDirect:" + AutoDirect + ","
         + "}";
     }
 }

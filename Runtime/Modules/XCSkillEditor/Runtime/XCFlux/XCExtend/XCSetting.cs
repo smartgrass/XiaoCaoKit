@@ -11,7 +11,7 @@ namespace XiaoCao
 
 
         public const int PlayerTeam = 1;
-        public const int EnmeyTeam = 0;
+        public const int EnemyTeam = 0;
         //根据阵营分层级
         public static int GetTeamLayer(int team)
         {
@@ -31,7 +31,8 @@ namespace XiaoCao
             return Layers.ENEMY_ATK;
         }
 
-        public static int GetTeamGroundCheckMash(int team)
+        //获取相反阵营的层级, 玩家获取敌人, 敌人获取玩家
+        public static int GetTeamInverseLayerMask(int team)
         {
             if (team == 1)
             {
@@ -139,9 +140,9 @@ namespace XiaoCao
             return $"{ResMgr.RESDIR}/Role/AI/AI_{aiId}.asset";
         }
 
-        public static string GetHitEffectPath(int index)
+        public static string GetHitEffectPath(string name)
         {
-            return $"{HitEffectDir}/Hit_{index}.prefab";
+            return $"{HitEffectDir}/{name}.prefab";
         }
         public static string GetAudioPath(string name)
         {
