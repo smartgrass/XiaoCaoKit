@@ -128,7 +128,7 @@ namespace XiaoCao
                 var setting = LubanTables.GetSkillSetting(info.skillId, index);
                 if (setting.Tags.Contains(TaskInfoTags.Slash))
                 {
-                    GameEvent.Send<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), this);
+                    GameEvent.Send<ObjectData>(EGameEvent.PlayerCreatNorAtk.ToInt(), this);
                 }
             }
         }

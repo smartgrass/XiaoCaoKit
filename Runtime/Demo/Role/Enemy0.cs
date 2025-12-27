@@ -91,7 +91,7 @@ namespace XiaoCao
                 killerId = atkInfo.atker,
             };
             base.OnDie(atkInfo);
-            GameEvent.Send(EGameEvent.EnemyDeadEvent.Int(), id);
+            GameEvent.Send(EGameEvent.EnemyDeadEvent.ToInt(), id);
         }
 
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)

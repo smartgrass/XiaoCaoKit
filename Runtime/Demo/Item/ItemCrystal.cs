@@ -161,7 +161,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
     {
         if (!string.IsNullOrEmpty(deadMapMsg))
         {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), deadMapMsg);
+            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), deadMapMsg);
         }
     }
 

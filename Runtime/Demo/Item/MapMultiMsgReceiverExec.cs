@@ -32,7 +32,7 @@ public class MapMultiMsgReceiverExec : MonoExecute, IMapMsgReceiver, IMapMsgSend
             {
                 if (!string.IsNullOrEmpty(receiveMsg))
                 {
-                    GameEvent.Send<string>(EGameEvent.MapMsg.Int(), sendMsg);
+                    GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), sendMsg);
                 }
 
                 Execute();
@@ -43,12 +43,12 @@ public class MapMultiMsgReceiverExec : MonoExecute, IMapMsgReceiver, IMapMsgSend
 
     private void Start()
     {
-        GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+        GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
     }
 
     private void OnDestroy()
     {
-        GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+        GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
     }
 
     public override void Execute()

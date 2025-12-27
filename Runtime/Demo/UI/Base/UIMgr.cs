@@ -40,6 +40,8 @@ namespace XiaoCao
         // Buff选择面板
         public BuffSelectPanel buffSelectPanel;
 
+        public RebornPanel rebornPanel;
+
         [ReadOnly] public PanelBase lastpanel;
 
         public Canvas Canvas => topCanvas;
@@ -55,6 +57,7 @@ namespace XiaoCao
             transform.SetParent(null);
             talkPanel.Init();
             buffSelectPanel.Init();
+            rebornPanel?.Init();
             OnChangeInputType(GameSetting.UserInputType);
         }
 
@@ -81,7 +84,10 @@ namespace XiaoCao
 
             if (panel.IsShowing)
             {
-                Debug.Log($"-- {panel.PanelType} is showing ");
+                if (panel.NeedUIData)
+                {
+                    panel.Show(data);
+                }
                 return;
             }
 
@@ -94,7 +100,7 @@ namespace XiaoCao
             showingPanels.Add(panel);
             lastpanel = panel;
             CheckPlayInputAble();
-            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), type, false);
+            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), type, false);
         }
 
         public void HideView(UIPanelType type)
@@ -156,12 +162,14 @@ namespace XiaoCao
                         HideView(lastpanel.PanelType);
                     }
                 }
-                else if (Input.GetKeyDown(KeyCode.Space))
+                else if (Input.GetKeyDown(XCInputSetting.Space))
                 {
                     if (lastpanel != null && lastpanel.IsShowing)
                     {
-                        lastpanel.InputKeyCode(KeyCode.Space);
+                        lastpanel.InputKeyCode(XCInputSetting.Space);
                     }
+                    
+                    
                 }
             }
         }
@@ -205,6 +213,10 @@ namespace XiaoCao
                     return buffSelectPanel;
                 case UIPanelType.LevelResultPanel:
                     return levelResultPanel;
+                case UIPanelType.TalkPanel:
+                    return talkPanel;
+                case UIPanelType.RebornPanel:
+                    return rebornPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

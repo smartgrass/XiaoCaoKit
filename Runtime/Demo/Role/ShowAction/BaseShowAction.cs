@@ -40,7 +40,7 @@ namespace XiaoCao
         public override void Start()
         {
             base.Start();
-            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReciveMsg);
         }
 
         private void OnReciveMsg(string str)
@@ -55,7 +55,7 @@ namespace XiaoCao
         public override void OnDestroy()
         {
             base.OnDestroy();
-            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReciveMsg);
+            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReciveMsg);
         }
 
 

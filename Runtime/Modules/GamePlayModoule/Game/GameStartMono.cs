@@ -22,7 +22,7 @@ public class GameStartMono : MonoBehaviour
         else
         {
             hasAddListener = true;
-            GameEvent.AddEventListener(EGameEvent.GameStartFinsh.Int(), OnGameStart);
+            GameEvent.AddEventListener(EGameEvent.GameStartFinsh.ToInt(), OnGameStart);
         }
     }
 
@@ -36,7 +36,7 @@ public class GameStartMono : MonoBehaviour
     {
         if (hasAddListener)
         {
-            GameEvent.RemoveEventListener(EGameEvent.GameStartFinsh.Int(), OnGameStart);
+            GameEvent.RemoveEventListener(EGameEvent.GameStartFinsh.ToInt(), OnGameStart);
         }
     }
 

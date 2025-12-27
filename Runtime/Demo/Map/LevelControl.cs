@@ -30,8 +30,8 @@ namespace XiaoCao
 
             //enemyKillRewardSo = ConfigMgr.enemyKillRewardSo;
 
-            GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+            GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
         }
 
         public override void RemoveListener()
@@ -39,8 +39,8 @@ namespace XiaoCao
             base.RemoveListener();
             if (isGameStarted)
             {
-                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
-                GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
+                GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
             }
         }
 

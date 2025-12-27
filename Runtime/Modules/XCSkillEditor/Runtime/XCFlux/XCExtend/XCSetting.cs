@@ -165,6 +165,11 @@ namespace XiaoCao
         }
     }
 
+    public static class XCInputSetting
+    {
+        public static KeyCode Space = KeyCode.Space;
+    }
+
     public enum ResTypeP
     {
         Windows,

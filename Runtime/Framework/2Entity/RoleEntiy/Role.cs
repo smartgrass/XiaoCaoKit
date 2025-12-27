@@ -28,6 +28,11 @@ namespace XiaoCao
             get => RoleType == RoleType.Player;
         }
 
+        public bool IsLocalMainPlayer
+        {
+            get => HasTag(RoleTagCommon.MainPlayer);
+        }
+
         public RoleIdentityType RoleIdentityType { get; set; }
 
         public bool IsEnemyIdentity => RoleIdentityType == RoleIdentityType.Enemy;
@@ -338,7 +343,7 @@ namespace XiaoCao
 
             HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
 
-            GameEvent.Send<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), id, IsPlayer, atkInfo);
+            GameEvent.Send<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), id, IsPlayer, atkInfo);
 
             return true;
         }
@@ -361,6 +366,11 @@ namespace XiaoCao
                 XCTime.DelayRunMono(5, OnReborn, idRole);
             }
 
+            if (IsLocalMainPlayer)
+            {
+                GameEvent.Send<int>(EGameEvent.PlayerDead.ToInt(), id);
+            }
+            
             gameObject.layer = Layers.WITHOUT_BODY;
         }
 
@@ -403,15 +413,15 @@ namespace XiaoCao
         {
             Enable = true;
             RoleMgr.Inst.roleDic.Add(id, this);
-            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.Int(), id, RoleChangeType.Add);
-            GameEvent.AddEventListener<bool>(EGameEvent.TimeSpeedStop.Int(), StopTimeSpeed);
+            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), id, RoleChangeType.Add);
+            GameEvent.AddEventListener<bool>(EGameEvent.TimeSpeedStop.ToInt(), StopTimeSpeed);
         }
 
         public void RoleOut()
         {
             Debug.Log($"--- RoleOut {id}");
-            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.Int(), id, RoleChangeType.Remove);
-            GameEvent.RemoveEventListener<bool>(EGameEvent.TimeSpeedStop.Int(), StopTimeSpeed);
+            GameEvent.Send<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), id, RoleChangeType.Remove);
+            GameEvent.RemoveEventListener<bool>(EGameEvent.TimeSpeedStop.ToInt(), StopTimeSpeed);
             RoleMgr.Inst.roleDic.Remove(id);
         }
 

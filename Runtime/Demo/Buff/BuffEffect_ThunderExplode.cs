@@ -34,12 +34,12 @@ namespace XiaoCaoKit.Runtime.Demo.Buff
 
 
             // 注册暴击事件回调
-            GameEvent.AddEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), OnRoleHurt);
+            GameEvent.AddEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), OnRoleHurt);
         }
 
         public override void RemoveEffect()
         {
-            GameEvent.RemoveEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), OnRoleHurt);
+            GameEvent.RemoveEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), OnRoleHurt);
             base.RemoveEffect();
         }
 

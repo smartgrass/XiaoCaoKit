@@ -221,10 +221,10 @@ namespace XiaoCao
                 //显示提示
             }
 
-            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), UIPanelType.PlayerPanel, true);
+            GameEvent.Send<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), UIPanelType.PlayerPanel, true);
             if (showGetUI)
             {
-                GameEvent.Send<Item>(EGameEvent.OnGetItem.Int(), buff.ToItem());
+                GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), buff.ToItem());
             }
         }
 
@@ -297,7 +297,10 @@ namespace XiaoCao
     }
 
 
-    public enum EGameEvent : uint
+    /// <summary>
+    /// 使用时需要带上 ToInt
+    /// </summary>
+    public enum EGameEvent
     {
         None = 0,
         GameStateChange = 1,
@@ -318,6 +321,7 @@ namespace XiaoCao
         LocalPlayerChangeNowAttr = 103,
         PlayerCreatNorAtk = 104,
         PlayerGetBuffItem = 105,
+        PlayerDead=106,
         RoleHurt = 107,
 
 
@@ -327,6 +331,15 @@ namespace XiaoCao
 
         //Map 300
         MapMsg = 300,
+        
+    }
+    
+    public static class EventTypeExtend
+    {
+        public static int ToInt(this EGameEvent t)
+        {
+            return (int)t;
+        }
     }
 
     public static class BattleFlagNames
@@ -353,14 +366,7 @@ namespace XiaoCao
         Add,
         Remove,
     }
-
-    public static class EventTypeExtend
-    {
-        public static int Int(this EGameEvent t)
-        {
-            return (int)t;
-        }
-    }
+    
 
     /// <summary>
     /// 值类型监听

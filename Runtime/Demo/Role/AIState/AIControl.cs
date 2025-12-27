@@ -420,7 +420,7 @@ namespace XiaoCao
             _friendState = FriendState.Follow;
             owner.RoleIdentityType = RoleIdentityType.PlayerFriend;
             localPlayer.playerData.AddFriend(owner);
-            GameEvent.Send<int>(EGameEvent.AddFriend.Int(), owner.id);
+            GameEvent.Send<int>(EGameEvent.AddFriend.ToInt(), owner.id);
         }
     }
 }

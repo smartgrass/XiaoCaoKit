@@ -21,12 +21,12 @@ public class ItemPopHud : MonoBehaviour, IMgr
 
     private void OnEnable()
     {
-        GameEvent.AddEventListener<Item>(EGameEvent.OnGetItem.Int(), OnGetItem);
+        GameEvent.AddEventListener<Item>(EGameEvent.OnGetItem.ToInt(), OnGetItem);
     }
 
     private void OnDisable()
     {
-        GameEvent.RemoveEventListener<Item>(EGameEvent.OnGetItem.Int(), OnGetItem);
+        GameEvent.RemoveEventListener<Item>(EGameEvent.OnGetItem.ToInt(), OnGetItem);
     }
 
     private void OnGetItem(Item item)

@@ -6,7 +6,7 @@ using UnityEngine;
 using XiaoCao;
 
 //读取数据
-public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
+public class TalkMgr : Singleton<TalkMgr>, IMapMsgSender
 {
     // 使用栈来保存对话状态，支持嵌套任务
     private Stack<ChapterTalkState> talkStateStack = new Stack<ChapterTalkState>();
@@ -25,7 +25,7 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
         public int talkIndex;
     }
 
-    public TalkPanel TalkPanel => UIMgr.Inst.talkPanel;
+    // public TalkPanel TalkPanel => UIMgr.Inst.talkPanel;
 
     public void EnterTalk()
     {
@@ -53,7 +53,7 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
             isTalking = false;
             currentTalkIndex = 0;
             _chapterTalkData = null;
-            TalkPanel.HidePanel();
+            UIMgr.Inst.HideView(UIPanelType.TalkPanel);
             if (isReShowCanvas)
             {
                 UIMgr.Inst.MidCanvasEnable(true);
@@ -84,7 +84,7 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
         TalkType type = node.talkType;
         if (type == TalkType.Text)
         {
-            TalkPanel.ShowTextData(node);
+            UIMgr.Inst.ShowView(UIPanelType.TalkPanel, node);
         }
         else if (type == TalkType.List)
         {
@@ -115,11 +115,12 @@ public class TalkMgr : Singleton<TalkMgr>,IMapMsgSender
             {
                 isShow = bool.Parse(node.Str1);
             }
+
             UIMgr.Inst.MidCanvasEnable(isShow);
         }
         else if (node.talkType == TalkType.MapMsg)
         {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), node.Str1);
+            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), node.Str1);
             if (node.array.Length > 2 && node.Str2 == "Next")
             {
                 MoveNextTalk();
@@ -206,7 +207,7 @@ public class ChapterTalkData
 }
 
 [Serializable]
-public class TalkData
+public class TalkData : IUIData
 {
     public TalkType talkType;
 

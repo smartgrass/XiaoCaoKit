@@ -22,12 +22,12 @@ namespace XiaoCao.Buff
             lastTriggerTime = -cdTime; // 确保第一次触发不会受冷却限制
 
             // 注册受到伤害事件回调
-            GameEvent.AddEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), OnRoleHurt);
+            GameEvent.AddEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), OnRoleHurt);
         }
 
         public override void RemoveEffect()
         {
-            GameEvent.RemoveEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.Int(), OnRoleHurt);
+            GameEvent.RemoveEventListener<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), OnRoleHurt);
             base.RemoveEffect();
         }
 

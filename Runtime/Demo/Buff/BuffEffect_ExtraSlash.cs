@@ -22,14 +22,14 @@ namespace XiaoCao.Buff
 
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {
-            GameEvent.AddEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), OnPlaySkill);
+            GameEvent.AddEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.ToInt(), OnPlaySkill);
             player = TargetId.GetPlayerById();
             triggerCount = (int)buff.addInfo[0];
         }
 
         public override void RemoveEffect()
         {
-            GameEvent.RemoveEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.Int(), OnPlaySkill);
+            GameEvent.RemoveEventListener<ObjectData>(EGameEvent.PlayerCreatNorAtk.ToInt(), OnPlaySkill);
         }
 
         private void OnPlaySkill(ObjectData data)

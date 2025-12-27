@@ -46,12 +46,12 @@ namespace XiaoCao
 
         public EnmeyGroup()
         {
-            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
+            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
         }
 
         public void Dispose()
         {
-            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
+            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
         }
 
         private void OnEntityChange(int arg1, RoleChangeType type)

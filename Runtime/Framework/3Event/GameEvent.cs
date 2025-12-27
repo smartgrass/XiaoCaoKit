@@ -14,9 +14,9 @@ namespace TEngine
         {
             //添加监听
             GameEvent.AddEventListener<GameState, GameState>(0, ExampleRecive);
-            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), ExampleRecive);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), ExampleRecive);
             //移除监听
-            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), ExampleRecive);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), ExampleRecive);
             //触发
             GameEvent.Send<GameState, GameState>("EventTag", GameState.Loading, GameState.Running);
 

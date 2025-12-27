@@ -442,7 +442,7 @@ namespace XiaoCao
 
             if (isSendMsg)
             {
-                GameEvent.Send<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(), eAttr, delta);
+                GameEvent.Send<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(), eAttr, delta);
             }
         }
     }

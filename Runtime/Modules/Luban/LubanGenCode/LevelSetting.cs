@@ -18,7 +18,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
     {
         Id = _buf.ReadString();
         Title = _buf.ReadString();
-        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);EnemyLvList = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); EnemyLvList.Add(_e0);}}
+        EnemyBaseLevel = _buf.ReadInt();
+        EnemyLevelAdd = _buf.ReadInt();
         ImgName = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Reward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); Reward.Add(_e0);}}
         RoleId = _buf.ReadInt();
@@ -37,7 +38,14 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// 标题
     /// </summary>
     public readonly string Title;
-    public readonly System.Collections.Generic.List<int> EnemyLvList;
+    /// <summary>
+    /// 最低等级
+    /// </summary>
+    public readonly int EnemyBaseLevel;
+    /// <summary>
+    /// 每级增加
+    /// </summary>
+    public readonly int EnemyLevelAdd;
     /// <summary>
     /// 图片id
     /// </summary>
@@ -62,6 +70,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         
         
         
+        
     }
 
     public override string ToString()
@@ -69,7 +78,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "title:" + Title + ","
-        + "enemyLvList:" + Luban.StringUtil.CollectionToString(EnemyLvList) + ","
+        + "enemyBaseLevel:" + EnemyBaseLevel + ","
+        + "enemyLevelAdd:" + EnemyLevelAdd + ","
         + "imgName:" + ImgName + ","
         + "reward:" + Luban.StringUtil.CollectionToString(Reward) + ","
         + "roleId:" + RoleId + ","

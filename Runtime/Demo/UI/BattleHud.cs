@@ -42,10 +42,10 @@ namespace XiaoCao
         public void Init()
         {
             pool = PoolMgr.Inst.GetOrCreatPrefabPool(worldHpBarPrefab);
-            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
-            GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
+            GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
+            GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.AddEventListener<int>(EGameEvent.LevelEnd.Int(), OnLevelEnd);
+            GameEvent.AddEventListener<int>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
@@ -61,10 +61,10 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.Int(), OnEntityChange);
-            GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.Int(),
+            GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
+            GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.RemoveEventListener<int>(EGameEvent.LevelEnd.Int(), OnLevelEnd);
+            GameEvent.RemoveEventListener<int>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
         }
 
         private void Update()

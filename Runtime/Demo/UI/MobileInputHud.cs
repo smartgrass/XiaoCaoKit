@@ -70,13 +70,13 @@ namespace XiaoCao
                 roleSkillBtn.gameObject.SetActive(false);
             }
 
-            GameEvent.AddEventListener<int>(EGameEvent.AddFriend.Int(), CheckRoleSkillBtn);
+            GameEvent.AddEventListener<int>(EGameEvent.AddFriend.ToInt(), CheckRoleSkillBtn);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-            GameEvent.RemoveEventListener<int>(EGameEvent.AddFriend.Int(), CheckRoleSkillBtn);
+            GameEvent.RemoveEventListener<int>(EGameEvent.AddFriend.ToInt(), CheckRoleSkillBtn);
         }
 
         //当友方生成时触发

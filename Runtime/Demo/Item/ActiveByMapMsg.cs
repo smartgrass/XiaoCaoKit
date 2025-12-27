@@ -14,7 +14,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item
         
         private void Start()
         {
-            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
             if (autoStartState)
             {
                 gameObject.SetActive(!isActive);
@@ -23,7 +23,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
         }
         
         public override void Execute()

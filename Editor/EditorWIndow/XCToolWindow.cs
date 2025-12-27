@@ -55,14 +55,14 @@ namespace AssetEditor.Editor
             base.OnEnable();
             EditorApplication.playModeStateChanged += PlayModeStateChanged;
             EditorApplication.pauseStateChanged += PauseStateChanged;
-            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), GameStateChange);
         }
 
         private void OnDisable()
         {
             EditorApplication.playModeStateChanged -= PlayModeStateChanged;
             EditorApplication.pauseStateChanged -= PauseStateChanged;
-            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.Int(), GameStateChange);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), GameStateChange);
         }
 
         private void GameStateChange(GameState state1, GameState state2)
@@ -215,7 +215,7 @@ namespace AssetEditor.Editor
             var endPos = MapMgr.Inst.GetEndPos();
             Vector3 offset = (endPos - GameDataCommon.LocalPlayer.transform.position).ToY0().normalized * -3;
             GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos + offset + Vector3.up);
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), "LevelFinish");
+            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), "LevelFinish");
             GameMgr.Inst.LevelFinish();
         }
 

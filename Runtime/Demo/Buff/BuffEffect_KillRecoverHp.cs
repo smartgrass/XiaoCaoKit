@@ -18,13 +18,13 @@ namespace XiaoCao.Buff
             recoverHp = buff.addInfo[0];
 
             //注册 击杀的事件回调
-            GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
+            GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
         }
 
 
         public override void RemoveEffect()
         {
-            GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.Int(), OnEnemyDeadEvent);
+            GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
         }
 
         void OnEnemyDeadEvent(int id)

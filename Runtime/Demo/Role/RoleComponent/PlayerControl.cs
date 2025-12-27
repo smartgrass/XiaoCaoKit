@@ -269,7 +269,7 @@ namespace XiaoCao
         //执行使用技能, 一般不直接使用
         public override void RcpPlaySkill(string skillId)
         {
-            GameEvent.Send<int, string>(EGameEvent.PlayerPlaySkill.Int(), owner.id, skillId);
+            GameEvent.Send<int, string>(EGameEvent.PlayerPlaySkill.ToInt(), owner.id, skillId);
             base.RcpPlaySkill(skillId);
         }
 

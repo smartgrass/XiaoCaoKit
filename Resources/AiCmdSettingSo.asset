@@ -55,4 +55,5 @@ MonoBehaviour:
     cmdSkillList:
     - 4101
     - 4102
+    - 4103
     rollId: 41

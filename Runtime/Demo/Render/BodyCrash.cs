@@ -13,11 +13,16 @@ namespace XiaoCao.Render
 
         public Vector3 boxOffset;
         public float pushForce = 5.0f;
-        
+
+        public Vector3 forceCenterOffset;
+
         private Collider[] _results = new Collider[10];
         private Transform selfTf;
+        private Role selfRole;
 
         private bool selfInit;
+
+        public bool disableIfDead = true;
 
         // 添加缓存字典以避免重复的GetComponent调用
         private Dictionary<GameObject, CharacterController> _characterCache =
@@ -63,6 +68,12 @@ namespace XiaoCao.Render
                     {
                         selfTf = other.transform;
                         selfInit = true;
+                        if (disableIfDead)
+                        {
+                            selfRole = selfTf.GetComponent<IdRole>().GetEntity() as Role;
+                            selfRole.DeadAct += OnRoleDead;
+                        }
+
                         continue;
                     }
                 }
@@ -71,7 +82,8 @@ namespace XiaoCao.Render
                 if (other.CompareTag(Tags.ENEMY) || other.CompareTag(Tags.PLAYER))
                 {
                     // 计算推开方向（从当前对象指向其他对象）
-                    Vector3 direction = other.transform.position - transform.position;
+                    Vector3 direction = other.transform.position -
+                                        (transform.position + transform.TransformDirection(forceCenterOffset));
 
                     // 如果两个对象位置完全重合，则选择一个默认方向
                     if (direction.sqrMagnitude < 0.01f)
@@ -99,6 +111,11 @@ namespace XiaoCao.Render
                     }
                 }
             }
+        }
+
+        private void OnRoleDead(Role obj)
+        {
+            enabled = false;
         }
 
         // 当对象被销毁时清理缓存

@@ -41,12 +41,12 @@ namespace XiaoCao.Buff
             loopTimer = new LoopTimer(0.3f);
             bulletPool = PoolMgr.Inst.GetOrCreatPool(BulletPath);
 
-            GameEvent.AddEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(), OnPlaySkill);
+            GameEvent.AddEventListener<int, string>(EGameEvent.PlayerPlaySkill.ToInt(), OnPlaySkill);
         }
         public override void RemoveEffect()
         {
             var player = TargetId.GetPlayerById(); ;
-            GameEvent.RemoveEventListener<int, string>(EGameEvent.PlayerPlaySkill.Int(), OnPlaySkill);
+            GameEvent.RemoveEventListener<int, string>(EGameEvent.PlayerPlaySkill.ToInt(), OnPlaySkill);
         }
 
         private void OnPlaySkill(int id, string skillId)

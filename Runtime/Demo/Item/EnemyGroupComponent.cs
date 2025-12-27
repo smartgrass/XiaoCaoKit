@@ -72,7 +72,7 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     public void SendMapMsg()
     {
-        GameEvent.Send<string>(EGameEvent.MapMsg.Int(), mapMsg);
+        GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), mapMsg);
         UIMgr.PopToastKey(popToastKey);
     }
 

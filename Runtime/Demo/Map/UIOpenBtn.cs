@@ -19,7 +19,7 @@ namespace XiaoCao
         private void Start()
         {
             transform.GetComponent<Button>().onClick.AddListener(Open);
-            GameEvent.AddEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), OnOpenEffect);
+            GameEvent.AddEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), OnOpenEffect);
         }
 
         private void OnOpenEffect(UIPanelType type, bool isOpen)
@@ -54,7 +54,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.Int(), OnOpenEffect);
+            GameEvent.RemoveEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), OnOpenEffect);
         }
 
         [Button]

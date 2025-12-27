@@ -1,3 +1,4 @@
+using cfg;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace XiaoCaoKit
     {
         public CanvasGroup canvasGroup;
         public TMP_Text titleText;
+        public TMP_Text descText;
         public Button hideBtn;
         public RectTransform rootRt;
         public Vector2 moveX;
@@ -26,6 +28,8 @@ namespace XiaoCaoKit
             //获取select Level
             LevelInfo levelInfo = MapNames.GetLevelInfoByName(GameDataCommon.Current.uiSelectLevel);
             titleText.text = levelInfo.GetLevelName();
+            descText.text = LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
+                           LubanTables.GetLevelSetting(GameDataCommon.Current.uiSelectLevel).EnemyBaseLevel.ToString();
             canvasGroup.alpha = 1;
             canvasGroup.blocksRaycasts = true;
             rootRt.DOUIMoveX(moveX.x, 0.2f);

@@ -49,7 +49,7 @@ MonoBehaviour:
     maxLevel: 50
     endHp: 25000
     endMp: 1200
-    endAtk: 200
+    endAtk: 180
     endDef: 500
     offsetLevel: 10
     maxArmor: 20

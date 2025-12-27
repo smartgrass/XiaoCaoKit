@@ -8,7 +8,7 @@ public class MapMsgTriggerExec : MonoExecute, IMapMsgSender
     {
         if (!string.IsNullOrEmpty(msg))
         {
-            GameEvent.Send<string>(EGameEvent.MapMsg.Int(), msg);
+            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), msg);
         }
     }
 }

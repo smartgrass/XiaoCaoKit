@@ -11,13 +11,13 @@ namespace XiaoCaoKit.Runtime.Demo.UI
 
         private void Start()
         {
-            GameEvent.AddEventListener<int>(EGameEvent.OnCoinChange.Int(), OnCoinChange);
+            GameEvent.AddEventListener<int>(EGameEvent.OnCoinChange.ToInt(), OnCoinChange);
             OnCoinChange(0);
         }
 
         private void OnDestroy()
         {
-            GameEvent.RemoveEventListener<int>(EGameEvent.OnCoinChange.Int(), OnCoinChange);
+            GameEvent.RemoveEventListener<int>(EGameEvent.OnCoinChange.ToInt(), OnCoinChange);
         }
 
         //type暂无

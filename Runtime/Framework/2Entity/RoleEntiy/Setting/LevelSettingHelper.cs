@@ -12,7 +12,7 @@ namespace XiaoCao
     public class LevelSettingHelper
     {
         //获取Enemy等级
-        public static int GetEnemyLevel(int baseLevel)
+        public static int GetEnemyLevel(int addLevel)
         {
             string levelName = GameDataCommon.Current.levelName;
             if (string.IsNullOrEmpty(levelName))
@@ -22,15 +22,7 @@ namespace XiaoCao
             }
 
             var setting = LubanTables.GetLevelSetting(levelName);
-            if (baseLevel < setting.EnemyLvList.Count)
-            {
-                return setting.EnemyLvList[baseLevel];
-            }
-            else if (setting.EnemyLvList.Count > 0)
-            {
-                return setting.EnemyLvList[~1];
-            }
-            return 0;
+            return setting.EnemyBaseLevel + setting.EnemyLevelAdd * addLevel;
         }
         
         public static List<Item> GetReward(string levelName)

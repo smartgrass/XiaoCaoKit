@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using XiaoCao;
 using XiaoCao.UI;
 
-public class TalkPanel : MonoBehaviour
+public class TalkPanel : PanelBase
 {
     [Header("UI 组件")] public GameObject dialoguePanel; // 对话面板
     public RawImage speakerImg; // 说话人头像
@@ -19,6 +19,9 @@ public class TalkPanel : MonoBehaviour
 
     private List<Button> currentOptionButtons = new List<Button>(); // 当前选项按钮列表
     private Coroutine textTypingCoroutine; // 文本打字协程
+    
+    
+    public override UIPanelType PanelType => UIPanelType.TalkPanel;
 
     private void Awake()
     {
@@ -32,6 +35,13 @@ public class TalkPanel : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+    
+    public override void Show(IUIData data = null)
+    {
+        //不做处理..
+        ShowTextData(data as TalkData);
+    }
+    
 
     public void ShowTextData(TalkData node)
     {
@@ -79,11 +89,23 @@ public class TalkPanel : MonoBehaviour
     }
 
 
-    internal void HidePanel()
+    //不直接调用,而是通过UIMgrHide
+    public override void Hide()
     {
         gameObject.SetActive(false);
     }
 
+
+    public override void InputKeyCode(KeyCode key)
+    {
+        if (key == KeyCode.Space)
+        {
+            if ( continueButton.isActiveAndEnabled)
+            {
+                OnContinueClick();
+            }
+        }
+    }
 
     #region 选项/字体动画相关
 
@@ -169,6 +191,7 @@ public class TalkPanel : MonoBehaviour
     */
 
     #endregion
+
 }
 
 public enum TalkType

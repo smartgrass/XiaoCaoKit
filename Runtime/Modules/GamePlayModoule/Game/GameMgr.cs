@@ -56,20 +56,20 @@ namespace XiaoCao
             base.Init();
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+            GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
         }
 
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.Int(), OnReceiveMsg);
+            GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
         }
 
         public void SetGameState(GameState gameState)
         {
             var oldState = GameDataCommon.Current.gameState;
             GameDataCommon.Current.gameState = gameState;
-            GameEvent.Send<GameState, GameState>(EGameEvent.GameStateChange.Int(), oldState, gameState);
+            GameEvent.Send<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), oldState, gameState);
         }
 
       public  void OnReceiveMsg(string msg)
@@ -108,7 +108,7 @@ namespace XiaoCao
         public void LevelFinish()
         {
             LevelData.Current.finishLevelTime = Time.time;
-            GameEvent.Send<int>(EGameEvent.LevelEnd.Int(), 1);
+            GameEvent.Send<int>(EGameEvent.LevelEnd.ToInt(), 1);
             BattleData.Current.levelData.levelResult = ELevelResult.Success;
             UIMgr.PopToastKey(LocalizeKey.LevelFinish);
             //写入存档

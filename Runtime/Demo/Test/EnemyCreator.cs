@@ -27,7 +27,7 @@ public class EnemyCreator : GameStartMono, IExecute
     [Dropdown(nameof(GetDirAllFileName))] [Label("")] [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
-    [Label("lvConfigIndex")] public int baseLv = 0;
+    public int enemyAddLevel = 0;//见关卡配置,一般+1等于+5
 
     public int genCount = 1;
 
@@ -98,7 +98,7 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             foreach (string id in enemyNameList)
             {
-                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(baseLv), skinNameSet);
+                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(enemyAddLevel), skinNameSet);
 
                 var genPos = GetGenPosition(posIndex, posCount);
 
