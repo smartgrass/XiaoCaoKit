@@ -35,26 +35,33 @@ namespace XiaoCao
         public static string LevelTimeCount = "LevelTimeCount";
         public static string KillCount = "KillCount";
         public static string EnemyLevel = "EnemyLevel";
-        
+        public static string Lv = "Lv";
+        public static string LevelDamageFactor = "LevelDamageFactor";
+        public static string OnceDamage = "OnceDamage";
+        public static string SkillDesc = "SkillDesc";
+        public static string NeedLv = "NeedLv";
+
+
         public static string UnlockAllLevel = "UnlockAllLevel";
 
-        public static string GetLevelName(int chapter,int level)
+        public static string GetLevelName(int chapter, int level)
         {
             string key = $"level_{chapter}_{level}";
             if (LocalizeMgr.Inst.HasKey(key))
             {
                 key.ToLocalizeStr();
             }
+
             string name = $"level_{chapter}".ToLocalizeStr();
             return $"{name}-{level}";
         }
-        
-        public static string GetSkillNameKey(int skillId)
+
+        public static string GetSkillNameKey(string skillId)
         {
             return $"skill_{skillId}";
         }
 
-        public static string GetSkillDescKey(int skillId)
+        public static string GetSkillDescKey(string skillId)
         {
             return $"skill_{skillId}_desc";
         }
@@ -62,7 +69,7 @@ namespace XiaoCao
 
         //技能命名 skill_[id]
         //技能命描述 skill_[id]_des
-        public static string GetSkillDesc(int skillId, int lv)
+        public static string GetSkillDesc(string skillId, int lv)
         {
             return GetSkillDescKey(skillId).ToLocalizeStr();
             // return "skillId";

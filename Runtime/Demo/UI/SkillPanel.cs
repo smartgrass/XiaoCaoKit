@@ -1,15 +1,17 @@
-﻿using NaughtyAttributes;
+﻿using System;
+using NaughtyAttributes;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace XiaoCao
+namespace XiaoCao.UI
 {
 
+    [Obsolete]
     public class SkillPanel : SubPanel
     {
         public SkillPanelView view;
 
-        public SkillTreeSo setting;
+        public PlayerSkillSo setting;
 
         private List<SkillItemCell> cells = new List<SkillItemCell>();
 
@@ -19,7 +21,7 @@ namespace XiaoCao
             view = gameObject.GetComponent<SkillPanelView>();
 
             Debug.Log($"--- SkillPanel init");
-            setting = Resources.Load<SkillTreeSo>("SkillTreeSo");
+            setting = Resources.Load<PlayerSkillSo>("SkillTreeSo");
 
             Transform cellParent = view.unequippedBuffContainer.transform;
 
@@ -36,9 +38,6 @@ namespace XiaoCao
                 var cell = cells[i];
                 //1.显示所有技能图标
                 cell.skillId = cell.name;
-                //2.解锁状态
-                int level = PlayerHelper.GetSkillLevel(cell.skillId);
-                cell.IsUnlock = level > 0;
 
                 cell.UpdateUI();
 

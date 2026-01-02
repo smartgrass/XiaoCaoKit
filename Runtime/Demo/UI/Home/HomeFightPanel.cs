@@ -5,8 +5,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
+using XiaoCaoKit;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
     public class HomeFightPanel : HomePanelBase
     {

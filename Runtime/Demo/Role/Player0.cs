@@ -49,6 +49,9 @@ namespace XiaoCao
             playerData.playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
             GetPlayerCmdList(true);
             data_R.playerAttr.lv = savaData.lv;
+            
+            playerData.playerSetting.skillIdList = savaData.skillBarSetting;
+            
             InitRoleData();
             RoleIdentityType = RoleIdentityType.Player;
 
@@ -73,7 +76,7 @@ namespace XiaoCao
 
             if (isLoadByConfig && ConfigMgr.Inst.LocalRoleSetting.saveSkillBar)
             {
-                seting.skillIdList = ConfigMgr.Inst.LocalRoleSetting.skillBarSetting;
+                seting.skillIdList = PlayerSaveData.LocalSavaData.skillBarSetting;
             }
             else
             {

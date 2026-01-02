@@ -52,9 +52,11 @@ public static class XCExtend
         for (int i = 0; i < len; i++)
         {
             Transform child = parent.GetChild(i);
-
+            
+            string childName = child.name.Trim();
+            
             // 忽略大小写
-            if (string.Equals(child.name, name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(childName, name, StringComparison.OrdinalIgnoreCase))
             {
                 return child;
             }

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using XiaoCao;
 using XiaoCao.UI;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
     public class LevelDetailUI : MonoBehaviour
     {

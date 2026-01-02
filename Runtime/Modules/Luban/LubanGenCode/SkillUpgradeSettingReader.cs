@@ -14,12 +14,12 @@ namespace cfg
 {
 public partial class SkillUpgradeSettingReader
 {
-    private readonly System.Collections.Generic.Dictionary<int, SkillUpgradeSetting> _dataMap;
+    private readonly System.Collections.Generic.Dictionary<string, SkillUpgradeSetting> _dataMap;
     private readonly System.Collections.Generic.List<SkillUpgradeSetting> _dataList;
     
     public SkillUpgradeSettingReader(ByteBuf _buf)
     {
-        _dataMap = new System.Collections.Generic.Dictionary<int, SkillUpgradeSetting>();
+        _dataMap = new System.Collections.Generic.Dictionary<string, SkillUpgradeSetting>();
         _dataList = new System.Collections.Generic.List<SkillUpgradeSetting>();
         
         for(int n = _buf.ReadSize() ; n > 0 ; --n)
@@ -31,12 +31,12 @@ public partial class SkillUpgradeSettingReader
         }
     }
 
-    public System.Collections.Generic.Dictionary<int, SkillUpgradeSetting> DataMap => _dataMap;
+    public System.Collections.Generic.Dictionary<string, SkillUpgradeSetting> DataMap => _dataMap;
     public System.Collections.Generic.List<SkillUpgradeSetting> DataList => _dataList;
 
-    public SkillUpgradeSetting GetOrDefault(int key) => _dataMap.TryGetValue(key, out var v) ? v : null;
-    public SkillUpgradeSetting Get(int key) => _dataMap[key];
-    public SkillUpgradeSetting this[int key] => _dataMap[key];
+    public SkillUpgradeSetting GetOrDefault(string key) => _dataMap.TryGetValue(key, out var v) ? v : null;
+    public SkillUpgradeSetting Get(string key) => _dataMap[key];
+    public SkillUpgradeSetting this[string key] => _dataMap[key];
 
     public void ResolveRef(Tables tables)
     {

@@ -22,14 +22,21 @@ namespace XiaoCao
         // 记录关卡通过状态
         public LevelPassData levelPassData = new LevelPassData();
 
-        //技能解锁状态
+        //技能解锁状态, 等级
         public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
+
+        public bool saveSkillBar;
+
+        // 技能栏设置
+        public List<string> skillBarSetting = new List<string>();
+
+        public const int MaxSkillBarSetting = 6;
 
         //ItemUI
         public Inventory inventory = new Inventory();
 
         public int coin;
-        
+
         //持有物
         public List<Item> holdItems = new List<Item>();
 
@@ -68,6 +75,36 @@ namespace XiaoCao
             {
                 levelPassData = new LevelPassData();
             }
+
+            if (skillBarSetting == null)
+            {
+                skillBarSetting = new List<string>();
+            }
+
+            // 初始化默认技能栏设置（如果为空）
+            if (!saveSkillBar)
+            {
+                var playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
+                skillBarSetting.Clear();
+                skillBarSetting.AddRange(playerSetting.defaultSkillList);
+
+                //默认解锁1,2技能
+                foreach (var skillId in playerSetting.defaultSkillList)
+                {
+                    if (!skillUnlockDic.ContainsKey(skillId))
+                    {
+                        skillUnlockDic[skillId] = 1;
+                    }
+                }
+
+                // AiSkillCmdSetting aiCmdSetting =
+                //     ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
+                //
+                // if (aiCmdSetting != null && aiCmdSetting.cmdSkillList != null)
+                // {
+                //     skillBarSetting = new List<string>(aiCmdSetting.cmdSkillList);
+                // }
+            }
         }
 
         public void AddSkillLevel(string skillId)
@@ -80,6 +117,13 @@ namespace XiaoCao
             {
                 skillUnlockDic[skillId] = skillUnlockDic[skillId] + 1;
             }
+        }
+
+        //PlayerHelper
+        public int GetSkillLevel(string skillId)
+        {
+            skillUnlockDic.TryGetValue(skillId, out int level);
+            return level ;
         }
 
         // 存档时调用
@@ -129,12 +173,11 @@ namespace XiaoCao
                     return LevelPassState.Unlock;
                 }
             }
-            
+
             if (chapter == 0 && index == 1)
             {
                 // 默认第一章第一节是解锁的
                 return LevelPassState.Unlock;
-                
             }
 
             return LevelPassState.Lock;

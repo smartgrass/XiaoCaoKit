@@ -45,8 +45,6 @@ namespace XiaoCao
 
         public PlayerSettingSo PlayerSettingSo;
 
-        public SkillDataSo SkillDataSo;
-
         public AttrSettingSo CommonSettingSo;
 
         public RewardPoolSo EnemyKillRewardSo;
@@ -107,7 +105,6 @@ namespace XiaoCao
             Debug.Log($"-- ConfigMgr Load");
             PlayerSettingSo = LoadSoConfig<PlayerSettingSo>();
             CommonSettingSo = LoadSoConfig<AttrSettingSo>();
-            SkillDataSo = LoadSoConfig<SkillDataSo>();
             EnemyKillRewardSo = LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = LoadSoConfig<BuffConfigSo>();
             ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
@@ -116,7 +113,6 @@ namespace XiaoCao
             GetTestEnemyList();
             
             //增加断言 判断SkillDataSo,ModelConfigDataSo不为空
-            Debug.Assert(SkillDataSo != null, "SkillDataSo is null");
             Debug.Assert(ModelConfigDataSo != null, "ModelConfigDataSo is null");
         }
 
@@ -256,8 +252,6 @@ namespace XiaoCao
     {
         public bool saveSkillBar;
 
-        public List<string> skillBarSetting;
-
         public int selectRole;
 
         public static LocalRoleSetting Load()
@@ -265,16 +259,6 @@ namespace XiaoCao
             var ret = SaveMgr.ReadData<LocalRoleSetting>(out bool isSuc);
             if (!isSuc)
             {
-            }
-
-            //修改时, 需要修改saveSkillBar ,恢复默认则清除saveSkillBar
-            SkillDataSo dataSo = ConfigMgr.Inst.SkillDataSo;
-            if (!ret.saveSkillBar)
-            {
-                int raceId = 0;
-                AiSkillCmdSetting AiCmdSetting =
-                    ConfigMgr.LoadSoConfig<AiCmdSettingSo>().GetOrDefault(raceId, 0);
-                ret.skillBarSetting = AiCmdSetting.cmdSkillList;
             }
 
             return ret;

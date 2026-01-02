@@ -33,6 +33,9 @@ namespace XiaoCao
 
         [ReadOnly] //通过配置读取
         public List<string> skillIdList = new List<string>();
+        
+        //默认技能
+        public List<string> defaultSkillList = new List<string>();
 
         public string rollSkillId;
 

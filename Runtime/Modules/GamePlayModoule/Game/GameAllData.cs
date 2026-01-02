@@ -252,9 +252,12 @@ namespace XiaoCao
 
         public static int GetSkillLevel(string skillId)
         {
-            var dic = PlayerSaveData.LocalSavaData.skillUnlockDic;
-            dic.TryGetValue(skillId, out int level);
-            return level;
+            return PlayerSaveData.LocalSavaData.GetSkillLevel(skillId);
+        }
+
+        public static int GetSkillMaxLevel(string skillId)
+        {
+            return LubanTables.GetSkillUpgradeSetting(skillId).MaxLevel;
         }
 
         public static bool IsLocalPlayerCollider(Collider other, out Player0 player)
@@ -321,7 +324,7 @@ namespace XiaoCao
         LocalPlayerChangeNowAttr = 103,
         PlayerCreatNorAtk = 104,
         PlayerGetBuffItem = 105,
-        PlayerDead=106,
+        PlayerDead = 106,
         RoleHurt = 107,
 
 
@@ -331,9 +334,8 @@ namespace XiaoCao
 
         //Map 300
         MapMsg = 300,
-        
     }
-    
+
     public static class EventTypeExtend
     {
         public static int ToInt(this EGameEvent t)
@@ -366,7 +368,7 @@ namespace XiaoCao
         Add,
         Remove,
     }
-    
+
 
     /// <summary>
     /// 值类型监听

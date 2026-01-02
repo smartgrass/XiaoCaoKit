@@ -1,4 +1,5 @@
-﻿using Luban;
+﻿using System;
+using Luban;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -91,17 +92,29 @@ namespace cfg
 
             return ret;
         }
-
-        public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId)
+        
+        public static SkillUpgradeSetting GetSkillUpgradeSetting(string skillId)
         {
-            Debug.LogError("---  TODO");
-            return null;
-            //var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
-            //if (ret == null)
-            //{
-            //    return new List<XiaoCao.Item>();
-            //}
-            //return ret.NeedItems;
+            var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
+            if (ret == null)
+            {
+                //默认值
+                ret = SkillUpgradeSettingReader.DataList[0];
+            }
+
+            return ret;
+        }
+
+        public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId,int lv)
+        {
+            var setting = SkillUpgradeSettingReader.GetOrDefault(skillId);
+
+            int lvIndex = Math.Min(lv, setting.MaxLevel);
+            int coin = setting.Cost[lv];
+            
+            XiaoCao.Item item = new XiaoCao.Item(XiaoCao.ItemType.Coin, nameof(XiaoCao.ItemType.Coin), coin);
+            
+            return new List<XiaoCao.Item>(){item};
         }
 
         #endregion

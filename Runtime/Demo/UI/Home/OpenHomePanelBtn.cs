@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
     public class OpenHomePanelBtn : MonoBehaviour
     {

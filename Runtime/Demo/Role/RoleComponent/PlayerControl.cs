@@ -92,6 +92,11 @@ namespace XiaoCao
                 return;
             }
 
+            if (string.IsNullOrEmpty(skillId))
+            {
+                return;
+            }
+
             //判断冷缩
             if (!AtkTimer.IsSkillReady(skillId))
             {

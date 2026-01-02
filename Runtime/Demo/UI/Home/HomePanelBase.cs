@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
     public abstract class HomePanelBase : MonoBehaviour
     {

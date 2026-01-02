@@ -26,6 +26,7 @@ namespace AssetEditor.Editor
         public const int Line1 = 1;
         public const int Line2 = 2;
         public const int Line3 = 3;
+        public const int Line4 = 4;
         public const int Line99 = 99;
 
         [HorLayout(true)] public bool IsKaiLe = false;
@@ -35,6 +36,9 @@ namespace AssetEditor.Editor
 
         [HorLayout(true)] [OnValueChanged(nameof(OnLevelChange))]
         public int playerLevel = 5;
+
+        [Range(0, 9999)] [OnValueChanged(nameof(OnCoinChange))]
+        public int playerCoin = 0;
 
         [OnValueChanged(nameof(OnLevelChange))]
         public bool isHiding;
@@ -230,6 +234,11 @@ namespace AssetEditor.Editor
             {
                 GameDataCommon.LocalPlayer.IsHiding = isHiding;
             }
+        }
+
+        void OnCoinChange()
+        {
+            PlayerSaveData.LocalSavaData.coin = playerCoin;
         }
 
         private void OnLevelChange()

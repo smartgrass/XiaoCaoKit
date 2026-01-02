@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace XiaoCao
+namespace XiaoCao.UI
 {
     /// <summary>
     /// 背包, 技能界面

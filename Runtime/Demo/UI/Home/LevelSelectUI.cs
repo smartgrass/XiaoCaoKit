@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
     public class LevelSelectUI : MonoBehaviour
     {

@@ -16,8 +16,12 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
 {
     public SkillUpgradeSetting(ByteBuf _buf) 
     {
-        Id = _buf.ReadInt();
-        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);NeedItems = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); NeedItems.Add(_e0);}}
+        Id = _buf.ReadString();
+        NeedLv = _buf.ReadInt();
+        Cd = _buf.ReadFloat();
+        LevelDamageFactor = _buf.ReadFloat();
+        MaxLevel = _buf.ReadInt();
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Cost = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); Cost.Add(_e0);}}
     }
 
     public static SkillUpgradeSetting DeserializeSkillUpgradeSetting(ByteBuf _buf)
@@ -25,14 +29,12 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
         return new SkillUpgradeSetting(_buf);
     }
 
-    /// <summary>
-    /// 技能序号
-    /// </summary>
-    public readonly int Id;
-    /// <summary>
-    /// 升级所需
-    /// </summary>
-    public readonly System.Collections.Generic.List<XiaoCao.Item> NeedItems;
+    public readonly string Id;
+    public readonly int NeedLv;
+    public readonly float Cd;
+    public readonly float LevelDamageFactor;
+    public readonly int MaxLevel;
+    public readonly System.Collections.Generic.List<int> Cost;
    
     public const int __ID__ = 222507301;
     public override int GetTypeId() => __ID__;
@@ -41,13 +43,21 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
     {
         
         
+        
+        
+        
+        
     }
 
     public override string ToString()
     {
         return "{ "
         + "id:" + Id + ","
-        + "needItems:" + Luban.StringUtil.CollectionToString(NeedItems) + ","
+        + "needLv:" + NeedLv + ","
+        + "cd:" + Cd + ","
+        + "levelDamageFactor:" + LevelDamageFactor + ","
+        + "maxLevel:" + MaxLevel + ","
+        + "cost:" + Luban.StringUtil.CollectionToString(Cost) + ","
         + "}";
     }
 }

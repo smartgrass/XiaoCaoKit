@@ -16,6 +16,16 @@ MonoBehaviour:
   - id: 0
     norAtkCount: 4
     resetNorAckTime: 1.5
-    norAckCdTime: 0.55
+    norAckCdTimes:
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
     JumpY: 2
     JumpNoGravityT: 0.35
+    skillIdList: []
+    defaultSkillList:
+    - 1
+    - 2
+    rollSkillId: 
+    jumpSkillId: 

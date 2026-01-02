@@ -3,16 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace XiaoCaoKit
+namespace XiaoCao.UI
 {
+    /// <see cref="HomeMainPanel"/>
+    /// <see cref="HomeFightPanel"/>
     public class HomeHud : MonoBehaviour
     {
         public static HomeHud Inst;
+        
+        public static UIEventSystem EventSystem => Inst.eventSystem;
+
+        // HomeHud的事件系统实例
+        public UIEventSystem eventSystem;
 
         private void Awake()
         {
             Inst = this;
+            eventSystem = new UIEventSystem();
         }
+
 
         public List<GameObject> panels;
 
@@ -36,6 +45,6 @@ namespace XiaoCaoKit
     public enum EHomePanel
     {
         MainPanel,
-        FightPanel
+        FightPanel,
     }
 }

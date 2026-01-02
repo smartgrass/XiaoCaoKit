@@ -1,11 +1,15 @@
 using System.Collections.Generic;
+using cfg;
 using UnityEngine;
 
 namespace XiaoCao
 {
     public class PlayerAtkTimer : PlayerComponent
     {
-        public PlayerAtkTimer(Player0 owner) : base(owner) { }
+        public PlayerAtkTimer(Player0 owner) : base(owner)
+        {
+        }
+
         public PlayerSetting playerSetting => Data_P.playerSetting;
 
         public Dictionary<string, SkillCdData> dic = new Dictionary<string, SkillCdData>();
@@ -19,7 +23,7 @@ namespace XiaoCao
             int ret;
             if (Time.time < norAckTimer)
             {
-                int len = playerSetting.norAtkCount;// norAtkIds.Count;
+                int len = playerSetting.norAtkCount; // norAtkIds.Count;
                 ret = (Data_P.curNorAckIndex + 1) % len;
             }
             else
@@ -52,7 +56,7 @@ namespace XiaoCao
             if (!dic.ContainsKey(skillIndex))
             {
                 SkillCdData skillCdData = new SkillCdData();
-                skillCdData.baseCd = ConfigMgr.Inst.SkillDataSo.GetOrDefault(skillIndex).cd;
+                skillCdData.baseCd = LubanTables.GetSkillUpgradeSetting(skillIndex).Cd;
                 skillCdData.CdOff = GetSkillCDOff;
                 dic[skillIndex] = skillCdData;
             }
@@ -95,6 +99,7 @@ namespace XiaoCao
             {
                 return 1;
             }
+
             CheckDic(skillIndex);
             return dic[skillIndex].GetWaitTimeProccess();
         }
@@ -121,13 +126,13 @@ namespace XiaoCao
             {
                 get
                 {
-
                     float mult = (1 - CdOff);
                     if (mult < 0.5f)
                     {
                         //冷缩上限
                         mult = 0.5f;
                     }
+
                     return baseCd * mult;
                 }
             }
@@ -137,6 +142,7 @@ namespace XiaoCao
             public float CdOff { get; set; }
 
             public bool IsCd => Time.time < cdFinishTime;
+
             public void EnterCD()
             {
                 cdFinishTime = Time.time + baseCd;
@@ -149,6 +155,7 @@ namespace XiaoCao
                 {
                     return (cdFinishTime - Time.time) / baseCd;
                 }
+
                 return 0;
             }
 
@@ -158,9 +165,9 @@ namespace XiaoCao
                 {
                     return (cdFinishTime - Time.time);
                 }
+
                 return 0;
             }
         }
     }
-
 }

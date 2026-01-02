@@ -32,6 +32,7 @@ public class ResMgr
     public const string RESDIR = "Assets/_Res";
 
     public static bool IsLoadFinish;
+    public static bool IsLoadBaseFinish;
     public static ResourcePackage Loader;
     public static ResourcePackage RawLoader;
 
@@ -87,6 +88,7 @@ public class ResMgr
         {
             return ret;
         }
+
         return LoadAseet<T>(fallBackPath);
     }
 
@@ -141,15 +143,19 @@ public class ResMgr
     }
 
     #region Init
+
     public static async UniTask InitYooAssetAll()
     {
         ResMgr.InitYooAsset();
         ShortKeyDic.Clear();
-        var task1 = ResMgr.InitDefaultPackage(); ;
+        var task1 = ResMgr.InitDefaultPackage();
         var task2 = ResMgr.InitRawPackage();
         var task3 = ResMgr.InitExtraPackage();
         //使用并行任务,相比同步快个300ms
-        await UniTask.WhenAll(task1, task2, task3);
+        //task3大概需要4s
+        await UniTask.WhenAll(task1, task2);
+        IsLoadBaseFinish = true;
+        await UniTask.WhenAll(task3);
         IsLoadFinish = true;
     }
 
@@ -234,7 +240,7 @@ public class ResMgr
                 initParameters.CacheFileSystemParameters = cacheFileSystem;
 
                 initOperation = package.InitializeAsync(initParameters);
-                
+
                 await UpdatePackage(package, initOperation);
 
                 foreach (var kv in section.Dic)
@@ -296,7 +302,7 @@ public class ResMgr
         await operation1;
         var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
         await operation2;
-        
+
         Debug.Log($"--- InitPackageEnd {package.PackageName} {operation1.PackageVersion}");
     }
 
@@ -318,7 +324,6 @@ public class ResMgr
         hasManifest = HasManifest(path, packName);
 
         return $"file://{path}";
-
     }
 
     private static bool HasManifest(string dir, string packName)
@@ -334,7 +339,6 @@ public class ResMgr
 
 
     #region ShortKey&Mod
-
 
     #endregion
 }

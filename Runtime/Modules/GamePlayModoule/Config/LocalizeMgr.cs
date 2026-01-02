@@ -45,6 +45,18 @@ namespace XiaoCao
             {
                 return value;
             }
+            else
+            {
+                if (!Application.isPlaying)
+                {
+                    //自动重读取
+                    ClearCache();
+                    if (LocalizeMgr.Inst.localizeData.TryGetFristValue(key, out value))
+                    {
+                        return value;
+                    }
+                }
+            }
             return $"<color=#FFE880>{key}</color>";
             //return $"\"{key}\"";
         }
