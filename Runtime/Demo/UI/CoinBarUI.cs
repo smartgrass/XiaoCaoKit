@@ -23,7 +23,7 @@ namespace XiaoCaoKit.Runtime.Demo.UI
         //type暂无
         private void OnCoinChange(int type)
         {
-            coinCell.SetNum(PlayerSaveData.LocalSavaData.coin);
+            coinCell.SetNum(PlayerSaveData.LocalSavaData.Coin);
         }
     }
 }

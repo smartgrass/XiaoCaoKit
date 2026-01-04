@@ -20,6 +20,7 @@ namespace XiaoCao.UI
 
         public void Init()
         {
+            gameObject.SetActive(false);
             rebornBtn.onClick.AddListener(OnReviveBtnClicked);
             exitBtn.onClick.AddListener(OnExitBtnClicked);
             reloadBtn.onClick.AddListener(OnReload);

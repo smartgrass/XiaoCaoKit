@@ -250,8 +250,6 @@ namespace XiaoCao
     //角色相关的本地设置 , 随时清空, 比如技能图标,按键设置
     public class LocalRoleSetting
     {
-        public bool saveSkillBar;
-
         public int selectRole;
 
         public static LocalRoleSetting Load()

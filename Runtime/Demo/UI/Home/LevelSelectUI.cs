@@ -6,6 +6,7 @@ using XiaoCao;
 
 namespace XiaoCao.UI
 {
+    [Obsolete]
     public class LevelSelectUI : MonoBehaviour
     {
         public Image img;

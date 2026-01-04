@@ -82,7 +82,7 @@ namespace XiaoCao
                 case ItemType.HolyRelic:
                     break;
                 case ItemType.Coin:
-                    PlayerSaveData.LocalSavaData.coin += item.num;
+                    PlayerSaveData.LocalSavaData.Coin += item.num;
                     break;
                 case ItemType.Buff:
                     RewardBuff(item);
@@ -115,7 +115,7 @@ namespace XiaoCao
         /// <param name="item"></param>
         public static void RewardBuff(Item item)
         {
-            if (string.IsNullOrEmpty(item.id))
+            if (string.IsNullOrEmpty(item.typeId))
             {
                 Debuger.LogError("--- id = empty");
                 return;

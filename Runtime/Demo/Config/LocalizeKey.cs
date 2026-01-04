@@ -56,6 +56,11 @@ namespace XiaoCao
             return $"{name}-{level}";
         }
 
+        public static string GetChapterName(int chapter)
+        {
+            return  $"level_{chapter}".ToLocalizeStr();
+        }
+
         public static string GetSkillNameKey(string skillId)
         {
             return $"skill_{skillId}";
@@ -85,7 +90,7 @@ namespace XiaoCao
                 return key.ToLocalizeStr();
             }
 
-            return item.id.ToLocalizeStr();
+            return item.typeId.ToLocalizeStr();
         }
 
         #endregion

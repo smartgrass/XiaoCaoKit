@@ -26,7 +26,7 @@ public static class SpriteResHelper
         }
         else if (item.type == ItemType.HolyRelic)
         {
-            string path = $"Assets/_Res/Sprite/ItemIcon/{item.id}.png";
+            string path = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
             ResMgr.LoadAseetOrDefault<Sprite>(path, DefaultItemSpritePath);
         }
 

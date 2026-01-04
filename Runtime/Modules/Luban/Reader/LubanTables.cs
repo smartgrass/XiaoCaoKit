@@ -34,6 +34,11 @@ namespace cfg
             return ret;
         }
 
+        public static List<int> GetAllChapters()
+        {
+            return new List<int>(ChapterSettingReader.DataMap.Keys);
+        }
+
         public static CreateEnemyGroups GetCreateEnemyGroups(string key)
         {
             if (!CreateEnemyGroupsReader.DataMap.ContainsKey(key))
@@ -64,7 +69,7 @@ namespace cfg
 
         public static List<LevelSetting> GetAllLevelSetting()
         {
-           return  LevelSettingReader.DataList;
+            return LevelSettingReader.DataList;
         }
 
         public static SkillSetting GetSkillSetting(string skillId, int subSkillId)
@@ -92,7 +97,7 @@ namespace cfg
 
             return ret;
         }
-        
+
         public static SkillUpgradeSetting GetSkillUpgradeSetting(string skillId)
         {
             var ret = SkillUpgradeSettingReader.GetOrDefault(skillId);
@@ -105,16 +110,16 @@ namespace cfg
             return ret;
         }
 
-        public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId,int lv)
+        public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId, int lv)
         {
-            var setting = SkillUpgradeSettingReader.GetOrDefault(skillId);
+            var setting = GetSkillUpgradeSetting(skillId);
 
-            int lvIndex = Math.Min(lv, setting.MaxLevel);
-            int coin = setting.Cost[lv];
-            
+            int lvIndex = Math.Min(lv, setting.Cost.Count - 1);
+            int coin = setting.Cost[lvIndex];
+
             XiaoCao.Item item = new XiaoCao.Item(XiaoCao.ItemType.Coin, nameof(XiaoCao.ItemType.Coin), coin);
-            
-            return new List<XiaoCao.Item>(){item};
+
+            return new List<XiaoCao.Item>() { item };
         }
 
         #endregion

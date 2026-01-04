@@ -10,38 +10,38 @@ namespace XiaoCao
         public bool isShoot; //保持速度,等
 
         public float offset;
-        
+
         public float minDistance;
-        
+
         public void Init(BaseMsg baseMsg)
         {
             isShoot = baseMsg.strMsg == "Shoot";
             var array = baseMsg.strMsg.Split(",");
             if (array.Length > 0)
             {
+                //如offset_-0.5,min_1
                 foreach (var str in array)
                 {
                     if (str.StartsWith("offset"))
                     {
-                        string numStr = baseMsg.strMsg.Split("_")[1];
+                        string numStr = str.Split("_")[1];
                         offset = float.Parse(numStr);
                     }
-                    else if(str.StartsWith("min"))
+                    else if (str.StartsWith("min"))
                     {
-                        string numStr = baseMsg.strMsg.Split("_")[1];
+                        string numStr = str.Split("_")[1];
                         minDistance = float.Parse(numStr);
                     }
                 }
             }
         }
-        
+
         public bool IsTargetRoleType(RoleType roleType)
         {
             return true;
         }
 
         public float minSwitchTime = 0.8f;
-
 
 
         public void OnTrigger()
@@ -110,7 +110,6 @@ namespace XiaoCao
             }
             else
             {
-                
                 if (Vector3.Distance(worldStartVec, worldEndVec) > maxDistance)
                 {
                     worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * maxDistance;

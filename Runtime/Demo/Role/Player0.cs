@@ -74,7 +74,7 @@ namespace XiaoCao
             seting.rollSkillId = AiCmdSetting.rollId;
 
 
-            if (isLoadByConfig && ConfigMgr.Inst.LocalRoleSetting.saveSkillBar)
+            if (isLoadByConfig && PlayerSaveData.LocalSavaData.saveSkillBar)
             {
                 seting.skillIdList = PlayerSaveData.LocalSavaData.skillBarSetting;
             }

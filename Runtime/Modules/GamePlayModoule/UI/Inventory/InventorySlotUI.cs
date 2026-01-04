@@ -17,7 +17,7 @@ namespace XiaoCao
             if (item != null)
             {
                 itemIcon.sprite = GetItemIcon(item);
-                itemNameText.text = item.Key;
+                itemNameText.text = item.ItemKey;
                 itemCountText.text = "x" + item.num.ToString();
             }
             else
@@ -64,7 +64,7 @@ namespace XiaoCao
         // 获取物品图标
         private Sprite GetItemIcon(Item item)
         {
-            string iconPath = $"{item.type}/{item.Key}";
+            string iconPath = $"{item.type}/{item.ItemKey}";
             Sprite icon = Resources.Load<Sprite>(iconPath);
 
             if (icon == null)

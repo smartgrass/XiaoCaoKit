@@ -18,15 +18,24 @@ namespace XiaoCao
         // 添加物品到背包
         public void AddItem(ItemType itemType, string itemName, int itemCount)
         {
-            Item newItem = new Item(itemType, itemName, itemCount);
-            items.Add(newItem);
-            Debug.Log("Added " + newItem.Key + " to inventory. Count: " + newItem.num);
+            Item findItem = FindItemByName(itemName);
+            if (findItem != null)
+            {
+                findItem.num += itemCount;
+                Debug.Log("Added " + itemCount + " to inventory. Count: " +findItem.num);
+            }
+            else
+            {
+                Item newItem = new Item(itemType, itemName, itemCount);
+                items.Add(newItem);
+                Debug.Log("Added " + newItem.ItemKey + " to inventory. Count: " + newItem.num);
+            }
         }
 
         // 从背包中移除物品
         public void RemoveItem(string itemName)
         {
-            Item itemToRemove = items.Find(item => item.Key == itemName);
+            Item itemToRemove = items.Find(item => item.ItemKey == itemName);
             if (itemToRemove != null)
             {
                 items.Remove(itemToRemove);
@@ -37,6 +46,28 @@ namespace XiaoCao
         {
             Item item = FindItemByName(itemName);
             return item != null && item.num >= amount;
+        }
+
+
+        public bool CheckEnoughItemList(List<Item> list, bool isConsumeItem)
+        {
+            foreach (var item in list)
+            {
+                if (!CheckEnoughItem(item.ItemKey, item.num))
+                {
+                    return false;
+                }
+            }
+
+            if (isConsumeItem)
+            {
+                foreach (var item in list)
+                {
+                    ConsumeItem(item.ItemKey, item.num);
+                }
+            }
+
+            return true;
         }
 
         // 消耗背包中的物品
@@ -51,6 +82,7 @@ namespace XiaoCao
                 {
                     RemoveItem(itemName);
                 }
+
                 return true;
             }
             else
@@ -61,7 +93,7 @@ namespace XiaoCao
 
         private Item FindItemByName(string itemName)
         {
-            return items.Find(item => item.Key == itemName);
+            return items.Find(item => item.ItemKey == itemName);
         }
 
         public int GetItemCount(string itemKey)
@@ -83,9 +115,10 @@ namespace XiaoCao
             Debug.Log("Inventory Contents:");
             foreach (Item item in items)
             {
-                Debug.Log("Name: " + item.Key + ", Type: " + item.type + ", Count: " + item.num);
+                Debug.Log("Name: " + item.ItemKey + ", Type: " + item.type + ", Count: " + item.num);
             }
         }
+
         #endregion
 
         // 装备圣器（按指定index槽位）
@@ -94,7 +127,7 @@ namespace XiaoCao
             var item = relic.ToItem();
 
             // 检查背包是否有该圣器
-            var found = items.FirstOrDefault(i => i.Key == item.Key);
+            var found = items.FirstOrDefault(i => i.ItemKey == item.ItemKey);
             if (found == null)
                 return false;
 
@@ -137,6 +170,7 @@ namespace XiaoCao
                 equippedHolyRelics.Remove(equipped);
                 return true;
             }
+
             return false;
         }
 
@@ -197,7 +231,7 @@ namespace XiaoCao
         public static HolyRelicItem Create(Item item)
         {
             HolyRelicItem holyRelic = new HolyRelicItem();
-            string[] strArray = item.id.Split('_');
+            string[] strArray = item.typeId.Split('_');
             EHolyRelicType relicType;
             Enum.TryParse<EHolyRelicType>(strArray[0], out relicType);
 
@@ -233,6 +267,7 @@ namespace XiaoCao
             {
                 return EHolyRelicType.Primeval;
             }
+
             return EHolyRelicType.Might; // 默认返回
         }
 
@@ -241,12 +276,11 @@ namespace XiaoCao
 
     public static class HolyRelicModNames
     {
-        public const string Bow = "Bow";// 弓
-        public const string HandGuard = "HandGuard";// 护手
-        public const string Knife = "Knife";// 匕首
-        public const string MagicBook = "MagicBook";// 魔法书
-        public const string Necklace = "Necklace";// 项链
-        public const string Shoese = "Shoese";// 鞋
+        public const string Bow = "Bow"; // 弓
+        public const string HandGuard = "HandGuard"; // 护手
+        public const string Knife = "Knife"; // 匕首
+        public const string MagicBook = "MagicBook"; // 魔法书
+        public const string Necklace = "Necklace"; // 项链
+        public const string Shoese = "Shoese"; // 鞋
     }
-
 }

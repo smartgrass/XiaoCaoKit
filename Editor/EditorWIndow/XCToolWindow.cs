@@ -238,7 +238,7 @@ namespace AssetEditor.Editor
 
         void OnCoinChange()
         {
-            PlayerSaveData.LocalSavaData.coin = playerCoin;
+            PlayerSaveData.LocalSavaData.Coin = playerCoin;
         }
 
         private void OnLevelChange()

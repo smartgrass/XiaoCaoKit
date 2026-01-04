@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using cfg;
+using EasyUI.Toast;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
 using XiaoCao.UI;
 using XiaoCaoKit;
+using XiaoCaoKit.Runtime.Demo.Item;
 
 namespace XiaoCao.UI
 {
@@ -24,7 +26,7 @@ namespace XiaoCao.UI
         public Button backBtn;
 
         public Transform costItemParent;
-        
+
         public GameObject costShow;
 
         public string skillId;
@@ -56,6 +58,29 @@ namespace XiaoCao.UI
         public void OnUpgradeBtnClicked()
         {
             //技能升级
+            int nextLv = PlayerSaveData.GetSkillLevel(skillId) + 1;
+            //消耗材料
+            List<Item> list = LubanTables.GetSkillUpgradeItems(skillId, nextLv);
+
+            bool isEnough = PlayerSaveData.inventory.CheckEnoughItemList(list, true);
+            if (!isEnough)
+            {
+                //提示
+                // UITool.ShowTip(LocalizeKey.NotEnoughItem.ToLocalizeStr());
+                Toast.Show("str", 1);
+                return;
+            }
+
+            PlayerSaveData.AddSkillLevel(skillId);
+            if (nextLv == 1)
+            {
+                //自动装备   
+                SkillView.EquipSkill(skillId);
+            }
+
+            UpdateUI();
+            HomeHud.EventSystem.SendEvent(HomeHudEventNames.SkillLevelChange);
+            PlayerSaveData.SavaData();
         }
 
         void UpdateCost()
@@ -78,7 +103,7 @@ namespace XiaoCao.UI
                 {
                     var item = list[i];
                     var cell = cells[i];
-                    cell.SetItem(item);
+                    cell.SetItem(item, UIItemTextType.NeedNum);
                 }
             }
         }

@@ -35,7 +35,11 @@ namespace XiaoCao
         //ItemUI
         public Inventory inventory = new Inventory();
 
-        public int coin;
+        public int Coin
+        {
+            get => inventory.GetItemCount("Coin");
+            set => inventory.AddItem(ItemType.Coin, "Coin", value);
+        }
 
         //持有物
         public List<Item> holdItems = new List<Item>();
@@ -123,7 +127,7 @@ namespace XiaoCao
         public int GetSkillLevel(string skillId)
         {
             skillUnlockDic.TryGetValue(skillId, out int level);
-            return level ;
+            return level;
         }
 
         // 存档时调用

@@ -18,7 +18,7 @@ namespace XiaoCao.UI
         //prefab SkillItemCell
         public SkillDetailUI skillDetailUI;
 
-        public PlayerSaveData PlayerSaveData => GameAllData.playerSaveData;
+        public static PlayerSaveData PlayerSaveData => GameAllData.playerSaveData;
 
         public Button backBtn;
 
@@ -41,6 +41,11 @@ namespace XiaoCao.UI
             });
             editBtn.onClick.AddListener(() => { OnEditBtnClick(); });
             editBtnText = editBtn.transform.parent.GetComponentInChildren<Localizer>();
+        }
+
+        private void Start()
+        {
+            HomeHud.EventSystem.AddEventListener(HomeHudEventNames.SkillLevelChange, UpdateUI);
         }
 
         private List<string> GetSkillIdList(List<SkillItemCell> cells)
@@ -131,6 +136,8 @@ namespace XiaoCao.UI
                 PlayerSaveData.skillBarSetting = GetSkillIdList(equipSkillCells);
                 editBtnText.SetLocalize("Edit");
                 RefreshAllSkillState();
+                PlayerSaveData.saveSkillBar = true;
+                PlayerSaveData.SavaData();
             }
         }
 
@@ -191,15 +198,14 @@ namespace XiaoCao.UI
             }
         }
 
-        void EquipSkill(string skillId)
+        public static void EquipSkill(string skillId)
         {
             //判断是是否解锁
             if (PlayerHelper.GetSkillLevel(skillId) <= 0)
             {
-                
                 return;
             }
-            
+
             for (int i = 0; i < PlayerSaveData.MaxSkillBarSetting; i++)
             {
                 if (i >= PlayerSaveData.skillBarSetting.Count)
@@ -234,6 +240,7 @@ namespace XiaoCao.UI
                 bool isEquip = PlayerSaveData.skillBarSetting.Contains(cell.skillId);
 
                 cell.SetEquipState(isEquip && IsEditing);
+                cell.UpdateUI();
             }
         }
 

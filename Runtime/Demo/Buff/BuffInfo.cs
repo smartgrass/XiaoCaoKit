@@ -121,10 +121,10 @@ namespace XiaoCao
         public static BuffItem Create(Item item)
         {
             EBuff eBuff;
-            if (item.id[0] == '#')
+            if (item.typeId[0] == '#')
             {
                 //根据类型抽取
-                var valueString = item.id.Substring(1);
+                var valueString = item.typeId.Substring(1);
                 int.TryParse(valueString, out int num);
                 EBuffType eBuffType = (EBuffType)num;
                 eBuff = BuffHelper.GetRandomBuff(eBuffType);
@@ -132,7 +132,7 @@ namespace XiaoCao
             else
             {
                 //直接转数字
-                int.TryParse(item.id, out int num);
+                int.TryParse(item.typeId, out int num);
                 eBuff = (EBuff)num;
             }
 

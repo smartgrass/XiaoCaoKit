@@ -10,36 +10,45 @@ namespace XiaoCao.UI
 {
     public class LevelDetailUI : MonoBehaviour
     {
-        public CanvasGroup canvasGroup;
-        public TMP_Text titleText;
         public TMP_Text descText;
         public Button hideBtn;
+        public Button enterBtn;
         public RectTransform rootRt;
-        public Vector2 moveX;
-
+        private string _levelKey;
 
         public void Awake()
         {
             hideBtn.onClick.AddListener(Hide);
+            enterBtn.onClick.AddListener(OnEnter);
         }
 
-        public void Show()
+        private void OnEnter()
         {
+            if (string.IsNullOrEmpty(_levelKey))
+            {
+                return;
+            }
+
+            GameMgr.Inst.LoadLevelScene(_levelKey);
+        }
+
+        public void Show(int chapter, int level)
+        {
+            _levelKey = MapNames.GetLevelKey(chapter, level);
+            gameObject.SetActive(true);
             //获取select Level
-            LevelInfo levelInfo = MapNames.GetLevelInfoByName(GameDataCommon.Current.uiSelectLevel);
-            titleText.text = levelInfo.GetLevelName();
-            descText.text = LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
-                           LubanTables.GetLevelSetting(GameDataCommon.Current.uiSelectLevel).EnemyBaseLevel.ToString();
-            canvasGroup.alpha = 1;
-            canvasGroup.blocksRaycasts = true;
-            rootRt.DOUIMoveX(moveX.x, 0.2f);
+            LevelInfo levelInfo = MapNames.GetLevelInfoByName(_levelKey);
+            descText.text = levelInfo.GetLevelName();
+            // descText.text += "\n" + LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
+            //                  LubanTables.GetLevelSetting(_levelKey).EnemyBaseLevel.ToString();
+
+            rootRt.localScale = Vector3.one * 0.2f;
+            rootRt.transform.DOScale(Vector3.one, 0.3f);
         }
 
         public void Hide()
         {
-            canvasGroup.alpha = 0;
-            canvasGroup.blocksRaycasts = false;
-            rootRt.DOUIMoveX(moveX.y, 0.2f);
+            gameObject.SetActive(false);
         }
     }
 }
