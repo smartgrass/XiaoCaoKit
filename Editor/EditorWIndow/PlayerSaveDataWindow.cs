@@ -46,6 +46,10 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     {
         playerSaveData = new PlayerSaveData();
         Save();
+        if (Application.isPlaying)
+        {
+            GameAllData.playerSaveData = playerSaveData;
+        }
     }
 
     [Button("解锁全部关卡",Pos: 2)]
@@ -54,5 +58,9 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         playerSaveData = SaveMgr.ReadData<PlayerSaveData>(out var isSuc);
         GameDebugTool.UnlockAllLevel(playerSaveData);
         Save();
+        if (Application.isPlaying)
+        {
+            GameAllData.playerSaveData = playerSaveData;
+        }
     }
 }

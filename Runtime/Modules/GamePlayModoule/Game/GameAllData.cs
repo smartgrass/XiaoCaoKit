@@ -92,9 +92,6 @@ namespace XiaoCao
 
         public string firstSceneName;
 
-        public string uiSelectLevel;
-
-
         public static Player0 LocalPlayer => Current.Player0;
 
         public static Player0 GetPlayer(int id = 0)
