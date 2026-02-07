@@ -149,6 +149,13 @@ namespace XiaoCao
             return dict;
         }
 
+        public PlayerAttr GetPlayerAttr()
+        {
+            PlayerAttr attr = new PlayerAttr();
+            AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
+            attr.Init(0, lv, setting);
+            return attr;
+        }
         public static void SavaData()
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);

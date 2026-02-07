@@ -29,8 +29,14 @@ namespace AssetEditor.Editor
         public const int Line4 = 4;
         public const int Line99 = 99;
 
-        [HorLayout(true)] public bool IsKaiLe = false;
+        [OnValueChanged(nameof(OnKaiKeChange))] [HorLayout(true)]
+        public bool isKaiLe = false;
 
+        public void OnKaiKeChange()
+        {
+            "IsKaiLe".SetKeyBool(isKaiLe);
+        }
+        
         [HorLayout(false)] [OnValueChanged(nameof(CheckDebugGo))]
         public bool IsShowDebug = true;
 
@@ -60,6 +66,7 @@ namespace AssetEditor.Editor
             EditorApplication.playModeStateChanged += PlayModeStateChanged;
             EditorApplication.pauseStateChanged += PauseStateChanged;
             GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), GameStateChange);
+            isKaiLe = "IsKaiLe".GetKeyBool();
         }
 
         private void OnDisable()
@@ -73,9 +80,8 @@ namespace AssetEditor.Editor
         {
             if (state2 == GameState.Running)
             {
-                if (IsKaiLe)
+                if (isKaiLe)
                 {
-                    "IsKaiLe".SetKeyBool(true);
                     OnTimeScale();
                     GetBuffs();
                     OnHidingChange();
@@ -337,6 +343,7 @@ namespace AssetEditor.Editor
                 }
             }
         }
+        
     }
 }
 #endif

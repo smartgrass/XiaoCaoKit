@@ -388,7 +388,7 @@ namespace XiaoCao
 
         public void InitRoleData()
         {
-            var setting = ConfigMgr.Inst.CommonSettingSo;
+            var setting = ConfigMgr.Inst.AttrSettingSo;
             int lv = data_R.playerAttr.lv;
             int attrSettingId = 0;
             if (!IsPlayer)

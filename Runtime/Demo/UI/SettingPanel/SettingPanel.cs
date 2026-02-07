@@ -7,7 +7,7 @@ using XiaoCao;
 using XiaoCao.UI;
 
 
-public class SettingPanel : TabStandardPanel
+public class SettingPanel : PrefabsTabPanel
 {
     public Button reloadBtn;
 
@@ -37,10 +37,10 @@ public class SettingPanel : TabStandardPanel
         }
 
         reloadBtn.onClick.AddListener(OnReload);
-
-        mainPanel.Show();
+        
+        SwitchPanel("BasicSetting");
         gameObject.SetActive(false);
-        Prefabs.gameObject.SetActive(false);
+        prefabs.gameObject.SetActive(false);
         IsInited = true;
     }
 

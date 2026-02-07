@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using cfg;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +23,22 @@ namespace XiaoCao.UI
         public void Show(int chapter)
         {
             LevelPassState passState = GetPassState(chapter, 0);
-            titleText.text = LocalizeKey.GetChapterName(chapter);
+            var chapterSetting = LubanTables.GetChapterSetting(chapter);
+
+            int totalLevelCount = chapterSetting?.Levels?.Count ?? 0;
+            int completedLevelCount = 0;
+            if (chapterSetting != null)
+            {
+                foreach (int levelIndex in chapterSetting.Levels)
+                {
+                    if (GetPassState(chapter, levelIndex) == LevelPassState.Pass)
+                    {
+                        completedLevelCount++;
+                    }
+                }
+            }
+
+            titleText.text = $"{LocalizeKey.GetChapterName(chapter)}\n({completedLevelCount}/{totalLevelCount})";
             btn.interactable = passState != LevelPassState.Lock;
             curChapter = chapter;
         }

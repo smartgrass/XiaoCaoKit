@@ -7,21 +7,24 @@ namespace XiaoCao.UI
 {
     /// <see cref="HomeMainPanel"/>
     /// <see cref="HomeFightPanel"/>
-    public class HomeHud : MonoBehaviour
+    public class HomeHud : MonoBehaviour, ICanvasMgr
     {
         public static HomeHud Inst;
-        
-        public static UIEventSystem EventSystem => Inst.eventSystem;
-
-        // HomeHud的事件系统实例
-        public UIEventSystem eventSystem;
+        public Canvas canvas;
+        public Canvas Canvas => canvas;
 
         private void Awake()
         {
             Inst = this;
-            eventSystem = new UIEventSystem();
+            UICanvasMgr.Inst.canvasMgr = this;
+            canvas = transform.GetComponentInParent<Canvas>();
+            GameDataCommon.Current.isFighting = false;
         }
 
+        private void OnDestroy()
+        {
+            UICanvasMgr.Inst.EventSystem.ClearAllEvents();
+        }
 
         public List<GameObject> panels;
 

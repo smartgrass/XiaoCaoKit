@@ -40,6 +40,7 @@ namespace XiaoCao
         public static string OnceDamage = "OnceDamage";
         public static string SkillDesc = "SkillDesc";
         public static string NeedLv = "NeedLv";
+        public static string LevelUp = "LevelUp";
 
 
         public static string UnlockAllLevel = "UnlockAllLevel";

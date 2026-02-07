@@ -19,9 +19,7 @@ namespace XiaoCao.UI
         public SkillDetailUI skillDetailUI;
 
         public static PlayerSaveData PlayerSaveData => GameAllData.playerSaveData;
-
-        public Button backBtn;
-
+        
         public Button editBtn;
 
         private Localizer editBtnText;
@@ -35,17 +33,13 @@ namespace XiaoCao.UI
 
         private void Awake()
         {
-            backBtn.onClick.AddListener(() =>
-            {
-                HomeHud.EventSystem.SendEvent(HomeHudEventNames.SwitchSubView, EHomeSubView.Main);
-            });
             editBtn.onClick.AddListener(() => { OnEditBtnClick(); });
             editBtnText = editBtn.transform.parent.GetComponentInChildren<Localizer>();
         }
 
         private void Start()
         {
-            HomeHud.EventSystem.AddEventListener(HomeHudEventNames.SkillLevelChange, UpdateUI);
+            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.SkillChange, UpdateUI);
         }
 
         private List<string> GetSkillIdList(List<SkillItemCell> cells)
@@ -64,7 +58,7 @@ namespace XiaoCao.UI
         }
 
 
-        void UpdateUI()
+        private void UpdateUI()
         {
             if (!ResMgr.IsLoadBaseFinish)
             {
@@ -137,6 +131,7 @@ namespace XiaoCao.UI
                 editBtnText.SetLocalize("Edit");
                 RefreshAllSkillState();
                 PlayerSaveData.saveSkillBar = true;
+                UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SkillChange);
                 PlayerSaveData.SavaData();
             }
         }

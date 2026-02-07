@@ -11,7 +11,7 @@ namespace XiaoCao
 
         public bool NoUpdateAtrribute { get; set; }
 
-        public int MaxEquipped = 5;
+        public int MaxEquipped = 99;
         ///<see cref="BuffControl"/>
         // 装备中buffe
         public List<BuffItem> EquippedExBuffs = new List<BuffItem>();

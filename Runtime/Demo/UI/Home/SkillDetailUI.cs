@@ -79,7 +79,7 @@ namespace XiaoCao.UI
             }
 
             UpdateUI();
-            HomeHud.EventSystem.SendEvent(HomeHudEventNames.SkillLevelChange);
+            UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SkillChange);
             PlayerSaveData.SavaData();
         }
 

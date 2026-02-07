@@ -24,7 +24,7 @@ namespace XiaoCao
 
         public SettingPanel settingPanel;
 
-        public PlayerPanel playerPanel;
+        public PlayerTabPanel playerPanel;
 
         public StandaloneInputHud standaloneInputHud;
 
@@ -45,6 +45,7 @@ namespace XiaoCao
         [ReadOnly] public PanelBase lastpanel;
 
         public Canvas Canvas => topCanvas;
+
         //BlackScreenUI
 
         public override void Init()
@@ -63,6 +64,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
+            UICanvasMgr.Inst.EventSystem.ClearAllEvents();
         }
 
         public void OnChangeInputType(UserInputType type)
@@ -88,6 +90,7 @@ namespace XiaoCao
                 {
                     panel.Show(data);
                 }
+
                 return;
             }
 
@@ -168,8 +171,6 @@ namespace XiaoCao
                     {
                         lastpanel.InputKeyCode(XCInputSetting.Space);
                     }
-                    
-                    
                 }
             }
         }
@@ -267,6 +268,21 @@ namespace XiaoCao
     public class UICanvasMgr : Singleton<UICanvasMgr>, IMgr
     {
         public ICanvasMgr canvasMgr;
+
+        private UIEventSystem _eventSystem;
+
+        public UIEventSystem EventSystem
+        {
+            get
+            {
+                if (_eventSystem == null)
+                {
+                    _eventSystem = new UIEventSystem();
+                }
+
+                return _eventSystem;
+            }
+        }
 
         public Transform GetCanvasParent()
         {

@@ -122,6 +122,15 @@ namespace cfg
             return new List<XiaoCao.Item>() { item };
         }
 
+        public static List<XiaoCao.Item> GetRoleUpgradeItems(int lv)
+        {
+            int coin = (lv / 10 + 1) * 100;
+
+            XiaoCao.Item item = new XiaoCao.Item(XiaoCao.ItemType.Coin, nameof(XiaoCao.ItemType.Coin), coin);
+
+            return new List<XiaoCao.Item>() { item };
+        }
+
         #endregion
 
 

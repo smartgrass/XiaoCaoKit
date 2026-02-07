@@ -10,6 +10,7 @@ namespace XiaoCaoKit.UI
         public List<UIGroup> uiGroups = new List<UIGroup>();
         public int state;
 
+        private bool _hasSetState = false;
 
         [Button]
         private void TestState()
@@ -20,25 +21,21 @@ namespace XiaoCaoKit.UI
 
         public void SetState(int newState)
         {
-            if (newState < 0 || newState >= uiGroups.Count)
-            {
-                Debug.LogWarning($"UIStateChange: state {newState} out of range");
-                return;
-            }
-
-            if (state == newState)
+            if (_hasSetState && state == newState)
             {
                 return;
             }
 
             state = newState;
+            _hasSetState = true;
             ApplyState();
         }
 
-        private void ApplyState()
+        public virtual void ApplyState()
         {
             if (state < 0 || state >= uiGroups.Count)
             {
+                Debug.LogError($"UIStateChange: state {state} out of range");
                 return;
             }
 

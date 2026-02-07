@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao;
 using XiaoCao.UI;
+using XiaoCaoKit;
 
 namespace XiaoCao.UI
 {
@@ -14,6 +15,7 @@ namespace XiaoCao.UI
         public Button hideBtn;
         public Button enterBtn;
         public RectTransform rootRt;
+        public Transform rewardParent;
         private string _levelKey;
 
         public void Awake()
@@ -41,14 +43,37 @@ namespace XiaoCao.UI
             descText.text = levelInfo.GetLevelName();
             // descText.text += "\n" + LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
             //                  LubanTables.GetLevelSetting(_levelKey).EnemyBaseLevel.ToString();
+            //UpdateReward();
 
             rootRt.localScale = Vector3.one * 0.2f;
-            rootRt.transform.DOScale(Vector3.one, 0.3f);
+            rootRt.transform.DOScale(Vector3.one, 0.15f);
         }
 
         public void Hide()
         {
             gameObject.SetActive(false);
+        }
+
+        private void UpdateReward()
+        {
+            if (rewardParent == null)
+            {
+                return;
+            }
+
+            var rewards = LevelSettingHelper.GetReward(_levelKey);
+            if (rewards == null)
+            {
+                UITool.SetCellListCount(rewardParent, 0);
+                return;
+            }
+
+            UITool.SetCellListCount(rewardParent, rewards.Count);
+            var cells = rewardParent.GetComponentsInChildren<ItemCell>(false);
+            for (int i = 0; i < rewards.Count && i < cells.Length; i++)
+            {
+                cells[i].SetItem(rewards[i]);
+            }
         }
     }
 }

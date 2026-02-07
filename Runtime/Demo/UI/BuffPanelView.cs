@@ -1,56 +1,33 @@
 ﻿using OdinSerializer.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao.UI;
+using XiaoCaoKit;
 using static XiaoCao.BuffControl;
 
 namespace XiaoCao
 {
     public class BuffPanelView : MonoBehaviour
     {
-        public Transform prefabsTf;
-        public RectTransform equippedBuffContainer; // 已装备buff的容器
-        public RectTransform unequippedBuffContainer; // 未装备buff的容器
+        public Transform buffContainer; // 已装备buff的容器
+        public Transform textContainer;
 
-        public RectTransform textContainer;
-
-        public GameObject buffItemPrefab; // BuffItem的Prefab
-        public TextMeshProUGUI buffTextPrefab; // BuffItem的Prefab
-
-        [XCHeader("buff描述")]
-        public Button switchBtn;
+        [XCHeader("buff描述")] public Button switchBtn;
         public TextMeshProUGUI buffTitle;
 
-        public Color exBuffTextColor = new Color32(160,255,160,255); 
+        public Color exBuffTextColor = new Color32(160, 255, 160, 255);
         public Color norBuffTextColor = Color.white;
+        List<BuffItemCell> cellList = new List<BuffItemCell>();
+        List<TextMeshProUGUI> textList = new List<TextMeshProUGUI>();
 
         private PlayerBuffs playerBuffs;
 
-
-        private AssetPool textPool;
-        private AssetPool buffCellPool;
-
-        //ShareData
-        public BuffItemCell TempItemCell { get; private set; }
-
-
         public void Init()
         {
-            textPool = new AssetPool(buffTextPrefab.gameObject);
-            buffCellPool = new AssetPool(buffItemPrefab.gameObject);
-
-            buffTextPrefab.transform.SetParent(prefabsTf, false);
-            buffItemPrefab.transform.SetParent(prefabsTf, false);
-
-            TempItemCell = Instantiate(buffItemPrefab, transform).GetComponent<BuffItemCell>();
-            TempItemCell.gameObject.SetActive(false);
-            TempItemCell.enabled = false;
-            TempItemCell.EnableRayCast(false);
-
-            prefabsTf.gameObject.SetActive(false);
             playerBuffs = PlayerHelper.GetPlayerBuffControl().playerBuffs;
             switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
@@ -59,64 +36,52 @@ namespace XiaoCao
 
         public void RefreshUI()
         {
-            //先清空
-            ClearBuffItem(equippedBuffContainer);
-            ClearBuffItem(unequippedBuffContainer);
-
-            UpdateEquippedBuffsTxet();
-
-            // 显示已装备的buff
-            for (int i = 0; i < playerBuffs.MaxEquipped; i++)
+            int count = playerBuffs.EquippedExBuffs.Count;
+            cellList.Clear();
+            UITool.SetCellListCount(buffContainer, count);
+            cellList.AddRange(buffContainer.GetComponentsInChildren<BuffItemCell>(false));
+            for (int i = 0; i < count; i++)
             {
-                BuffItem item = default;
-                if (i < playerBuffs.EquippedExBuffs.Count)
-                {
-                    item = playerBuffs.EquippedExBuffs[i];
-                }
-                else
-                {
-                    item = new BuffItem();
-                }
-                var cell = InstantiateBuffItem(equippedBuffContainer, item);
+                var item = playerBuffs.EquippedExBuffs[i];
+                var cell = cellList[i];
                 cell.Index = i;
                 cell.IsEquiped = true;
+                SetBuffCellInfo(cell, item);
             }
-            // 显示未装备的buff
-            for (int i = 0; i < playerBuffs.UnequippedExBuffs.Count; i++)
-            {
-                var cell = InstantiateBuffItem(unequippedBuffContainer, playerBuffs.UnequippedExBuffs[i]);
-                cell.Index = i;
-                cell.IsEquiped = false;
-            }
+
+            UpdateBuffsTxet();
+        }
+
+
+        //显示总效果
+        private void UpdateBuffsTxet()
+        {
+            var buffInfoList = playerBuffs.EquippedExBuffs.GetBuffInfos().Combine();
+            Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedExBuffs.GetBuffInfos().Count}");
+            ShowBuffText(buffInfoList, playerBuffs.norBuff.GetBuffs.Combine());
         }
 
         private void ShowBuffText(List<BuffInfo> buffInfoList, List<BuffInfo> passiveBuffList = null)
         {
-            ClearTexts();
-            if (buffInfoList != null)
+            textList.Clear();
+            UITool.SetCellListCount(buffContainer, buffInfoList.Count + passiveBuffList.Count);
+            textList.AddRange(buffContainer.GetComponentsInChildren<TextMeshProUGUI>(false));
+
+            for (int i = 0; i < buffInfoList.Count; i++)
             {
-                foreach (var buffInfo in buffInfoList)
-                {
-                    GameObject newBuffItem = textPool.Get();
-                    newBuffItem.transform.SetParent(textContainer, false);
-                    var text = newBuffItem.GetComponent<TextMeshProUGUI>();
-                    text.text = LocalizeKey.GetBuffInfoDesc(buffInfo);
-                    text.color = exBuffTextColor;
-                }
+                var text = textList[i];
+                text.text = LocalizeKey.GetBuffInfoDesc(buffInfoList[i]);
+                text.color = exBuffTextColor;
             }
 
-            if (passiveBuffList != null)
-            {
-                foreach (var buffInfo in passiveBuffList)
-                {
-                    GameObject newBuffItem = textPool.Get();
-                    newBuffItem.transform.SetParent(textContainer, false);
-                    var text = newBuffItem.GetComponent<TextMeshProUGUI>();
-                    text.text = LocalizeKey.GetBuffInfoDesc(buffInfo);
-                    text.color = norBuffTextColor;
-                }
-            }
+            int offset = buffInfoList.Count;
 
+            for (int i = 0; i < buffInfoList.Count; i++)
+            {
+                var text = textList[offset + i];
+                text.text = LocalizeKey.GetBuffInfoDesc(passiveBuffList[i]);
+                text.color = exBuffTextColor;
+            }
         }
 
         private void OnBuffClick(BuffItem item)
@@ -130,7 +95,7 @@ namespace XiaoCao
             }
             else
             {
-                UpdateEquippedBuffsTxet();
+                UpdateBuffsTxet();
             }
         }
 
@@ -139,15 +104,6 @@ namespace XiaoCao
             RefreshUI();
         }
 
-        //显示总效果
-        private void UpdateEquippedBuffsTxet()
-        {
-            buffTitle.text = $"{LocalizeKey.EquippedBuffEffect.ToLocalizeStr()} lv{GetEquippedBuffsLevel()}";
-            switchBtn.gameObject.SetActive(false);
-            var buffInfoList = playerBuffs.EquippedExBuffs.GetBuffInfos().Combine();
-            Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedExBuffs.GetBuffInfos().Count}");
-            ShowBuffText(buffInfoList, playerBuffs.norBuff.GetBuffs.Combine());
-        }
 
         private int GetEquippedBuffsLevel()
         {
@@ -159,21 +115,18 @@ namespace XiaoCao
                     level += item.level + 1;
                 }
             }
+
             return level;
         }
 
 
         private void OnSwitchBtn()
         {
-            UpdateEquippedBuffsTxet();
+            UpdateBuffsTxet();
         }
 
-        private BuffItemCell InstantiateBuffItem(RectTransform container, BuffItem buffItem)
+        private void SetBuffCellInfo(BuffItemCell buffItemCell,BuffItem buffItem)
         {
-            GameObject newBuffItem = buffCellPool.Get();
-            newBuffItem.transform.SetParent(container, false);
-            var buffItemCell = newBuffItem.GetComponent<BuffItemCell>();
-            buffItemCell.TempItemCell = TempItemCell;
             buffItemCell.panelView = this;
             buffItemCell.SetValue(buffItem);
 
@@ -182,27 +135,6 @@ namespace XiaoCao
             buffItemCell.OnButtonClick += OnBuffClick;
             buffItemCell.OnBuffChangeAct = null;
             buffItemCell.OnBuffChangeAct += OnBuffChange;
-            return buffItemCell;
-        }
-
-
-
-        private void ClearTexts()
-        {
-            int len = textContainer.childCount;
-            for (int i = len - 1; i >= 0; i--)
-            {
-                textPool.Release(textContainer.GetChild(i).gameObject);
-            }
-        }
-
-        private void ClearBuffItem(Transform container)
-        {
-            int len = container.childCount;
-            for (int i = len - 1; i >= 0; i--)
-            {
-                buffCellPool.Release(container.GetChild(i).gameObject);
-            }
         }
     }
 }

@@ -125,6 +125,8 @@ namespace XiaoCao
             if (Application.isEditor && "IsKaiLe".GetKeyBool())
             {
                 data0.lv = PlayerPrefs.GetInt("playerLv");
+                
+                Debuger.Log($" IsKaiLe Player playerLv {data0.lv}");
             }
 
             if (DebugSetting.IsDebug &&
@@ -187,6 +189,8 @@ namespace XiaoCao
             var data0 = GameAllData.playerSaveData;
 
             player.Init(data0, true);
+            
+            GameDataCommon.Current.isFighting = true;
         }
 
         private void PreWarmPlayerAsset()

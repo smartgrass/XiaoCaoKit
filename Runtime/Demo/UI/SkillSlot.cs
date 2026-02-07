@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace XiaoCao
@@ -29,6 +30,8 @@ namespace XiaoCao
 
         #endregion
         private PlayerData0 _playerData;
+        private GameObject _maskRoot;
+        
         public PlayerData0 PlayerData
         {
             get
@@ -57,11 +60,15 @@ namespace XiaoCao
             }
         }
 
+        private void Awake()
+        {
+            _maskRoot = image.transform.parent.gameObject;
+        }
 
         private void Start()
         {
             AddBtnClickEvent();
-            SetFinshState();
+            SetFinishState();
         }
 
         private void AddBtnClickEvent()
@@ -91,10 +98,10 @@ namespace XiaoCao
         internal void CdFinish()
         {
             PlayEffect();
-            SetFinshState();
+            SetFinishState();
         }
 
-        private void SetFinshState()
+        private void SetFinishState()
         {
             if (cdBlockImg)
             {
@@ -125,9 +132,19 @@ namespace XiaoCao
                 image.sprite = SpriteResHelper.LoadRoleIcon(roleKey);
                 return; 
             }
-            
-            
+
+
             string id = PlayerData.GetBarSkillId(index);
+            if (string.IsNullOrEmpty(id))
+            {
+                image.enabled = false;
+                return;
+            }
+            else
+            {
+                image.enabled = true;
+            }
+            
             image.sprite = SpriteResHelper.LoadSkillIcon(id);
         }
 
@@ -154,8 +171,16 @@ namespace XiaoCao
 
         public void CheckSlotUI(string skillId)
         {
-            float process = AtkTimer.GetWaitTimeProccess(skillId);
+            string id = PlayerData.GetBarSkillId(index);
+            if (string.IsNullOrEmpty(id))
+            {
+                _maskRoot.SetActive(false);
+                return;
+            }
 
+            _maskRoot.SetActive(true);
+
+            float process = AtkTimer.GetWaitTimeProccess(skillId);
             UpdateProcess(process);
         }
         

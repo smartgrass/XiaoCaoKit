@@ -10,46 +10,34 @@ public abstract class TabStandardPanel : StandardPanel
 {
     [NonSerialized] public List<SubPanel> list = new List<SubPanel>();
     [NonSerialized] public SubPanel curPanel;
-
-    public UIPrefabs Prefabs;
+    
     public Transform PANELS;
     public Transform TABS;
     public TextMeshProUGUI Title;
 
 
-    protected T AddPanel<T>(string panelName, string findPanel = "") where T : SubPanel, new()
+    public override void Init()
     {
-        T subPanel = new T();
-
-        //SubTitle 名子
-        //创建 Tab & subPanel
-        if (string.IsNullOrEmpty(findPanel))
+        if (IsInited)
         {
-            GetSubPanelGo(subPanel);
-        }
-        else
-        {
-            FindSubPanel(subPanel, findPanel);
+            return;
         }
 
-
-        subPanel.standardPanel = this;
-        subPanel.Prefabs = Prefabs;
-        subPanel.subPanelName = panelName;
-
-        GameObject tabBtnGo = Instantiate(Prefabs.tabBtn, TABS);
-        var tabBtn = tabBtnGo.GetComponentInChildren<Button>();
-        subPanel.TabBtn = tabBtn;
-        tabBtn.onClick.AddListener(() => { subPanel.Show(); });
-        tabBtnGo.GetComponentInChildren<Button>().Select();
-        tabBtnGo.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
-
-        subPanel.Init();
-        list.Add(subPanel);
-        return subPanel;
+        base.Init();
+        IsInited = true;
     }
 
-    public void SwitchPanel(string subPanelName)
+    public virtual void OnEnable()
+    {
+        Init();
+        if (IsInited)
+        {
+            curPanel?.RefreshUI();
+        }
+    }
+    
+
+    public virtual void SwitchPanel(string subPanelName)
     {
         SetSubTitle(subPanelName);
         foreach (var subPanel in list)
@@ -60,8 +48,8 @@ public abstract class TabStandardPanel : StandardPanel
             }
             else
             {
-                subPanel.TabBtn.Select();
                 curPanel = subPanel;
+                curPanel.Show();
             }
         }
     }
@@ -69,18 +57,6 @@ public abstract class TabStandardPanel : StandardPanel
     public SubPanel GetPanel(string subPanelName)
     {
         return list.Find(p => p.subPanelName == subPanelName);
-    }
-
-    private void GetSubPanelGo(SubPanel subPanel)
-    {
-        GameObject panelGo = Instantiate(Prefabs.subPanel, PANELS);
-        subPanel.gameObject = panelGo;
-    }
-
-    private void FindSubPanel(SubPanel subPanel, string findPanel)
-    {
-        GameObject panelGo = PANELS.Find(findPanel).gameObject;
-        subPanel.gameObject = panelGo;
     }
 
     public void SetSubTitle(string str)
@@ -112,4 +88,14 @@ public abstract class TabStandardPanel : StandardPanel
     }
 
     #endregion
+}
+
+
+[Serializable]
+public class TabPanelGroup
+{
+    public string panelName;
+    public GameObject panel;
+    public Button tabBtn;
+    public Sprite iconSprite;
 }

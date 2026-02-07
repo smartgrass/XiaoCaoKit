@@ -20,32 +20,32 @@ namespace XiaoCao.UI
             }
             base.Init();
 
-            var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
-            var playerShowPanel = AddPanel<PlayerShowPanel>("Role", "PlayerShowPanel");
+            // var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
+            // var playerShowPanel = AddPanel<PlayerShowPanel>("Role", "PlayerShowPanel");
 
             //var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
 
-            buffPanel.Show();
-
-            gameObject.SetActive(false);
-            Prefabs.gameObject.SetActive(false);
+            // buffPanel.Show();
+            //
+            // gameObject.SetActive(false);
+            // Prefabs.gameObject.SetActive(false);
             IsInited = true;
         }
 
-
-        [Button]
-        void UpdateSkill()
-        {
-            (GetPanel("Skill") as SkillPanel).UpdateUI();
-        }
-
-        private void OnEnable()
-        {
-            if (IsInited)
-            {
-                curPanel?.RefreshUI();
-            }
-        }
+        //
+        // [Button]
+        // void UpdateSkill()
+        // {
+        //     (GetPanel("Skill") as SkillPanel).UpdateUI();
+        // }
+        //
+        // private void OnEnable()
+        // {
+        //     if (IsInited)
+        //     {
+        //         curPanel?.RefreshUI();
+        //     }
+        // }
 
 
     }

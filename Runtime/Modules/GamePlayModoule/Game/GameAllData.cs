@@ -52,6 +52,9 @@ namespace XiaoCao
 
         ///<see cref="EQuality"/>
         public const int MaxBuffLevel = 5; //从0~5
+        
+        //满级
+        public const int MaxRoleLevel = 30; 
 
         ///<see cref="LevelSettingHelper"/>
         ///<see cref="XCSetting"/>
@@ -78,6 +81,8 @@ namespace XiaoCao
 
         public Player0 Player0 { get; set; }
 
+        public bool isFighting;
+        
         //需要保存
         public int localPlayerId;
 

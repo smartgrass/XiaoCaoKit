@@ -27,7 +27,7 @@ namespace XiaoCao.UI
             //sub显示第一个,其余先隐藏
             ShowSubView(0);
 
-            HomeHud.EventSystem.AddEventListener<EHomeSubView>(HomeHudEventNames.SwitchSubView,
+            UICanvasMgr.Inst.EventSystem.AddEventListener<EHomeSubView>(UIEventNames.SwitchSubView,
                 (data) => { ShowSubView((int)data); });
 
             // ShowSubView(data);

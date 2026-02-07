@@ -33,7 +33,7 @@ namespace XiaoCao.UI{
 			ReFresh();
         }
 		
-		public void SetLocalize(string key){
+		public  virtual void SetLocalize(string key){
 			this.key = key;
 			Text.text = new LocalizeStr(key);
 			_hasLocalized = true;

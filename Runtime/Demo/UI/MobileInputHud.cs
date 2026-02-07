@@ -5,6 +5,7 @@ using System.Linq;
 using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -71,12 +72,14 @@ namespace XiaoCao
             }
 
             GameEvent.AddEventListener<int>(EGameEvent.AddFriend.ToInt(), CheckRoleSkillBtn);
+            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.SkillChange,CheckBarImg);
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
             GameEvent.RemoveEventListener<int>(EGameEvent.AddFriend.ToInt(), CheckRoleSkillBtn);
+            UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.SkillChange, CheckBarImg);
         }
 
         //当友方生成时触发

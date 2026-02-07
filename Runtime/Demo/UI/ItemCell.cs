@@ -23,7 +23,14 @@ namespace XiaoCao
             if (textType == UIItemTextType.NeedNum)
             {
                 int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(item.ItemKey);
-                text.text = $"{hasCount}/{item.num}";
+                if (hasCount < item.num)
+                {
+                    text.text = $"<color=red>{hasCount}</color>/{item.num}";
+                }
+                else
+                {
+                    text.text = $"{hasCount}/{item.num}";
+                }
             }
             else
             {

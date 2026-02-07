@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using XiaoCao.UI;
+using XiaoCaoKit.UI;
 using Object = UnityEngine.Object;
 using Slider = UnityEngine.UI.Slider;
 
@@ -38,13 +39,24 @@ public abstract class SubPanel
     public void Show()
     {
         gameObject.SetActive(true);
-        standardPanel.SwitchPanel(subPanelName);
+        TabBtn.Select();
+        if (TabBtn.transform.parent.TryGetComponent<UIStateChange>(out UIStateChange stateChange))
+        {
+            Debug.Log($"-- UIStateChange tab");
+            stateChange.SetState(1);
+        }
+
+
         RefreshUI();
     }
 
     public void Hide()
     {
         gameObject.SetActive(false);
+        if (TabBtn.transform.parent.TryGetComponent<UIStateChange>(out UIStateChange stateChange))
+        {
+            stateChange.SetState(0);
+        }
     }
 
     public abstract void Init();
@@ -143,5 +155,12 @@ public abstract class SubPanel
                 btnGo.gameObject.SetActive(true);
             }
         }
+    }
+}
+
+public class SimpleSubPanel : SubPanel
+{
+    public override void Init()
+    {
     }
 }

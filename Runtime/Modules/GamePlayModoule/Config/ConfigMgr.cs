@@ -45,7 +45,7 @@ namespace XiaoCao
 
         public PlayerSettingSo PlayerSettingSo;
 
-        public AttrSettingSo CommonSettingSo;
+        public AttrSettingSo AttrSettingSo;
 
         public RewardPoolSo EnemyKillRewardSo;
 
@@ -104,7 +104,7 @@ namespace XiaoCao
         {
             Debug.Log($"-- ConfigMgr Load");
             PlayerSettingSo = LoadSoConfig<PlayerSettingSo>();
-            CommonSettingSo = LoadSoConfig<AttrSettingSo>();
+            AttrSettingSo = LoadSoConfig<AttrSettingSo>();
             EnemyKillRewardSo = LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = LoadSoConfig<BuffConfigSo>();
             ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
