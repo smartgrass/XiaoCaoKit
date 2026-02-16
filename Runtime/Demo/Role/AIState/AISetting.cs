@@ -22,11 +22,18 @@ namespace XiaoCao
         [Header("开头直接进入Idle概率")]
         public float randomIdleStart = 0.5f;
 
-        public bool isLookAtTargetOnHide;
+        public LookAtTargetOnHideMode isLookAtTargetOnHide = LookAtTargetOnHideMode.Off;
 
         [Header("视觉范围")]
         public float seeR = 18;
         public float seeAngle = 40;
 
+    }
+
+    public enum LookAtTargetOnHideMode
+    {
+        Off = 0,
+        Half = 1,
+        On = 2,
     }
 }

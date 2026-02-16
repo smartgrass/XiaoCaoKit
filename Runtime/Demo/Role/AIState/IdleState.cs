@@ -42,6 +42,8 @@ namespace XiaoCao
         private bool _isInitialized;
         // 本轮 Idle 结束时强制退出（例如受击或带目标进入 Idle）
         private bool _forceExitThisLoop;
+        private int _hideLookAtConfirmCount;
+        private bool _lookAtTargetOnHide;
 
         public override void OnStart()
         {
@@ -63,6 +65,21 @@ namespace XiaoCao
                 idleExitRate = Setting.idleExitRate;
             }
             _forceExitThisLoop = false;
+
+            _lookAtTargetOnHide = false;
+            switch (Setting.isLookAtTargetOnHide)
+            {
+                case LookAtTargetOnHideMode.On:
+                    _lookAtTargetOnHide = true;
+                    break;
+                case LookAtTargetOnHideMode.Half:
+                    _hideLookAtConfirmCount++;
+                    _lookAtTargetOnHide = (_hideLookAtConfirmCount % 2) == 0;
+                    break;
+                default:
+                    _lookAtTargetOnHide = false;
+                    break;
+            }
 
             State = FSMState.Update;
             curSleepTime = RandomHelper.RangeFloat(baseSleepTime * (1 + timeRandom), baseSleepTime * (1 - timeRandom));
@@ -190,9 +207,7 @@ namespace XiaoCao
         /// </summary>
         private void HideMove(float speedRate, float animSpeedRate)
         {
-            bool isLookAtTargetOnHide = Setting.isLookAtTargetOnHide;
-
-            control.owner.AIMoveVector(_tempHideDir.normalized * speedRate, animSpeedRate, !isLookAtTargetOnHide);
+            control.owner.AIMoveVector(_tempHideDir.normalized * speedRate, animSpeedRate, !_lookAtTargetOnHide);
 
         }
 
