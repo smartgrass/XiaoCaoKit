@@ -36,6 +36,9 @@ namespace XiaoCao
         private int _hasLoopTime;
         private float curSleepTime;
         private float curHideTime;
+        
+        private bool _hasRandomPos;
+        private Vector3 _idleDir;
 
         public override void OnStart()
         {
@@ -52,24 +55,20 @@ namespace XiaoCao
             Timer = curHideTime;
             GetHideDir();
 
-            //第一次启动
-            if (!_isEnterIdle)
-            {
-                if (HasTarget)
-                {
-                    Timer = 0;
-                    OnExit();
-                    return;
-                }
-                Timer = RandomHelper.RangeFloat(curSleepTime, curHideTime);
-            }
-            else
-            {
-                //后续启动
-                _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
-                _idleDir = (_tempTargetPos - transform.position).ToY0();
-                Timer = curHideTime;
-            }
+            //为了使群体激活时,敌人各自状态不同,在第一次启动时,有随机延迟
+            // Timer = RandomHelper.RangeFloat(curSleepTime, curHideTime);
+
+            //后续启动
+            _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
+            _idleDir = (_tempTargetPos - transform.position).ToY0();
+            Timer = curHideTime;
+        }
+
+        public override void OnExit()
+        {
+            base.OnExit();
+            _hasRandomPos = false;
+            Timer = 0;
         }
 
         private void GetHideDir()
@@ -89,7 +88,6 @@ namespace XiaoCao
             HideDirType hideDirType = (HideDirType)(RandomHelper.Range(0, 2)); //随机取一个方向
 
             if (HasTarget) {
-                _isEnterIdle = false;
                 _tempTargetPos = TargetRole.transform.position;
                 float targetAngle = isFarToNear ? 45 : RandomHelper.RangeFloat(90, 90+45);
                 targetAngle = hideDirType == HideDirType.MoveLeft ? targetAngle : -targetAngle;
@@ -104,6 +102,7 @@ namespace XiaoCao
         {
             if (State == FSMState.None)
             {
+                State = FSMState.Update;
                 OnStart();
                 return;
             }
@@ -130,6 +129,7 @@ namespace XiaoCao
             {
                 if (CheckLoopTimeEnd())
                 {
+                    Debug.Log($"-- idle OnExit");
                     OnExit();
                 }
             }
@@ -165,17 +165,16 @@ namespace XiaoCao
 
         }
 
-        private bool _isEnterIdle;
-        private Vector3 _idleDir;
 
         private void IdleMove(float speedRate, float animSpeedRate)
         {
-            if (!_isEnterIdle)
+            //设置启始点和随机目标点
+            if (!_hasRandomPos)
             {
                 control.idlePos = transform.position;
                 _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
                 _idleDir = (_tempTargetPos - transform.position).ToY0(); ;
-                _isEnterIdle = true;
+                _hasRandomPos = true;
             }
 
             control.owner.AIMoveVector(_idleDir.normalized * speedRate * 0.8f, animSpeedRate, true);
