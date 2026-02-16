@@ -39,15 +39,30 @@ namespace XiaoCao
         
         private bool _hasRandomPos;
         private Vector3 _idleDir;
+        private bool _isInitialized;
+        // 本轮 Idle 结束时强制退出（例如受击或带目标进入 Idle）
+        private bool _forceExitThisLoop;
 
         public override void OnStart()
         {
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                control.owner.OnDamageAct += OnDamage;
+                
+                if (HasTarget)
+                {
+                    MarkForceExit();
+                }
+            }
+
             if (getFromSetting)
             {
                 baseHideTime = Setting.idleTime;
                 baseSleepTime = Setting.sleepTime;
                 idleExitRate = Setting.idleExitRate;
             }
+            _forceExitThisLoop = false;
 
             State = FSMState.Update;
             curSleepTime = RandomHelper.RangeFloat(baseSleepTime * (1 + timeRandom), baseSleepTime * (1 - timeRandom));
@@ -69,6 +84,22 @@ namespace XiaoCao
             base.OnExit();
             _hasRandomPos = false;
             Timer = 0;
+            _forceExitThisLoop = false;
+        }
+
+        private void OnDamage(AtkInfo info, bool isBreak)
+        {
+            if (State != FSMState.Update)
+            {
+                return;
+            }
+
+            MarkForceExit();
+        }
+
+        private void MarkForceExit()
+        {
+            _forceExitThisLoop = true;
         }
 
         private void GetHideDir()
@@ -139,7 +170,7 @@ namespace XiaoCao
         {
             if (maxLoop > 0)
             {
-                if (_hasLoopTime >= maxLoop || RandomHelper.GetRandom(idleExitRate))
+                if (_forceExitThisLoop || _hasLoopTime >= maxLoop || RandomHelper.GetRandom(idleExitRate))
                 {
                     _hasLoopTime = 0;
                     return true;
