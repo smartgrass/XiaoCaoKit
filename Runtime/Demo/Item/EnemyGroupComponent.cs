@@ -73,6 +73,11 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     public void SendMapMsg()
     {
         GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), mapMsg);
+        if (mapMsg == "LevelFinish")
+        {
+            UIMgr.PopToast(popToastKey.ToLocalizeStr(), 10f);
+            return;
+        }
         UIMgr.PopToastKey(popToastKey);
     }
 

@@ -189,7 +189,7 @@ public class EnemyCreator : GameStartMono, IExecute
 
     private Vector3 GetGenPosition(int index, int count)
     {
-        if (count > 0)
+        if (count > 1)
         {
             float radius = ((count - 2) * 0.5f + 2) * circleSize;
             Mathf.Clamp(radius, 2, 5);

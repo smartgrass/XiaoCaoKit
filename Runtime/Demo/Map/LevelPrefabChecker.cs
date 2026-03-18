@@ -29,7 +29,7 @@ namespace XiaoCao
         void CheckLevelFinish()
         {
             //检查LevelAction中的所有Group中是否有MapMsg为LevelFinish的,没有则输出Error
-            if (levelAction.GetComponentsInChildren<EnemyGroupComponent>()
+            if (levelAction.GetComponentsInChildren<EnemyGroupComponent>(true)
                 .Any(x => x.mapMsg == LocalizeKey.LevelFinish))
             {
                 Debug.Log("关卡通关已存在");

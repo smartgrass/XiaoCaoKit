@@ -116,10 +116,10 @@ namespace XiaoCao
             Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");
             PlayerSaveData.LocalSavaData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
             PlayerSaveData.SavaData();
-            if (MapMgr.Inst)
-            {
-                XCTime.DelayRunMono(0.5f,CreatePortalLevelEnd, MapMgr.Inst);
-            }
+            // if (MapMgr.Inst)
+            // {
+            //     // XCTime.DelayRunMono(0.5f,CreatePortalLevelEnd, MapMgr.Inst);
+            // }
         }
 
         public void ShowLevelResultUI()
@@ -130,9 +130,9 @@ namespace XiaoCao
 
         void CreatePortalLevelEnd()
         {
-            string path = "Assets/_Res/Item/PortalLevelEnd.prefab";
-            GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
-            portal.transform.position = MapMgr.Inst.GetEndPos();
+            // string path = "Assets/_Res/Item/PortalLevelEnd.prefab";
+            // GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
+            // portal.transform.position = MapMgr.Inst.GetEndPos();
         }
 
         public DialogPanel ShowLevelEndDialog()

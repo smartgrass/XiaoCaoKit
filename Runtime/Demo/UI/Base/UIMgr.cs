@@ -25,8 +25,7 @@ namespace XiaoCao
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
-
-        public StandaloneInputHud standaloneInputHud;
+        
 
         public MobileInputHud mobileInputHud;
 
@@ -69,10 +68,8 @@ namespace XiaoCao
 
         public void OnChangeInputType(UserInputType type)
         {
-            bool isTouch = type == UserInputType.Touch;
-            mobileInputHud.gameObject.SetActive(isTouch);
-            standaloneInputHud.gameObject.SetActive(true);
-            standaloneInputHud.SetTouchShow(isTouch);
+            // bool isTouch = type == UserInputType.Touch;
+            mobileInputHud.gameObject.SetActive(true);
         }
 
         public void ShowView(UIPanelType type, IUIData data = null)

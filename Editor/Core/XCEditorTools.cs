@@ -63,6 +63,22 @@ namespace XiaoCaoEditor
         ///批命令 <see cref="CommandHelper"/>
     }
 
+    public static class XCAnimatorContextMenu
+    {
+        [MenuItem("CONTEXT/Animator/Log Speed")]
+        private static void LogAnimatorSpeed(MenuCommand command)
+        {
+            var animator = command.context as Animator;
+            if (animator == null)
+            {
+                Debug.LogWarning("No Animator context.");
+                return;
+            }
+
+            Debug.Log($"Animator speed: {animator.speed}", animator);
+        }
+    }
+
     /// <summary>
     /// GUI /Draw
     /// </summary>
