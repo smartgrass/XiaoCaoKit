@@ -37,6 +37,11 @@ namespace EasyUI.Toast
 
         public static void Dismiss()
         {
+            if (!IsLoaded || _toastUI == null)
+            {
+                return;
+            }
+
             _toastUI.Dismiss();
         }
     }

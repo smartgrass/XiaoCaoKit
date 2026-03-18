@@ -22,8 +22,8 @@ namespace XiaoCao.UI
 
         public void Show(int chapter)
         {
-            LevelPassState passState = GetPassState(chapter, 0);
             var chapterSetting = LubanTables.GetChapterSetting(chapter);
+            LevelPassState passState = GetChapterPassState(chapter, chapterSetting);
 
             int totalLevelCount = chapterSetting?.Levels?.Count ?? 0;
             int completedLevelCount = 0;
@@ -41,6 +41,17 @@ namespace XiaoCao.UI
             titleText.text = $"{LocalizeKey.GetChapterName(chapter)}\n({completedLevelCount}/{totalLevelCount})";
             btn.interactable = passState != LevelPassState.Lock;
             curChapter = chapter;
+        }
+
+        private LevelPassState GetChapterPassState(int chapter, ChapterSetting chapterSetting)
+        {
+            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
+            {
+                return LevelPassState.Lock;
+            }
+
+            int firstLevelIndex = chapterSetting.Levels[0];
+            return GetPassState(chapter, firstLevelIndex);
         }
 
         private LevelPassState GetPassState(int chapter, int index)
