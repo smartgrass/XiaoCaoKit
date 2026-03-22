@@ -44,9 +44,6 @@ namespace XiaoCao.UI
             // descText.text += "\n" + LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
             //                  LubanTables.GetLevelSetting(_levelKey).EnemyBaseLevel.ToString();
             //UpdateReward();
-
-            rootRt.localScale = Vector3.one * 0.2f;
-            rootRt.transform.DOScale(Vector3.one, 0.15f);
         }
 
         public void Hide()

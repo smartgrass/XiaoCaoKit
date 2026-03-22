@@ -38,7 +38,8 @@ namespace XiaoCao.UI
                 }
             }
 
-            titleText.text = $"{LocalizeKey.GetChapterName(chapter)}\n({completedLevelCount}/{totalLevelCount})";
+            //\n({completedLevelCount}/{totalLevelCount})
+            titleText.text = $"{LocalizeKey.GetChapterName(chapter)}";
             btn.interactable = passState != LevelPassState.Lock;
             curChapter = chapter;
         }

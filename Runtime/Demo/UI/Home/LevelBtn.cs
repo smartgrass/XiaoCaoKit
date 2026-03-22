@@ -1,4 +1,5 @@
 using System;
+using cfg;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -17,9 +18,10 @@ namespace XiaoCao.UI
         public UIStateChange stateChange;
         public Action onClick;
         public Transform rewardParent;
+        public Transform outlineFlow;
+        public Transform outline;
 
-        [Header("Hover/Select Scale")]
-        public float hoverScale = 1.05f;
+        [Header("Hover/Select Scale")] public float hoverScale = 1.05f;
         public float tweenDuration = 0.08f;
         public Ease tweenEase = Ease.OutQuad;
 
@@ -51,6 +53,7 @@ namespace XiaoCao.UI
             LevelPassState passState = GetPassState(chapter, index);
             btn.interactable = passState != LevelPassState.Lock;
             stateChange.SetState((int)passState);
+            UpdateOutlineState(passState);
             if (!btn.interactable)
             {
                 _isHovering = false;
@@ -104,6 +107,42 @@ namespace XiaoCao.UI
         private LevelPassState GetPassState(int chapter, int index)
         {
             return PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapter, index);
+        }
+
+        private void UpdateOutlineState(LevelPassState passState)
+        {
+            bool showOutlineFlow = passState != LevelPassState.Pass && IsLatestUnlockedLevel(curChapter, levelIndex);
+
+            if (outlineFlow != null)
+            {
+                outlineFlow.gameObject.SetActive(showOutlineFlow);
+            }
+
+            if (outline != null)
+            {
+                outline.gameObject.SetActive(!showOutlineFlow);
+            }
+        }
+
+        private bool IsLatestUnlockedLevel(int chapter, int index)
+        {
+            var chapterSetting = LubanTables.GetChapterSetting(chapter);
+            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
+            {
+                return false;
+            }
+
+            int latestUnlockedLevel = int.MinValue;
+            for (int i = 0; i < chapterSetting.Levels.Count; i++)
+            {
+                int level = chapterSetting.Levels[i];
+                if (GetPassState(chapter, level) != LevelPassState.Lock)
+                {
+                    latestUnlockedLevel = Mathf.Max(latestUnlockedLevel, level);
+                }
+            }
+
+            return latestUnlockedLevel == index;
         }
 
         private void UpdateReward()
