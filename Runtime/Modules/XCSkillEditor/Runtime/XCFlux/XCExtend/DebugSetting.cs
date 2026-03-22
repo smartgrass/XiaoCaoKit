@@ -19,7 +19,7 @@ namespace XiaoCao
             get
             {
 #if UNITY_ANDROID
-                if (GetEPlayMode() == EPlayMode.OfflinePlayMode)
+                if (GetEPlayMode() == YooAsset.EPlayMode.OfflinePlayMode)
                 {
                     return true;
                 }
@@ -72,11 +72,11 @@ namespace XiaoCao
             }
         }
 
-        public static EPlayMode GetEPlayMode()
+        public static YooAsset.EPlayMode GetEPlayMode()
         {
-            EPlayMode playMode = EPlayMode.OfflinePlayMode;
+            YooAsset.EPlayMode playMode = YooAsset.EPlayMode.OfflinePlayMode;
 #if UNITY_EDITOR
-            playMode = (EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
+            playMode = (YooAsset.EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
 #else
         playMode = EPlayMode.OfflinePlayMode;
 #endif

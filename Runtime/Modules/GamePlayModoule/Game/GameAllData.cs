@@ -75,7 +75,7 @@ namespace XiaoCao
     {
         public static GameDataCommon Current => GameAllData.CommonData;
 
-        public PlayMode playMode;
+        public EPlayMode ePlayMode;
 
         public GameState gameState;
 
@@ -282,9 +282,9 @@ namespace XiaoCao
         }
     }
 
-    public enum PlayMode
+    public enum EPlayMode
     {
-        Nor
+        Nor,//关卡模式
     }
 
     public enum GameState

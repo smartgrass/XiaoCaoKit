@@ -6,20 +6,8 @@ using UnityEngine.UI;
 
 namespace XiaoCao.UI
 {
-    public class ChapterBtn : MonoBehaviour
+    public class ChapterBtn : NorBtn
     {
-        public TMP_Text titleText;
-        public Button btn;
-        public int curChapter;
-
-        public Action onClick;
-
-
-        private void Awake()
-        {
-            btn.onClick.AddListener(() => { onClick?.Invoke(); });
-        }
-
         public void Show(int chapter)
         {
             var chapterSetting = LubanTables.GetChapterSetting(chapter);
@@ -38,10 +26,9 @@ namespace XiaoCao.UI
                 }
             }
 
-            //\n({completedLevelCount}/{totalLevelCount})
             titleText.text = $"{LocalizeKey.GetChapterName(chapter)}";
             btn.interactable = passState != LevelPassState.Lock;
-            curChapter = chapter;
+            curIndex = chapter;
         }
 
         private LevelPassState GetChapterPassState(int chapter, ChapterSetting chapterSetting)

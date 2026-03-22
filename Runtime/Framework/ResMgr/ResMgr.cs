@@ -7,6 +7,7 @@ using UnityEngine;
 using XiaoCao;
 using YooAsset;
 using Debug = UnityEngine.Debug;
+using EPlayMode = YooAsset.EPlayMode;
 
 public class ResMgr
 {
