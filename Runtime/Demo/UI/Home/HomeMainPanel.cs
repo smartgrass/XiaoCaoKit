@@ -11,18 +11,17 @@ namespace XiaoCao.UI
     {
         public Button fightBtn;
         public Button skillBtn;
-        public Button switchRoleBtn;
+        public NorBtn switchRoleBtn;
         public CharacterImage characterImage;
-        public TMP_Text roleNameText;
         public GameObject[] subViews;
 
         private void Start()
         {
             fightBtn.onClick.AddListener(() => { HomeHud.Inst.SwitchPanel(EHomePanel.FightPanel); });
             skillBtn.onClick.AddListener(() => { ShowSubView(1); });
-            switchRoleBtn.onClick.AddListener(OnSwitchRole);
+            switchRoleBtn.btn.onClick.AddListener(OnSwitchRole);
             characterImage.config.roleKey = $"Role_{ConfigMgr.Inst.LocalRoleSetting.selectRole}";
-            roleNameText.text = characterImage.config.roleKey.ToLocalizeStr();
+            switchRoleBtn.titleText.text = characterImage.config.roleKey.ToLocalizeStr();
 
             //sub显示第一个,其余先隐藏
             ShowSubView(0);
@@ -43,7 +42,7 @@ namespace XiaoCao.UI
             string roleKey = $"Role_{roleId}";
             // 切换角色
             characterImage.ChangeModelKey(roleKey);
-            roleNameText.text = roleKey.ToLocalizeStr();
+            switchRoleBtn.titleText.text = roleKey.ToLocalizeStr();
         }
 
         void ShowSubView(int index)

@@ -57,6 +57,11 @@ namespace XiaoCao
                     }
                 }
             }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                return "";
+            }
             return $"<color=#FFE880>{key}</color>";
             //return $"\"{key}\"";
         }

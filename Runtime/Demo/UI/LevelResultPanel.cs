@@ -49,15 +49,15 @@ namespace XiaoCaoKit
             gameObject.SetActive(true);
             LevelData levelData = LevelData.Current;
             bool isSuccess = levelData.levelResult == ELevelResult.Success;
-            string levelName = levelData.GetLevelNameText;
+            string levelShowName = levelData.GetLevelNameText;
             int killCount = levelData.killCount;
             float timeCount = levelData.finishLevelTime - levelData.enterLevelTime;
-            Show(isSuccess, levelName, killCount, timeCount);
+            Show(isSuccess, levelShowName, killCount, timeCount);
             ReadRoleImg();
             //获取奖励
             if (isSuccess)
             {
-                GetLevelFinishReward(levelName);
+                GetLevelFinishReward(levelData.LevelName);
             }
         }
 
@@ -69,6 +69,28 @@ namespace XiaoCaoKit
                 var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, rewardParent);
                 item.RewardItem();
                 rewardItem.GetComponent<ItemCell>().SetItem(item);
+            }
+            //
+            var info = LevelInfo.ParseString(levelName);
+            bool hasFirstReward = PlayerSaveData.LocalSavaData.levelPassData.HasGetFirstReward(info.chapter, info.index);
+            var firstRewardList = LevelSettingHelper.GetFirstReward(levelName);
+            
+            //如果hasFirstReward
+            
+            foreach (Item item in list)
+            {
+                var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, rewardParent);
+                if (!hasFirstReward)
+                {
+                    item.RewardItem();
+                }
+                rewardItem.GetComponent<ItemCell>().SetItem(item);
+                //rewardItem 设置以获取的Mask
+            }
+
+            if (!hasFirstReward)
+            {
+                PlayerSaveData.LocalSavaData.levelPassData.SetHasGetFirstReward(info.chapter, info.index);
             }
         }
 

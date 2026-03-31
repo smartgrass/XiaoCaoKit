@@ -142,6 +142,7 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         {
             data.levelPassData = new LevelPassData();
         }
+        data.levelPassData.CheckNull();
 
         if (data.levelPassData.chapterPassDic == null)
         {

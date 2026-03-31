@@ -32,6 +32,10 @@ namespace XiaoCao
                     text.text = $"{hasCount}/{item.num}";
                 }
             }
+            else if (textType == UIItemTextType.NoNum)
+            {
+                text.text = "";
+            }
             else
             {
                 text.text = item.num.ToString();
@@ -55,6 +59,7 @@ namespace XiaoCao
     public enum UIItemTextType
     {
         Default,
-        NeedNum
+        NeedNum,
+        NoNum
     }
 }

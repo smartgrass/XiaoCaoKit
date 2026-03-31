@@ -110,7 +110,7 @@ namespace XiaoCao
             LevelData.Current.finishLevelTime = Time.time;
             GameEvent.Send<int>(EGameEvent.LevelEnd.ToInt(), 1);
             BattleData.Current.levelData.levelResult = ELevelResult.Success;
-            UIMgr.PopToastKey(LocalizeKey.LevelFinish);
+            UIMgr.PopToastKey(LocalizeKey.LevelSuccess,5);
             //写入存档
             LevelInfo levelInfo = GameDataCommon.Current.GetLevelInfo;
             Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");

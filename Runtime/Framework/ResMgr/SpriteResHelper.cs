@@ -24,13 +24,9 @@ public static class SpriteResHelper
             var so = RunTimePoolMgr.Inst.staticResSoUsing.buffSpriteSo;
             return BuffItem.Create(item).GetBuffSprite();
         }
-        else if (item.type == ItemType.HolyRelic)
-        {
-            string path = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
-            ResMgr.LoadAseetOrDefault<Sprite>(path, DefaultItemSpritePath);
-        }
 
-        return null;
+        string endPath = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
+        return ResMgr.LoadAseetOrDefault<Sprite>(endPath, DefaultItemSpritePath);
     }
 
     public static Sprite LoadRoleIcon(string roleKey)

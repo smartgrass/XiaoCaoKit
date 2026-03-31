@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TEngine;
 using UnityEngine;
 
 namespace XiaoCao
@@ -39,6 +40,21 @@ namespace XiaoCao
         {
             get => inventory.GetItemCount("Coin");
             set => inventory.AddItem(ItemType.Coin, "Coin", value);
+        }
+
+        public void RewardCoin(int coin, bool showUI = true)
+        {
+            if (coin == 0)
+            {
+                return;
+            }
+
+            Coin += coin;
+            if (showUI)
+            {
+                Item item = new Item(ItemType.Coin, "Coin", coin);
+                GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
+            }
         }
 
         //持有物
@@ -156,6 +172,7 @@ namespace XiaoCao
             attr.Init(0, lv, setting);
             return attr;
         }
+
         public static void SavaData()
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);
@@ -168,6 +185,14 @@ namespace XiaoCao
         //记录章节通过状态 maxChapter,maxIndex
         [NaughtyAttributes.ShowNonSerializedField]
         public Dictionary<int, int> chapterPassDic = new Dictionary<int, int>();
+
+        public Dictionary<string, LevelOtherState> otherStates = new Dictionary<string, LevelOtherState>();
+
+        public void CheckNull()
+        {
+            chapterPassDic ??= new Dictionary<int, int>();
+            otherStates ??= new Dictionary<string, LevelOtherState>();
+        }
 
         public LevelPassState GetPassState(int chapter, int index)
         {
@@ -205,6 +230,36 @@ namespace XiaoCao
                 chapterPassDic[chapter] = Mathf.Max(chapterPassDic[chapter], index);
             }
         }
+
+        public bool HasGetFirstReward(int chapter, int index)
+        {
+            string key = chapter + "_" + index;
+            if (!otherStates.ContainsKey(key))
+            {
+                return false;
+            }
+
+            return otherStates[key].hasGetFirstReward;
+        }
+
+        public void SetHasGetFirstReward(int chapter, int index, bool isOn = true)
+        {
+            string key = chapter + "_" + index;
+            if (!otherStates.ContainsKey(key))
+            {
+                otherStates[key] = new LevelOtherState();
+            }
+
+            var state = otherStates[key];
+            state.hasGetFirstReward = isOn;
+            otherStates[key] = state;
+        }
+    }
+
+    public struct LevelOtherState
+    {
+        //是否获取首通奖励
+        public bool hasGetFirstReward;
     }
 
     public enum LevelPassState

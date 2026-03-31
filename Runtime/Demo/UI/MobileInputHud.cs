@@ -20,6 +20,7 @@ namespace XiaoCao
         public SkillSlot rollBtn;
         public Button jumpBtn;
         public Button norAtkBtn;
+        public TouchField touchField;
 
         public PlayerInputData PlayerInput => PlayerData.inputData;
 
@@ -72,7 +73,7 @@ namespace XiaoCao
             }
 
             GameEvent.AddEventListener<int>(EGameEvent.AddFriend.ToInt(), CheckRoleSkillBtn);
-            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.SkillChange,CheckBarImg);
+            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.SkillChange, CheckBarImg);
         }
 
         public override void OnDestroy()
@@ -114,6 +115,18 @@ namespace XiaoCao
 
             CheckUIUpdate();
         }
+
+
+        private void FixedUpdate()
+        {
+            if (GameAllData.CommonData.gameState != GameState.Running)
+            {
+                return;
+            }
+
+            PlayerInputData.LocalSwipeDirection = touchField.GetSwipeDirection;
+        }
+
 
         private void CheckUIUpdate()
         {

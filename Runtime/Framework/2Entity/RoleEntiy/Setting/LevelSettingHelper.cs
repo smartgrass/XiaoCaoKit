@@ -29,8 +29,18 @@ namespace XiaoCao
         {
             var setting = LubanTables.GetLevelSetting(levelName);
             return setting.Reward;
+        }        
+        public static List<Item> GetFirstReward(string levelName)
+        {
+            var setting = LubanTables.GetLevelSetting(levelName);
+            return setting.FirstReward;
         }
 
+        public static int GetEnemyCoin(string levelName)
+        {
+            var setting = LubanTables.GetLevelSetting(levelName);
+            return setting.EnemyCoin;
+        }
     }
 
     public class LevelData

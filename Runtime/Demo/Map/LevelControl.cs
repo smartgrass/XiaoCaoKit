@@ -32,7 +32,9 @@ namespace XiaoCao
 
             GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
             GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
+            GameEvent.AddEventListener<int, string>(EGameEvent.EnemyGroupEndEvent.ToInt(), OnEnemyGroupEndEvent);
         }
+
 
         public override void RemoveListener()
         {
@@ -41,7 +43,17 @@ namespace XiaoCao
             {
                 GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
                 GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
+                GameEvent.RemoveEventListener<int, string>(EGameEvent.EnemyGroupEndEvent.ToInt(), OnEnemyGroupEndEvent);
             }
+        }
+
+        private void OnEnemyGroupEndEvent(int count, string msg)
+        {
+            //获取配置
+            LevelData levelData = LevelData.Current;
+            int coin = LevelSettingHelper.GetEnemyCoin(levelData.LevelName);
+            int allCoin = coin * count;
+            GameAllData.playerSaveData.RewardCoin(allCoin);
         }
 
         private void SetEnemy()

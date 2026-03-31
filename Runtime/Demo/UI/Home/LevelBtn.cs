@@ -111,7 +111,7 @@ namespace XiaoCao.UI
             var cells = rewardParent.GetComponentsInChildren<ItemCell>(false);
             for (int i = 0; i < rewards.Count && i < cells.Length; i++)
             {
-                cells[i].SetItem(rewards[i]);
+                cells[i].SetItem(rewards[i], UIItemTextType.NoNum);
             }
         }
 

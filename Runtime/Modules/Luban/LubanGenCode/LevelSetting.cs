@@ -20,8 +20,10 @@ public sealed partial class LevelSetting : Luban.BeanBase
         Title = _buf.ReadString();
         EnemyBaseLevel = _buf.ReadInt();
         EnemyLevelAdd = _buf.ReadInt();
+        EnemyCoin = _buf.ReadInt();
         ImgName = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Reward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); Reward.Add(_e0);}}
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);FirstReward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); FirstReward.Add(_e0);}}
         RoleId = _buf.ReadInt();
     }
 
@@ -47,6 +49,10 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// </summary>
     public readonly int EnemyLevelAdd;
     /// <summary>
+    /// 每个敌人击杀获得
+    /// </summary>
+    public readonly int EnemyCoin;
+    /// <summary>
     /// 图片id
     /// </summary>
     public readonly string ImgName;
@@ -54,6 +60,10 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// 奖励:HolyRelic,&quot;name&quot;,1|HolyRelic,&quot;name&quot;,1
     /// </summary>
     public readonly System.Collections.Generic.List<XiaoCao.Item> Reward;
+    /// <summary>
+    /// 奖励:HolyRelic,&quot;name&quot;,1|HolyRelic,&quot;name&quot;,1
+    /// </summary>
+    public readonly System.Collections.Generic.List<XiaoCao.Item> FirstReward;
     /// <summary>
     /// #default=-1
     /// </summary>
@@ -71,6 +81,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
         
         
         
+        
+        
     }
 
     public override string ToString()
@@ -80,8 +92,10 @@ public sealed partial class LevelSetting : Luban.BeanBase
         + "title:" + Title + ","
         + "enemyBaseLevel:" + EnemyBaseLevel + ","
         + "enemyLevelAdd:" + EnemyLevelAdd + ","
+        + "enemyCoin:" + EnemyCoin + ","
         + "imgName:" + ImgName + ","
         + "reward:" + Luban.StringUtil.CollectionToString(Reward) + ","
+        + "firstReward:" + Luban.StringUtil.CollectionToString(FirstReward) + ","
         + "roleId:" + RoleId + ","
         + "}";
     }

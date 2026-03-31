@@ -237,11 +237,11 @@ namespace XiaoCao
             ;
         }
 
-        public static void PopToastKey(string key)
+        public static void PopToastKey(string key, float time = 1)
         {
             if (!string.IsNullOrEmpty(key))
             {
-                PopToast(key.ToLocalizeStr());
+                PopToast(key.ToLocalizeStr(),time);
             }
         }
 
