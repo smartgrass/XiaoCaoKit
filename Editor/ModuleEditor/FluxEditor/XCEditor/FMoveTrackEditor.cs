@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 
 using Flux;
@@ -119,13 +119,13 @@ namespace FluxEditor
                 DrawBezier();
                 if (Event.isEditorHandles)
                 {
-                    XCDraw.DrawLines(Event.controlPoints);
+                    XCDraw.DrawLines(GetPreviewPoints(Event.controlPoints));
                 }
             }
             else
             {
                 DrawControls();
-                XCDraw.DrawLines(Event.controlPoints);
+                XCDraw.DrawLines(GetPreviewPoints(Event.controlPoints));
             }
 
             _isBezierLast = Event.IsBezier;
@@ -141,24 +141,29 @@ namespace FluxEditor
 
             for (int i = 0; i < _handlePoint.Count; i++)
             {
-                XCDraw.DrawBezier(Event.controlPoints[i], Event.controlPoints[i + 1], _handlePoint[i]);
+                XCDraw.DrawBezier(
+                    Event.EditorPointToWorld(Event.controlPoints[i]),
+                    Event.EditorPointToWorld(Event.controlPoints[i + 1]),
+                    Event.EditorPointToWorld(_handlePoint[i]));
             }
 
             DrawControls();
             DrawHandlePoints();
         }
 
-        
 
-        //»æÖÆµã
+
+        //ç»˜åˆ¶ç‚¹
         private void DrawControls()
         {
             for (int i = 0; i < Event.controlPoints.Count; i++)
             {
-                Vector3 newPointPosition = Handles.DoPositionHandle(Event.controlPoints[i], rotation);
-                if (Event.controlPoints[i] != newPointPosition)
+                Vector3 currentPointPosition = Event.EditorPointToWorld(Event.controlPoints[i]);
+                Vector3 newPointPosition = Handles.DoPositionHandle(currentPointPosition, rotation);
+                Vector3 localPointPosition = Event.EditorPointToLocal(newPointPosition);
+                if (Event.controlPoints[i] != localPointPosition)
                 {
-                    Event.controlPoints[i] = newPointPosition;
+                    Event.controlPoints[i] = localPointPosition;
                 }
                 Handles.Label(newPointPosition + new Vector3(0, HandleUtility.GetHandleSize(newPointPosition) * 0.4f, 0f), i.ToString());
             }
@@ -168,14 +173,16 @@ namespace FluxEditor
         {
             for (int i = 0; i < Event.handlePionts.Count; i++)
             {
-                Vector3 newPointPosition = Event.handlePionts[i];
+                Vector3 currentPointPosition = Event.EditorPointToWorld(Event.handlePionts[i]);
+                Vector3 newPointPosition = currentPointPosition;
 
                 if (Event.isEditorHandles)
                 {
-                    newPointPosition = Handles.DoPositionHandle(Event.handlePionts[i], rotation);
-                    if (Event.handlePionts[i] != newPointPosition)
+                    newPointPosition = Handles.DoPositionHandle(currentPointPosition, rotation);
+                    Vector3 localPointPosition = Event.EditorPointToLocal(newPointPosition);
+                    if (Event.handlePionts[i] != localPointPosition)
                     {
-                        Event.handlePionts[i] = newPointPosition;
+                        Event.handlePionts[i] = localPointPosition;
                     }
                 }
 
@@ -186,11 +193,22 @@ namespace FluxEditor
                 newPointPosition = Handles.FreeMoveHandle(newPointPosition,Quaternion.identity, HandleUtility.GetHandleSize(newPointPosition) * 0.15f, Vector3.one, handle);
 #endif
 
-                if (Event.handlePionts[i] != newPointPosition)
+                Vector3 localFreeMovePoint = Event.EditorPointToLocal(newPointPosition);
+                if (Event.handlePionts[i] != localFreeMovePoint)
                 {
-                    Event.handlePionts[i] = newPointPosition;
+                    Event.handlePionts[i] = localFreeMovePoint;
                 }
             }
+        }
+
+        private List<Vector3> GetPreviewPoints(List<Vector3> points)
+        {
+            List<Vector3> previewPoints = new List<Vector3>(points.Count);
+            for (int i = 0; i < points.Count; i++)
+            {
+                previewPoints.Add(Event.EditorPointToWorld(points[i]));
+            }
+            return previewPoints;
         }
     }
 

@@ -95,7 +95,9 @@ namespace XiaoCao
             {
                 levelPassData = new LevelPassData();
             }
-
+            
+            levelPassData.CheckNull();
+            
             if (skillBarSetting == null)
             {
                 skillBarSetting = new List<string>();
@@ -190,6 +192,7 @@ namespace XiaoCao
 
         public void CheckNull()
         {
+            Debug.Log($"-- CheckNull {otherStates}");
             chapterPassDic ??= new Dictionary<int, int>();
             otherStates ??= new Dictionary<string, LevelOtherState>();
         }
@@ -234,12 +237,12 @@ namespace XiaoCao
         public bool HasGetFirstReward(int chapter, int index)
         {
             string key = chapter + "_" + index;
-            if (!otherStates.ContainsKey(key))
+            if (!otherStates.TryGetValue(key, out var state))
             {
                 return false;
             }
 
-            return otherStates[key].hasGetFirstReward;
+            return state.hasGetFirstReward;
         }
 
         public void SetHasGetFirstReward(int chapter, int index, bool isOn = true)

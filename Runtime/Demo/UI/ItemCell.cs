@@ -16,7 +16,7 @@ namespace XiaoCao
         public TextMeshProUGUI text;
 
 
-        public void SetItem(Item item, UIItemTextType textType = UIItemTextType.Default)
+        public ItemCell SetItem(Item item, UIItemTextType textType = UIItemTextType.Default)
         {
             this.Item = item;
 
@@ -39,6 +39,17 @@ namespace XiaoCao
             else
             {
                 text.text = item.num.ToString();
+            }
+
+            return this;
+        }
+
+        public void SetMask(string mask)
+        {
+            var maskTf= transform.Find(mask);
+            if (maskTf)
+            {
+                maskTf.gameObject.SetActive(true);                
             }
         }
 

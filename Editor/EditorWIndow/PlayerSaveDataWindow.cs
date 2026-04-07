@@ -69,7 +69,6 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     private void ResetData()
     {
         playerSaveData = new PlayerSaveData();
-        InitializePlayerSaveData(playerSaveData);
         Save();
     }
 
@@ -101,17 +100,11 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         {
             LoadPlayerSaveData(false);
         }
-        else
-        {
-            InitializePlayerSaveData(playerSaveData);
-        }
     }
 
     private void LoadPlayerSaveData(bool isLog = true)
     {
         playerSaveData = SaveMgr.ReadData<PlayerSaveData>(out var isSuc);
-        InitializePlayerSaveData(playerSaveData);
-
         if (isLog)
         {
             Debug.Log($"-- read {isSuc} ");
@@ -123,55 +116,6 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         if (Application.isPlaying)
         {
             GameAllData.playerSaveData = playerSaveData;
-        }
-    }
-
-    private static void InitializePlayerSaveData(PlayerSaveData data)
-    {
-        if (data == null)
-        {
-            return;
-        }
-
-        if (data.storyProgress == null)
-        {
-            data.storyProgress = new StoryProgress();
-        }
-
-        if (data.levelPassData == null)
-        {
-            data.levelPassData = new LevelPassData();
-        }
-        data.levelPassData.CheckNull();
-
-        if (data.levelPassData.chapterPassDic == null)
-        {
-            data.levelPassData.chapterPassDic = new Dictionary<int, int>();
-        }
-
-        if (data.skillUnlockDic == null)
-        {
-            data.skillUnlockDic = new Dictionary<string, int>();
-        }
-
-        if (data.skillBarSetting == null)
-        {
-            data.skillBarSetting = new List<string>();
-        }
-
-        if (data.inventory == null)
-        {
-            data.inventory = new Inventory();
-        }
-
-        if (data.holdItems == null)
-        {
-            data.holdItems = new List<Item>();
-        }
-
-        if (data.equippedHolyRelics == null)
-        {
-            data.equippedHolyRelics = new List<Item>();
         }
     }
 }

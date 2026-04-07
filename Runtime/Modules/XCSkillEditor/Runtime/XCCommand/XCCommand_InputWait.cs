@@ -1,30 +1,28 @@
 ﻿namespace XiaoCao
 {
-    internal class XCCommand_InputWait : IXCCommand
+    internal class XCCommand_InputWait : BaseCommand
     {
-        public XCTask task { get; set; }
-        public XCCommondEvent curEvent { get; set; }
-        public bool IsTargetRoleType(RoleType roleType)
+        public override bool IsTargetRoleType(RoleType roleType)
         {
             return roleType == RoleType.Player;
         }
 
-        public void Init(BaseMsg baseMsg)
+        public override void Init(BaseMsg baseMsg)
         {
 
         }
 
-        public void OnFinish(bool hasTrigger)
+        public override void OnFinish(bool hasTrigger)
         {
 
         }
         
-        public void OnTrigger()
+        public override void OnTrigger()
         {
 
         }
 
-        public void OnUpdate(int frame, float timeSinceTrigger)
+        public override void OnUpdate(int frame, float timeSinceTrigger)
         {
 
         }

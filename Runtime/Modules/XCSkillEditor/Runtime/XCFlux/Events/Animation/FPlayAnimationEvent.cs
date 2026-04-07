@@ -56,7 +56,7 @@ namespace Flux
 			if( _animator.enabled )
 #endif
 			{
-				Debug.Log("Turning on " + _animTrack.LayerName);
+				Debug.Log("Turning on " + _animTrack.LayerName + this._animationClip);
 				_animator.SetLayerWeight(_animTrack.LayerId, 1);
 				if( id == 0 || _track.Events[id-1].End < Start )
 				{

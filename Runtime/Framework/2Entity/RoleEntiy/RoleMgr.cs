@@ -101,7 +101,7 @@ namespace XiaoCao
         {
             Vector3 dir = target.position - self.position;
 
-            curAngle = Vector3.Angle(dir, target.forward);
+            curAngle = Vector3.Angle(dir, self.forward);
 
             curDis = Mathf.Max(0.1f, dir.magnitude);
         }

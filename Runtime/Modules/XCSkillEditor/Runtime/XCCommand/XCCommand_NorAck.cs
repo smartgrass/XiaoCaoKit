@@ -4,11 +4,9 @@ using UnityEngine;
 namespace XiaoCao
 {
 
-    internal class XCCommand_NorAck : IXCCommand
+    internal class XCCommand_NorAck : BaseCommand
     {
-        public XCTask task { get; set; }
-        public XCCommondEvent curEvent { get; set; }
-        public bool IsTargetRoleType(RoleType roleType)
+        public override bool IsTargetRoleType(RoleType roleType)
         {
             return roleType == RoleType.Player;
         }
@@ -17,9 +15,7 @@ namespace XiaoCao
 
         public XCState state;
 
-        public float minSwitchTime = 0.8f;
-
-        public void Init(BaseMsg baseMsg)
+        public override void Init(BaseMsg baseMsg)
         {
             state = XCState.Sleep;
             if (baseMsg.numMsg > 0)
@@ -29,13 +25,13 @@ namespace XiaoCao
 
         }
 
-        public void OnTrigger()
+        public override void OnTrigger()
         {
             player0 = task.Info.role as Player0;
             //Debug.Log("XCCommand_101 OnStart");
         }
 
-        public void OnUpdate(int frame, float timeSinceTrigger)
+        public override void OnUpdate(int frame, float timeSinceTrigger)
         {
             //检测触发
             if (state == XCState.Sleep)
@@ -59,7 +55,7 @@ namespace XiaoCao
 
         }
 
-        public void OnFinish(bool hasTrigger)
+        public override void OnFinish(bool hasTrigger)
         {
             CallNext();
         }

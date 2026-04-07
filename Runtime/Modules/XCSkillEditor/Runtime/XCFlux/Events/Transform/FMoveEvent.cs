@@ -30,6 +30,9 @@ namespace Flux
         private bool _isBezier;
         public bool isEditorHandles;
 
+        [ReadOnly]
+        public Transform parentTfCache;
+
         //public ETriggerCmd command;
         //[Dropdown(nameof(selectList2))]
         //public string triggerMsg;
@@ -203,7 +206,49 @@ namespace Flux
             }
 
             Vector3 currentPosition = GetBezierPathPositionAndIndex(t, out int nextIndex);
-            Owner.transform.position = currentPosition + Owner.transform.parent.position;
+            Owner.transform.position = currentPosition + GetPreviewOriginPosition();
+        }
+
+        public bool HasEditorPreviewCache()
+        {
+            return Track != null
+                && Track.transfromType == TransfromType.OtherTransfrom
+                && parentTfCache != null;
+        }
+
+        public Vector3 EditorPointToWorld(Vector3 point)
+        {
+            if (HasEditorPreviewCache())
+            {
+                return point + parentTfCache.position;
+            }
+            return point;
+        }
+
+        public Vector3 EditorPointToLocal(Vector3 point)
+        {
+            if (HasEditorPreviewCache())
+            {
+                return point - parentTfCache.position;
+            }
+            return point;
+        }
+
+        private Vector3 GetPreviewOriginPosition()
+        {
+#if UNITY_EDITOR
+            if (!Application.isPlaying && HasEditorPreviewCache())
+            {
+                return parentTfCache.position;
+            }
+#endif
+
+            if (Owner != null && Owner.transform.parent != null)
+            {
+                return Owner.transform.parent.position;
+            }
+
+            return Vector3.zero;
         }
 
         public Vector3 GetBezierPathPositionAndIndex(float normalizedTime, out int timeIndex)
@@ -273,6 +318,49 @@ namespace Flux
         public void OnNumChange()
         {
             CheckLen();
+        }
+
+        [Button("同步参考节点")]
+        public void SyncParentTfCache()
+        {
+            parentTfCache = null;
+
+            FTrack currentTrack = Track;
+            if (currentTrack == null)
+            {
+                Debug.LogWarning("--- FMoveEvent SyncParentTfCache fail, track is null");
+                return;
+            }
+
+            if (currentTrack.transfromType != TransfromType.OtherTransfrom)
+            {
+                Debug.LogWarning($"--- FMoveEvent SyncParentTfCache skip, transfromType = {currentTrack.transfromType}");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(currentTrack.otherPointName))
+            {
+                Debug.LogWarning("--- FMoveEvent SyncParentTfCache fail, otherPointName is empty");
+                return;
+            }
+
+            string pointName = currentTrack.otherPointName.Trim();
+
+            if (Owner == null)
+            {
+                Debug.LogWarning("--- FMoveEvent SyncParentTfCache fail, owner is null");
+                return;
+            }
+
+            Transform playerTf = Sequence.Containers[0].Timelines[0].Owner;
+            parentTfCache = playerTf.FindChildEx(pointName);
+            if (parentTfCache == null)
+            {
+                Debug.LogWarning($"--- FMoveEvent SyncParentTfCache fail, can not find {pointName} under {playerTf.name}");
+                return;
+            }
+
+            Debug.Log($"--- FMoveEvent SyncParentTfCache success {pointName} -> {parentTfCache.name}");
         }
 
         public float Evaluate(int i, float t)

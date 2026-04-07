@@ -170,11 +170,18 @@ namespace FluxEditor
             if (_allEventsSameType)
             {
                 serializedObject.ApplyModifiedProperties();
-                base.OnInspectorGUI();
+                serializedObject.Update();
+                DrawEventFields();
+                serializedObject.ApplyModifiedProperties();
             }
 
             DrawButtons();
 
+        }
+
+        protected virtual void DrawEventFields()
+        {
+            base.OnInspectorGUI();
         }
 
         protected void DrawButtons(bool drawHeader = true)

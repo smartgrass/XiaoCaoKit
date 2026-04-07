@@ -160,6 +160,7 @@ namespace FluxEditor
 			if( isPreviewing )
 				track.ClearCache();
 
+			Debug.Log($"-- RebuildStateMachine");
 			Animator animator = track.GetAnimator();
 			animator.runtimeAnimatorController = null;
 

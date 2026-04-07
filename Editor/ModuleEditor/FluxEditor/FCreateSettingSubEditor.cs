@@ -64,13 +64,13 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
 
 
 
-    [Button("创建Body")]
+    [Button("创建IdRole")]
     void CreateBodyPrefab()
     {
         // 1. 复制Assets/_Res/Role/Enemy/E_0.prefab,并重命名
-        string sourcePrefabPath = "Assets/_Res/Role/Enemy/E_0.prefab";
+        string sourcePrefabPath = "Assets/_Res/Role/IdRole/E_0.prefab";
         string targetPrefabName = $"E_{raceId}_{str}.prefab";
-        string targetPrefabPath = $"Assets/_Res/Role/Enemy/{targetPrefabName}";
+        string targetPrefabPath = $"Assets/_Res/Role/IdRole/{targetPrefabName}";
 
         if (AssetDatabase.CopyAsset(sourcePrefabPath, targetPrefabPath))
         {
@@ -90,7 +90,7 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
             if (idRole != null)
             {
                 idRole.raceId = int.Parse(raceId);
-                idRole.bodyName = $"Body_E_{raceId}_{str}";
+                idRole.bodyName = $"E_{raceId}_{str}";
 
                 // 保存修改
                 EditorUtility.SetDirty(prefabInstance);

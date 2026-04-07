@@ -130,6 +130,7 @@ namespace Flux
 				if (Owner.GetChild(0).TryGetComponent<Animator>(out Animator anim))
 				{
                     curAnimtor = anim;
+                    Debug.Log($"-- GetAnimator");
                     return anim;
                 }
                 Debug.LogError($"--- no animator {Owner}");

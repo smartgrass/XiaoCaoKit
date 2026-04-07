@@ -16,6 +16,7 @@ namespace XiaoCaoKit
         public TMP_Text killCountText;
         public TMP_Text levelTimeCountText;
         public Transform rewardParent;
+        public Transform firstRewardParent;
         public override UIPanelType PanelType => UIPanelType.LevelResultPanel;
 
         public override void Show(IUIData data = null)
@@ -61,6 +62,7 @@ namespace XiaoCaoKit
             }
         }
 
+        //通关奖励
         private void GetLevelFinishReward(string levelName)
         {
             var list = LevelSettingHelper.GetReward(levelName);
@@ -70,22 +72,36 @@ namespace XiaoCaoKit
                 item.RewardItem();
                 rewardItem.GetComponent<ItemCell>().SetItem(item);
             }
+
             //
             var info = LevelInfo.ParseString(levelName);
-            bool hasFirstReward = PlayerSaveData.LocalSavaData.levelPassData.HasGetFirstReward(info.chapter, info.index);
+            bool hasFirstReward =
+                PlayerSaveData.LocalSavaData.levelPassData.HasGetFirstReward(info.chapter, info.index);
             var firstRewardList = LevelSettingHelper.GetFirstReward(levelName);
-            
+
             //如果hasFirstReward
-            
+
             foreach (Item item in list)
             {
                 var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, rewardParent);
+                item.RewardItem();
+                rewardItem.GetComponent<ItemCell>().SetItem(item);
+            }
+
+            foreach (Item item in firstRewardList)
+            {
+                var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, firstRewardParent);
                 if (!hasFirstReward)
                 {
                     item.RewardItem();
                 }
-                rewardItem.GetComponent<ItemCell>().SetItem(item);
-                //rewardItem 设置以获取的Mask
+
+                var cell = rewardItem.GetComponent<ItemCell>().SetItem(item);
+
+                if (hasFirstReward)
+                {
+                    cell.SetMask("hasGet");
+                }
             }
 
             if (!hasFirstReward)

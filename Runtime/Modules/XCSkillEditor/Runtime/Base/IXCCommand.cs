@@ -9,25 +9,17 @@ using UnityEngine;
 namespace XiaoCao
 {
     /* 复制模板
-    internal class XCCommand_XXXX : IXCCommand
+    internal class XCCommand_XXXX : BaseCommand
     {
-        public XCTask task { get; set; }
-        public XCCommondEvent curEvent { get; set; }
-        public bool IsTargetRoleType(RoleType roleType)
-        {
-            return true;
-        }
-
         private Player0 Player0 => task.Info.role as Player0;
 
-        public float minSwitchTime = 0.8f;
-        public void Init(BaseMsg baseMsg){ }
+        public override void Init(BaseMsg baseMsg){ }
 
-        public void OnFinish(bool hasTrigger){ }
+        public override void OnFinish(bool hasTrigger){ }
 
-        public void OnTrigger(){}
+        public override void OnTrigger(){}
 
-        public void OnUpdate(int frame, float timeSinceTrigger) {}
+        public override void OnUpdate(int frame, float timeSinceTrigger) {}
     }
     */
 
@@ -38,14 +30,48 @@ namespace XiaoCao
     {
         public XCTask task { get; set; }
         public XCCommondEvent curEvent { get; set; }
+        bool IsOtherMsg { get; set; }
+        float minSwitchTime { get; set; }
         public void OnTrigger();
         public void OnUpdate(int frame, float timeSinceTrigger);
         public void OnFinish(bool hasTrigger);
         void Init(BaseMsg baseMsg);
+        void InitOtherMsg(string[] otherMsgs);
         bool IsTargetRoleType(RoleType roleType);
     }
 
+    public abstract class BaseCommand : IXCCommand
+    {
+        public virtual XCTask task { get; set; }
+        public virtual XCCommondEvent curEvent { get; set; }
+        public virtual bool IsOtherMsg { get; set; }
+        public virtual float minSwitchTime { get; set; } = 0.8f;
 
+        public virtual void OnTrigger()
+        {
+        }
+
+        public virtual void OnUpdate(int frame, float timeSinceTrigger)
+        {
+        }
+
+        public virtual void OnFinish(bool hasTrigger)
+        {
+        }
+
+        public virtual void Init(BaseMsg baseMsg)
+        {
+        }
+
+        public virtual void InitOtherMsg(string[] otherMsgs)
+        {
+        }
+
+        public virtual bool IsTargetRoleType(RoleType roleType)
+        {
+            return true;
+        }
+    }
 
 
     public class XCCommandBinder : Singleton<XCCommandBinder>

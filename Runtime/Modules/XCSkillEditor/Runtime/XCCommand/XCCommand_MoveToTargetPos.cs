@@ -1,53 +1,92 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace XiaoCao
 {
-    internal class XCCommand_MoveToTargetPos : IXCCommand
+    internal class XCCommand_MoveToTargetPos : BaseCommand
     {
-        public XCTask task { get; set; }
-        public XCCommondEvent curEvent { get; set; }
+        private const string DefaultAtkWarmingPrefabPath = "Assets/_Res/SkillPrefab/Player/atk_warming_circle.prefab";
 
         public bool isShoot; //保持速度,等
+        public bool isDropDown;
 
         public float offset;
 
         public float minDistance;
 
-        public void Init(BaseMsg baseMsg)
+        private GameObject createObject;
+
+        private bool showAtkWarming;
+        private float atkWarmingScale;
+        private string atkWarmingPrefabPath;
+
+        public override void Init(BaseMsg baseMsg)
         {
-            isShoot = baseMsg.strMsg == "Shoot";
-            var array = baseMsg.strMsg.Split(",");
+            IsOtherMsg = true;
+            ResetOtherMsgData();
+            createObject = null;
+            isShoot = false;
+            isDropDown = false;
+            offset = 0;
+            minDistance = 0;
+            string[] array = string.IsNullOrWhiteSpace(baseMsg.strMsg) ? Array.Empty<string>() : baseMsg.strMsg.Split(",");
             if (array.Length > 0)
             {
                 //如offset_-0.5,min_1
                 foreach (var str in array)
                 {
-                    if (str.StartsWith("offset"))
+                    string token = str.Trim();
+                    if (token.Equals("Shoot", StringComparison.OrdinalIgnoreCase))
                     {
-                        string numStr = str.Split("_")[1];
+                        isShoot = true;
+                    }
+                    else if (token.Equals("dropDown", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isDropDown = true;
+                    }
+                    else if (token.StartsWith("offset"))
+                    {
+                        string numStr = token.Split("_")[1];
                         offset = float.Parse(numStr);
                     }
-                    else if (str.StartsWith("min"))
+                    else if (token.StartsWith("min"))
                     {
-                        string numStr = str.Split("_")[1];
+                        string numStr = token.Split("_")[1];
                         minDistance = float.Parse(numStr);
                     }
                 }
             }
         }
 
-        public bool IsTargetRoleType(RoleType roleType)
+        public override void InitOtherMsg(string[] otherMsgs)
         {
-            return true;
+            ResetOtherMsgData();
+            if (otherMsgs == null || otherMsgs.Length == 0)
+            {
+                return;
+            }
+
+            foreach (string otherMsg in otherMsgs)
+            {
+                ParseOtherMsg(otherMsg);
+            }
         }
 
-        public float minSwitchTime = 0.8f;
-
-
-        public void OnTrigger()
+        public override void OnTrigger()
         {
             //获取当前Track中的MoveEvent
+            XCMoveEvent moveEvent = GetMoveEvent();
+            if (moveEvent == null)
+            {
+                return;
+            }
 
+            ReSetMoveEventData(moveEvent);
+            CreateAtkWarming(moveEvent);
+        }
+
+        private XCMoveEvent GetMoveEvent()
+        {
             var moveEvents = curEvent.task._events.FindAll(x => x.GetType() == typeof(XCMoveEvent));
 
             foreach (var item in moveEvents)
@@ -55,29 +94,22 @@ namespace XiaoCao
                 //找到第一最近的MoveEvent
                 if (item.Start >= curEvent.Start)
                 {
-                    ReSetMoveEventData(item as XCMoveEvent);
-                    return;
+                    return item as XCMoveEvent;
                 }
             }
+
+            return null;
         }
 
         void ReSetMoveEventData(XCMoveEvent moveEvent)
         {
             float maxDistance = curEvent.baseMsg.numMsg;
+            float searchDistance = maxDistance + 5;
             var role = task.Info.role;
-            if (!task.Info.role.FindEnemy(out Role findRole, maxDistance + 5, angle: 50))
-            {
-                //如果距离过远 则放弃索敌
-                return;
-            }
-
             if (maxDistance == 0)
             {
                 maxDistance = 5;
             }
-
-            role.AISetLookTarget(findRole.transform);
-            role.transform.RotaToPos(findRole.transform.position, 0.4f);
 
             if (isShoot)
             {
@@ -86,7 +118,19 @@ namespace XiaoCao
 
             //修改终点,并且修改handle
             Vector3 worldStartVec = task.GetBindTranfrom().position; //获取当前世界坐标
-            Vector3 worldEndVec = findRole.transform.position;
+            bool hasEnemy = task.Info.role.FindEnemy(out Role findRole, searchDistance, angle: 50);
+            Vector3 worldEndVec = hasEnemy ? findRole.transform.position : GetVirtualFocusPos(worldStartVec, role.transform, maxDistance);
+
+            if (hasEnemy)
+            {
+                role.AISetLookTarget(findRole.transform);
+            }
+            else
+            {
+                role.AISetLookTarget(null);
+            }
+            role.transform.RotaToPos(worldEndVec, 0.4f);
+
             if (offset != 0)
             {
                 worldEndVec += (worldEndVec - worldStartVec).normalized * offset;
@@ -116,6 +160,11 @@ namespace XiaoCao
                 }
             }
 
+            if (isDropDown)
+            {
+                worldEndVec = AlignToGround(worldEndVec);
+            }
+
             //修改Handle需要保持高度不变,所处距离比例不变
             if (moveEvent.isBezier)
             {
@@ -129,58 +178,252 @@ namespace XiaoCao
             moveEvent.IsWorldTransfromMode = true;
         }
 
+        private Vector3 GetVirtualFocusPos(Vector3 worldStartVec, Transform roleTransform, float maxDistance)
+        {
+            Vector3 forward = roleTransform.forward.SetY(0);
+            if (forward.sqrMagnitude < 0.0001f)
+            {
+                forward = Vector3.forward;
+            }
 
+            return worldStartVec + forward.normalized * maxDistance;
+        }
+
+        private Vector3 AlignToGround(Vector3 targetPos)
+        {
+            Vector3 rayStart = targetPos + Vector3.up * 20f;
+            float rayDistance = 200f;
+            int layerMask = Layers.GROUND_MASK | Layers.DEFAULT_MASK;
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, rayDistance, layerMask, QueryTriggerInteraction.Ignore))
+            {
+                targetPos.y = hit.point.y;
+            }
+
+            return targetPos;
+        }
+
+        /// <summary>
+        /// 将原始三角形中的 C 点，映射到新的 AB 线段上。
+        /// 这里不直接用“把原 AB 旋转到新 AB”的方式，因为那样在 AB 方向相同但绕 AB 轴存在自由旋转时，
+        /// 会让 C 点所在平面发生额外扭转，例如原来与地面垂直的平面，重算后可能不再垂直。
+        /// 当前实现会先为原始 AB 和目标 AB 各自构建一个稳定坐标系，再把 C-A 的局部坐标映射过去。
+        /// </summary>
         /// <returns>变换后的点C'</returns>
         public static Vector3 TransformPointC(Vector3 originalA, Vector3 originalB, Vector3 originalC, Vector3 newA,
             Vector3 newB)
         {
-            // 1. 计算平移向量
-            Vector3 translation = newA - originalA;
-
-            // 2. 计算缩放比例
             float originalLength = Vector3.Distance(originalA, originalB);
-            float newLength = Vector3.Distance(newA, newB);
-            float scale = newLength / originalLength;
-
-            // 3. 计算旋转角度和轴
-            Vector3 originalAB = originalB - originalA;
-            Vector3 newAB = newB - newA;
-
-            // 计算旋转轴（两向量叉乘的方向）
-            Vector3 rotationAxis = Vector3.Cross(originalAB.normalized, newAB.normalized);
-            if (rotationAxis.sqrMagnitude < 0.0001f)
+            if (originalLength < 0.0001f)
             {
-                // 如果向量平行，选择任意垂直轴
-                rotationAxis = Vector3.Cross(originalAB.normalized, Vector3.up);
-                if (rotationAxis.sqrMagnitude < 0.0001f)
-                    rotationAxis = Vector3.Cross(originalAB.normalized, Vector3.right);
+                // 原始 AB 太短时无法建立稳定方向，直接回退到新起点。
+                return newA;
             }
 
-            rotationAxis.Normalize();
+            float newLength = Vector3.Distance(newA, newB);
+            if (newLength < 0.0001f)
+            {
+                // 目标 AB 太短时同样无法完成映射。
+                return newA;
+            }
 
-            // 计算旋转角度
-            float angle = Vector3.Angle(originalAB, newAB);
+            float scale = newLength / originalLength;
 
-            // 4. 对C点依次应用平移、旋转和缩放变换
-            // 先平移
-            Vector3 translatedC = originalC + translation;
+            Vector3 originalAB = originalB - originalA;
+            Vector3 newAB = newB - newA;
+            Vector3 originalAC = originalC - originalA;
+            // 原始三点平面的法线，用来帮助构造更稳定的局部坐标系。
+            Vector3 planeNormalHint = Vector3.Cross(originalAB, originalAC);
 
-            // 再旋转（绕新的A点）
-            Quaternion rotation = Quaternion.AngleAxis(angle, rotationAxis);
-            Vector3 rotatedC = newA + rotation * (translatedC - newA);
+            BuildStableBasis(originalAB, planeNormalHint, out Vector3 originalForward, out Vector3 originalUp,
+                out Vector3 originalRight);
+            BuildStableBasis(newAB, planeNormalHint, out Vector3 newForward, out Vector3 newUp, out Vector3 newRight);
 
-            // 最后缩放（以新的A点为中心）
-            Vector3 scaledC = newA + (rotatedC - newA) * scale;
+            // 先把 C 相对 A 的位置投影到“原始稳定坐标系”中，再按比例缩放。
+            Vector3 localOffset = new Vector3(
+                Vector3.Dot(originalAC, originalForward),
+                Vector3.Dot(originalAC, originalUp),
+                Vector3.Dot(originalAC, originalRight)) * scale;
 
-            return scaledC;
+            // 最后再把这个局部偏移写回“目标稳定坐标系”。
+            return newA
+                + newForward * localOffset.x
+                + newUp * localOffset.y
+                + newRight * localOffset.z;
         }
 
-        public void OnFinish(bool hasTrigger)
+        /// <summary>
+        /// 根据给定方向构建一个稳定的正交基。
+        /// 会优先参考世界 Up，这样当原始平面本来与地面存在稳定关系时，重算后更容易保持一致。
+        /// </summary>
+        private static void BuildStableBasis(Vector3 direction, Vector3 planeNormalHint, out Vector3 forward,
+            out Vector3 up, out Vector3 right)
+        {
+            forward = direction.normalized;
+
+            // 优先使用世界 Up 来固定“绕 forward 的旋转自由度”。
+            right = Vector3.Cross(Vector3.up, forward);
+            if (right.sqrMagnitude < 0.0001f && planeNormalHint.sqrMagnitude > 0.0001f)
+            {
+                // 当 forward 与世界 Up 近乎平行时，再退回到原始平面法线辅助定向。
+                right = Vector3.Cross(planeNormalHint, forward);
+            }
+
+            if (right.sqrMagnitude < 0.0001f)
+            {
+                // 极端情况下继续使用固定轴兜底，保证一定能构造出坐标系。
+                right = Vector3.Cross(Vector3.forward, forward);
+            }
+
+            if (right.sqrMagnitude < 0.0001f)
+            {
+                right = Vector3.Cross(Vector3.right, forward);
+            }
+
+            right.Normalize();
+            up = Vector3.Cross(forward, right).normalized;
+        }
+
+        public override void OnFinish(bool hasTrigger)
+        {
+            if (createObject)
+            {
+                createObject.gameObject.SetActive(false);
+                PoolMgr.Inst.Release(GetAtkWarmingPrefabPath(), createObject);
+                createObject = null;
+            }
+        }
+
+        public override void OnUpdate(int frame, float timeSinceTrigger)
         {
         }
 
-        public void OnUpdate(int frame, float timeSinceTrigger)
+        private void CreateAtkWarming(XCMoveEvent moveEvent)
         {
+            if (!showAtkWarming)
+            {
+                return;
+            }
+
+            createObject = PoolMgr.Inst.GetOrCreatPool(GetAtkWarmingPrefabPath()).Get();
+            createObject.transform.position = moveEvent.GetEndWoldPos();
+            createObject.transform.localScale = Vector3.one * atkWarmingScale;
+        }
+
+        private string GetAtkWarmingPrefabPath()
+        {
+            return string.IsNullOrEmpty(atkWarmingPrefabPath) ? DefaultAtkWarmingPrefabPath : atkWarmingPrefabPath;
+        }
+
+        private void ResetOtherMsgData()
+        {
+            showAtkWarming = false;
+            atkWarmingScale = 1f;
+            atkWarmingPrefabPath = DefaultAtkWarmingPrefabPath;
+        }
+
+        private void ParseOtherMsg(string otherMsg)
+        {
+            if (string.IsNullOrWhiteSpace(otherMsg))
+            {
+                return;
+            }
+
+            string[] tokens = otherMsg.Split(',');
+            if (TryParseAtkWarmingConfig(tokens))
+            {
+                return;
+            }
+
+            foreach (string rawToken in tokens)
+            {
+                string token = NormalizeOtherMsgToken(rawToken);
+                if (string.IsNullOrEmpty(token))
+                {
+                    continue;
+                }
+
+                if (float.TryParse(token, out float directScale) && directScale > 0)
+                {
+                    showAtkWarming = true;
+                    atkWarmingScale = directScale;
+                }
+                if (token.Equals("AtkWarming", StringComparison.OrdinalIgnoreCase)
+                    || token.Equals("ShowAtkWarming", StringComparison.OrdinalIgnoreCase))
+                {
+                    showAtkWarming = true;
+                }
+                else if (token.StartsWith("show_", StringComparison.OrdinalIgnoreCase))
+                {
+                    string showStr = token.Substring("show_".Length);
+                    if (bool.TryParse(showStr, out bool show))
+                    {
+                        showAtkWarming = show;
+                    }
+                }
+                else if (token.StartsWith("path_", StringComparison.OrdinalIgnoreCase))
+                {
+                    atkWarmingPrefabPath = token.Substring("path_".Length);
+                }
+                else if (token.StartsWith("scale_", StringComparison.OrdinalIgnoreCase))
+                {
+                    string scaleStr = token.Substring("scale_".Length);
+                    if (float.TryParse(scaleStr, out float scale) && scale > 0)
+                    {
+                        atkWarmingScale = scale;
+                    }
+                }
+                else if (token.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase))
+                {
+                    atkWarmingPrefabPath = token;
+                }
+            }
+        }
+
+        private bool TryParseAtkWarmingConfig(string[] tokens)
+        {
+            if (tokens == null || tokens.Length == 0)
+            {
+                return false;
+            }
+
+            string typeToken = NormalizeOtherMsgToken(tokens[0]);
+            if (!typeToken.Equals("AtkWarming", StringComparison.OrdinalIgnoreCase)
+                && !typeToken.Equals("ShowAtkWarming", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            showAtkWarming = true;
+
+            if (tokens.Length > 1)
+            {
+                string scaleToken = NormalizeOtherMsgToken(tokens[1]);
+                if (float.TryParse(scaleToken, out float scale) && scale > 0)
+                {
+                    atkWarmingScale = scale;
+                }
+            }
+
+            if (tokens.Length > 2)
+            {
+                string pathToken = NormalizeOtherMsgToken(tokens[2]);
+                if (!string.IsNullOrEmpty(pathToken))
+                {
+                    atkWarmingPrefabPath = pathToken;
+                }
+            }
+
+            return true;
+        }
+
+        private string NormalizeOtherMsgToken(string rawToken)
+        {
+            if (string.IsNullOrWhiteSpace(rawToken))
+            {
+                return string.Empty;
+            }
+
+            return rawToken.Trim().Trim('[', ']', '"', '\'');
         }
     }
 }

@@ -9,6 +9,8 @@ namespace XiaoCao
     {
         public BaseMsg baseMsg;
 
+        public string[] otherMsgs;
+
         public IXCCommand Cmd { get; set;}
 
         private bool HasCmd { get; set; }
@@ -23,6 +25,10 @@ namespace XiaoCao
                 Cmd.task = this.task;
                 Cmd.curEvent = this;
                 Cmd.Init(baseMsg);
+                if (Cmd.IsOtherMsg)
+                {
+                    Cmd.InitOtherMsg(otherMsgs);
+                }
                 Cmd.OnTrigger();
             }
         }
