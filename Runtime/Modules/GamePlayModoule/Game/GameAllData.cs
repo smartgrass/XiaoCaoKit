@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using cfg;
 using TEngine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -52,9 +53,9 @@ namespace XiaoCao
 
         ///<see cref="EQuality"/>
         public const int MaxBuffLevel = 5; //从0~5
-        
+
         //满级
-        public const int MaxRoleLevel = 30; 
+        public const int MaxRoleLevel = 30;
 
         ///<see cref="LevelSettingHelper"/>
         ///<see cref="XCSetting"/>
@@ -82,7 +83,7 @@ namespace XiaoCao
         public Player0 Player0 { get; set; }
 
         public bool isFighting;
-        
+
         //需要保存
         public int localPlayerId;
 
@@ -127,6 +128,8 @@ namespace XiaoCao
         public static BattleData Current => GameAllData.battleData;
 
         public LevelData levelData = new LevelData();
+        public List<BattleExtraItemData> extraItems = new List<BattleExtraItemData>();
+        public int selectedExtraItemIndex;
 
         public static bool IsTimeStop
         {
@@ -185,6 +188,163 @@ namespace XiaoCao
             {
                 fightValue = 100;
             }
+        }
+
+        public bool HasExtraItemSkill()
+        {
+            CleanupExtraItems();
+            return extraItems.Count > 0;
+        }
+
+        public List<BattleExtraItemData> GetExtraItems()
+        {
+            CleanupExtraItems();
+            return extraItems;
+        }
+
+        public void AddExtraItem(Item item)
+        {
+            if (item == null || item.type != ItemType.Consumable || string.IsNullOrEmpty(item.typeId))
+            {
+                return;
+            }
+
+            BattleExtraItemSubConfig config = ConfigMgr.Inst.BattleExtraItemConfigSo?.GetConfig(item.typeId);
+            if (config == null)
+            {
+                Debug.LogWarning($"--- no extra item config {item.typeId}");
+                return;
+            }
+
+            CleanupExtraItems();
+            int addCount = Mathf.Max(1, item.num) * Mathf.Max(1, config.count);
+            var existed = extraItems.Find(data => data.IsSame(item));
+            if (existed != null)
+            {
+                existed.count += addCount;
+                SelectExtraItem(extraItems.IndexOf(existed));
+                return;
+            }
+
+            var extraItem = BattleExtraItemData.Create(item, config, addCount);
+            extraItems.Add(extraItem);
+            SelectExtraItem(extraItems.Count - 1);
+        }
+
+        public void SelectExtraItem(int index)
+        {
+            CleanupExtraItems();
+            if (extraItems.Count == 0)
+            {
+                selectedExtraItemIndex = 0;
+                return;
+            }
+
+            selectedExtraItemIndex = Mathf.Clamp(index, 0, extraItems.Count - 1);
+        }
+
+        public BattleExtraItemData GetSelectedExtraItem()
+        {
+            CleanupExtraItems();
+            if (extraItems.Count == 0)
+            {
+                return null;
+            }
+
+            selectedExtraItemIndex = Mathf.Clamp(selectedExtraItemIndex, 0, extraItems.Count - 1);
+            return extraItems[selectedExtraItemIndex];
+        }
+
+        public float GetSelectedExtraItemProcess()
+        {
+            var extraItem = GetSelectedExtraItem();
+            if (extraItem == null)
+            {
+                return 0;
+            }
+
+            return extraItem.GetWaitTimeProccess();
+        }
+
+        public bool TryUseSelectedExtraItem()
+        {
+            var extraItem = GetSelectedExtraItem();
+            if (extraItem == null || extraItem.IsCd)
+            {
+                return false;
+            }
+
+            if (!BattleExtraItemHelper.TryUse(extraItem.typeId))
+            {
+                return false;
+            }
+
+            extraItem.EnterCD();
+            extraItem.count--;
+            CleanupExtraItems();
+            return true;
+        }
+
+        private void CleanupExtraItems()
+        {
+            extraItems.RemoveAll(item => item == null || item.count <= 0);
+            if (extraItems.Count == 0)
+            {
+                selectedExtraItemIndex = 0;
+                return;
+            }
+
+            selectedExtraItemIndex = Mathf.Clamp(selectedExtraItemIndex, 0, extraItems.Count - 1);
+        }
+    }
+
+    [Serializable]
+    public class BattleExtraItemData
+    {
+        public string typeId;
+        public EQuality quality;
+        public int count;
+        public float baseCd;
+        public float cdFinishTime;
+
+        public bool IsCd => Time.time < cdFinishTime;
+
+        public string ItemKey => ToItem().ItemKey;
+
+        public static BattleExtraItemData Create(Item item, BattleExtraItemSubConfig config, int count)
+        {
+            return new BattleExtraItemData()
+            {
+                typeId = item.typeId,
+                quality = item.quality,
+                count = Mathf.Max(1, count),
+                baseCd = config == null ? 0 : Mathf.Max(0, config.cdTime)
+            };
+        }
+
+        public bool IsSame(Item item)
+        {
+            return item != null && item.typeId == typeId && item.quality == quality;
+        }
+
+        public Item ToItem()
+        {
+            return new Item(ItemType.Consumable, typeId, count, quality);
+        }
+
+        public void EnterCD()
+        {
+            cdFinishTime = Time.time + baseCd;
+        }
+
+        public float GetWaitTimeProccess()
+        {
+            if (!IsCd || baseCd <= 0)
+            {
+                return 0;
+            }
+
+            return (cdFinishTime - Time.time) / baseCd;
         }
     }
 
@@ -356,6 +516,53 @@ namespace XiaoCao
         public const string DamageMult_E = "DamageMult_E";
     }
 
+    public static class BattleExtraItemType
+    {
+        public const string TimeStop = "TimeStop";
+        public const string Heal = "HealthPotion";
+    }
+
+    public static class BattleExtraItemHelper
+    {
+        public const float TimeStopDuration = 4f;
+        public const float HealHpPercent = 0.2f;
+
+        public static bool TryUse(string itemTypeId)
+        {
+            switch (itemTypeId)
+            {
+                case BattleExtraItemType.TimeStop:
+                    TimeStopMgr.Inst.StopTimeSpeed(TimeStopDuration);
+                    return true;
+                case BattleExtraItemType.Heal:
+                    return TryHealLocalPlayer();
+                default:
+                    Debug.LogWarning($"--- no extra item skill {itemTypeId}");
+                    return false;
+            }
+        }
+
+        private static bool TryHealLocalPlayer()
+        {
+            var player = GameDataCommon.LocalPlayer;
+            if (player == null || player.IsDie || player.MaxHp <= 0)
+            {
+                return false;
+            }
+
+            float loseHp = Mathf.Max(0, player.MaxHp - player.Hp);
+            if (loseHp <= 0)
+            {
+                UIMgr.PopToast("FullHpTip".ToLocalizeStr());
+                return false;
+            }
+
+            float healAmount = Mathf.Min(player.MaxHp * HealHpPercent, loseHp);
+            player.ChangeNowValue(ENowAttr.Hp, healAmount);
+            return true;
+        }
+    }
+
     public static class TeamTag
     {
         public const int Enemy = 0;
@@ -383,18 +590,18 @@ namespace XiaoCao
             _data = initialValue;
         }
 
-        // 声明事件，当有数据变化时触发  
+        // 声明事件，当有数据变化时触发
         public event Action<T> OnValueChanged;
 
         private T _data;
 
-        // 公共的getter  
+        // 公共的getter
         public T Data
         {
             get { return _data; }
         }
 
-        // 提供一个方法来设置数据并触发事件  
+        // 提供一个方法来设置数据并触发事件
         public void SetValue(T value)
         {
             T oldValue = _data;
@@ -409,26 +616,26 @@ namespace XiaoCao
         }
 
 
-        // 示例：注册监听事件  
+        // 示例：注册监听事件
         public void AddListener(Action<T> listener)
         {
             OnValueChanged += listener;
         }
 
-        // 示例：注销监听事件  
+        // 示例：注销监听事件
         public void RemoveListener(Action<T> listener)
         {
             OnValueChanged -= listener;
         }
 
 
-        // 隐式转换到T  
+        // 隐式转换到T
         public static implicit operator T(DataListener<T> wrapper)
         {
             return wrapper._data;
         }
 
-        //// 隐式转换到T  
+        //// 隐式转换到T
         //public static implicit operator DataListener<T> (T wrapper)
         //{
         //    DataListener<T> v = new DataListener<T>();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using cfg;
 using DG.Tweening;
@@ -42,7 +42,12 @@ namespace XiaoCao
                 return;
             }
 
-            if (InputData.skillInput >= 0)
+            if (InputData.skillInput == GameSetting.SkillCountOnBar)
+            {
+                owner.TryUseExtraSkill();
+                Data_P.norAckCache = false;
+            }
+            else if (InputData.skillInput >= 0)
             {
                 ///<see cref="SkillDataSo"/>
                 string skillId = Data_P.GetBarSkillId(InputData.skillInput);
@@ -58,16 +63,16 @@ namespace XiaoCao
             //Editor Debug用
             if (InputData.inputs[InputKey.Tab])
             {
-                if (BattleData.IsTimeStop)
-                {
-                    TimeStopMgr.Inst.RecoverTimeSpeed();
-                }
-                else
-                {
-                    TimeStopMgr.Inst.StopTimeSpeed();
-                }
-
-                owner.component.atkTimer.ClearAllCd();
+                // if (BattleData.IsTimeStop)
+                // {
+                //     TimeStopMgr.Inst.RecoverTimeSpeed();
+                // }
+                // else
+                // {
+                //     TimeStopMgr.Inst.StopTimeSpeed();
+                // }
+                //
+                // owner.component.atkTimer.ClearAllCd();
             }
 
             if (InputData.inputs[InputKey.Focus])

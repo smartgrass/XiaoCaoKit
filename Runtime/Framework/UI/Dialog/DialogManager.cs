@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace XiaoCao.UI
 {
@@ -19,7 +18,6 @@ namespace XiaoCao.UI
         /// <param name="content">对话框内容</param>
         /// <param name="onConfirm">确认回调</param>
         /// <param name="onCancel">取消回调</param>
-        /// <param name="isOnly">只允许出现一个</param>
         public static DialogPanel ShowDialog(string title, string content, Action onConfirm = null,
             Action onCancel = null)
         {
@@ -53,10 +51,24 @@ namespace XiaoCao.UI
         {
             if (currentDialog != null)
             {
-                currentDialog.Hide();
-                GameObject.Destroy(currentDialog.gameObject);
+                DialogPanel dialog = currentDialog;
+                currentDialog = null;
+                dialog.Hide();
+                GameObject.Destroy(dialog.gameObject);
+            }
+        }
+
+        internal static void NotifyDialogDestroyed(DialogPanel dialog)
+        {
+            if (currentDialog == dialog)
+            {
                 currentDialog = null;
             }
+        }
+
+        internal static bool IsCurrentDialog(DialogPanel dialog)
+        {
+            return currentDialog == dialog;
         }
 
         /// <summary>

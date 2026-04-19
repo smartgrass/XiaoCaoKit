@@ -3,6 +3,7 @@ using System.Collections;
 using XiaoCao;
 using System.Collections.Generic;
 using System;
+using NaughtyAttributes;
 
 namespace Flux
 {
@@ -13,6 +14,10 @@ namespace Flux
 
         public MeshInfo meshInfo;
 
+        [XCLabel("触发对象")]
+        [EnumFlags]
+        public TriggerTargetType triggerTargetType = TriggerTargetType.Enemy;
+
         public override XCEvent ToXCEvent()
         {
             var xce = new XCTriggerEvent();
@@ -20,6 +25,7 @@ namespace Flux
             xce.range = new XCRange(fe.Start, fe.End);
             xce.meshInfo = fe.meshInfo;
             xce.maxTriggerTime = fe.maxTriggetTime;
+            xce.triggerTargetType = fe.triggerTargetType;
             return xce;
         }
 

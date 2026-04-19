@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using OdinSerializer;
 using SerializationUtility = OdinSerializer.SerializationUtility;
@@ -52,6 +52,8 @@ namespace XiaoCao
         public BuffConfigSo BuffConfigSo;
 
         public ModelConfigSo ModelConfigDataSo;
+
+        public BattleExtraItemConfigSo BattleExtraItemConfigSo;
 
         public List<string> SkinList;
 
@@ -108,6 +110,7 @@ namespace XiaoCao
             EnemyKillRewardSo = LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = LoadSoConfig<BuffConfigSo>();
             ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
+            BattleExtraItemConfigSo = LoadSoConfig<BattleExtraItemConfigSo>();
             _uiPrefabSo = LoadSoConfig<UIPrefabSo>();
             GetSkinList();
             GetTestEnemyList();

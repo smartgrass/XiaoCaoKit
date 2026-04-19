@@ -1,4 +1,4 @@
-ï»¿using cfg;
+using cfg;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace XiaoCao
     [XCHelper]
     public class LevelSettingHelper
     {
-        //è·å–Enemyç­‰çº§
+        //»ñÈ¡EnemyµÈ¼¶
         public static int GetEnemyLevel(int addLevel)
         {
             string levelName = GameDataCommon.Current.levelName;
@@ -46,10 +46,10 @@ namespace XiaoCao
     public class LevelData
     {
         public static LevelData Current => BattleData.Current.levelData;
-        //é»˜è®¤å¥–åŠ±ç­‰çº§
+        //Ä¬ÈÏ½±ÀøµÈ¼¶
         public int RewardLevel { get; set; }
 
-        //å…³å¡åˆ†æ”¯
+        //¹Ø¿¨·ÖÖ§
         public string LevelBranch = "";
 
         public ELevelResult levelResult;
@@ -84,10 +84,12 @@ namespace XiaoCao
     {
         public static void RewardItem(this Item item)
         {
-            //æš‚æ—¶åªæœ‰æœ¬åœ°ç©å®¶
+            //ÔİÊ±Ö»ÓĞ±¾µØÍæ¼Ò
             switch (item.type)
             {
                 case ItemType.Consumable:
+                    BattleData.Current.AddExtraItem(item);
+                    GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
                     break;
                 case ItemType.HolyRelic:
                     break;
@@ -110,17 +112,17 @@ namespace XiaoCao
             }
 
             RewardPoolSo so = ConfigMgr.Inst.EnemyKillRewardSo;
-            //è·å–å¥–åŠ±æ± 
+            //»ñÈ¡½±Àø³Ø
             BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
-            //èƒŒåŒ… pick
+            //±³°ü pick
             Item item = rewardPool.GetRewardItem(rewardLevel);
 
             return item;
         }
 
         /// <summary>
-        /// item.id çš„æ•°å­—ç›´æ¥å¯¹åº”buff
-        /// å¦‚æœæ˜¯#å¼€å¤´,åˆ™æ˜¯æ ¹æ®EBuffTypeç±»å‹æŠ½å–
+        /// item.id µÄÊı×ÖÖ±½Ó¶ÔÓ¦buff
+        /// Èç¹ûÊÇ#¿ªÍ·,ÔòÊÇ¸ù¾İEBuffTypeÀàĞÍ³éÈ¡
         /// </summary>
         /// <param name="item"></param>
         public static void RewardBuff(Item item)
@@ -137,6 +139,6 @@ namespace XiaoCao
 
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
         }
-        //ç‰¹æ®Šçš„è½¬æ¢è§„åˆ™,å¯ä»¥å–éšæœº
+        //ÌØÊâµÄ×ª»»¹æÔò,¿ÉÒÔÈ¡Ëæ»ú
     }
 }

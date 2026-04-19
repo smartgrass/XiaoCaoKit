@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using Input = UnityEngine.Input;
 
 namespace XiaoCao
@@ -50,7 +51,7 @@ namespace XiaoCao
             if (Input.GetKeyDown(KeyCode.F))
                 data.inputs[InputKey.Focus] = true;
 
-            for (int index = 0; index < 6; index++)
+            for (int index = 0; index < GameSetting.SkillCountOnBar; index++)
             {
                 if (Input.GetKeyDown(KeyCode.Alpha1 + index))
                 {
@@ -79,10 +80,15 @@ namespace XiaoCao
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (Input.GetKeyDown(KeyCode.Mouse0) && !IsPointerOverUI())
             {
                 data.inputs[InputKey.NorAck] = true;
             }
+        }
+
+        private static bool IsPointerOverUI()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
         }
 
         private void CheckInputXY()

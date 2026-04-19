@@ -134,7 +134,7 @@ namespace XiaoCao
             // GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
             // portal.transform.position = MapMgr.Inst.GetEndPos();
         }
-
+        //显示退出关卡对话框
         public DialogPanel ShowLevelEndDialog()
         {
             string title = "";

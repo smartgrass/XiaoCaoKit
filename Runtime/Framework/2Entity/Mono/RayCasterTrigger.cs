@@ -55,9 +55,9 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         transform.localScale = Vector3.one;
     }
 
-    public void InitListener(Action<Collider> action,int atkTeam)
+    public void InitListener(Action<Collider> action, int layerMask)
     {
-        layerMask = XCSetting.GetTeamInverseLayerMask(atkTeam);
+        this.layerMask = layerMask;
         TriggerAct = null;
         TriggerAct += action;
         tempColliders.Clear();

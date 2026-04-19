@@ -20,6 +20,11 @@ namespace XiaoCao
 
         public MeshInfo meshInfo;
 
+        public TriggerTargetType triggerTargetType = TriggerTargetType.Enemy;
+
+        private TriggerTargetType SafeTriggerTargetType =>
+            triggerTargetType == TriggerTargetType.None ? TriggerTargetType.Enemy : triggerTargetType;
+
         public int subSkillId = 0;
 
         public MeshType MeshType => meshInfo.meshType;
@@ -28,10 +33,15 @@ namespace XiaoCao
 
         public BaseAtker AtkCommponent { get; set; }
 
+        private bool isTriggeredEnd;
+        private bool hasCollision;
+
 
         public override void OnTrigger(float startOffsetTime)
         {
             base.OnTrigger(startOffsetTime);
+            isTriggeredEnd = false;
+            hasCollision = false;
 
             AtkCommponent = TriggerCache.GetTrigger(MeshType);
             GetTrigger();
@@ -40,9 +50,9 @@ namespace XiaoCao
             tf.SetParent(Tran);
 
             Trigger.SetMeshInfo(meshInfo);
-            Trigger.InitListener(AtkCommponent.ReceiveTriggerEnter,  Info.role.team);
-            Trigger.Switch(true);
+            Trigger.InitListener(OnReceiveTriggerEnter, XCSetting.GetTriggerLayerMask(Info.role.team, SafeTriggerTargetType));
             SetAtkInfo();
+            Trigger.Switch(true);
         }
 
 
@@ -72,12 +82,49 @@ namespace XiaoCao
 
         public override void OnFinish()
         {
+            bool autoTriggerOnFinish = maxTriggerTime == 1 && !hasCollision && !isTriggeredEnd;
+
             base.OnFinish();
 
-            Trigger.OnFinish();
+            if (autoTriggerOnFinish)
+            {
+                OnMaxTrigger();
+            }
+
+            Trigger?.OnFinish();
 
             TriggerCache.Release(MeshType, AtkCommponent.gameObject);
             //回收处理?
+        }
+
+        private void OnReceiveTriggerEnter(Collider other)
+        {
+            if (isTriggeredEnd || other == null)
+            {
+                return;
+            }
+
+            if (XCSetting.HasTriggerTarget(SafeTriggerTargetType, TriggerTargetType.Enemy) && other.isTrigger)
+            {
+                hasCollision = true;
+                AtkCommponent.ReceiveTriggerEnter(other);
+                return;
+            }
+
+            if (other.isTrigger || !IsTargetLayer(other.gameObject.layer))
+            {
+                return;
+            }
+
+            hasCollision = true;
+            AtkCommponent.InitHitInfo(other);
+            OnMaxTrigger();
+        }
+
+        private bool IsTargetLayer(int layer)
+        {
+            int layerMask = XCSetting.GetEnvironmentTriggerLayerMask(SafeTriggerTargetType);
+            return (layerMask & (1 << layer)) != 0;
         }
 
         private void SetAtkInfo()
@@ -109,10 +156,35 @@ namespace XiaoCao
 
         void OnMaxTrigger()
         {
+            if (isTriggeredEnd)
+            {
+                return;
+            }
+
+            isTriggeredEnd = true;
             //击中后停止运行
             Debug.Log($"--- OnMaxTrigger");
-            task.ObjectData.OnEnd();
+            TriggerEnd();
+            task.ObjectData?.OnEnd();
             task.SetBreak();
+        }
+
+        private void TriggerEnd()
+        {
+            Transform triggerTran = task.ObjectData?.Tran;
+            if (triggerTran == null)
+            {
+                return;
+            }
+
+            var behaviours = triggerTran.GetComponents<MonoBehaviour>();
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                if (behaviours[i] is ITriggerEnd triggerEnd)
+                {
+                    triggerEnd.OnTriggerEnd(AtkCommponent);
+                }
+            }
         }
     }
 

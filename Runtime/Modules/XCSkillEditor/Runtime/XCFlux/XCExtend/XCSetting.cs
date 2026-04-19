@@ -41,6 +41,41 @@ namespace XiaoCao
             return Layers.PLAYER_MASK;
         }
 
+        public static int GetTriggerLayerMask(int team, TriggerTargetType targetType)
+        {
+            int layerMask = 0;
+
+            if (HasTriggerTarget(targetType, TriggerTargetType.Enemy))
+            {
+                layerMask |= GetTeamInverseLayerMask(team);
+            }
+
+            layerMask |= GetEnvironmentTriggerLayerMask(targetType);
+            return layerMask;
+        }
+
+        public static int GetEnvironmentTriggerLayerMask(TriggerTargetType targetType)
+        {
+            int layerMask = 0;
+
+            if (HasTriggerTarget(targetType, TriggerTargetType.Ground))
+            {
+                layerMask |= Layers.GROUND_MASK | Layers.DEFAULT_MASK;
+            }
+
+            if (HasTriggerTarget(targetType, TriggerTargetType.Wall))
+            {
+                layerMask |= Layers.WALL_MASK | Layers.WALL_BLOCK_MASK;
+            }
+
+            return layerMask;
+        }
+
+        public static bool HasTriggerTarget(TriggerTargetType source, TriggerTargetType target)
+        {
+            return (source & target) != 0;
+        }
+
     }
 
     ///<see cref="PathTool"/>

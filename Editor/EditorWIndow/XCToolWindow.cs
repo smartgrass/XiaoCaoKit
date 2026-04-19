@@ -219,6 +219,30 @@ namespace AssetEditor.Editor
             PlayerSaveDataWindow.Open();
         }
 
+        [Button("获得时停道具", Line3, enabledMode: EButtonEnableMode.Playmode)]
+        void GetTimeStopExtraItem()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            Item item = new Item(ItemType.Consumable, BattleExtraItemType.TimeStop);
+            RewardHelper.RewardItem(item);
+        }
+
+        [Button("获得治疗道具", Line3, enabledMode: EButtonEnableMode.Playmode)]
+        void GetHealExtraItem()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            Item item = new Item(ItemType.Consumable, BattleExtraItemType.Heal);
+            RewardHelper.RewardItem(item);
+        }
+
         [Button("LevelEnd", Line3, enabledMode: EButtonEnableMode.Playmode)]
         void LevelEnd()
         {

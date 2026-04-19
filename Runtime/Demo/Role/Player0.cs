@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using cfg;
 using TEngine;
@@ -139,24 +139,45 @@ namespace XiaoCao
             }
         }
 
-        public void PlayFriendRoleSKill(int index = 0)
+        public bool PlayFriendRoleSKill(int index = 0)
         {
-            if (playerData.friends.Count < index)
+            if (playerData.friends.Count <= index)
             {
-                return;
+                return false;
             }
 
             var role = playerData.friends[index].GetRoleById();
 
-            if (role.IsDie)
+            if (role == null || role.IsDie)
             {
-                return;
+                return false;
             }
 
             //读取配置, 获取技能id
             string skillId = playerData.GetFriendSkillId();
             BaseMsg baseMsg = new BaseMsg() { strMsg = skillId };
             role.ReceiveMsg(EntityMsgType.PlayNextSkill, id, baseMsg);
+            return true;
+        }
+
+        public bool TryUseExtraSkill()
+        {
+            if (GameAllData.CommonData.gameState != GameState.Running)
+            {
+                return false;
+            }
+
+            if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
+            {
+                return false;
+            }
+
+            if (BattleData.Current.HasExtraItemSkill())
+            {
+                return BattleData.Current.TryUseSelectedExtraItem();
+            }
+
+            return false;
         }
 
         public override void OnBreak()
@@ -221,12 +242,17 @@ namespace XiaoCao
             }
 
             var list = playerSetting.skillIdList;
+            if (list == null || list.Count == 0)
+            {
+                return "";
+            }
+
             if (list.Count > index)
             {
                 return list[index];
             }
 
-            return list[index % list.Count];
+            return "";
         }
 
         public void AddFriend(Role owner)

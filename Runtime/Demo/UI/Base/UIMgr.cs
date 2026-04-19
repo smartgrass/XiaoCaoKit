@@ -27,7 +27,7 @@ namespace XiaoCao
         public PlayerTabPanel playerPanel;
         
 
-        public MobileInputHud mobileInputHud;
+        public KeyInputHud keyInputHud;
 
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
@@ -68,8 +68,8 @@ namespace XiaoCao
 
         public void OnChangeInputType(UserInputType type)
         {
-            // bool isTouch = type == UserInputType.Touch;
-            mobileInputHud.gameObject.SetActive(true);
+            keyInputHud.gameObject.SetActive(true);
+            keyInputHud.RefreshInputTypeUI();
         }
 
         public void ShowView(UIPanelType type, IUIData data = null)

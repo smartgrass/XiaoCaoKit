@@ -390,12 +390,17 @@ public class SaveXCTask
 
         Vector3 parentPos = _track.Owner.transform.parent.position;
 
-        var Pos = ObjectData.GetOffset(_track.Owner.transform, parentPos);
+        var pos = ObjectData.GetOffset(_track.Owner.transform, parentPos);
         Vector3 eulerAngle = _track.Owner.transform.localEulerAngles;
 
 
         objectData.eulerAngle = _track.Owner.transform.eulerAngles;
-        objectData.position = Pos;
+        objectData.position = pos;
+        //特殊处理
+        if (_track.transfromType == TransfromType.OtherTransfrom)
+        {
+            objectData.position = Vector3.zero;
+        }
         objectData.transfromType = _track.transfromType;
         objectData.otherPointName = _track.otherPointName;
         objectData.isPs = _track.Owner.GetComponentInChildren<ParticleSystem>(true)!=null;

@@ -72,14 +72,37 @@ namespace XiaoCao.UI
 
         private void OnConfirmClick()
         {
-            onConfirm?.Invoke();
-            Hide();
+            Action callback = onConfirm;
+            if (DialogManager.IsCurrentDialog(this))
+            {
+                DialogManager.HideDialog();
+            }
+            else
+            {
+                Hide();
+            }
+
+            callback?.Invoke();
         }
 
         private void OnCancelClick()
         {
-            onCancel?.Invoke();
-            Hide();
+            Action callback = onCancel;
+            if (DialogManager.IsCurrentDialog(this))
+            {
+                DialogManager.HideDialog();
+            }
+            else
+            {
+                Hide();
+            }
+
+            callback?.Invoke();
+        }
+
+        private void OnDestroy()
+        {
+            DialogManager.NotifyDialogDestroyed(this);
         }
     }
 }

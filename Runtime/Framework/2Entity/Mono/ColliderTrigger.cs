@@ -22,7 +22,7 @@ public class ColliderTrigger : MonoBehaviour, ITrigger
         TriggerAct?.Invoke(other);
     }
 
-    public void InitListener(Action<Collider> action, int atkerTeam)
+    public void InitListener(Action<Collider> action, int layerMask)
     {
         TriggerAct = null;
         TriggerAct += action;
@@ -101,7 +101,7 @@ public interface ITrigger
 {
     public Action<Collider> TriggerAct { get; set; }
 
-    void InitListener(Action<Collider> action, int atkerTeam);
+    void InitListener(Action<Collider> action, int layerMask);
 
     void SetMeshInfo(MeshInfo meshInfo);
 

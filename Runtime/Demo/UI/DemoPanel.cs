@@ -29,15 +29,15 @@ public class DemoPanel : SubPanel
         mobileInputToggle = AddToggle(LocalizeKey.MobileInput, OnAddMobileInput);
 #if UNITY_EDITOR
         bool isMobileInput = UnityEditor.EditorPrefs.GetBool(LocalizeKey.MobileInput, false);
-        mobileInputToggle.isOn = isMobileInput;
+        mobileInputToggle.SetIsOnWithoutNotify(isMobileInput);
         OnAddMobileInput(isMobileInput); //由于UI的没有显示,所以需要手动调用
 #endif
     }
 
-    ///<see cref="MobileInputHud"/>
+    ///<see cref="KeyInputHud"/>
     void OnAddMobileInput(bool isOn)
     {
-        UserInputType userInput = isOn ? UserInputType.Touch : UserInputType.Touch;
+        UserInputType userInput = isOn ? UserInputType.Touch : UserInputType.Mouse;
         GameSetting.UserInputType = userInput;
         UIMgr.Inst.OnChangeInputType(userInput);
 #if UNITY_EDITOR

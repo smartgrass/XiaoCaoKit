@@ -1,5 +1,6 @@
 ﻿
 
+using System;
 using UnityEngine;
 
 namespace XiaoCao
@@ -41,6 +42,18 @@ namespace XiaoCao
         Sphere = 1,
         [InspectorName("扇形柱 (半径,高,角度)")]
         Sector = 2,
+    }
+
+    [Flags]
+    public enum TriggerTargetType
+    {
+        None = 0,
+        [InspectorName("敌人")]
+        Enemy = 1 << 0,
+        [InspectorName("地面")]
+        Ground = 1 << 1,
+        [InspectorName("墙体")]
+        Wall = 1 << 2,
     }
 
 }
