@@ -11,7 +11,7 @@ namespace XiaoCao
     [XCHelper]
     public class LevelSettingHelper
     {
-        //»ñÈ¡EnemyµÈ¼¶
+        //è·å–Enemyç­‰çº§
         public static int GetEnemyLevel(int addLevel)
         {
             string levelName = GameDataCommon.Current.levelName;
@@ -46,10 +46,10 @@ namespace XiaoCao
     public class LevelData
     {
         public static LevelData Current => BattleData.Current.levelData;
-        //Ä¬ÈÏ½±ÀøµÈ¼¶
+        //é»˜è®¤å¥–åŠ±ç­‰çº§
         public int RewardLevel { get; set; }
 
-        //¹Ø¿¨·ÖÖ§
+        //å…³å¡åˆ†æ”¯
         public string LevelBranch = "";
 
         public ELevelResult levelResult;
@@ -84,7 +84,7 @@ namespace XiaoCao
     {
         public static void RewardItem(this Item item)
         {
-            //ÔİÊ±Ö»ÓĞ±¾µØÍæ¼Ò
+            //æš‚æ—¶åªæœ‰æœ¬åœ°ç©å®¶
             switch (item.type)
             {
                 case ItemType.Consumable:
@@ -112,17 +112,17 @@ namespace XiaoCao
             }
 
             RewardPoolSo so = ConfigMgr.Inst.EnemyKillRewardSo;
-            //»ñÈ¡½±Àø³Ø
+            //è·å–å¥–åŠ±æ± 
             BaseRewardItemConfigSo rewardPool = so.GetOrDefault(rewardPoolId);
-            //±³°ü pick
+            //èƒŒåŒ… pick
             Item item = rewardPool.GetRewardItem(rewardLevel);
 
             return item;
         }
 
         /// <summary>
-        /// item.id µÄÊı×ÖÖ±½Ó¶ÔÓ¦buff
-        /// Èç¹ûÊÇ#¿ªÍ·,ÔòÊÇ¸ù¾İEBuffTypeÀàĞÍ³éÈ¡
+        /// item.id çš„æ•°å­—ç›´æ¥å¯¹åº”buff
+        /// å¦‚æœæ˜¯#å¼€å¤´,åˆ™æ˜¯æ ¹æ®EBuffTypeç±»å‹æŠ½å–
         /// </summary>
         /// <param name="item"></param>
         public static void RewardBuff(Item item)
@@ -139,6 +139,6 @@ namespace XiaoCao
 
             Debug.Log($"--- AddBuff {buffItem.buffs[0].eBuff}");
         }
-        //ÌØÊâµÄ×ª»»¹æÔò,¿ÉÒÔÈ¡Ëæ»ú
+        //ç‰¹æ®Šçš„è½¬æ¢è§„åˆ™,å¯ä»¥å–éšæœº
     }
 }

@@ -335,7 +335,7 @@ namespace XiaoCao
             if (slotType == SlotType.ExtraItem)
             {
                 var extraItem = BattleData.Current.GetSelectedExtraItem();
-                if (extraItem != null)
+                if (extraItem != null && !extraItem.isUnCount)
                 {
                     isShow = true;
                     rightTipValue = extraItem.count.ToString();

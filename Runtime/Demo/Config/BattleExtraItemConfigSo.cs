@@ -61,6 +61,7 @@ namespace XiaoCao
         public string id;
         public string desc;//描述
         public int count = 1;
-        public float cdTime;
+        public bool isUnCount;
+        public float cdTime = 5;
     }
 }

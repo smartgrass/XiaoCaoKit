@@ -9,7 +9,7 @@ namespace FluxEditor
     [FEditor(typeof(FTriggerRangeTrack))]
     public class FTriggerRangeTrackEditor : FTrackEditor
     {
-        //Scene»æÖÆ
+        //Sceneç»˜åˆ¶
         TriggerDrawer drawer;
 
         public override void Init(FObject obj, FEditor owner)

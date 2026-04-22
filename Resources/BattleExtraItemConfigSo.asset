@@ -16,8 +16,10 @@ MonoBehaviour:
   - id: TimeStop
     desc: "\u65F6\u505C"
     count: 1
-    cdTime: 0
+    isUnCount: 1
+    cdTime: 12
   - id: HealthPotion
     desc: "\u6CBB\u7597\u836F\u6C34"
     count: 1
+    isUnCount: 0
     cdTime: 0

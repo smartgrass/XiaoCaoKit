@@ -280,7 +280,11 @@ namespace XiaoCao
             }
 
             extraItem.EnterCD();
-            extraItem.count--;
+            if (!extraItem.isUnCount)
+            {
+                extraItem.count--;
+            }
+
             CleanupExtraItems();
             return true;
         }
@@ -304,6 +308,7 @@ namespace XiaoCao
         public string typeId;
         public EQuality quality;
         public int count;
+        public bool isUnCount;
         public float baseCd;
         public float cdFinishTime;
 
@@ -318,6 +323,7 @@ namespace XiaoCao
                 typeId = item.typeId,
                 quality = item.quality,
                 count = Mathf.Max(1, count),
+                isUnCount = config != null && config.isUnCount,
                 baseCd = config == null ? 0 : Mathf.Max(0, config.cdTime)
             };
         }

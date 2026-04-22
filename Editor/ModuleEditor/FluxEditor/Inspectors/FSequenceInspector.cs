@@ -29,8 +29,8 @@ namespace FluxEditor
         private SerializedProperty _skillID = null;
         private SerializedProperty _des = null;
         private SerializedProperty _seqSetting = null;
-		private GUIContent _desLabel = new GUIContent("ÃèÊö");
-		private GUIContent _seqSettingLabel = new GUIContent("ÅäÖÃ");
+		private GUIContent _desLabel = new GUIContent("æè¿°");
+		private GUIContent _seqSettingLabel = new GUIContent("é…ç½®");
         void OnEnable()
 		{
 			_sequence = (FSequence)target;

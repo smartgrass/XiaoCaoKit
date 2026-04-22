@@ -231,6 +231,8 @@ namespace XiaoCao
                 rollBtn.RefreshInputTypeUI();
             }
             extraSkillBtn?.RefreshInputTypeUI();
+            
+            joystick.transform.parent.gameObject.SetActive(GameSetting.UserInputType == UserInputType.Touch);
         }
 
         private void ClearTouchInput()
