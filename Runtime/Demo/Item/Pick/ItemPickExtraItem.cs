@@ -8,8 +8,12 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 {
     public class ItemPickExtraItem : MonoBehaviour
     {
+        public ItemType itemType;
+        
         [Dropdown(nameof(GetExtraItemIdDropdown))]
-        [OnValueChanged(nameof(RefreshIconTexture))]
+        [OnValueChanged(nameof(SelectItem))]
+        public string itemIdSelect;
+
         public string itemId;
 
         private bool _isPicked;
@@ -59,6 +63,12 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
             Hide();
         }
 
+        public void SelectItem()
+        {
+            itemId = itemIdSelect;
+            RefreshIconTexture();
+        }
+        
         public void RefreshIconTexture()
         {
             if (string.IsNullOrEmpty(itemId))
@@ -106,7 +116,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 
         private XiaoCao.Item CreateItem()
         {
-            return new XiaoCao.Item(XiaoCao.ItemType.Consumable, itemId);
+            return new XiaoCao.Item(XiaoCao.ItemType.ExtraItem, itemId);
         }
 
         private string[] GetExtraItemIdDropdown()

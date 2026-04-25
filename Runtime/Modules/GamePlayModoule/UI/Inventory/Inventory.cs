@@ -207,7 +207,8 @@ namespace XiaoCao
         Consumable = 0, //消耗品
         HolyRelic = 1, //装备
         Coin = 2, //钱
-        Buff = 3
+        Buff = 3, //纹章
+        ExtraItem = 4 , //关卡内可以使用的道具
     }
 
     public struct HolyRelicItem : ISubItem

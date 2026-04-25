@@ -204,7 +204,7 @@ namespace XiaoCao
 
         public void AddExtraItem(Item item)
         {
-            if (item == null || item.type != ItemType.Consumable || string.IsNullOrEmpty(item.typeId))
+            if (item == null || item.type != ItemType.ExtraItem || string.IsNullOrEmpty(item.typeId))
             {
                 return;
             }
@@ -335,7 +335,7 @@ namespace XiaoCao
 
         public Item ToItem()
         {
-            return new Item(ItemType.Consumable, typeId, count, quality);
+            return new Item(ItemType.ExtraItem, typeId, count, quality);
         }
 
         public void EnterCD()

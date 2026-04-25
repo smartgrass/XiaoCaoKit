@@ -88,6 +88,9 @@ namespace XiaoCao
             switch (item.type)
             {
                 case ItemType.Consumable:
+                    GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
+                    break;
+                case ItemType.ExtraItem:
                     BattleData.Current.AddExtraItem(item);
                     GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
                     break;
