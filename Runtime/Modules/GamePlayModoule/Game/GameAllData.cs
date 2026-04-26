@@ -130,6 +130,7 @@ namespace XiaoCao
         public LevelData levelData = new LevelData();
         public List<BattleExtraItemData> extraItems = new List<BattleExtraItemData>();
         public int selectedExtraItemIndex;
+        public int supportRoleId = -1;
 
         public static bool IsTimeStop
         {
@@ -526,12 +527,17 @@ namespace XiaoCao
     {
         public const string TimeStop = "TimeStop";
         public const string Heal = "HealthPotion";
+        public const string SupportRole = "SupportRole";
     }
 
     public static class BattleExtraItemHelper
     {
         public const float TimeStopDuration = 4f;
         public const float HealHpPercent = 0.2f;
+        private const string SupportRoleAlreadySummonedKey = "SupportRoleAlreadySummoned";
+        private const string SupportRoleEnemyId = "E_0";
+        private const float SupportRoleForwardDistance = 3f;
+        private const float SupportRoleSideDistance = 1.5f;
 
         public static bool TryUse(string itemTypeId)
         {
@@ -542,6 +548,8 @@ namespace XiaoCao
                     return true;
                 case BattleExtraItemType.Heal:
                     return TryHealLocalPlayer();
+                case BattleExtraItemType.SupportRole:
+                    return TrySummonSupportRole();
                 default:
                     Debug.LogWarning($"--- no extra item skill {itemTypeId}");
                     return false;
@@ -566,6 +574,97 @@ namespace XiaoCao
             float healAmount = Mathf.Min(player.MaxHp * HealHpPercent, loseHp);
             player.ChangeNowValue(ENowAttr.Hp, healAmount);
             return true;
+        }
+
+        private static bool TrySummonSupportRole()
+        {
+            var player = GameDataCommon.LocalPlayer;
+            if (player == null || player.IsDie)
+            {
+                return false;
+            }
+
+            string supportRoleKey = GetSupportRoleKey();
+            Role existedRole = FindSummonedSupportRole(player, supportRoleKey);
+            if (existedRole != null)
+            {
+                BattleData.Current.supportRoleId = existedRole.id;
+                UIMgr.PopToast(SupportRoleAlreadySummonedKey.ToLocalizeStr());
+                return false;
+            }
+
+            Vector3 summonPos = player.transform.position +
+                                player.transform.forward * SupportRoleForwardDistance +
+                                player.transform.right * SupportRoleSideDistance;
+            Enemy0 supportRole = CreateSupportRole(player, supportRoleKey, summonPos);
+            if (supportRole == null)
+            {
+                return false;
+            }
+
+            BattleData.Current.supportRoleId = supportRole.id;
+            return true;
+        }
+
+        private static Enemy0 CreateSupportRole(Player0 player, string supportRoleKey, Vector3 summonPos)
+        {
+            Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, player.Level, supportRoleKey);
+            if (supportRole == null)
+            {
+                return null;
+            }
+
+            supportRole.SetTeam(XCSetting.PlayerTeam);
+            supportRole.IsAiOn = true;
+            supportRole.enemyData.movement.MoveToImmediate(summonPos);
+            supportRole.SetFriend(player);
+            return supportRole;
+        }
+
+        public static string GetSupportRoleKey()
+        {
+            int roleIndex = ConfigMgr.Inst.LocalRoleSetting.GetFriendRoleIndex();
+            return $"Role_{roleIndex}";
+        }
+
+        private static Role FindSummonedSupportRole(Player0 player, string supportRoleKey)
+        {
+            if (player?.playerData == null)
+            {
+                return null;
+            }
+
+            BattleData battleData = BattleData.Current;
+            if (battleData.supportRoleId > 0)
+            {
+                Role trackedRole = battleData.supportRoleId.GetRoleById();
+                if (IsSupportRole(trackedRole, supportRoleKey))
+                {
+                    return trackedRole;
+                }
+
+                battleData.supportRoleId = -1;
+            }
+
+            for (int i = 0; i < player.playerData.friends.Count; i++)
+            {
+                Role role = player.playerData.friends[i].GetRoleById();
+                if (IsSupportRole(role, supportRoleKey))
+                {
+                    battleData.supportRoleId = role.id;
+                    return role;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsSupportRole(Role role, string supportRoleKey)
+        {
+            return role != null &&
+                   role.RoleIdentityType == RoleIdentityType.PlayerFriend &&
+                   role.idRole != null &&
+                   role.idRole.bodyName == supportRoleKey;
         }
     }
 

@@ -57,7 +57,12 @@ namespace AssetEditor.Editor
         [HorLayout(true)] [MiniBtn(nameof(AddBuff))]
         public EBuff buff;
 
-        [HorLayout(false)] public bool autoAddBuff;
+        public bool autoAddBuff;
+
+        [HorLayout(false)] 
+        [Dropdown(nameof(GetExtraItemDropdown))] [OnValueChanged(nameof(OnExtraItemSelectChange))]
+        [Label("")]
+        public string selectedExtraItemId = string.Empty;
 
 
         public override void OnEnable()
@@ -219,30 +224,6 @@ namespace AssetEditor.Editor
             PlayerSaveDataWindow.Open();
         }
 
-        [Button("获得时停道具", Line3, enabledMode: EButtonEnableMode.Playmode)]
-        void GetTimeStopExtraItem()
-        {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            Item item = new Item(ItemType.Consumable, BattleExtraItemType.TimeStop);
-            RewardHelper.RewardItem(item);
-        }
-
-        [Button("获得治疗道具", Line3, enabledMode: EButtonEnableMode.Playmode)]
-        void GetHealExtraItem()
-        {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            Item item = new Item(ItemType.Consumable, BattleExtraItemType.Heal);
-            RewardHelper.RewardItem(item);
-        }
-
         [Button("LevelEnd", Line3, enabledMode: EButtonEnableMode.Playmode)]
         void LevelEnd()
         {
@@ -251,6 +232,62 @@ namespace AssetEditor.Editor
             GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos + offset + Vector3.up);
             GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), "LevelFinish");
             GameMgr.Inst.LevelFinish();
+        }
+
+        private void OnExtraItemSelectChange()
+        {
+            if (string.IsNullOrEmpty(selectedExtraItemId))
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
+            {
+                RewardExtraItem(selectedExtraItemId);
+            }
+
+            selectedExtraItemId = string.Empty;
+        }
+
+        private void RewardExtraItem(string extraItemId)
+        {
+            if (string.IsNullOrEmpty(extraItemId))
+            {
+                return;
+            }
+
+            Item item = new Item(ItemType.ExtraItem, extraItemId);
+            RewardHelper.RewardItem(item);
+        }
+
+        private DropdownList<string> GetExtraItemDropdown()
+        {
+            var dropdown = new DropdownList<string>
+            {
+                { "-- 选择额外道具 --", string.Empty }
+            };
+
+            BattleExtraItemConfigSo config = ConfigMgr.LoadSoConfig<BattleExtraItemConfigSo>();
+            if (config?.list != null && config.list.Count > 0)
+            {
+                foreach (var itemConfig in config.list)
+                {
+                    if (itemConfig == null || string.IsNullOrEmpty(itemConfig.id))
+                    {
+                        continue;
+                    }
+
+                    string itemName = string.IsNullOrEmpty(itemConfig.desc) ? itemConfig.id : itemConfig.desc;
+                    dropdown.Add(itemName, itemConfig.id);
+                }
+
+                return dropdown;
+            }
+
+            dropdown.Add("时停", BattleExtraItemType.TimeStop);
+            dropdown.Add("治疗药水", BattleExtraItemType.Heal);
+            dropdown.Add("支援角色", BattleExtraItemType.SupportRole);
+            return dropdown;
         }
 
         private void OnHidingChange()

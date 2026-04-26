@@ -26,6 +26,8 @@ namespace XiaoCao
 
         public HpBar playerBar;
 
+        public Transform bossBarParent;
+
         public TextMeshProUGUI lvText;
 
         public Canvas worldCanvas;
@@ -38,10 +40,15 @@ namespace XiaoCao
 
         private HashSet<int> dataChange = new HashSet<int>();
 
+        private readonly Stack<HpBar> bossBarPool = new Stack<HpBar>();
+
+        private HpBar bossBarTemplate;
+
 
         public void Init()
         {
             pool = PoolMgr.Inst.GetOrCreatPrefabPool(worldHpBarPrefab);
+            InitBossBar();
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
             GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
@@ -119,17 +126,20 @@ namespace XiaoCao
                 barDic.TryGetValue(role.id, out var bar);
                 if (bar == null)
                 {
-                    GameObject newBarGo = pool.Get();
-                    bar = newBarGo.GetComponent<HpBar>();
-                    bar.InitColor(role);
+                    bar = CreateEnemyHpBar(role);
                     barDic[role.id] = bar;
-                    bar.transform.SetParent(worldHpBarParent, false);
-                    bar.SetFollowRole(role);
                 }
 
                 bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
                 bar.UpdateArmorBar(role.ShowArmorPercentage);
-                bar.UpdatePostion();
+                if (IsBossBar(bar))
+                {
+                    RefreshBossBarParentState();
+                }
+                else if (bar.gameObject.activeSelf)
+                {
+                    bar.UpdatePostion();
+                }
             }
         }
 
@@ -187,10 +197,124 @@ namespace XiaoCao
             if (barDic.ContainsKey(id))
             {
                 var bar = barDic[id];
-                bar.gameObject.SetActive(false);
-                pool.Release(bar.gameObject);
+                ReleaseEnemyHpBar(bar);
                 barDic.Remove(id);
             }
+        }
+
+        private void InitBossBar()
+        {
+            if (bossBarParent == null)
+            {
+                bossBarParent = transform.Find(nameof(bossBarParent));
+            }
+
+            if (bossBarParent == null)
+            {
+                return;
+            }
+
+            bossBarParent.gameObject.SetActive(false);
+            bossBarTemplate = bossBarParent.GetComponentInChildren<HpBar>(true);
+            if (bossBarTemplate != null)
+            {
+                bossBarTemplate.gameObject.SetActive(false);
+                bossBarPool.Push(bossBarTemplate);
+            }
+        }
+
+        private HpBar CreateEnemyHpBar(Role role)
+        {
+            if (role.HasTag(RoleTagCommon.Boss))
+            {
+                var bossBar = GetBossHpBar(role);
+                if (bossBar != null)
+                {
+                    return bossBar;
+                }
+            }
+
+            GameObject newBarGo = pool.Get();
+            var bar = newBarGo.GetComponent<HpBar>();
+            bar.InitColor(role);
+            bar.transform.SetParent(worldHpBarParent, false);
+            bar.SetFollowRole(role);
+            return bar;
+        }
+
+        private HpBar GetBossHpBar(Role role)
+        {
+            if (bossBarTemplate == null)
+            {
+                bossBarTemplate = bossBarParent.GetComponentInChildren<HpBar>(true);
+                if (bossBarTemplate != null && bossBarPool.Count == 0 && !bossBarTemplate.gameObject.activeSelf)
+                {
+                    bossBarPool.Push(bossBarTemplate);
+                }
+            }
+            
+            HpBar bar = null;
+            if (bossBarPool.Count > 0)
+            {
+                bar = bossBarPool.Pop();
+            }
+            else if (bossBarTemplate != null)
+            {
+                bar = Instantiate(bossBarTemplate, bossBarParent);
+            }
+
+            if (bar == null)
+            {
+                return null;
+            }
+
+            bar.gameObject.SetActive(true);
+            bar.InitColor(role);
+            RefreshBossBarParentState();
+            return bar;
+        }
+
+        private bool IsBossBar(HpBar bar)
+        {
+            return bar != null && bossBarParent != null && bar.transform.IsChildOf(bossBarParent);
+        }
+
+        private void ReleaseEnemyHpBar(HpBar bar)
+        {
+            if (bar == null)
+            {
+                return;
+            }
+
+            bar.gameObject.SetActive(false);
+            if (IsBossBar(bar))
+            {
+                bossBarPool.Push(bar);
+                RefreshBossBarParentState();
+                return;
+            }
+
+            pool.Release(bar.gameObject);
+        }
+
+        private void RefreshBossBarParentState()
+        {
+            if (bossBarParent == null)
+            {
+                return;
+            }
+
+            bool hasActiveBossBar = false;
+            foreach (Transform child in bossBarParent)
+            {
+                if (child.gameObject.activeSelf)
+                {
+                    hasActiveBossBar = true;
+                    break;
+                }
+            }
+
+            bossBarParent.gameObject.SetActive(hasActiveBossBar);
         }
 
 
@@ -258,7 +382,7 @@ namespace XiaoCao
                 _damageTextTweens.Add(new DamageTextTween { text = item });
             }
         }
-        
+
         public void ShowDamageText(string num, Vector3 mTarget, ETextColor eTextColor = ETextColor.Nor)
         {
             //获取屏幕坐标  

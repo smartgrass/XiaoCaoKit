@@ -25,6 +25,17 @@ public static class SpriteResHelper
             return BuffItem.Create(item).GetBuffSprite();
         }
 
+        if (item.type == ItemType.ExtraItem && item.typeId == BattleExtraItemType.SupportRole)
+        {
+            Sprite supportRoleIcon = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png");
+            if (supportRoleIcon != null)
+            {
+                return supportRoleIcon;
+            }
+
+            return LoadRoleIcon(BattleExtraItemHelper.GetSupportRoleKey());
+        }
+
         string endPath = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
         return ResMgr.LoadAseetOrDefault<Sprite>(endPath, DefaultItemSpritePath);
     }

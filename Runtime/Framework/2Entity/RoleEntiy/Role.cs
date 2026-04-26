@@ -1048,7 +1048,10 @@ namespace XiaoCao
             noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
             deadTime = role.data_R.moveSetting.deadTime;
             isBoss = attr.IsBoss;
-            role.AddTag(RoleTagCommon.Boss);
+            if (isBoss)
+            {
+                role.AddTag(RoleTagCommon.Boss);
+            }
             hitAnimSpan = isBoss ? 0.5f : 0.1f;
         }
 
