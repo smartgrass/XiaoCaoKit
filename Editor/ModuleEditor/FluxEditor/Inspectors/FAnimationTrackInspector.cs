@@ -297,6 +297,20 @@ namespace FluxEditor
 			if( isPreviewing )
 				track.CreateCache();
 		}
+
+		public static void MarkStateMachineDirty( FAnimationTrack track )
+		{
+			if( track == null || FSequenceEditorWindow.instance == null )
+			{
+				return;
+			}
+
+			FSequenceEditor sequenceEditor = FSequenceEditorWindow.instance.GetSequenceEditor();
+			if( sequenceEditor != null && sequenceEditor.Sequence == track.Sequence )
+			{
+				sequenceEditor.MarkAnimationStateMachinesDirty();
+			}
+		}
 		
 		public static AnimatorStateTransition GetTransitionTo( FPlayAnimationEvent animEvt )
 		{

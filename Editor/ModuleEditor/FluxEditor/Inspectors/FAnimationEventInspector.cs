@@ -191,7 +191,7 @@ namespace FluxEditor
 			serializedObject.ApplyModifiedProperties();
 
 			if( rebuildTrack )
-				FAnimationTrackInspector.RebuildStateMachine( (FAnimationTrack)_animEvent.Track );
+				FAnimationTrackInspector.MarkStateMachineDirty( (FAnimationTrack)_animEvent.Track );
 		}
 
 		public static void CheckDeleteAnimation( FPlayAnimationEvent animEvt )
@@ -310,7 +310,7 @@ namespace FluxEditor
 			editor.SetAnimationClip( animClip );
 
 			DestroyImmediate( editor );
-	        FAnimationTrackInspector.RebuildStateMachine( (FAnimationTrack)animEvent.Track );
+	        FAnimationTrackInspector.MarkStateMachineDirty( (FAnimationTrack)animEvent.Track );
 		}
 
 		// animation editing

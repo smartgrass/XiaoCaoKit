@@ -15,11 +15,12 @@ namespace FluxEditor
 		public const int BUTTON_WIDTH = 25;
 		public const int STOP_BUTTON_WIDTH = 50;
 		public const int PLAY_BUTTON_WIDTH = 50;
+		public const int REBUILD_BUTTON_WIDTH = 60;
 
 		public const int SPEED_LABEL_WIDTH = 40;
-		public const int SPEED_SLIDER_WIDTH = 80;
+		public const int SPEED_SLIDER_WIDTH = 60;
 
-		public const int FRAME_FIELD_WIDTH = 100;
+		public const int FRAME_FIELD_WIDTH = 50;
 
 		private FSequenceEditorWindow _window = null;
 
@@ -32,6 +33,7 @@ namespace FluxEditor
 //		private Rect _playBackwardButtonRect;
 		private Rect _stopButtonRect;
 		private Rect _playForwardButtonRect;
+		private Rect _rebuildButtonRect;
 
 		private Rect _speedLabelRect;
 		private Rect _speedSliderRect;
@@ -45,6 +47,7 @@ namespace FluxEditor
 		private GUIContent _playForward = null;
 		private GUIContent _pause = null;
 		private GUIContent _stop = null;
+		private GUIContent _rebuild = null;
 
 		private bool _showSpeedSlider;
 		private GUIContent _speedLabel = new GUIContent("Speed", "Playback Speed, only for preview purposes");
@@ -76,6 +79,7 @@ namespace FluxEditor
 			_playForward = new GUIContent( FUtility.GetFluxTexture( "Play.png" ), "Left Click: Play Forward\nRight Click: Play Backwards" );
 			_pause = new GUIContent( FUtility.GetFluxTexture( "Pause.png" ), "Pause" );
 			_stop = new GUIContent( FUtility.GetFluxTexture( "Stop.png" ), "Stop" );
+			_rebuild = new GUIContent( "Rebuild", "Rebuild animation state machines for all animation tracks in the current sequence" );
 
 			_viewRangeLabel = new GUIContent( "View Range" );
 			_viewRangeDash = new GUIContent( " - " );
@@ -124,7 +128,11 @@ namespace FluxEditor
 			_playForwardButtonRect.xMin = _stopButtonRect.xMax;
 			_playForwardButtonRect.width = PLAY_BUTTON_WIDTH;
 
-			float reminderWidth = rect.width - _playForwardButtonRect.xMax;// + SPACE;
+			_rebuildButtonRect = rect;
+			_rebuildButtonRect.xMin = _playForwardButtonRect.xMax;
+			_rebuildButtonRect.width = REBUILD_BUTTON_WIDTH;
+
+			float reminderWidth = rect.width - _rebuildButtonRect.xMax;// + SPACE;
 
 //			float reminderWidth = rect.width - _speedValueRect.xMax/*_playForwardButtonRect.xMax*/ + SPACE;
 
@@ -154,7 +162,7 @@ namespace FluxEditor
 			if( _showViewRange )
 			{
 				_speedLabelRect = rect;
-				_speedLabelRect.xMin = _playForwardButtonRect.xMax + SPACE;
+				_speedLabelRect.xMin = _rebuildButtonRect.xMax + SPACE;
 				_speedLabelRect.width = SPEED_LABEL_WIDTH;
 				
 				_speedSliderRect = rect;
@@ -167,17 +175,16 @@ namespace FluxEditor
 
 				reminderWidth -= (_speedValueRect.xMax - _speedLabelRect.xMin);
 
-				_showSpeedSlider = reminderWidth >= 0;
-				if( _showSpeedSlider )
-				{
-					reminderWidth *= 0.5f;
-					_speedLabelRect.x += reminderWidth;
-					_speedSliderRect.x += reminderWidth;
-					_speedValueRect.x += reminderWidth;
-				}
+
 			}
-			else
-				_showSpeedSlider = false;
+			_showSpeedSlider = reminderWidth >= 0;
+			if( _showSpeedSlider )
+			{
+				reminderWidth *= 0.5f;
+				_speedLabelRect.x += reminderWidth;
+				_speedSliderRect.x += reminderWidth;
+				_speedValueRect.x += reminderWidth;
+			}
 		}
 
 //		private float _speed = 1f;
@@ -302,7 +309,7 @@ namespace FluxEditor
 			bool isPlaying = Application.isPlaying ? _window.GetSequenceEditor().Sequence.IsPlaying : _window.GetSequenceEditor().IsPlaying;
 			bool isPlayingForward = _window.GetSequenceEditor().IsPlayingForward;
 
-			if( GUI.Button( _playForwardButtonRect, isPlaying ? _pause : (isPlayingForward ? _playForward : _playBackward), EditorStyles.miniButtonRight) )
+			if( GUI.Button( _playForwardButtonRect, isPlaying ? _pause : (isPlayingForward ? _playForward : _playBackward), EditorStyles.miniButtonMid) )
 			{
 				if( isPlaying )
 					Pause();
@@ -310,6 +317,14 @@ namespace FluxEditor
 					Play();
 				else 
 					PlayBackwards();
+			}
+
+			GUIContent rebuildContent = _window.GetSequenceEditor().HasPendingAnimationStateMachineRebuild
+				? new GUIContent( "Rebuild*", _rebuild.tooltip )
+				: _rebuild;
+			if( GUI.Button( _rebuildButtonRect, rebuildContent, EditorStyles.miniButtonRight ) )
+			{
+				_window.GetSequenceEditor().RebuildAnimationStateMachines();
 			}
 
 			//if( _showSpeedSlider )

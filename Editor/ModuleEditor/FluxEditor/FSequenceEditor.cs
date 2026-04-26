@@ -26,6 +26,7 @@ namespace FluxEditor
         private const int MINIMUM_HEADER_WIDTH = 150;
 
         private const int SCROLL_WHEEL_SPEED = 5;
+        private const int DEFAULT_VIEW_RANGE_END = 100;
 
         // keep track if we came out of play mode
         private bool _wasUnityInPlaymode = false;
@@ -140,6 +141,10 @@ namespace FluxEditor
         [SerializeField]
         private UnityEvent _onUpdateEvent = new UnityEvent();
         public UnityEvent OnUpdateEvent { get { return _onUpdateEvent; } }
+
+        [SerializeField]
+        private bool _animationStateMachinesDirty = false;
+        public bool HasPendingAnimationStateMachineRebuild { get { return _animationStateMachinesDirty; } }
 
         private bool _isEditorCompiling = false;
 
@@ -368,6 +373,59 @@ namespace FluxEditor
             _viewRange = viewRange;
         }
 
+        private FrameRange GetDefaultViewRange(FSequence sequence)
+        {
+            int defaultEnd = Mathf.Max(1, Mathf.Min(DEFAULT_VIEW_RANGE_END, sequence.Length));
+            return new FrameRange(0, defaultEnd);
+        }
+
+        public void MarkAnimationStateMachinesDirty()
+        {
+            if (Sequence == null)
+            {
+                return;
+            }
+
+            if (_animationStateMachinesDirty)
+            {
+                return;
+            }
+
+            _animationStateMachinesDirty = true;
+            Repaint();
+        }
+
+        public void RebuildAnimationStateMachines()
+        {
+            if (Sequence == null)
+            {
+                return;
+            }
+
+            foreach (FContainer container in Sequence.Containers)
+            {
+                foreach (FTimeline timeline in container.Timelines)
+                {
+                    foreach (FTrack track in timeline.Tracks)
+                    {
+                        if (track is FAnimationTrack animationTrack)
+                        {
+                            FAnimationTrackInspector.RebuildStateMachine(animationTrack);
+                        }
+                    }
+                }
+            }
+
+            _animationStateMachinesDirty = false;
+
+            if (Sequence.CurrentFrame >= 0)
+            {
+                SetCurrentFrame(Sequence.CurrentFrame);
+            }
+
+            Repaint();
+        }
+
         /**
 		 * @brief Returns the mouse x normalized to the start of the timeline, so 0 = viewRange.Start
 		 * @param frame Frame.
@@ -459,6 +517,7 @@ namespace FluxEditor
                 TimelineSelection.Clear();
                 ContainerSelection.Clear();
                 Editors.Clear();
+                _animationStateMachinesDirty = false;
             }
             else if (!EditorApplication.isPlaying)
             {
@@ -477,16 +536,11 @@ namespace FluxEditor
                     FluxEditor.FUtility.Upgrade(sequence);
                 }
 
-                if (_viewRange.Length == 0)
-                    _viewRange = new FrameRange(0, sequence.Length);
+                if (sequenceChanged || _viewRange.Length == 0)
+                    _viewRange = GetDefaultViewRange(sequence);
 
                 if (!EditorApplication.isPlaying)
                     sequence.Rebuild();
-
-                if (_viewRange.Length == 0)
-                {
-                    _viewRange = new FrameRange(0, sequence.Length);
-                }
             }
             else
             {
@@ -1886,7 +1940,7 @@ namespace FluxEditor
                         if (track is FAnimationTrack)
                         {
                             (track as FAnimationTrack).ClearSnapshot();
-                            FAnimationTrackInspector.RebuildStateMachine((track as FAnimationTrack));
+                            FAnimationTrackInspector.MarkStateMachineDirty((track as FAnimationTrack));
                         }
                     }
                 }

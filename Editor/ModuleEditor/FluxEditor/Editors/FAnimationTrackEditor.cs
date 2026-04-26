@@ -175,7 +175,7 @@ namespace FluxEditor
 
 		public override void OnTrackChanged()
 		{
-			FAnimationTrackInspector.RebuildStateMachine( (FAnimationTrack)Track );
+			FAnimationTrackInspector.MarkStateMachineDirty( (FAnimationTrack)Track );
 		}
 
 

@@ -62,8 +62,7 @@ namespace FluxEditor
 
 					if( _transitionToState == null || _transitionToState.conditions.Length > 0 )
 					{
-						FAnimationTrackInspector.RebuildStateMachine( (FAnimationTrack)TrackEditor.Track );
-
+						FAnimationTrackInspector.MarkStateMachineDirty( (FAnimationTrack)TrackEditor.Track );
 						_transitionToState = FAnimationTrackInspector.GetTransitionTo( AnimEvt );
 					}
 				}
@@ -442,7 +441,7 @@ namespace FluxEditor
 
         private void RebuildAnimationTrack()
         {
-            FAnimationTrackInspector.RebuildStateMachine( (FAnimationTrack)AnimEvt.Track );
+            FAnimationTrackInspector.MarkStateMachineDirty( (FAnimationTrack)AnimEvt.Track );
         }
     }
 
