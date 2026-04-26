@@ -21,7 +21,7 @@ namespace Flux
     public class FSequence : FObject
 	{
 		public const int DEFAULT_FRAMES_PER_SECOND = 30;
-		public const int DEFAULT_LENGTH = 10;
+		public const int DEFAULT_LENGTH = 3;
 
 		public const float DEFAULT_SPEED = 1f;
 
