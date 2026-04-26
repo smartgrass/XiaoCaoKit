@@ -12,6 +12,7 @@ namespace FluxEditor
 	public class FTrackInspector : Editor {
 
 		private SerializedProperty _events = null;
+		protected virtual bool DrawDefaultInspectorFields { get { return true; } }
 
 		private bool _allTracksSameType = true;
 
@@ -46,7 +47,7 @@ namespace FluxEditor
 
 		public override void OnInspectorGUI()
 		{
-			if( _allTracksSameType )
+			if( _allTracksSameType && DrawDefaultInspectorFields )
 				base.OnInspectorGUI();
 
 			FTrack track = (FTrack)target;

@@ -13,6 +13,7 @@ namespace FluxEditor
 {
 	[CustomEditor(typeof(FAnimationTrack))]
 	public class FAnimationTrackInspector : FTrackInspector {
+		protected override bool DrawDefaultInspectorFields { get { return false; } }
 
 //		private const string ADVANCE_TRIGGER = "FAdvanceTrigger";
 		private const string FLUX_STATE_MACHINE_NAME = "FluxStateMachine";
@@ -76,14 +77,24 @@ namespace FluxEditor
 
 			if( controller != prevAnimatorController )
 			{
-				AnimatorControllerLayer layer = controller == null ? null : controller.layers[0];
+				AnimatorControllerLayer layer = controller == null || controller.layers.Length == 0 ? null : controller.layers[0];
 				if( layer != null && (layer.stateMachine.states.Length > 0 || layer.stateMachine.stateMachines.Length > 0) )
 					layer = null;
 				UpdateLayer( layer );
 			}
-
+			
+			//下半部分会卡死 不使用
+			return;
 			if( controller != null )
 			{
+				if( controller.layers.Length == 0 )
+				{
+					EditorGUILayout.HelpBox( "Animator Controller has no layers", MessageType.Warning );
+					UpdateLayer( null );
+					serializedObject.ApplyModifiedProperties();
+					return;
+				}
+
 				string[] layers = new string[controller.layers.Length];
 				int layerIndex = -1;
 				for( int i = 0; i != controller.layers.Length; ++i )
@@ -98,10 +109,9 @@ namespace FluxEditor
 				// doesn't have layer
 				if( layerIndex == -1 )
 				{
-                    _layerName.stringValue = controller.layers[0].name;
+					UpdateLayer( controller.layers[0] );
 					layerIndex = 0;
-                    //EditorGUILayout.HelpBox("No Layer Selected!", MessageType.Error);
-                }
+				}
 				else if( layerIndex != _layerId.intValue ) // has it, but it got moved
 				{
 					UpdateLayer( controller.layers[layerIndex] );
@@ -127,6 +137,7 @@ namespace FluxEditor
 
 		public void UpdateLayer( AnimatorControllerLayer layer )
 		{
+			Debug.Log($"-- UpdateLayer");
 			if( layer == null )
 			{
 				_layerName.stringValue = null;
@@ -160,8 +171,9 @@ namespace FluxEditor
 			if( isPreviewing )
 				track.ClearCache();
 
-			Debug.Log($"-- RebuildStateMachine");
+
 			Animator animator = track.GetAnimator();
+			Debug.Log($"-- RebuildStateMachine {animator.gameObject}");
 			animator.runtimeAnimatorController = null;
 
 			AnimatorController controller = (AnimatorController)track.AnimatorController;

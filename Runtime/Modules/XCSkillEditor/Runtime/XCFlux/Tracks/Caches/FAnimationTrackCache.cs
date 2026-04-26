@@ -23,7 +23,8 @@ namespace Flux
             Animator animator = Track.Owner.GetComponentInChildren<Animator>();
             if (animator == null)
             {
-                Track.Owner.gameObject.AddComponent<Animator>();
+	            Debug.Log($"-- no Animator in {Track.Owner}");
+                // Track.Owner.gameObject.AddComponent<Animator>();
             }
             return animator;
         }
