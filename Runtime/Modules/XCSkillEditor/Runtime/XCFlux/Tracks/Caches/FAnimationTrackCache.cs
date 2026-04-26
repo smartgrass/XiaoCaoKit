@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using static UnityEngine.UI.GridLayoutGroup;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 namespace Flux
 {
@@ -49,6 +50,7 @@ namespace Flux
 
 		protected override bool BuildInternal()
 		{
+			double recordMs = 0d;
 			List<FTrack> tracksToUpdate = GetTracksToUpdate( out _tracksCached );
 
 			_validFrameRanges.Clear();
@@ -112,6 +114,9 @@ namespace Flux
 				Animator.SetLayerWeight(i, 0f);
 			}
 
+			int processedFrames = 0;
+			float recordDelta = 1f / sequence.FrameRate;
+			long recordStartTimestamp = Stopwatch.GetTimestamp();
 			Animator.StartRecording( -1 );
 
 			bool success = Animator.recorderMode == AnimatorRecorderMode.Record;
@@ -120,27 +125,28 @@ namespace Flux
 			{
 				Animator.enabled = false;
 
-				float delta = 1f / sequence.FrameRate;
 				int frame = 0;
 				
 				while( frame <= sequence.Length )
 				{
+					++processedFrames;
 					bool wasEnabled = Animator.enabled;
 
 					foreach( FTrack track in tracksToUpdate )
-						track.UpdateEvents( frame, frame * delta );
+						track.UpdateEvents( frame, frame * recordDelta );
 
 					if( wasEnabled )
 					{
 						currentFrameRange.End += 1;
 						if( Animator.enabled )
 						{
-							Animator.Update( delta );
+							Animator.Update( recordDelta );
 						}
 						else
 						{
 							Animator.enabled = true;
-							Animator.Update( delta );
+							//结束帧
+							Animator.Update( recordDelta );
 							Animator.enabled = false;
 							_validFrameRanges.Add( currentFrameRange );
 						}
@@ -164,6 +170,7 @@ namespace Flux
 				
 				Animator.StopRecording();
 			}
+			recordMs = GetElapsedMilliseconds( recordStartTimestamp );
 
 			if( !ownerIsActive )
 			{
@@ -190,7 +197,39 @@ namespace Flux
 				transformSnapshot.Restore();
 			}
 
+			string ownerName = Track != null && Track.Owner != null ? Track.Owner.name : "null";
+			string sequenceName = sequence != null ? sequence.name : "null";
+			int updateCalls = processedFrames * tracksToUpdate.Count;
+			Debug.Log(
+				$"[FluxPerf] FAnimationTrackCache.BuildInternal record owner={ownerName}, sequence={sequenceName}, " +
+				$"success={success}, frames={processedFrames}, frameRate={sequence.FrameRate}, delta={recordDelta:F4}, " +
+				$"updateTracks={tracksToUpdate.Count}, cachedAnimTracks={_tracksCached.Count}, validRanges={_validFrameRanges.Count}, " +
+				$"updateCalls={updateCalls}, record={recordMs:F2} ms, tracks=[{GetTracksSummary( tracksToUpdate )}]",
+				Track );
+
 			return success;
+		}
+
+		private static double GetElapsedMilliseconds( long startTimestamp )
+		{
+			return ( Stopwatch.GetTimestamp() - startTimestamp ) * 1000d / Stopwatch.Frequency;
+		}
+
+		private static string GetTracksSummary( List<FTrack> tracks )
+		{
+			if( tracks == null || tracks.Count == 0 )
+				return "none";
+
+			return string.Join( ", ", tracks.ConvertAll( GetTrackSummary ).ToArray() );
+		}
+
+		private static string GetTrackSummary( FTrack track )
+		{
+			if( track == null )
+				return "null";
+
+			int eventCount = track.Events != null ? track.Events.Count : 0;
+			return string.Format( "{0}<{1}>(events={2})", track.name, track.GetType().Name, eventCount );
 		}
 
 		protected override bool ClearInternal()

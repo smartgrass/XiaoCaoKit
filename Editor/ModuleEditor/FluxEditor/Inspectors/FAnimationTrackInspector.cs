@@ -5,6 +5,7 @@ using UnityEditor.Animations;
 //using UnityEditorInternal;
 
 using System.Collections.Generic;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 using Flux;
 using FluxEditor;
@@ -166,14 +167,27 @@ namespace FluxEditor
 			if( track.AnimatorController == null || track.LayerId == -1 )
 				return;
 
+			long totalStartTimestamp = Stopwatch.GetTimestamp();
+			double clearCacheMs = 0d;
+			double setupMs = 0d;
+			double layerMs = 0d;
+			double stateMachineMs = 0d;
+			double resizeStatesMs = 0d;
+			double buildStatesMs = 0d;
+			double applyMs = 0d;
+			double rebuildCacheMs = 0d;
+
 			bool isPreviewing = track.HasCache;
 
 			if( isPreviewing )
+			{
+				long clearCacheStartTimestamp = Stopwatch.GetTimestamp();
 				track.ClearCache();
+				clearCacheMs = GetElapsedMilliseconds( clearCacheStartTimestamp );
+			}
 
-
+			long setupStartTimestamp = Stopwatch.GetTimestamp();
 			Animator animator = track.GetAnimator();
-			Debug.Log($"-- RebuildStateMachine {animator.gameObject}");
 			animator.runtimeAnimatorController = null;
 
 			AnimatorController controller = (AnimatorController)track.AnimatorController;
@@ -184,7 +198,9 @@ namespace FluxEditor
             }
 
 			track.UpdateEventIds();
+			setupMs = GetElapsedMilliseconds( setupStartTimestamp );
 
+			long layerStartTimestamp = Stopwatch.GetTimestamp();
 			AnimatorControllerLayer layer = FindLayer( controller, track.LayerName );
 
 			if( layer == null )
@@ -192,7 +208,9 @@ namespace FluxEditor
 				controller.AddLayer( track.LayerName );
 				layer = FindLayer( controller, track.LayerName );
 			}
+			layerMs = GetElapsedMilliseconds( layerStartTimestamp );
 
+			long stateMachineStartTimestamp = Stopwatch.GetTimestamp();
 			AnimatorStateMachine fluxSM = FindStateMachine( layer.stateMachine, FLUX_STATE_MACHINE_NAME );
 
 			if( fluxSM == null )
@@ -211,9 +229,11 @@ namespace FluxEditor
 				}
 				layer.stateMachine.stateMachines = stateMachines;
 			}
+			stateMachineMs = GetElapsedMilliseconds( stateMachineStartTimestamp );
 
 			List<FEvent> events = track.Events;
 
+			long resizeStatesStartTimestamp = Stopwatch.GetTimestamp();
 			if( fluxSM.states.Length > events.Count )
 			{
 				for( int i = events.Count; i < fluxSM.states.Length; ++i )
@@ -224,6 +244,7 @@ namespace FluxEditor
 				for( int i = fluxSM.states.Length; i < events.Count; ++i )
 					fluxSM.AddState( i.ToString() );
 			}
+			resizeStatesMs = GetElapsedMilliseconds( resizeStatesStartTimestamp );
 
 			AnimatorState lastState = null;
 			Vector3 pos = fluxSM.entryPosition + new Vector3( 300, 0, 0 );
@@ -232,6 +253,7 @@ namespace FluxEditor
 
 			ChildAnimatorState[] states = fluxSM.states;
 
+			long buildStatesStartTimestamp = Stopwatch.GetTimestamp();
 			for( int i = 0; i != events.Count; ++i )
 			{
 				FPlayAnimationEvent animEvent = (FPlayAnimationEvent)events[i];
@@ -298,16 +320,36 @@ namespace FluxEditor
 				
 				lastState = state;
 			}
+			buildStatesMs = GetElapsedMilliseconds( buildStatesStartTimestamp );
 
+			long applyStartTimestamp = Stopwatch.GetTimestamp();
 			fluxSM.states = states;
 
 			if( fluxSM.states.Length > 0 )
 				layer.stateMachine.defaultState = fluxSM.states[0].state;
 
 			animator.runtimeAnimatorController = controller;
+			applyMs = GetElapsedMilliseconds( applyStartTimestamp );
 
 			if( isPreviewing )
+			{
+				long rebuildCacheStartTimestamp = Stopwatch.GetTimestamp();
 				track.CreateCache();
+				rebuildCacheMs = GetElapsedMilliseconds( rebuildCacheStartTimestamp );
+			}
+
+			double totalMs = GetElapsedMilliseconds( totalStartTimestamp );
+			Debug.Log(
+				$"[FluxPerf] RebuildStateMachine track={track.name}, owner={(animator != null ? animator.gameObject.name : "null")}, " +
+				$"events={events.Count}, previewing={isPreviewing}, total={totalMs:F2} ms, " +
+				$"clearCache={clearCacheMs:F2}, setup={setupMs:F2}, layer={layerMs:F2}, fluxSM={stateMachineMs:F2}, " +
+				$"resizeStates={resizeStatesMs:F2}, buildStates={buildStatesMs:F2}, apply={applyMs:F2}, rebuildCache={rebuildCacheMs:F2}",
+				track );
+		}
+
+		private static double GetElapsedMilliseconds( long startTimestamp )
+		{
+			return ( Stopwatch.GetTimestamp() - startTimestamp ) * 1000d / Stopwatch.Frequency;
 		}
 
 		public static void MarkStateMachineDirty( FAnimationTrack track )

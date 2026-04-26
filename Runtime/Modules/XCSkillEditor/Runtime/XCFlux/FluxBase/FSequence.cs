@@ -173,6 +173,15 @@ namespace Flux
 		/// @brief Is the sequence initialized?
 		public bool IsInit { get { return _isInit; } }
 
+		// editor-only helper to avoid cache rebuild recursion while we are doing
+		// controlled initialization or preview cache generation.
+		private bool _suppressEditorTrackCacheBuild = false;
+		public bool SuppressEditorTrackCacheBuild
+		{
+			get { return _suppressEditorTrackCacheBuild; }
+			set { _suppressEditorTrackCacheBuild = value; }
+		}
+
 		// Is the sequence playing?
 		private bool _isPlaying = false;
 		/// @brief Is the sequence playing?
@@ -354,6 +363,11 @@ namespace Flux
 
 		public void CreateTrackCaches()
 		{
+#if UNITY_EDITOR
+			if( !Application.isPlaying && _suppressEditorTrackCacheBuild )
+				return;
+#endif
+
 			for( int i = 0; i != _containers.Count; ++i )
 			{
 				List<FTimeline> timelines = _containers[i].Timelines;
@@ -377,6 +391,7 @@ namespace Flux
 
 		public void DestroyTrackCaches()
 		{
+			Debug.Log($"-- DestroyTrackCaches");
 			foreach( FContainer container in Containers )
 			{
 				foreach( FTimeline timeline in container.Timelines )

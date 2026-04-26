@@ -74,7 +74,7 @@ namespace Flux
 					}
 				}
 			}
-
+			Debug.LogWarning("DeleteAnimationPreviews");
 			FAnimationTrack.DeleteAnimationPreviews( sequence );
 
 			return true;

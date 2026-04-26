@@ -146,6 +146,11 @@ namespace FluxEditor
         private bool _animationStateMachinesDirty = false;
         public bool HasPendingAnimationStateMachineRebuild { get { return _animationStateMachinesDirty; } }
 
+        [SerializeField]
+        private bool _promptAnimationStateMachineRebuildOnPlay = false;
+
+        private bool _suppressAnimationStateMachineDirty = false;
+
         private bool _isEditorCompiling = false;
 
         protected override void OnEnable()
@@ -386,7 +391,7 @@ namespace FluxEditor
                 return;
             }
 
-            if (_animationStateMachinesDirty)
+            if (_suppressAnimationStateMachineDirty)
             {
                 return;
             }
@@ -402,25 +407,42 @@ namespace FluxEditor
                 return;
             }
 
-            foreach (FContainer container in Sequence.Containers)
+            bool previousSuppressAnimationStateMachineDirty = _suppressAnimationStateMachineDirty;
+            _suppressAnimationStateMachineDirty = true;
+            _promptAnimationStateMachineRebuildOnPlay = false;
+
+            try
             {
-                foreach (FTimeline timeline in container.Timelines)
+                foreach (FContainer container in Sequence.Containers)
                 {
-                    foreach (FTrack track in timeline.Tracks)
+                    foreach (FTimeline timeline in container.Timelines)
                     {
-                        if (track is FAnimationTrack animationTrack)
+                        foreach (FTrack track in timeline.Tracks)
                         {
-                            FAnimationTrackInspector.RebuildStateMachine(animationTrack);
+                            if (track is FAnimationTrack animationTrack)
+                            {
+                                FAnimationTrackInspector.RebuildStateMachine(animationTrack);
+                            }
                         }
                     }
                 }
+
+                if (_dirtyTracks.Count > 0)
+                {
+                    NotifyDirtyTracks();
+                }
+
+                if (Sequence.CurrentFrame >= 0)
+                {
+                    SetCurrentFrame(Sequence.CurrentFrame);
+                }
+
+                _animationStateMachinesDirty = false;
+                _promptAnimationStateMachineRebuildOnPlay = false;
             }
-
-            _animationStateMachinesDirty = false;
-
-            if (Sequence.CurrentFrame >= 0)
+            finally
             {
-                SetCurrentFrame(Sequence.CurrentFrame);
+                _suppressAnimationStateMachineDirty = previousSuppressAnimationStateMachineDirty;
             }
 
             Repaint();
@@ -518,6 +540,7 @@ namespace FluxEditor
                 ContainerSelection.Clear();
                 Editors.Clear();
                 _animationStateMachinesDirty = false;
+                _promptAnimationStateMachineRebuildOnPlay = false;
             }
             else if (!EditorApplication.isPlaying)
             {
@@ -541,6 +564,13 @@ namespace FluxEditor
 
                 if (!EditorApplication.isPlaying)
                     sequence.Rebuild();
+
+                if (sequenceChanged)
+                {
+                    bool hasAnimationTracks = HasAnimationTracks(sequence);
+                    _animationStateMachinesDirty = hasAnimationTracks;
+                    _promptAnimationStateMachineRebuildOnPlay = hasAnimationTracks;
+                }
             }
             else
             {
@@ -551,7 +581,16 @@ namespace FluxEditor
 
             if (!Application.isPlaying && sequenceChanged && sequence)
             {
-                sequence.Init();
+                bool suppressEditorTrackCacheBuild = sequence.SuppressEditorTrackCacheBuild;
+                sequence.SuppressEditorTrackCacheBuild = true;
+                try
+                {
+                    sequence.Init();
+                }
+                finally
+                {
+                    sequence.SuppressEditorTrackCacheBuild = suppressEditorTrackCacheBuild;
+                }
             }
 
             Repaint();
@@ -1869,6 +1908,9 @@ namespace FluxEditor
 
         public void Play(bool restart)
         {
+            if (!Application.isPlaying && !ConfirmAnimationStateMachineRebuildBeforePlay())
+                return;
+
             if (!Sequence.IsStopped && restart)
                 Sequence.Stop();
 
@@ -1898,6 +1940,58 @@ namespace FluxEditor
             }
 
             FUtility.RepaintGameView();
+        }
+
+        private bool ConfirmAnimationStateMachineRebuildBeforePlay()
+        {
+            if (Sequence == null || !_promptAnimationStateMachineRebuildOnPlay)
+                return true;
+
+            if (!HasAnimationTracks(Sequence))
+            {
+                _promptAnimationStateMachineRebuildOnPlay = false;
+                return true;
+            }
+
+            int option = EditorUtility.DisplayDialogComplex(
+                "Seq Need Rebuild",
+                string.Format("Sequence \"{0}\" has not been rebuilt since it was opened.\n\nRebuild animation state machines before play?", Sequence.name),
+                "Rebuild & Play",
+                "Cancel",
+                "Play Anyway");
+
+            switch (option)
+            {
+                case 0:
+                    _promptAnimationStateMachineRebuildOnPlay = false;
+                    RebuildAnimationStateMachines();
+                    return true;
+                case 2:
+                    _promptAnimationStateMachineRebuildOnPlay = false;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool HasAnimationTracks(FSequence sequence)
+        {
+            if (sequence == null)
+                return false;
+
+            foreach (FContainer container in sequence.Containers)
+            {
+                foreach (FTimeline timeline in container.Timelines)
+                {
+                    foreach (FTrack track in timeline.Tracks)
+                    {
+                        if (track is FAnimationTrack)
+                            return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public void Stop()

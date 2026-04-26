@@ -79,6 +79,7 @@ namespace Flux
 
 				_animPreviews.Remove( sequence.GetInstanceID() );
 			}
+			_animPreviews.Clear(); 
 		}
 
 		// what is the animation controller that will be used to 
