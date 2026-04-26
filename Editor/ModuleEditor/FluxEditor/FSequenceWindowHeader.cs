@@ -346,9 +346,13 @@ namespace FluxEditor
         {
             FSequence sequence = _sequenceWindow.GetSequenceEditor().Sequence;
 
+            bool selectedIndexOutOfRange = _selectedSequenceIndex >= _sequences.Length;
             if ((_selectedSequenceIndex < 0 && sequence != null) ||
-                (_selectedSequenceIndex >= 0 && _sequences[_selectedSequenceIndex] != sequence))
+                selectedIndexOutOfRange ||
+                (_selectedSequenceIndex >= 0 && _selectedSequenceIndex < _sequences.Length &&
+                 _sequences[_selectedSequenceIndex] != sequence))
             {
+                _selectedSequenceIndex = -1;
                 for (int i = 0; i != _sequences.Length; ++i)
                 {
                     if (_sequences[i] == sequence)
@@ -379,31 +383,10 @@ namespace FluxEditor
             }
 
 
-            EditorGUI.BeginChangeCheck();
             EditorGUI.PrefixLabel(_sequenceLabelRect, _sequenceLabel);
-            int newSequenceIndex = EditorGUI.Popup(_sequencePopupRect, _selectedSequenceIndex, _sequenceNames);
-            if (EditorGUI.EndChangeCheck())
+            if (GUI.Button(_sequencePopupRect, GetCurrentSequencePopupContent(sequence), EditorStyles.popup))
             {
-                if (newSequenceIndex == _sequenceNames.Length - 2)
-                {
-                    _selectedSequenceIndex = -1;
-                    _sequenceWindow.GetSequenceEditor().OpenSequence(null);
-                }
-                else if (newSequenceIndex == _sequenceNames.Length - 1)
-                {
-                    FSequence newSequence = FSequenceEditorWindow.CreateSequence();
-                    Selection.activeTransform = newSequence.transform;
-                    _sequenceWindow.GetSequenceEditor().OpenSequence(newSequence);
-                }
-                else
-                {
-                    _selectedSequenceIndex = newSequenceIndex;
-                    _sequenceWindow.GetSequenceEditor().OpenSequence(_sequences[_selectedSequenceIndex]);
-                    _sequenceWindow.RemoveNotification();
-                }
-
-                EditorGUIUtility.keyboardControl = 0; // deselect it
-                EditorGUIUtility.ExitGUI();
+                ShowSequencePopupMenu(sequence);
             }
 
             // if we're in play mode, can't change anything
@@ -539,6 +522,60 @@ namespace FluxEditor
             return 0; // 如果未找到，返回0
         }
 
+
+        private GUIContent GetCurrentSequencePopupContent(FSequence sequence)
+        {
+            if (sequence != null)
+            {
+                return new GUIContent(sequence.name);
+            }
+
+            return new GUIContent("[Null]");
+        }
+
+        private void ShowSequencePopupMenu(FSequence sequence)
+        {
+            GenericMenu menu = new GenericMenu();
+
+            for (int i = 0; i < _sequences.Length; i++)
+            {
+                menu.AddItem(new GUIContent(_sequences[i].name), _sequences[i] == sequence, OnSequencePopupSelected, i);
+            }
+
+            if (_sequences.Length > 0)
+            {
+                menu.AddSeparator(string.Empty);
+            }
+
+            menu.AddItem(new GUIContent("[Null]"), sequence == null, OnSequencePopupSelected, _sequenceNames.Length - 2);
+            menu.AddItem(new GUIContent("[Create New Sequence]"), false, OnSequencePopupSelected, _sequenceNames.Length - 1);
+            menu.DropDown(_sequencePopupRect);
+        }
+
+        private void OnSequencePopupSelected(object userData)
+        {
+            int newSequenceIndex = (int)userData;
+            if (newSequenceIndex == _sequenceNames.Length - 2)
+            {
+                _selectedSequenceIndex = -1;
+                _sequenceWindow.GetSequenceEditor().OpenSequence(null);
+            }
+            else if (newSequenceIndex == _sequenceNames.Length - 1)
+            {
+                FSequence newSequence = FSequenceEditorWindow.CreateSequence();
+                Selection.activeTransform = newSequence.transform;
+                _sequenceWindow.GetSequenceEditor().OpenSequence(newSequence);
+            }
+            else
+            {
+                _selectedSequenceIndex = newSequenceIndex;
+                _sequenceWindow.GetSequenceEditor().OpenSequence(_sequences[_selectedSequenceIndex]);
+                _sequenceWindow.RemoveNotification();
+            }
+
+            EditorGUIUtility.keyboardControl = 0;
+            _sequenceWindow.Repaint();
+        }
 
         private void AddContainer()
         {
