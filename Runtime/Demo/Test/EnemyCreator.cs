@@ -27,7 +27,7 @@ public class EnemyCreator : GameStartMono, IExecute
     [Dropdown(nameof(GetDirAllFileName))] [Label("")] [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
-    public int enemyAddLevel = 0;//见关卡配置,一般+1等于+5
+    public int enemyAddLevel = 0; //见关卡配置,一般+1等于+5
 
     public int genCount = 1;
 
@@ -98,7 +98,8 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             foreach (string id in enemyNameList)
             {
-                Enemy0 enemy = EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(enemyAddLevel), skinNameSet);
+                Enemy0 enemy =
+                    EnemyMaker.Inst.CreatEnemy(id, LevelSettingHelper.GetEnemyLevel(enemyAddLevel), skinNameSet);
 
                 var genPos = GetGenPosition(posIndex, posCount);
 
@@ -126,7 +127,7 @@ public class EnemyCreator : GameStartMono, IExecute
                 curGenCount++;
 
                 _enemyList.Add(enemy.id);
-                
+
                 enemy.AiControl.targetRole = TargetRole;
 
                 posIndex++;
@@ -150,7 +151,7 @@ public class EnemyCreator : GameStartMono, IExecute
         enemy.SetFriend(GameDataCommon.LocalPlayer);
         return enemy;
     }
-    
+
     void ActiveEnemyAI()
     {
         foreach (var enemyId in _enemyList)
@@ -228,7 +229,14 @@ public class EnemyCreator : GameStartMono, IExecute
 
     void OnTestShowActKeyChange()
     {
-        taskLines += $"\n{testShowActKey}:";
+        if (string.IsNullOrEmpty(taskLines))
+        {
+            taskLines = $"{testShowActKey}:";
+        }
+        else
+        {
+            taskLines += $"\n{testShowActKey}:";
+        }
     }
 }
 

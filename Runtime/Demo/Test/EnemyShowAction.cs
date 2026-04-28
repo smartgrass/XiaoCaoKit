@@ -10,6 +10,10 @@ public class EnemyShowAction : BaseShowAction
 
     public override CharacterController Cc => enemy0.idRole.cc;
 
+    public override Role GetRole()
+    {
+        return enemy0;
+    }
 
     public void OnEnemyCreat(EnemyCreator enemyCreator, Enemy0 enemy)
     {

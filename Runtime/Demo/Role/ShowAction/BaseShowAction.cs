@@ -15,7 +15,12 @@ namespace XiaoCao
         [Multiline(12)] public string taskLines;
 
         public virtual CharacterController Cc => GameDataCommon.LocalPlayer.idRole.cc;
-
+        
+        public virtual Role GetRole()
+        {
+           return  GameDataCommon.LocalPlayer;
+        }
+        
         public Animator Animator
         {
             get
@@ -196,7 +201,10 @@ namespace XiaoCao
                         {
                             string skillId = array[1];
                             string[] cmdList = skillId.Split("|");
-                            yield return GameDataCommon.LocalPlayer.component.control.IEWaitActCombol(cmdList, null);
+
+                            var role = GetRole();
+                            
+                            yield return role.data_R.roleControl.IEWaitActCombo(cmdList, null);
                         }
                     }
 

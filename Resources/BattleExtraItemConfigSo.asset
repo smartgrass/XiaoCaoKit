@@ -23,3 +23,8 @@ MonoBehaviour:
     count: 1
     isUnCount: 0
     cdTime: 0
+  - id: SupportRole
+    desc: "\u652F\u63F4\u89D2\u8272"
+    count: 1
+    isUnCount: 0
+    cdTime: 0

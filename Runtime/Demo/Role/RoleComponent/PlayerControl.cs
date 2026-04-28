@@ -282,34 +282,6 @@ namespace XiaoCao
             GameEvent.Send<int, string>(EGameEvent.PlayerPlaySkill.ToInt(), owner.id, skillId);
             base.RcpPlaySkill(skillId);
         }
-
-
-        public void DoActCombol(string[] list, Action onFinish = null)
-        {
-            owner.idRole.StartCoroutine(IEActCombol(list, onFinish));
-        }
-
-        public IEnumerator IEWaitActCombol(string[] list, Action onFinish = null)
-        {
-            yield return owner.idRole.StartCoroutine(IEActCombol(list, onFinish));
-        }
-
-
-        IEnumerator IEActCombol(string[] cmdList, Action onFinish)
-        {
-            foreach (string cmd in cmdList)
-            {
-                TryPlaySkill(cmd);
-                yield return null;
-                yield return new WaitUntil(NoBusy);
-            }
-
-            onFinish?.Invoke();
-        }
-
-        private bool NoBusy()
-        {
-            return !owner.data_R.IsBusy;
-        }
+        
     }
 }

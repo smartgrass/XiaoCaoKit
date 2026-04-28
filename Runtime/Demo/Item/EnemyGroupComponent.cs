@@ -139,8 +139,15 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     {
         CheckChildGroup();
         var group = LubanTables.GetCreateEnemyGroups(key);
+        bool hasTaskLines = !string.IsNullOrEmpty(group.TaskLines);
+
         for (int i = 0; i < creators.Count; i++)
         {
+            if (hasTaskLines)
+            {
+                creators[i].taskLines = group.TaskLines;
+            }
+
             if (i < group.EnemyInfos.Count)
             {
                 creators[i].enemyIdList = group.EnemyInfos[i].Enemys;

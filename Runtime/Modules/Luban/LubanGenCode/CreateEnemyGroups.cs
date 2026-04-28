@@ -19,6 +19,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
         Key = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);EnemyInfos = new System.Collections.Generic.List<CreateEnemyInfo>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { CreateEnemyInfo _e0;  _e0 = CreateEnemyInfo.DeserializeCreateEnemyInfo(_buf); EnemyInfos.Add(_e0);}}
         ForceFollow = _buf.ReadInt();
+        TaskLines = _buf.ReadString();
     }
 
     public static CreateEnemyGroups DeserializeCreateEnemyGroups(ByteBuf _buf)
@@ -38,12 +39,14 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
     /// 强制跟随(0,无视 1跟随,-1不跟随)
     /// </summary>
     public readonly int ForceFollow;
+    public readonly string TaskLines;
    
     public const int __ID__ = 134275264;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -55,6 +58,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
         + "key:" + Key + ","
         + "enemyInfos:" + Luban.StringUtil.CollectionToString(EnemyInfos) + ","
         + "forceFollow:" + ForceFollow + ","
+        + "taskLines:" + TaskLines + ","
         + "}";
     }
 }

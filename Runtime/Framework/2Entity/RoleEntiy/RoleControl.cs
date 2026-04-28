@@ -1,4 +1,6 @@
-﻿using cfg;
+﻿using System;
+using System.Collections;
+using cfg;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
@@ -278,6 +280,36 @@ namespace XiaoCao
                 }
             }
         }
+
+
+        public void DoActCombo(string[] cmdList, Action onFinish = null)
+        {
+            owner.idRole.StartCoroutine(IEActCombo(cmdList, onFinish));
+        }
+
+        //开启协程
+        public IEnumerator IEWaitActCombo(string[] cmdList, Action onFinish = null)
+        {
+            yield return owner.idRole.StartCoroutine(IEActCombo(cmdList, onFinish));
+        }
+
+
+        private IEnumerator IEActCombo(string[] cmdList, Action onFinish)
+        {
+            foreach (string cmd in cmdList)
+            {
+                TryPlaySkill(cmd);
+                yield return null;
+                yield return new WaitUntil(NoBusy);
+            }
+
+            onFinish?.Invoke();
+        }
+
+        private bool NoBusy()
+        {
+            return !owner.data_R.IsBusy;
+        }
     }
 
     public interface IRoleControl
@@ -291,5 +323,6 @@ namespace XiaoCao
 
         public void DefaultAutoDirect(float lerp = 0.4f);
         void StopTimeSpeed(bool isOn);
+        public IEnumerator IEWaitActCombo(string[] cmdList, Action onFinish = null);
     }
 }
