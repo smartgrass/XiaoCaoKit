@@ -2,23 +2,25 @@ using System.Collections.Generic;
 using DG.Tweening;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.Events;
 using XiaoCao;
 
 namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 {
-    public class ItemPickExtraItem : MonoBehaviour
+    public class ItemPickExtraItem : MapMsgTriggerExec
     {
         public ItemType itemType;
-        
-        [Dropdown(nameof(GetExtraItemIdDropdown))]
-        [OnValueChanged(nameof(SelectItem))]
+
+        [Dropdown(nameof(GetExtraItemIdDropdown))] [OnValueChanged(nameof(SelectItem))]
         public string itemIdSelect;
 
         public string itemId;
-
+        
         private bool _isPicked;
 
         public ParticleSystem icon;
+
+        public UnityEvent finishEvent;
 
         private void Start()
         {
@@ -57,10 +59,17 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
                 return;
             }
 
+            Execute();
+        }
+
+        public override void Execute()
+        {
             _isPicked = true;
             XiaoCao.Item item = CreateItem();
             item.RewardItem();
             Hide();
+            finishEvent?.Invoke();
+            base.Execute();
         }
 
         public void SelectItem()
@@ -68,7 +77,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
             itemId = itemIdSelect;
             RefreshIconTexture();
         }
-        
+
         public void RefreshIconTexture()
         {
             if (string.IsNullOrEmpty(itemId))
@@ -85,7 +94,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
             {
                 return;
             }
-            
+
             Sprite sprite = LoadItemSprite();
             if (sprite == null)
             {
