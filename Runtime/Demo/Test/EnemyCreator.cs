@@ -110,7 +110,6 @@ public class EnemyCreator : GameStartMono, IExecute
 
                 enemy.enemyData.movement.LookToDir(transform.forward);
 
-
                 enemy.IsAiOn = createMode is EnemyCreateMode.AI or EnemyCreateMode.LoadAI;
                 if (createMode == EnemyCreateMode.LoadNoAI)
                 {

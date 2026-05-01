@@ -13,7 +13,9 @@ namespace Flux
         public int maxTriggetTime = 0; 
 
         public MeshInfo meshInfo;
-
+        
+        public float atkSpan;
+        
         [XCLabel("触发对象")]
         [EnumFlags]
         public TriggerTargetType triggerTargetType = TriggerTargetType.Enemy;
@@ -24,6 +26,7 @@ namespace Flux
             var fe = this;
             xce.range = new XCRange(fe.Start, fe.End);
             xce.meshInfo = fe.meshInfo;
+            xce.atkSpan = fe.atkSpan;
             xce.maxTriggerTime = fe.maxTriggetTime;
             xce.triggerTargetType = fe.triggerTargetType;
             return xce;

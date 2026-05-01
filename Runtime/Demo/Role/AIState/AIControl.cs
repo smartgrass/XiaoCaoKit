@@ -125,14 +125,13 @@ namespace XiaoCao
             {
                 CheckFriendMove();
             }
-
             //屏蔽原本ai逻辑
             if (IsOnShowAction || _friendState == FriendState.Follow)
             {
+
                 ForceFollowTargetUpdate();
                 return;
             }
-
 
             CheckTarget();
 
@@ -338,6 +337,11 @@ namespace XiaoCao
         private void ForceFollowTargetUpdate()
         {
             bool isMove = TargetPosTypeValue != TargetPosType.Stop || _friendState == FriendState.Follow;
+            if (TargetPosTypeValue == TargetPosType.Default)
+            {
+                isMove = false;
+            }
+            
             if (isMove)
             {
                 Vector3 targetPos = GetTargetPos();

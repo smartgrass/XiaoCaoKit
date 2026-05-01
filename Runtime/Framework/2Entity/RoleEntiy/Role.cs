@@ -117,10 +117,13 @@ namespace XiaoCao
             idRoleGo.tag = RoleType == RoleType.Enemy ? Tags.ENEMY : Tags.PLAYER;
             BindGameObject(idRole.gameObject);
 #if UNITY_EDITOR
-            var testDraw = idRoleGo.AddComponent<Test_PlayerCmd>();
             if (RoleType == RoleType.Enemy)
             {
                 idRoleGo.AddComponent<Test_EnemyCmd>();
+            }
+            else if (RoleType == RoleType.Player)
+            {
+                var testDraw = idRoleGo.AddComponent<Test_PlayerCmd>();
             }
 #endif
         }

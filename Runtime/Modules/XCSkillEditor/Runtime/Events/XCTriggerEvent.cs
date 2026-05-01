@@ -29,6 +29,9 @@ namespace XiaoCao
 
         public MeshType MeshType => meshInfo.meshType;
 
+        public float atkSpan = 0;
+        private float atkSpanTimer = 0;
+
         public ITrigger Trigger { get; set; }
 
         public BaseAtker AtkCommponent { get; set; }
@@ -50,11 +53,29 @@ namespace XiaoCao
             tf.SetParent(Tran);
 
             Trigger.SetMeshInfo(meshInfo);
-            Trigger.InitListener(OnReceiveTriggerEnter, XCSetting.GetTriggerLayerMask(Info.role.team, SafeTriggerTargetType));
+            Trigger.InitListener(OnReceiveTriggerEnter,
+                XCSetting.GetTriggerLayerMask(Info.role.team, SafeTriggerTargetType));
             SetAtkInfo();
             Trigger.Switch(true);
         }
 
+        public override void OnUpdateEvent(int frame, float timeSinceTrigger)
+        {
+            base.OnUpdateEvent(frame, timeSinceTrigger);
+            if (!isTriggeredEnd)
+            {
+                if (atkSpan > 0)
+                {
+                    //重置伤害判定
+                    atkSpanTimer += XCTime.fixedDeltaTime;
+                    if (atkSpanTimer >= atkSpan)
+                    {
+                        atkSpanTimer = 0;
+                        Trigger.ReEnableHit();
+                    }
+                }
+            }
+        }
 
         void GetTrigger()
         {

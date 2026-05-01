@@ -1,6 +1,7 @@
 ﻿using Flux;
 using ProtoBuf.Meta;
 using System;
+using System.Collections;
 using System.Drawing;
 using UnityEngine;
 using XiaoCao;
@@ -37,6 +38,14 @@ public class ColliderTrigger : MonoBehaviour, ITrigger
     public void OnFinish()
     {
         Switch(false);
+    }
+
+    public void ReEnableHit()
+    {
+        Collider col = GetComponent<Collider>();
+        if (!col) return;
+        col.enabled = false;
+        col.enabled = true;
     }
 
     public void SetMeshInfo(MeshInfo meshInfo)
@@ -108,4 +117,5 @@ public interface ITrigger
     void Switch(bool v);
 
     void OnFinish();
+    void ReEnableHit();
 }

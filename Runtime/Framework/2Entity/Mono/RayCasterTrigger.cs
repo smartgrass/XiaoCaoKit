@@ -25,7 +25,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     public HashSet<Collider> tempColliders = new HashSet<Collider>();
 
-    private float distance = 0;
+    private float _distance = 0;
 
     //与Atker在同个GameObject, 坐标要从本地坐标换算
     //旋转方向也需要从本地旋转中叠加
@@ -68,6 +68,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
 
     public void Switch(bool isOn)
     {
+        //开关 
         enabled = isOn;
         tempColliders.Clear();
     }
@@ -77,6 +78,10 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
         Switch(false);
     }
 
+    public void ReEnableHit()
+    {
+        tempColliders.Clear();
+    }
 
     private void FixedUpdate()
     {
@@ -99,16 +104,13 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     private void DoTrigger(Collider collider)
     {
         if (!tempColliders.Contains(collider))
+
         {
             TriggerAct?.Invoke(collider);
             tempColliders.Add(collider);
         }
     }
 
-    private void ClearTemp()
-    {
-        tempColliders.Clear();
-    }
 
     private void BoxLine()
     {
@@ -151,7 +153,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     private void OnSphere()
     {
         int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits,
-            distance, layerMask,
+            _distance, layerMask,
             preview);
         if (hitCount > 0)
         {
@@ -169,7 +171,7 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
     private void OnSector()
     {
         int hitCount = Physics.SphereCastNonAlloc(WorldCenter, meshInfo.GetRadius * SelfSize.x, Direction, hits,
-            distance, layerMask,
+            _distance, layerMask,
             preview: preview);
         if (hitCount > 0)
         {
