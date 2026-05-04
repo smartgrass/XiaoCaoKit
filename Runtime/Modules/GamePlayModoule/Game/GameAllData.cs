@@ -476,7 +476,7 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
-        LevelEnd = 2, //关卡结束 0失败 1成功
+        LevelEnd = 2, //关卡结束 0失败 1成功 //ELevelResult
 
         ///<see cref="GameStartMono"/>
         GameStartFinsh = 2,

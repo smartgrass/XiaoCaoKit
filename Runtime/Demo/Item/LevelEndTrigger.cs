@@ -6,6 +6,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 {
     public class LevelEndTrigger : MonoBehaviour, IMapMsgSender
     {
+        private DialogPanel  _dialogPanel;
+
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag(Tags.PLAYER))
@@ -19,7 +21,12 @@ namespace XiaoCaoKit.Runtime.Demo.Item
                 return;
             }
 
-            GameMgr.Inst.ShowLevelEndDialog();
+            if (_dialogPanel && _dialogPanel.gameObject)
+            {
+                return;
+            }
+
+            _dialogPanel = GameMgr.Inst.ShowLevelEndDialog();
         }
     }
 }

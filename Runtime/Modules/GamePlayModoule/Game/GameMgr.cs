@@ -108,18 +108,18 @@ namespace XiaoCao
         public void LevelFinish()
         {
             LevelData.Current.finishLevelTime = Time.time;
-            GameEvent.Send<int>(EGameEvent.LevelEnd.ToInt(), 1);
+            GameEvent.Send<ELevelResult>(EGameEvent.LevelEnd.ToInt(), ELevelResult.Success);
             BattleData.Current.levelData.levelResult = ELevelResult.Success;
-            UIMgr.PopToastKey(LocalizeKey.LevelSuccess,5);
+            // UIMgr.PopToastKey(LocalizeKey.LevelSuccess,5);
             //写入存档
             LevelInfo levelInfo = GameDataCommon.Current.GetLevelInfo;
             Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");
             PlayerSaveData.LocalSavaData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
             PlayerSaveData.SavaData();
-            // if (MapMgr.Inst)
-            // {
-            //     // XCTime.DelayRunMono(0.5f,CreatePortalLevelEnd, MapMgr.Inst);
-            // }
+            if (MapMgr.Inst)
+            {
+                XCTime.DelayRunMono(1f,CreatePortalLevelEnd, MapMgr.Inst);
+            }
         }
 
         public void ShowLevelResultUI()
@@ -130,9 +130,9 @@ namespace XiaoCao
 
         void CreatePortalLevelEnd()
         {
-            // string path = "Assets/_Res/Item/PortalLevelEnd.prefab";
-            // GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
-            // portal.transform.position = MapMgr.Inst.GetEndPos();
+            string path = "Assets/_Res/Item/PortalLevelEnd.prefab";
+            GameObject portal = GameObject.Instantiate(ResMgr.LoadAseet<GameObject>(path));
+            portal.transform.position = MapMgr.Inst.GetEndPos();
         }
         //显示退出关卡对话框
         public DialogPanel ShowLevelEndDialog()

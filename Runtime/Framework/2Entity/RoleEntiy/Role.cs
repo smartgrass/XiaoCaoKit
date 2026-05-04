@@ -3,6 +3,7 @@ using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Cysharp.Threading.Tasks;
 using TEngine;
 using UnityEngine;
 using XiaoCao.Render;
@@ -593,26 +594,27 @@ namespace XiaoCao
         private void OnHideRender(object msg)
         {
             BaseMsg baseMsg = (BaseMsg)msg;
-            if (tempRender == null)
+            if (baseMsg is { numMsg: > 0, state: 0 })
             {
-                tempRender = body.GetComponentsInChildren<Renderer>();
+                XCTime.DelayRunMono(baseMsg.numMsg, () => { SetRenderEnable(true); }, idRole).Forget();
             }
 
             if (baseMsg.state == 0)
             {
-                //body.gameObject.SetActive(false);
-                foreach (Renderer renderer in tempRender)
-                {
-                    renderer.enabled = false;
-                }
+                SetRenderEnable(false);
             }
             else
             {
-                foreach (Renderer renderer in tempRender)
-                {
-                    renderer.enabled = true;
-                }
-                //body.gameObject.SetActive(true);
+                SetRenderEnable(true);
+            }
+        }
+
+        private void SetRenderEnable(bool isOn)
+        {
+            tempRender ??= body.GetComponentsInChildren<Renderer>();
+            foreach (Renderer renderer in tempRender)
+            {
+                renderer.enabled = isOn;
             }
         }
 

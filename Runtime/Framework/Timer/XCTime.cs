@@ -61,6 +61,11 @@ public class XCTime
 
         action();
     }
+    
+    public static void DelayRunMonoForget(float time, Action action,Component mono)
+    {
+        DelayRunMono(time, action, mono).Forget();   
+    }
 
     //UniTask取消方法2
     void TestCancel()

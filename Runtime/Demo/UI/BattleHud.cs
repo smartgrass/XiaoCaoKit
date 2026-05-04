@@ -34,6 +34,8 @@ namespace XiaoCao
 
         public Button exitLevelBtn;
 
+        public GameObject gameWinTip;
+
         private AssetPool pool;
 
         private readonly Vector3 hidePos = new Vector3(0, -999, 0);
@@ -52,18 +54,24 @@ namespace XiaoCao
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
             GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.AddEventListener<int>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
+            GameEvent.AddEventListener<ELevelResult>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
             worldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
             playerBar.SetBarColors(false);
             exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
             exitLevelBtn.transform.gameObject.SetActive(false);
+            gameWinTip.gameObject.SetActive(false);
         }
 
-        private void OnLevelEnd(int state)
+        //ELevelResult
+        private void OnLevelEnd(ELevelResult state)
         {
             exitLevelBtn.transform.gameObject.SetActive(true);
+            if (state == ELevelResult.Success)
+            {
+                gameWinTip.SetActive(true);
+            }
         }
 
         private void OnDestroy()
@@ -71,7 +79,7 @@ namespace XiaoCao
             GameEvent.RemoveEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
             GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
-            GameEvent.RemoveEventListener<int>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
+            GameEvent.RemoveEventListener<ELevelResult>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
         }
 
         private void Update()
@@ -121,25 +129,28 @@ namespace XiaoCao
 
         private void UpdataEnemyHpBar(Role role)
         {
-            if (role.IsRuning && !role.HasTag(RoleTagCommon.NoHpBar))
+            if (!CanShowEnemyHpBar(role))
             {
-                barDic.TryGetValue(role.id, out var bar);
-                if (bar == null)
-                {
-                    bar = CreateEnemyHpBar(role);
-                    barDic[role.id] = bar;
-                }
+                HideEnemyHpBar(role.id);
+                return;
+            }
 
-                bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
-                bar.UpdateArmorBar(role.ShowArmorPercentage);
-                if (IsBossBar(bar))
-                {
-                    RefreshBossBarParentState();
-                }
-                else if (bar.gameObject.activeSelf)
-                {
-                    bar.UpdatePostion();
-                }
+            barDic.TryGetValue(role.id, out var bar);
+            if (bar == null)
+            {
+                bar = CreateEnemyHpBar(role);
+                barDic[role.id] = bar;
+            }
+
+            bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
+            bar.UpdateArmorBar(role.ShowArmorPercentage);
+            if (IsBossBar(bar))
+            {
+                RefreshBossBarParentState();
+            }
+            else if (bar.gameObject.activeSelf)
+            {
+                bar.UpdatePostion();
             }
         }
 
@@ -295,6 +306,32 @@ namespace XiaoCao
             }
 
             pool.Release(bar.gameObject);
+        }
+
+        private bool CanShowEnemyHpBar(Role role)
+        {
+            if (!role.IsRuning || role.HasTag(RoleTagCommon.NoHpBar))
+            {
+                return false;
+            }
+
+            if (role.IsEnemyIdentity && !role.IsAiOn)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void HideEnemyHpBar(int roleId)
+        {
+            if (!barDic.TryGetValue(roleId, out var bar))
+            {
+                return;
+            }
+
+            ReleaseEnemyHpBar(bar);
+            barDic.Remove(roleId);
         }
 
         private void RefreshBossBarParentState()
