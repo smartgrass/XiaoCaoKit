@@ -25,4 +25,9 @@ public class ItemIdComponent : IdComponent
         HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
     }
 
+    public virtual void ToDead()
+    {
+        Debug.Log($"-- dead {this.gameObject.name} but nothing");
+    }
+
 }

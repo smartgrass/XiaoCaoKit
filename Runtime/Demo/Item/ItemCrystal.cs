@@ -132,7 +132,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
 
 
     [Button("ToDead", enabledMode: EButtonEnableMode.Playmode)]
-    public void ToDead()
+    public override void ToDead()
     {
         OnDead(new AtkInfo());
     }

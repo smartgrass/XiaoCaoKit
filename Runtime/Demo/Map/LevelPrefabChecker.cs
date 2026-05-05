@@ -23,20 +23,20 @@ namespace XiaoCao
             CheckOrCreateObject("startPoint", ref startPoint);
             CheckOrCreateObject("endPoint", ref endPoint);
             CheckOrCreateLevelAction();
+            CheckLevelFinish();
         }
-
-        [Button("检查关卡通关")]
+        
         void CheckLevelFinish()
         {
             //检查LevelAction中的所有Group中是否有MapMsg为LevelFinish的,没有则输出Error
             if (levelAction.GetComponentsInChildren<EnemyGroupComponent>(true)
                 .Any(x => x.mapMsg == LocalizeKey.LevelFinish))
             {
-                Debug.Log("关卡通关已存在");
+                Debug.Log("mapMsg == LevelFinish 关卡通关已存在");
             }
             else
             {
-                Debug.LogError("关卡通关不存在");
+                Debug.LogError("mapMsg == LevelFinish关卡通关不存在");
             }
         }
 

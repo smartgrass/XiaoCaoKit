@@ -122,7 +122,7 @@ MonoBehaviour:
   uiText: {fileID: 2571014015276236681}
   fadeDuration: 0.15
   textColors:
-  - {r: 1, g: 0.9098039, b: 0.37254903, a: 1}
+  - {r: 1, g: 0.9843137, b: 0.53333336, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1379282666370740
 GameObject:
@@ -181,6 +181,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -287,7 +288,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 23e172615b348374a9c1ce08891a759c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4fc61d78538b51e4ea2fb6149dc5f3a8, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -371,8 +372,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4284475647
-  m_fontColor: {r: 1, g: 0.9102144, b: 0.37421376, a: 1}
+    rgba: 4287167487
+  m_fontColor: {r: 1, g: 0.9843137, b: 0.53333336, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

@@ -81,6 +81,11 @@ namespace cfg
             return GetSkillSetting(subKey, mainKey);
         }
 
+        public static SkillSetting GetDefaultSkillSetting()
+        {
+            return SkillSettingReader.DataList[0];
+        }
+
         public static SkillSetting GetSkillSetting(string key, string fallback)
         {
             var ret = SkillSettingReader.GetOrDefault(key);

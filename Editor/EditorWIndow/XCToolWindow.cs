@@ -230,8 +230,7 @@ namespace AssetEditor.Editor
             var endPos = MapMgr.Inst.GetEndPos();
             Vector3 offset = (endPos - GameDataCommon.LocalPlayer.transform.position).ToY0().normalized * -3;
             GameDataCommon.LocalPlayer.Movement.MoveToImmediate(endPos + offset + Vector3.up);
-            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), "LevelFinish");
-            GameMgr.Inst.LevelFinish();
+            GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), ShowActKeys.LevelFinish);
         }
 
         private void OnExtraItemSelectChange()

@@ -4,6 +4,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item
     {
         public bool isNoHurt;
 
+        public bool autoDead;
+        
         public bool checkChild;
 
         public override void Execute()
@@ -13,15 +15,24 @@ namespace XiaoCaoKit.Runtime.Demo.Item
                 var childItems = transform.GetComponentsInChildren<ItemIdComponent>();
                 foreach (var item in childItems)
                 {
-                    item.noHurt = isNoHurt;
+                    CheckItem(item);
                 }
             }
             else
             {
                 if (transform.TryGetComponent(out ItemIdComponent item))
                 {
-                    item.noHurt = isNoHurt;
+                    CheckItem(item);
                 }
+            }
+        }
+
+        private void CheckItem(ItemIdComponent item)
+        {
+            item.noHurt = isNoHurt;
+            if (autoDead)
+            {
+                item.ToDead();
             }
         }
     }

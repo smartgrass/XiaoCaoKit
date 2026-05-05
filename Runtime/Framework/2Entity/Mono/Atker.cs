@@ -177,6 +177,10 @@ public class AtkInfo
         {
             if (setting == null)
             {
+                if (string.IsNullOrEmpty(skillId))
+                {
+                    return LubanTables.GetDefaultSkillSetting();
+                }
                 return LubanTables.GetSkillSetting(skillId, subSkillId);
             }
 

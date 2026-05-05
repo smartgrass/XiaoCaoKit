@@ -17,8 +17,16 @@ public static class HitHelper
     }
 
     public static void ShowHitEffect(Transform transform, AtkInfo ackInfo)
-    { 
+    {
+        if (string.IsNullOrEmpty(ackInfo.skillId))
+        {
+            return;
+        }
         SkillSetting setting = ackInfo.GetSkillSetting;
+        if (setting == null)
+        {
+            return;
+        }
         if (string.IsNullOrEmpty(setting.HitEffect))
         {
             return;
