@@ -6,6 +6,7 @@ using NaughtyAttributes;
 using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Reflection;
 using TEngine;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +18,10 @@ namespace AssetEditor.Editor
 {
     public class XCToolWindow : XiaoCaoWindow
     {
+        private static readonly FieldInfo HitDirField = typeof(AtkInfo).GetField("hitDir", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo HitPosField = typeof(AtkInfo).GetField("hitPos", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo AckObjectPosField = typeof(AtkInfo).GetField("ackObjectPos", BindingFlags.Instance | BindingFlags.NonPublic);
+
         [MenuItem(XCEditorTools.XCToolWindow, priority = 1)]
         public static XCToolWindow Open()
         {
@@ -189,6 +194,48 @@ namespace AssetEditor.Editor
                     role.OnDie(new AtkInfo());
                 }
             }
+        }
+
+        [Button("玩家受伤40%", Line1, enabledMode: EButtonEnableMode.Playmode)]
+        void HurtPlayer()
+        {
+            if (!Application.isPlaying || GameDataCommon.Current.gameState != GameState.Running)
+            {
+                return;
+            }
+
+            Player0 player = GameDataCommon.LocalPlayer;
+            if (player == null || player.IsDie || player.MaxHp <= 0)
+            {
+                return;
+            }
+
+            int damage = Mathf.Max(1, Mathf.CeilToInt(player.MaxHp * 0.4f));
+            AtkInfo atkInfo = new AtkInfo
+            {
+                team = XCSetting.EnemyTeam,
+                atker = -1,
+                atk = damage,
+                baseAtk = damage,
+                skillId = string.Empty,
+            };
+
+            Vector3 hitDir = -player.transform.forward;
+            Vector3 hitPos = player.transform.position + hitDir;
+            SetAtkInfoHitData(atkInfo, hitDir, hitPos);
+            player.OnDamage(atkInfo);
+        }
+
+        private static void SetAtkInfoHitData(AtkInfo atkInfo, Vector3 hitDir, Vector3 hitPos)
+        {
+            if (atkInfo == null)
+            {
+                return;
+            }
+
+            HitDirField?.SetValue(atkInfo, hitDir);
+            HitPosField?.SetValue(atkInfo, hitPos);
+            AckObjectPosField?.SetValue(atkInfo, hitPos);
         }
 
 

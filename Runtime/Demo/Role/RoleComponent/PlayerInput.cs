@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using Input = UnityEngine.Input;
 
@@ -6,6 +7,8 @@ namespace XiaoCao
 {
     public class PlayerInput : PlayerComponent, IUsed
     {
+        private static readonly List<RaycastResult> UiRaycastResults = new List<RaycastResult>();
+
         public PlayerInput(Player0 owner) : base(owner) { }
 
         public PlayerInputData data => Data_P.inputData;
@@ -26,7 +29,7 @@ namespace XiaoCao
         {
             CheckInputXY();
 
-            //电脑端输入检测
+            // PC input check
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
             {
                 return;
@@ -37,10 +40,8 @@ namespace XiaoCao
             if (Input.GetKeyDown(KeyCode.LeftShift))
                 data.inputs[InputKey.LeftShift] = true;
 
-
             if (Input.GetKeyDown(KeyCode.Mouse1))
                 data.inputs[InputKey.LeftShift] = true;
-
 
             if (Input.GetKeyDown(KeyCode.Space))
                 data.inputs[InputKey.Space] = true;
@@ -80,15 +81,60 @@ namespace XiaoCao
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Mouse0) && !IsPointerOverUI())
+            if (Input.GetKeyDown(KeyCode.Mouse0) && !IsPointerOverBlockingUI())
             {
                 data.inputs[InputKey.NorAck] = true;
             }
         }
 
-        private static bool IsPointerOverUI()
+        private static bool IsPointerOverBlockingUI()
         {
-            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            if (EventSystem.current == null)
+            {
+                return false;
+            }
+
+            PointerEventData eventData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+
+            UiRaycastResults.Clear();
+            EventSystem.current.RaycastAll(eventData, UiRaycastResults);
+            //EventSystem.current.IsPointerOverGameObject()
+            for (int i = 0; i < UiRaycastResults.Count; i++)
+            {
+                GameObject hitObject = UiRaycastResults[i].gameObject;
+                if (hitObject == null)
+                {
+                    continue;
+                }
+
+                if (IsTouchFieldObject(hitObject))
+                {
+                    continue;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsTouchFieldObject(GameObject target)
+        {
+            Transform current = target != null ? target.transform : null;
+            while (current != null)
+            {
+                if (current.CompareTag(Tags.TOUCH_FIELD))
+                {
+                    return true;
+                }
+
+                current = current.parent;
+            }
+
+            return false;
         }
 
         private void CheckInputXY()
@@ -111,12 +157,9 @@ namespace XiaoCao
             float screenWidth = Screen.width;
             float screenHeight = Screen.height;
 
-            // 将屏幕坐标转换为比例坐标  
             float proportionalX = mousePosition.x / screenWidth;
             float proportionalY = mousePosition.y / screenHeight;
-            // 返回比例坐标  
             return new Vector2(proportionalX, proportionalY);
-
         }
 
         private Vector3 GetInputMoveDir()
@@ -128,11 +171,9 @@ namespace XiaoCao
             return moveDir;
         }
 
-        //使用过
         public void Used()
         {
             data.ResetKey();
         }
     }
-
 }

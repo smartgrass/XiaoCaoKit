@@ -8,6 +8,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using XiaoCao.UI;
 using Input = UnityEngine.Input;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace XiaoCao
 {
@@ -15,6 +18,10 @@ namespace XiaoCao
     public class KeyInputHud : GameStartMono, IClearCache
     {
         #region References
+
+        public Transform leftDown;
+        public Transform rightDown;
+
         public Joystick joystick;
 
         public Transform slotParent;
@@ -25,6 +32,9 @@ namespace XiaoCao
         public Button jumpBtn;
         public Button norAtkBtn;
         public TouchField touchField;
+
+        [Header("Layout Config")]
+        public KeyInputHudLayoutConfig layoutConfig;
         #endregion
 
         #region ExtraSkill Fields
@@ -103,8 +113,7 @@ namespace XiaoCao
         {
             base.OnGameStart();
             // 收集普通技能槽位，额外道具按钮单独维护，不参与常规技能槽刷新。
-            slots = slotParent.GetComponentsInChildren<SkillSlot>().ToList();
-            slots.Remove(extraSkillBtn);
+            RefreshSkillSlotCache(false);
             if (HasIndependentRollBtn)
             {
                 rollBtn.slotType = SlotType.Inputs;
@@ -218,6 +227,9 @@ namespace XiaoCao
                 ClearTouchInput();
             }
 
+            ApplySavedLayout(GameSetting.UserInputType);
+            RefreshSkillSlotCache(false);
+
             if (slots != null)
             {
                 for (int i = 0; i < slots.Count; i++)
@@ -231,8 +243,6 @@ namespace XiaoCao
                 rollBtn.RefreshInputTypeUI();
             }
             extraSkillBtn?.RefreshInputTypeUI();
-            
-            joystick.transform.parent.gameObject.SetActive(GameSetting.UserInputType == UserInputType.Touch);
         }
 
         private void ClearTouchInput()
@@ -245,6 +255,153 @@ namespace XiaoCao
 
             localPlayer.playerData.inputData.SetXY(0, 0);
             PlayerInputData.LocalSwipeDirection = Vector2.zero;
+        }
+
+        private void ApplySavedLayout(UserInputType inputType)
+        {
+            if (layoutConfig == null)
+            {
+                return;
+            }
+
+            ApplyLayoutData(layoutConfig.GetLayout(inputType), false);
+        }
+
+        private void ApplyLayoutData(KeyInputHudLayoutData data, bool includeInactive)
+        {
+            if (data == null || !data.isSaved)
+            {
+                return;
+            }
+
+            List<SkillSlot> layoutSlots = GetLayoutSlots(includeInactive);
+
+            ApplyLayoutTransform(joystick, data.joystick);
+            ApplyLayoutTransform(extraSkillBtn, data.extraSkillBtn);
+            ApplyLayoutTransform(rollBtn, data.rollBtn);
+            ApplyLayoutTransform(jumpBtn, data.jumpBtn);
+            ApplyLayoutTransform(norAtkBtn, data.norAtkBtn);
+
+            if (layoutSlots == null || data.slots == null)
+            {
+                return;
+            }
+
+            int count = Mathf.Min(layoutSlots.Count, data.slots.Count);
+            for (int i = 0; i < count; i++)
+            {
+                ApplyLayoutTransform(layoutSlots[i], data.slots[i]);
+            }
+
+            if (!includeInactive)
+            {
+                RefreshSkillSlotCache(false);
+            }
+        }
+
+        private List<SkillSlot> GetLayoutSlots(bool includeInactive)
+        {
+            List<SkillSlot> layoutSlots = includeInactive
+                ? transform.GetComponentsInChildren<SkillSlot>(true).ToList()
+                : transform.GetComponentsInChildren<SkillSlot>().ToList();
+            layoutSlots.Remove(extraSkillBtn);
+            if (HasIndependentRollBtn)
+            {
+                layoutSlots.Remove(rollBtn);
+            }
+
+            return layoutSlots
+                .OrderBy(GetLayoutSlotSortKey)
+                .ThenBy(slot => slot.name)
+                .ToList();
+        }
+
+        private void RefreshSkillSlotCache(bool includeInactive)
+        {
+            slots = GetLayoutSlots(includeInactive);
+        }
+
+        private static int GetLayoutSlotSortKey(SkillSlot slot)
+        {
+            if (slot == null || string.IsNullOrEmpty(slot.name))
+            {
+                return int.MaxValue;
+            }
+
+            int number = 0;
+            bool hasNumber = false;
+            for (int i = 0; i < slot.name.Length; i++)
+            {
+                char c = slot.name[i];
+                if (!char.IsDigit(c))
+                {
+                    continue;
+                }
+
+                hasNumber = true;
+                number = number * 10 + (c - '0');
+            }
+
+            return hasNumber ? number : int.MaxValue;
+        }
+
+        private void ApplyLayoutTransform(Component component, KeyInputHudLocalPositionData data)
+        {
+            if (component == null || data == null)
+            {
+                return;
+            }
+
+            RectTransform rectTransform = component.transform as RectTransform;
+            if (rectTransform == null)
+            {
+                return;
+            }
+
+            ApplyParentSet(rectTransform, data.parentSet);
+            rectTransform.anchoredPosition = data.anchoredPosition;
+            Vector3 localScale = rectTransform.localScale;
+            localScale.x = data.localSize;
+            localScale.y = data.localSize;
+            rectTransform.localScale = localScale;
+        }
+
+        private void ApplyParentSet(Transform target, ParentSet parentSet)
+        {
+            if (target == null || parentSet == ParentSet.NoChange)
+            {
+                return;
+            }
+
+            Transform parent = GetParentBySet(parentSet);
+            if (parent == null || target.parent == parent)
+            {
+                return;
+            }
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                Undo.SetTransformParent(target, parent, "Load KeyInputHud Layout");
+            }
+            else
+#endif
+            {
+                target.SetParent(parent, false);
+            }
+        }
+
+        private Transform GetParentBySet(ParentSet parentSet)
+        {
+            switch (parentSet)
+            {
+                case ParentSet.LeftDown:
+                    return leftDown;
+                case ParentSet.RightDown:
+                    return rightDown;
+                default:
+                    return null;
+            }
         }
         #endregion
 
@@ -782,5 +939,233 @@ namespace XiaoCao
             }
         }
         #endregion
+
+#if UNITY_EDITOR
+        private const string DefaultLayoutConfigAssetPath = "Assets/_Res/UI/Setting/KeyInputHudLayoutConfig.asset";
+
+        [Button("保存PC布局", 200, EButtonEnableMode.Editor)]
+        private void SavePcLayout()
+        {
+            SaveLayout(UserInputType.Mouse);
+        }
+
+        [Button("读取PC布局", 200, EButtonEnableMode.Editor)]
+        private void LoadPcLayout()
+        {
+            LoadLayout(UserInputType.Mouse);
+        }
+
+        [Button("保存移动端布局", 201, EButtonEnableMode.Editor)]
+        private void SaveTouchLayout()
+        {
+            SaveLayout(UserInputType.Touch);
+        }
+
+        [Button("读取移动端布局", 201, EButtonEnableMode.Editor)]
+        private void LoadTouchLayout()
+        {
+            LoadLayout(UserInputType.Touch);
+        }
+
+        private void SaveLayout(UserInputType inputType)
+        {
+            if (!EditorUtility.DisplayDialog("确认保存布局",
+                    $"是否保存{GetInputTypeLabel(inputType)}布局到\n{DefaultLayoutConfigAssetPath}？",
+                    "保存", "取消"))
+            {
+                return;
+            }
+
+            var config = EnsureLayoutConfig();
+            if (config == null)
+            {
+                return;
+            }
+
+            List<SkillSlot> layoutSlots = GetLayoutSlots(true);
+
+            KeyInputHudLayoutData data = config.GetLayout(inputType);
+            data.isSaved = true;
+            CaptureLayoutTransform(data.joystick, joystick);
+            CaptureLayoutTransform(data.extraSkillBtn, extraSkillBtn);
+            CaptureLayoutTransform(data.rollBtn, rollBtn);
+            CaptureLayoutTransform(data.jumpBtn, jumpBtn);
+            CaptureLayoutTransform(data.norAtkBtn, norAtkBtn);
+
+            data.slots.Clear();
+            if (layoutSlots != null)
+            {
+                for (int i = 0; i < layoutSlots.Count; i++)
+                {
+                    if (layoutSlots[i] == null)
+                    {
+                        continue;
+                    }
+
+                    var slotData = new KeyInputHudLocalPositionData();
+                    CaptureLayoutTransform(slotData, layoutSlots[i]);
+                    data.slots.Add(slotData);
+                }
+            }
+
+            EditorUtility.SetDirty(config);
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        private static string GetInputTypeLabel(UserInputType inputType)
+        {
+            return inputType == UserInputType.Touch ? "移动端" : "PC";
+        }
+
+        private void LoadLayout(UserInputType inputType)
+        {
+            if (layoutConfig == null)
+            {
+                layoutConfig = AssetDatabase.LoadAssetAtPath<KeyInputHudLayoutConfig>(DefaultLayoutConfigAssetPath);
+            }
+
+            if (layoutConfig == null)
+            {
+                Debug.LogWarning($"[KeyInputHud] 未找到布局配置: {DefaultLayoutConfigAssetPath}", this);
+                return;
+            }
+
+            Undo.RecordObject(transform, $"Load KeyInputHud {inputType} Layout");
+            ApplyLayoutData(layoutConfig.GetLayout(inputType), true);
+            MarkLayoutTargetsDirty();
+        }
+
+        private KeyInputHudLayoutConfig EnsureLayoutConfig()
+        {
+            if (layoutConfig != null)
+            {
+                return layoutConfig;
+            }
+
+            layoutConfig = AssetDatabase.LoadAssetAtPath<KeyInputHudLayoutConfig>(DefaultLayoutConfigAssetPath);
+            if (layoutConfig != null)
+            {
+                return layoutConfig;
+            }
+
+            FileTool.CheckFilePathDir(DefaultLayoutConfigAssetPath);
+            layoutConfig = ScriptableObject.CreateInstance<KeyInputHudLayoutConfig>();
+            AssetDatabase.CreateAsset(layoutConfig, DefaultLayoutConfigAssetPath);
+            EditorUtility.SetDirty(this);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            return layoutConfig;
+        }
+
+        private void CaptureLayoutTransform(KeyInputHudLocalPositionData data, Component component)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            data.name = component != null ? component.name : string.Empty;
+            if (component == null)
+            {
+                data.parentSet = ParentSet.NoChange;
+                data.anchoredPosition = Vector2.zero;
+                data.localSize = 1f;
+                return;
+            }
+
+            RectTransform rectTransform = component.transform as RectTransform;
+            if (rectTransform != null)
+            {
+                data.parentSet = GetParentSet(rectTransform);
+                data.anchoredPosition = rectTransform.anchoredPosition;
+                data.localSize = rectTransform.localScale.x;
+                return;
+            }
+
+            data.parentSet = ParentSet.NoChange;
+            data.anchoredPosition = Vector2.zero;
+            data.localSize = 1f;
+        }
+
+        private ParentSet GetParentSet(Transform target)
+        {
+            if (target == null)
+            {
+                return ParentSet.NoChange;
+            }
+
+            if (target.parent == leftDown)
+            {
+                return ParentSet.LeftDown;
+            }
+
+            if (target.parent == rightDown)
+            {
+                return ParentSet.RightDown;
+            }
+
+            return ParentSet.NoChange;
+        }
+
+        private void MarkLayoutTargetsDirty()
+        {
+            MarkTargetDirty(transform);
+            MarkTargetDirty(leftDown);
+            MarkTargetDirty(rightDown);
+            MarkTargetDirty(slotParent);
+
+            if (joystick != null)
+            {
+                MarkTargetDirty(joystick.transform);
+            }
+
+            if (extraSkillBtn != null)
+            {
+                MarkTargetDirty(extraSkillBtn.transform);
+            }
+
+            if (rollBtn != null)
+            {
+                MarkTargetDirty(rollBtn.transform);
+            }
+
+            if (jumpBtn != null)
+            {
+                MarkTargetDirty(jumpBtn.transform);
+            }
+
+            if (norAtkBtn != null)
+            {
+                MarkTargetDirty(norAtkBtn.transform);
+            }
+
+            List<SkillSlot> layoutSlots = GetLayoutSlots(true);
+            if (layoutSlots == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < layoutSlots.Count; i++)
+            {
+                if (layoutSlots[i] != null)
+                {
+                    MarkTargetDirty(layoutSlots[i].transform);
+                }
+            }
+        }
+
+        private static void MarkTargetDirty(Transform target)
+        {
+            if (target == null)
+            {
+                return;
+            }
+
+            PrefabUtility.RecordPrefabInstancePropertyModifications(target);
+            EditorUtility.SetDirty(target);
+        }
+#endif
     }
 }
