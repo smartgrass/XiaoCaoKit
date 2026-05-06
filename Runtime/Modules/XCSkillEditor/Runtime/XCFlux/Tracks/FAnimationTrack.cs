@@ -97,12 +97,10 @@ namespace Flux
 
 
 		[SerializeField]
-		[HideInInspector]
 		private string _layerName = null;
 		public string LayerName { get { return _layerName; } }
 
 		[SerializeField]
-		[HideInInspector]
 		private int _layerId = 0;
 		public int LayerId { get { return _layerId; } }
 

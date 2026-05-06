@@ -85,6 +85,10 @@ namespace FluxEditor
 			}
 			
 			//下半部分会卡死 不使用
+			
+			EditorGUILayout.PropertyField( _layerId );
+			EditorGUILayout.PropertyField( _layerName );
+			
 			return;
 			if( controller != null )
 			{
@@ -195,6 +199,11 @@ namespace FluxEditor
 			if (controller == null) {
 
 				track.GetAnimator().runtimeAnimatorController = track.Sequence.SeqSetting.forEditorAC;
+				if (track.AnimatorController == null)
+				{
+					Debug.LogError($"-- track.AnimatorController null");
+				}
+				controller = (AnimatorController)track.AnimatorController;
             }
 
 			track.UpdateEventIds();
@@ -205,6 +214,7 @@ namespace FluxEditor
 
 			if( layer == null )
 			{
+				Debug.LogError($"-- layer null {layer.name}  track.LayerName{track.LayerName}");
 				controller.AddLayer( track.LayerName );
 				layer = FindLayer( controller, track.LayerName );
 			}
@@ -470,9 +480,11 @@ namespace FluxEditor
 
 		private static AnimatorControllerLayer FindLayer( AnimatorController controller, string layerName )
 		{
+			bool isNull = string.IsNullOrEmpty( layerName );
+			
 			foreach( AnimatorControllerLayer layer in controller.layers )
 			{
-				if( layer.name == layerName )
+				if( layer.name == layerName || isNull)
 					return layer;
 			}
 
