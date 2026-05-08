@@ -21,6 +21,8 @@ namespace XiaoCao.Battle
 
         private List<Role> _list = new List<Role>();
 
+        private float ScaledRadius => radius * Mathf.Abs(transform.localScale.x);
+
         //检测敌人,将敌人拉向自己
         public void FixedUpdate()
         {
@@ -32,10 +34,9 @@ namespace XiaoCao.Battle
             //触发间隔, 每triggerSpan触发一次
             if (!(Time.time - lastTriggerTime < triggerSpan))
             {
-                _list = RoleMgr.Inst.SearchEnemyInRadius(transform.position, radius, team);
+                _list = RoleMgr.Inst.SearchEnemyInRadius(transform.position, ScaledRadius, team);
+                lastTriggerTime = Time.time;
             }
-
-            lastTriggerTime = Time.time;
 
             foreach (var role in _list)
             {
@@ -48,7 +49,7 @@ namespace XiaoCao.Battle
                 Vector3 dir = role.transform.position - transform.position;
                 float dis = dir.magnitude;
                 dir.Normalize();
-                float curForce = forceCurve.Evaluate(radius / radius + (dis * 1.5f));
+                float curForce = forceCurve.Evaluate(ScaledRadius / ScaledRadius + (dis * 1.5f));
 
                 dir *= curForce * force * Time.fixedDeltaTime;
 
@@ -60,7 +61,7 @@ namespace XiaoCao.Battle
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, radius);
+            Gizmos.DrawWireSphere(transform.position, ScaledRadius);
         }
     }
 }

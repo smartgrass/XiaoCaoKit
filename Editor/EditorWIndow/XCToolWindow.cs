@@ -226,6 +226,24 @@ namespace AssetEditor.Editor
             player.OnDamage(atkInfo);
         }
 
+        [Button("技能冷缩90%", Line1, enabledMode: EButtonEnableMode.Playmode)]
+        void BoostSkillCdOff()
+        {
+            if (!Application.isPlaying || GameDataCommon.Current.gameState != GameState.Running)
+            {
+                return;
+            }
+
+            Player0 player = GameDataCommon.LocalPlayer;
+            if (player == null || player.IsDie)
+            {
+                return;
+            }
+
+            player.component.atkTimer.DebugSkillCdScale = 0.1f;
+            player.component.atkTimer.RefreshCooldowns();
+        }
+
         private static void SetAtkInfoHitData(AtkInfo atkInfo, Vector3 hitDir, Vector3 hitPos)
         {
             if (atkInfo == null)

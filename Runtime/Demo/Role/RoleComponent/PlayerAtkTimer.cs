@@ -16,6 +16,8 @@ namespace XiaoCao
 
         public float GetSkillCDOff => owner.data_R.playerAttr.GetValue(EAttr.SkillCDOff);
 
+        public float DebugSkillCdScale { get; set; } = 1f;
+
         public float norAckTimer;
 
         public int GetNextNorAckIndex()
@@ -42,6 +44,15 @@ namespace XiaoCao
             foreach (var item in dic.Values)
             {
                 item.CdOff = cdOff;
+                item.RefreshCooldown(DebugSkillCdScale);
+            }
+        }
+
+        public void RefreshCooldowns()
+        {
+            foreach (var item in dic.Values)
+            {
+                item.RefreshCooldown(DebugSkillCdScale);
             }
         }
 
@@ -68,11 +79,13 @@ namespace XiaoCao
             {
                 SkillCdData skillCdData = new SkillCdData();
                 skillCdData.baseCd = cd;
+                skillCdData.CdOff = GetSkillCDOff;
                 dic[skillIndex] = skillCdData;
             }
             else
             {
                 dic[skillIndex].baseCd = cd;
+                dic[skillIndex].CdOff = GetSkillCDOff;
             }
         }
 
@@ -90,7 +103,7 @@ namespace XiaoCao
         public void SetSkillEnterCD(string skillIndex)
         {
             CheckDic(skillIndex);
-            dic[skillIndex].EnterCD();
+            dic[skillIndex].EnterCD(DebugSkillCdScale);
         }
 
         public float GetWaitTimeProccess(string skillIndex)
@@ -122,6 +135,8 @@ namespace XiaoCao
         {
             public float baseCd = 1;
 
+            public float CooldownDuration { get; private set; } = 1;
+
             public float CD
             {
                 get
@@ -143,17 +158,30 @@ namespace XiaoCao
 
             public bool IsCd => Time.time < cdFinishTime;
 
-            public void EnterCD()
+            public void EnterCD(float cdScale = 1f)
             {
-                cdFinishTime = Time.time + baseCd;
+                CooldownDuration = CD * Mathf.Max(0, cdScale);
+                cdFinishTime = Time.time + CooldownDuration;
             }
 
             //剩余时间 / 总cd -> 百分比
+            public void RefreshCooldown(float cdScale = 1f)
+            {
+                if (!IsCd)
+                {
+                    return;
+                }
+
+                float remainingRatio = CooldownDuration <= 0 ? 0 : Mathf.Clamp01((cdFinishTime - Time.time) / CooldownDuration);
+                CooldownDuration = CD * Mathf.Max(0, cdScale);
+                cdFinishTime = Time.time + CooldownDuration * remainingRatio;
+            }
+
             public float GetWaitTimeProccess()
             {
                 if (IsCd)
                 {
-                    return (cdFinishTime - Time.time) / baseCd;
+                    return CooldownDuration <= 0 ? 0 : (cdFinishTime - Time.time) / CooldownDuration;
                 }
 
                 return 0;

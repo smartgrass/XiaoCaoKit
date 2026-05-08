@@ -279,6 +279,11 @@ namespace XiaoCao
             float deltaXZ = MathTool.GetHorDistance(ackInfo.ackObjectPos, transform.position);
             float horMoveDistance = GetBalanceValue(setting.AddHor, deltaXZ);
             Vector3 horMoveVec = MathTool.RotateY(ackInfo.hitDir, setting.HorForward).normalized * horMoveDistance;
+            //吸附力处理
+            if (setting.AddHor < 0)
+            {
+                horMoveVec = (ackInfo.ackObjectPos - transform.position).normalized * -setting.AddHor;
+            }
 
             float deltaY = ackInfo.ackObjectPos.y - transform.position.y;
             float addY = GetBalanceValue(setting.AddY, deltaY);
@@ -295,6 +300,7 @@ namespace XiaoCao
         }
 
         //利用除法公式, 计算平衡数值
+        //TODO 负数的情况?
         private float GetBalanceValue(float target, float delta)
         {
             return target * target / (delta + target);
