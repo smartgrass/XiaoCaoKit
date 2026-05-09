@@ -40,6 +40,7 @@ namespace XiaoCaoEditor
         public const string BuildYooAsset  = "XiaoCao/Build/2.打包YooAsset";
         public const string CopyZipToAndroidBuild = "XiaoCao/Build/2.ExtraRes生成Zip到SteamAssets";
         public const string CopyExtraResToWin = "XiaoCao/Build/2.复制ExtraRes到Win.Exe目录";
+        public const string CollectShaderVariants = "XiaoCao/Build/4.着色器变体收集";
 
 
 
