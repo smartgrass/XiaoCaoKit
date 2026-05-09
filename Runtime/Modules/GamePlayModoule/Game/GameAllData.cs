@@ -76,7 +76,7 @@ namespace XiaoCao
     {
         public static GameDataCommon Current => GameAllData.CommonData;
 
-        public EPlayMode ePlayMode;
+        public EGameMode eGameMode;
 
         public GameState gameState;
 
@@ -131,6 +131,7 @@ namespace XiaoCao
         public List<BattleExtraItemData> extraItems = new List<BattleExtraItemData>();
         public int selectedExtraItemIndex;
         public int supportRoleId = -1;
+        public int paidRebornCount;
 
         public static bool IsTimeStop
         {
@@ -448,10 +449,53 @@ namespace XiaoCao
             return false;
         }
     }
-
-    public enum EPlayMode
+    //PlayMode 容易重名,改为EGameMode
+    public enum EGameMode
     {
         Nor,//关卡模式
+    }
+
+    public struct RebornModeConfig
+    {
+        public int firstCost;
+        public int maxPaidRebornCount;
+        public int repeatCostMultiplier;
+
+        public RebornModeConfig(int firstCost, int maxPaidRebornCount, int repeatCostMultiplier = 2)
+        {
+            this.firstCost = firstCost;
+            this.maxPaidRebornCount = maxPaidRebornCount;
+            this.repeatCostMultiplier = repeatCostMultiplier;
+        }
+
+        public bool HasRemainingCount(int paidRebornCount)
+        {
+            return maxPaidRebornCount < 0 || paidRebornCount < maxPaidRebornCount;
+        }
+
+        public int GetCost(int paidRebornCount)
+        {
+            int cost = firstCost;
+            for (int i = 0; i < paidRebornCount; i++)
+            {
+                cost *= repeatCostMultiplier;
+            }
+
+            return cost;
+        }
+    }
+
+    public static class GameModeRebornConfig
+    {
+        public static RebornModeConfig Get(EGameMode gameMode)
+        {
+            switch (gameMode)
+            {
+                case EGameMode.Nor:
+                default:
+                    return new RebornModeConfig(100, 4);
+            }
+        }
     }
 
     public enum GameState

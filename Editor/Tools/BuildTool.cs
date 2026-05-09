@@ -15,6 +15,8 @@ namespace XiaoCaoEditor
     public static class BuildTool
     {
         static string PathKey = "EditorBuildDir";
+        private const string LegacyShaderVariantSavePath = "Assets/MyShaderVariants.shadervariants";
+        private const string DefaultShaderVariantSavePath = "Assets/_Res/MyShaderVariants.shadervariants";
 
         [MenuItem(XCEditorTools.BuildAll)]
         public static void BuildAll()
@@ -51,6 +53,31 @@ namespace XiaoCaoEditor
             var isSuccess = YooAssetBuildHelper.IsAllSucced(results);
             Debug.Log($"--- BuildYooAseets {isSuccess}");
             return isSuccess;
+        }
+
+        /// <summary>
+        /// 收集主资源包的着色器变体。
+        /// </summary>
+        [MenuItem(XCEditorTools.CollectShaderVariants)]
+        public static void CollectShaderVariants()
+        {
+            CheckSaveScene();
+
+            string packageName = GetShaderVariantCollectPackageName();
+            if (string.IsNullOrEmpty(packageName))
+            {
+                Debug.LogError("--- 未找到可收集的YooAsset包");
+                return;
+            }
+
+            string savePath = GetShaderVariantSavePath(packageName);
+            ShaderVariantCollectorSetting.SetFileSavePath(packageName, savePath);
+            int processCapacity = ShaderVariantCollectorSetting.GeProcessCapacity(packageName);
+            Debug.Log($"--- CollectShaderVariants package:{packageName} savePath:{savePath}");
+            ShaderVariantCollector.Run(savePath, packageName, Mathf.Max(1, processCapacity), () =>
+            {
+                Debug.Log($"--- CollectShaderVariants success package:{packageName} savePath:{savePath}");
+            });
         }
 
         public static void ProjectBuild()
@@ -141,6 +168,45 @@ namespace XiaoCaoEditor
 
             FileTool.CopyFolder(XCPathConfig.GetGameConfigDir(), tgtDir);
             FileTool.CopyFolder(XCPathConfig.GetExtraPackageDir(), tgtDir);
+        }
+
+        /// <summary>
+        /// 优先收集主资源包，未配置时回退到第一个可构建包。
+        /// </summary>
+        private static string GetShaderVariantCollectPackageName()
+        {
+            var packageNames = YooAssetBuildHelper.GetYooAssetBuildPackageNames();
+            if (packageNames.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            if (packageNames.Contains(ResMgr.DefaultPackage))
+            {
+                return ResMgr.DefaultPackage;
+            }
+
+            return packageNames[0];
+        }
+
+        /// <summary>
+        /// 获取着色器变体输出路径，兼容旧默认配置并对齐项目现有资源路径。
+        /// </summary>
+        private static string GetShaderVariantSavePath(string packageName)
+        {
+            string savePath = ShaderVariantCollectorSetting.GeFileSavePath(packageName);
+            if (string.IsNullOrWhiteSpace(savePath) ||
+                string.Equals(savePath, LegacyShaderVariantSavePath, StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(packageName, ResMgr.DefaultPackage, StringComparison.Ordinal))
+                {
+                    return DefaultShaderVariantSavePath;
+                }
+
+                return $"{ResMgr.RESDIR}/MyShaderVariants_{packageName}.shadervariants";
+            }
+
+            return savePath;
         }
 
         public static void StartBuld(bool IsBuildYooAseet, bool IsBuildPackage, BuildTarget buildTarget)

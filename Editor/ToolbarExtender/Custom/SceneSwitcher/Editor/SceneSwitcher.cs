@@ -1,7 +1,12 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+
+#if UNITY_6000_0_OR_NEWER
+using UnityEditor.Toolbars;
+#else
 using UnityToolbarExtender;
+#endif
 
 namespace TEngine
 {
@@ -12,9 +17,25 @@ namespace TEngine
 
         static SceneSwitchLeftButton()
         {
+#if !UNITY_6000_0_OR_NEWER
             ToolbarExtender.LeftToolbarGUI.Add(OnToolbarGUI);
+#endif
         }
 
+#if UNITY_6000_0_OR_NEWER
+        [MainToolbarElement("XiaoCao/Launcher",
+            defaultDockPosition = MainToolbarDockPosition.Left,
+            defaultDockIndex = 0)]
+        private static MainToolbarElement CreateToolbarElement()
+        {
+            return new MainToolbarButton(
+                new MainToolbarContent(
+                    "Launcher",
+                    EditorGUIUtility.FindTexture("PlayButton"),
+                    "Start Scene Launcher"),
+                () => SceneHelper.StartScene(SceneMain));
+        }
+#else
         static readonly string ButtonStyleName = "Tab middle";
         static GUIStyle _buttonGuiStyle;
 
@@ -29,12 +50,13 @@ namespace TEngine
 
             GUILayout.FlexibleSpace();
             if (GUILayout.Button(
-                    new GUIContent("Launcher", EditorGUIUtility.FindTexture("PlayButton"), $"Start Scene Launcher"),
+                    new GUIContent("Launcher", EditorGUIUtility.FindTexture("PlayButton"), "Start Scene Launcher"),
                     _buttonGuiStyle))
             {
                 SceneHelper.StartScene(SceneMain);
             }
         }
+#endif
     }
 
     static class SceneHelper

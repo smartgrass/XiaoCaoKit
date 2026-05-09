@@ -164,9 +164,59 @@ namespace XiaoCao
         /// <see cref="MapNames"/>
         public void LoadLevelScene(string levelId)
         {
+            LoadLevelScene(levelId, EGameMode.Nor);
+        }
+
+        public void LoadLevelScene(string levelId, EGameMode gameMode)
+        {
             MapMgr.CurLevelName = levelId;
+            GameDataCommon.Current.eGameMode = gameMode;
 
             GameMgr.Inst.LoadScene(SceneNames.Level);
+        }
+
+        public RebornModeConfig GetCurrentRebornConfig()
+        {
+            return GameModeRebornConfig.Get(GameDataCommon.Current.eGameMode);
+        }
+
+        public bool CanPaidReborn()
+        {
+            RebornModeConfig config = GetCurrentRebornConfig();
+            return config.HasRemainingCount(BattleData.Current.paidRebornCount);
+        }
+
+        public int GetCurrentRebornCost()
+        {
+            RebornModeConfig config = GetCurrentRebornConfig();
+            return config.GetCost(BattleData.Current.paidRebornCount);
+        }
+
+        public bool TryPaidReborn()
+        {
+            if (!CanPaidReborn())
+            {
+                UIMgr.PopToast("复活次数已达上限");
+                return false;
+            }
+
+            var localPlayer = GameDataCommon.LocalPlayer;
+            if (localPlayer == null)
+            {
+                return false;
+            }
+
+            int cost = GetCurrentRebornCost();
+            if (!PlayerSaveData.LocalSavaData.TryConsumeCoin(cost))
+            {
+                UIMgr.PopToast(LocalizeKey.NoEnough.ToLocalizeStr());
+                return false;
+            }
+
+            BattleData.Current.paidRebornCount++;
+            localPlayer.OnReborn();
+            Debug.Log($"-- paid reborn mode:{GameDataCommon.Current.eGameMode} count:{BattleData.Current.paidRebornCount} cost:{cost}");
+            return true;
         }
 
 

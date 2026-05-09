@@ -39,7 +39,19 @@ namespace XiaoCao
         public int Coin
         {
             get => inventory.GetItemCount("Coin");
-            set => inventory.AddItem(ItemType.Coin, "Coin", value);
+            set
+            {
+                int curCoin = inventory.GetItemCount("Coin");
+                int delta = value - curCoin;
+                if (delta > 0)
+                {
+                    inventory.AddItem(ItemType.Coin, "Coin", delta);
+                }
+                else if (delta < 0)
+                {
+                    inventory.ConsumeItem(nameof(ItemType.Coin), -delta);
+                }
+            }
         }
 
         public void RewardCoin(int coin, bool showUI = true)
@@ -50,11 +62,33 @@ namespace XiaoCao
             }
 
             Coin += coin;
+            GameEvent.Send<int>(EGameEvent.OnCoinChange.ToInt(), coin);
             if (showUI)
             {
                 Item item = new Item(ItemType.Coin, "Coin", coin);
                 GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
             }
+        }
+
+        public bool TryConsumeCoin(int coin, bool saveData = true)
+        {
+            if (coin <= 0)
+            {
+                return true;
+            }
+
+            if (!inventory.ConsumeItem(nameof(ItemType.Coin), coin))
+            {
+                return false;
+            }
+
+            GameEvent.Send<int>(EGameEvent.OnCoinChange.ToInt(), -coin);
+            if (saveData)
+            {
+                SavaData();
+            }
+
+            return true;
         }
 
         //持有物

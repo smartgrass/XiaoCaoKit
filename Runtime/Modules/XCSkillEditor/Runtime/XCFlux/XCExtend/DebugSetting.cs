@@ -11,8 +11,6 @@ namespace XiaoCao
     {
         public static readonly string DebugGUI_IsShow = "DebugGUI_IsShow";
 
-        public static readonly string OtherShowing = "DebugGUI/IsOtherShowing";
-
         //正式环境 | 编辑器模拟正式环境 = OfflinePlayMode + ANDROID
         public static bool IsMobileOffice
         {
@@ -33,13 +31,13 @@ namespace XiaoCao
             get
             {
                 string time = LocalizeKey.BuildTime.GetKeyString();
-                
+
                 if (!FileTool.IsFileExist(XCPathConfig.GetGameConfigDir()))
                 {
                     Debug.Log($"--- no file Exist {XCPathConfig.GetGameConfigDir()}");
                     return true;
                 }
-                
+
                 if (ConfigMgr.StaticSettingSo.buildTime != time)
                 {
                     Debuger.Log($"--- buildTime: {ConfigMgr.StaticSettingSo.buildTime} != {time}");
@@ -72,9 +70,9 @@ namespace XiaoCao
             }
         }
 
-        public static YooAsset.EPlayMode GetEPlayMode()
+        public static EPlayMode GetEPlayMode()
         {
-            YooAsset.EPlayMode playMode = YooAsset.EPlayMode.OfflinePlayMode;
+            EPlayMode playMode = EPlayMode.OfflinePlayMode;
 #if UNITY_EDITOR
             playMode = (YooAsset.EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
 #else

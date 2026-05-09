@@ -13,7 +13,7 @@ namespace XiaoCao.UI
 {
     public class ModeBtn : NorBtn
     {
-        public void SetMode(EPlayMode mode)
+        public void SetMode(EGameMode mode)
         {
             titleText.text = $"EPlayMode/{mode}".ToLocalizeStr();
         }

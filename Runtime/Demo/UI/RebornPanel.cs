@@ -1,12 +1,14 @@
+using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
-using TEngine;
 
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// 复活界面 - 通过监听PlayerDead事件触发, 选项重来,退出,复活
-    /// 复活费用:50
+    /// 复活界面
+    /// 当前关卡模式首次复活消耗100金币
+    /// 同一局内重复付费复活费用翻倍
+    /// 关卡模式付费复活上限为4次
     /// </summary>
     public class RebornPanel : PanelBase
     {
@@ -14,9 +16,8 @@ namespace XiaoCao.UI
         public override bool HideEsc => false;
 
         public Button rebornBtn; // 复活按钮
-        public Button reloadBtn; // 重载
-        public Button exitBtn; // 退出按钮
-
+        public Button reloadBtn; // 重开本关
+        public Button exitBtn; // 退出到大厅
 
         public void Init()
         {
@@ -25,15 +26,11 @@ namespace XiaoCao.UI
             exitBtn.onClick.AddListener(OnExitBtnClicked);
             reloadBtn.onClick.AddListener(OnReload);
 
-
-            // 订阅玩家死亡事件
             GameEvent.AddEventListener<int>(EGameEvent.PlayerDead.ToInt(), OnPlayerDead);
         }
 
-
         public void OnDestroy()
         {
-            // 取消订阅事件
             GameEvent.RemoveEventListener<int>(EGameEvent.PlayerDead.ToInt(), OnPlayerDead);
         }
 
@@ -41,6 +38,7 @@ namespace XiaoCao.UI
         {
             gameObject.SetActive(true);
             UIMgr.Inst.PopUIEnable(true, name);
+            RefreshRebornBtnState();
         }
 
         public override void Hide()
@@ -49,43 +47,37 @@ namespace XiaoCao.UI
             gameObject.SetActive(false);
         }
 
-        /// <summary>
-        /// 玩家死亡事件回调
-        /// </summary>
         private void OnPlayerDead(int playerId)
         {
-            UIMgr.Inst.ShowView(this.PanelType);
+            UIMgr.Inst.ShowView(PanelType);
         }
 
-
-        /// <summary>
-        /// 复活按钮点击
-        /// </summary>
-        private void OnReviveBtnClicked()
+        private void RefreshRebornBtnState()
         {
-            Debug.Log("点击复活按钮");
-            Debug.Log("执行复活逻辑");
-
-            // 这里应该调用玩家复活的逻辑
-            // 例如：重置玩家状态、恢复生命值等
-            var localPlayer = GameDataCommon.LocalPlayer;
-            if (localPlayer != null)
+            if (rebornBtn == null || GameMgr.Inst == null)
             {
-                // 调用玩家的复活逻辑
-                localPlayer.OnReborn();
+                return;
             }
 
-            // 隐藏复活界面
-            UIMgr.Inst.HideView(this.PanelType);
+            rebornBtn.interactable = GameMgr.Inst.CanPaidReborn();
         }
 
-        /// <summary>
-        /// 退出按钮点击
-        /// </summary>
+        private void OnReviveBtnClicked()
+        {
+            Debug.Log($"-- click reborn cost:{GameMgr.Inst.GetCurrentRebornCost()} count:{BattleData.Current.paidRebornCount}");
+            if (!GameMgr.Inst.TryPaidReborn())
+            {
+                RefreshRebornBtnState();
+                return;
+            }
+
+            UIMgr.Inst.HideView(PanelType);
+        }
+
         private void OnExitBtnClicked()
         {
-            Debug.Log("点击退出按钮");
-            UIMgr.Inst.HideView(this.PanelType);
+            Debug.Log("-- click exit reborn panel");
+            UIMgr.Inst.HideView(PanelType);
             GameMgr.Inst.BackHome();
         }
 
@@ -93,7 +85,6 @@ namespace XiaoCao.UI
         {
             GameMgr.Inst.ReloadScene();
         }
-
 
         public override void InputKeyCode(KeyCode key)
         {

@@ -126,7 +126,7 @@ namespace XiaoCao.UI
 
             Transform modeTabs = templateBtn.transform.parent;
 
-            EPlayMode[] modeList = new[] { EPlayMode.Nor };
+            EGameMode[] modeList = new[] { EGameMode.Nor };
 
             UITool.SetCellListCount(modeTabs, modeList.Length);
 
