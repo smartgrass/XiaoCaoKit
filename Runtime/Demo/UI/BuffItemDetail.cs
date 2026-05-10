@@ -41,7 +41,7 @@ namespace XiaoCaoKit.Runtime.Demo.UI
         {
             _buffItem = buffItem;
             itemName.text = LocalizeKey.GetBuffNameKey(buffItem.GetFirstEBuff).ToLocalizeStr();
-            itemBg.color = buffItem.GetColor();
+            // itemBg.color = buffItem.GetColor();
             itemDesc.text = LocalizeKey.GetBuffInfoDesc(buffItem.buffs[0]);
             itemIcon.sprite = buffItem.GetBuffSprite();
         }

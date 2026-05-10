@@ -26,6 +26,10 @@ namespace XiaoCao
         [Foldout("getFromSetting")]
         [Range(0, 1)]
         public float idleExitRate = 0.3f;
+        
+        [Foldout("getFromSetting")]
+        //当exitIfOnFightTime>0时,则处于战斗中进入idle时,停留超过该时长会提前退出idle状态,且无视idleExitRate的概率直接退出
+        public float exitIfOnFightTime = -1;
 
         public float Timer { get; set; }
 
@@ -44,6 +48,8 @@ namespace XiaoCao
         private bool _forceExitThisLoop;
         private int _hideLookAtConfirmCount;
         private bool _lookAtTargetOnHide;
+        private bool _enterIdleOnFight;
+        private float _idleElapsedTime;
 
         public override void OnStart()
         {
@@ -63,8 +69,11 @@ namespace XiaoCao
                 baseHideTime = Setting.idleTime;
                 baseSleepTime = Setting.sleepTime;
                 idleExitRate = Setting.idleExitRate;
+                exitIfOnFightTime = Setting.exitIfOnFightTime;
             }
             _forceExitThisLoop = false;
+            _enterIdleOnFight = HasTarget;
+            _idleElapsedTime = 0f;
 
             _lookAtTargetOnHide = false;
             switch (Setting.isLookAtTargetOnHide)
@@ -102,6 +111,8 @@ namespace XiaoCao
             _hasRandomPos = false;
             Timer = 0;
             _forceExitThisLoop = false;
+            _enterIdleOnFight = false;
+            _idleElapsedTime = 0f;
         }
 
         private void OnDamage(AtkInfo info, bool isBreak)
@@ -154,7 +165,17 @@ namespace XiaoCao
                 OnStart();
                 return;
             }
+
             Timer -= XCTime.deltaTime;
+            _idleElapsedTime += XCTime.deltaTime;
+
+            if (ShouldExitIdleOnFightTimeout())
+            {
+                _hasLoopTime = 0;
+                OnExit();
+                return;
+            }
+
             // Timer > 0 移动, 小于0发呆
             if (Timer > 0)
             {
@@ -181,6 +202,16 @@ namespace XiaoCao
                     OnExit();
                 }
             }
+        }
+
+        /// <summary>
+        /// 处于战斗中进入 Idle 时，超过配置时长后直接退出 Idle，并跳过随机退出判定。
+        /// </summary>
+        private bool ShouldExitIdleOnFightTimeout()
+        {
+            return exitIfOnFightTime > 0f &&
+                   _enterIdleOnFight &&
+                   _idleElapsedTime > exitIfOnFightTime;
         }
 
         public bool CheckLoopTimeEnd()

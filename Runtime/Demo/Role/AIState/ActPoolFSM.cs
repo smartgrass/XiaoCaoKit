@@ -13,7 +13,6 @@ namespace XiaoCao
     public class ActPoolFSM : MainDataFSM
     {
         public IdleState idleState;
-        public IdleState fightIdleState;
 
         public FSMPoolType poolType = FSMPoolType.Random;
 
@@ -88,13 +87,20 @@ namespace XiaoCao
 
             if (idleState != null)
             {
-                IdleStateInst = ScriptableObject.Instantiate(idleState);
-                IdleStateInst.name = idleState.name;
+                var state = GetIdleStateProto();
+                IdleStateInst = ScriptableObject.Instantiate(state);
+                IdleStateInst.name = state.name;
                 IdleStateInst.InitReset(control);
             }
 
             return true;
         }
+
+        private IdleState GetIdleStateProto()
+        {
+            return idleState;
+        }
+        
 
         public override void OnUpdate()
         {

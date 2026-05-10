@@ -120,11 +120,35 @@ namespace XiaoCao
         }
 
 
-        private void AtkStart()
+        /// <summary>
+        /// 攻击正式开始时发送技能消息，子类可覆盖消息来源。
+        /// </summary>
+        protected virtual void AtkStart()
         {
             control.MoveSpeedDown(0);
-            ActMsgType type = isOtherSkill ? ActMsgType.OtherSkill : ActMsgType.Skill;
-            control.owner.AIMsg(type, atkMsg);
+            string currentAtkMsg = GetAtkMsg();
+            if (string.IsNullOrEmpty(currentAtkMsg))
+            {
+                return;
+            }
+
+            control.owner.AIMsg(GetActMsgType(), currentAtkMsg);
+        }
+
+        /// <summary>
+        /// 获取本次攻击要发送的消息内容。
+        /// </summary>
+        protected virtual string GetAtkMsg()
+        {
+            return atkMsg;
+        }
+
+        /// <summary>
+        /// 获取本次攻击的消息类型。
+        /// </summary>
+        protected virtual ActMsgType GetActMsgType()
+        {
+            return isOtherSkill ? ActMsgType.OtherSkill : ActMsgType.Skill;
         }
     }
 }

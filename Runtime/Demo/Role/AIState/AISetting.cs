@@ -19,6 +19,9 @@ namespace XiaoCao
         public float walkAnimSR = 0.5f;
         [XCLabel("攻击欲望")]
         public float idleExitRate = 0.5f;
+        [Header("战斗中 Idle 提前退出")]
+        [Tooltip("大于 0 时，如果单位在战斗中进入 Idle，停留超过该时长会直接退出 Idle。")]
+        public float exitIfOnFightTime = -1f;
         [Header("开头直接进入Idle概率")]
         public float randomIdleStart = 0.5f;
 
