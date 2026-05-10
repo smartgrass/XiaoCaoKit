@@ -61,6 +61,20 @@ namespace XiaoCao
             config.roleKey = key;
             CreateCamera();
         }
+
+        /// <summary>
+        /// 判断角色展示是否已经完成初始化，供 Home 新手引导等待稳定后再显示。
+        /// </summary>
+        public bool IsReadyForGuide()
+        {
+            return ResMgr.IsLoadFinish &&
+                   _isInit &&
+                   img != null &&
+                   img.enabled &&
+                   img.texture != null &&
+                   cameraCapture != null &&
+                   cameraCapture.Model != null;
+        }
         
         private void CreateCamera()
         {

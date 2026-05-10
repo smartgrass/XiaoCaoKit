@@ -13,11 +13,11 @@ namespace XiaoCao
     public class ActPoolFSM : MainDataFSM
     {
         public IdleState idleState;
+        public IdleState fightIdleState;
 
         public FSMPoolType poolType = FSMPoolType.Random;
 
-        [Tooltip("最大使用次数,0默认抽完")]
-        public int MaxUseTime;
+        [Tooltip("最大使用次数,0默认抽完")] public int MaxUseTime;
 
         //行为池有 概率,次数
         public List<SubStateData> pool = new List<SubStateData>() { new SubStateData() };
@@ -46,13 +46,13 @@ namespace XiaoCao
             }
 
 
-
             if (!HasTarget || (isFrist && RandomHelper.GetRandom(setting.randomIdleStart)))
             {
                 //OnExit();
                 CurState = IdleStateInst;
                 return;
             }
+
             Debug.Log($"--- ActPoolFSM OnStart {name}");
             foreach (var data in this.PrefabPool)
             {
@@ -68,6 +68,7 @@ namespace XiaoCao
             {
                 return false;
             }
+
             IsLoaded = true;
 
             PrefabPool = new List<SubStateData>();
@@ -84,12 +85,14 @@ namespace XiaoCao
                 subState.state = so;
                 PrefabPool.Add(subState);
             }
+
             if (idleState != null)
             {
                 IdleStateInst = ScriptableObject.Instantiate(idleState);
                 IdleStateInst.name = idleState.name;
                 IdleStateInst.InitReset(control);
             }
+
             return true;
         }
 
@@ -110,6 +113,7 @@ namespace XiaoCao
                     return;
                 }
             }
+
             if (CurState.State != FSMState.Finish)
             {
                 CurState.OnUpdate();
@@ -118,7 +122,6 @@ namespace XiaoCao
             if (CurState.State == FSMState.Finish)
             {
                 CurState = null;
-
             }
         }
 
@@ -147,6 +150,7 @@ namespace XiaoCao
             {
                 InstancePool.RemoveAt(index);
             }
+
             //Debug.Log($"--- GetOne {data.state.name} {data.HasUseTime}/{data.maxTime} InstancePoolCount {InstancePool.Count}");
             UseTime++;
             data.state.ResetFSM();
@@ -165,19 +169,19 @@ namespace XiaoCao
             {
                 return name;
             }
+
             string subPath = CurState.GetStatePath();
             string path = $"{name}/{subPath}";
             return path;
         }
-
     }
-
 
 
     [Serializable]
     public class SubStateData : PowerModel
     {
         public AIFSMBase state;
+
         //配置最大次数
         public int maxTime = 1;
 
@@ -194,10 +198,7 @@ namespace XiaoCao
 
     public enum FSMPoolType
     {
-        [InspectorName("随机")]
-        Random,
-        [InspectorName("顺序")]
-        Sequence
+        [InspectorName("随机")] Random,
+        [InspectorName("顺序")] Sequence
     }
-
 }

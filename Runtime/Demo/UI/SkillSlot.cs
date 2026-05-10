@@ -203,7 +203,7 @@ namespace XiaoCao
                         isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.PlayFriendRoleSKill();
                         break;
                     case SlotType.ExtraItem:
-                        isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.TryUseExtraSkill();
+                        isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.TryUseExtraSkill(BattleData.Current.GetSelectedExtraItem()?.typeId);
                         break;
                 }
 

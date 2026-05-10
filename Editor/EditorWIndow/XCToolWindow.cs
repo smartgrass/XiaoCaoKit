@@ -11,6 +11,7 @@ using TEngine;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
+using XiaoCao.UI;
 using XiaoCaoEditor;
 using RangeAttribute = UnityEngine.RangeAttribute;
 
@@ -287,6 +288,42 @@ namespace AssetEditor.Editor
         void OpenSavaDataWin()
         {
             PlayerSaveDataWindow.Open();
+        }
+
+        [Button("重置新手教程", Line3, enabledMode: EButtonEnableMode.Playmode)]
+        void ResetHomeGuide()
+        {
+            bool isGuideReset = HomeGuideController.IsGuideResetForDebug();
+            HomeGuideController guideController = HomeHud.Inst != null
+                ? HomeHud.Inst.EnsureGuideControllerForDebug()
+                : null;
+
+            if (isGuideReset)
+            {
+                if (guideController != null)
+                {
+                    guideController.CompleteGuideForDebug();
+                }
+                else if (!HomeGuideController.CompleteGuideProgressOnly())
+                {
+                    return;
+                }
+
+                Debug.Log("-- home guide already reset, force mark completed");
+                return;
+            }
+
+            if (guideController != null)
+            {
+                guideController.ResetGuideForDebug();
+                Debug.Log("-- reset home guide and restart in Home");
+                return;
+            }
+
+            if (HomeGuideController.ResetGuideProgressOnly())
+            {
+                Debug.Log("-- reset home guide progress only");
+            }
         }
 
         [Button("LevelEnd", Line3, enabledMode: EButtonEnableMode.Playmode)]

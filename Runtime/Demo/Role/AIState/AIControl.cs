@@ -126,7 +126,7 @@ namespace XiaoCao
                 CheckFriendMove();
             }
             //屏蔽原本ai逻辑
-            if (IsOnShowAction || _friendState == FriendState.Follow)
+            if (IsOnShowAction || (_friendState == FriendState.Follow))
             {
 
                 ForceFollowTargetUpdate();
@@ -340,6 +340,10 @@ namespace XiaoCao
             if (TargetPosTypeValue == TargetPosType.Default)
             {
                 isMove = false;
+                if (owner.RoleIdentityType == RoleIdentityType.PlayerFriend)
+                {
+                    _friendState = FriendState.Idle;
+                }
             }
             
             if (isMove)

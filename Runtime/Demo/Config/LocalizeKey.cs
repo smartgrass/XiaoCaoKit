@@ -41,6 +41,16 @@ namespace XiaoCao
         public static string SkillDesc = "SkillDesc";
         public static string NeedLv = "NeedLv";
         public static string LevelUp = "LevelUp";
+        public static string GuideOpenGrowPanel = "Guide/OpenGrowPanel";
+        public static string GuideOpenRoleTab = "Guide/OpenRoleTab";
+        public static string GuideRoleUpgrade = "Guide/RoleUpgrade";
+        public static string GuideOpenSkillView = "Guide/OpenSkillView";
+        public static string GuideOpenSkillTab = "Guide/OpenSkillTab";
+        public static string GuideSelectSkill3 = "Guide/SelectSkill3";
+        public static string GuideCloseGrowPanel = "Guide/CloseGrowPanel";
+        public static string GuideUpgradeSkill3 = "Guide/UpgradeSkill3";
+        public static string GuideOpenFightPanel = "Guide/OpenFightPanel";
+        public static string GuideSelectSecondLevel = "Guide/SelectSecondLevel";
 
 
         public static string UnlockAllLevel = "UnlockAllLevel";

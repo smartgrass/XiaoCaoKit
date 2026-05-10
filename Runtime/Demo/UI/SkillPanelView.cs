@@ -34,10 +34,6 @@ namespace XiaoCao
         private AssetPool textPool;
         private AssetPool buffCellPool;
 
-
-        public SkillUpgradeView skillUpgradeView;//暂时无用
-
-
     }
 
 }

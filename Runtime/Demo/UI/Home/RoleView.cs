@@ -31,6 +31,14 @@ namespace XiaoCao.UI
             UpdateUI();
         }
 
+        /// <summary>
+        /// 刷新角色页显示，供新手引导主动重绘。
+        /// </summary>
+        public void RefreshGuideUI()
+        {
+            UpdateUI();
+        }
+
         private void OnUpgradeBtnClick()
         {
             if (!ResMgr.IsLoadBaseFinish)
@@ -113,7 +121,7 @@ namespace XiaoCao.UI
             UITool.SetCellListCount(attrTextParent, 5);
 
             var texts = attrTextParent.GetComponentsInChildren<TMP_Text>();
-            PlayerAttr attr = PlayerSaveData.GetPlayerAttr();
+            PlayerAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
 
             texts[0].text = $"Lv {PlayerSaveData.lv}";
             texts[1].text = GetRoleAttrShowText(EAttr.MaxHp, attr);

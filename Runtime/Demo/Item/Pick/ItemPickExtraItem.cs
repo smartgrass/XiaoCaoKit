@@ -195,10 +195,16 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(SpriteResHelper.DefaultItemSpritePath);
             }
 #endif
-
+            if (itemId == BattleExtraItemType.SupportRole)
+            {
+                Sprite supportRoleIcon = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/SupportRole.png");
+                return supportRoleIcon;
+            }
+            
             return CreateItem().GetItemSprite();
         }
 
+        //TODO 后续转为UI??
         private ParticleSystem FindIconParticle()
         {
             foreach (Transform child in transform.GetComponentsInChildren<Transform>(true))

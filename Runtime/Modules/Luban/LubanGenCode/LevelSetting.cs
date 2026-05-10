@@ -25,6 +25,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Reward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); Reward.Add(_e0);}}
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);FirstReward = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); FirstReward.Add(_e0);}}
         RoleId = _buf.ReadInt();
+        HardLv = _buf.ReadInt();
     }
 
     public static LevelSetting DeserializeLevelSetting(ByteBuf _buf)
@@ -45,7 +46,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// </summary>
     public readonly int EnemyBaseLevel;
     /// <summary>
-    /// 每级增加
+    /// 每级增加-精英怪用
     /// </summary>
     public readonly int EnemyLevelAdd;
     /// <summary>
@@ -68,12 +69,17 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// #default=-1
     /// </summary>
     public readonly int RoleId;
+    /// <summary>
+    /// 初始压力等级,1等效10%HP,后续加上增速
+    /// </summary>
+    public readonly int HardLv;
    
     public const int __ID__ = -865590708;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -97,6 +103,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
         + "reward:" + Luban.StringUtil.CollectionToString(Reward) + ","
         + "firstReward:" + Luban.StringUtil.CollectionToString(FirstReward) + ","
         + "roleId:" + RoleId + ","
+        + "hardLv:" + HardLv + ","
         + "}";
     }
 }

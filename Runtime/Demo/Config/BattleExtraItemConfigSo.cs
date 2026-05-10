@@ -63,5 +63,6 @@ namespace XiaoCao
         public int count = 1;
         public bool isUnCount;
         public float cdTime = 5;
+        public string sfxName;
     }
 }

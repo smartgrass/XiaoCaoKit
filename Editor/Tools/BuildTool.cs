@@ -15,8 +15,6 @@ namespace XiaoCaoEditor
     public static class BuildTool
     {
         static string PathKey = "EditorBuildDir";
-        private const string LegacyShaderVariantSavePath = "Assets/MyShaderVariants.shadervariants";
-        private const string DefaultShaderVariantSavePath = "Assets/_Res/MyShaderVariants.shadervariants";
 
         [MenuItem(XCEditorTools.BuildAll)]
         public static void BuildAll()
@@ -190,23 +188,11 @@ namespace XiaoCaoEditor
         }
 
         /// <summary>
-        /// 获取着色器变体输出路径，兼容旧默认配置并对齐项目现有资源路径。
+        /// 获取着色器变体输出路径。
         /// </summary>
         private static string GetShaderVariantSavePath(string packageName)
         {
-            string savePath = ShaderVariantCollectorSetting.GeFileSavePath(packageName);
-            if (string.IsNullOrWhiteSpace(savePath) ||
-                string.Equals(savePath, LegacyShaderVariantSavePath, StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.Equals(packageName, ResMgr.DefaultPackage, StringComparison.Ordinal))
-                {
-                    return DefaultShaderVariantSavePath;
-                }
-
-                return $"{ResMgr.RESDIR}/MyShaderVariants_{packageName}.shadervariants";
-            }
-
-            return savePath;
+            return ShaderVariantCollectorSetting.GeFileSavePath(packageName);
         }
 
         public static void StartBuld(bool IsBuildYooAseet, bool IsBuildPackage, BuildTarget buildTarget)

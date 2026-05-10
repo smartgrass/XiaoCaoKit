@@ -90,17 +90,27 @@ namespace NaughtyAttributes.Editor
 			foreach (var onValueChangedAttribute in onValueChangedAttributes)
 			{
 				MethodInfo callbackMethod = ReflectionUtility.GetMethod(target, onValueChangedAttribute.CallbackName);
-				if (callbackMethod != null &&
-					callbackMethod.ReturnType == typeof(void) &&
-					callbackMethod.GetParameters().Length == 0)
+				if (callbackMethod == null)
+				{
+					string warning = string.Format(
+						"{0} callback '{1}' was not found on {2} or its base types",
+						onValueChangedAttribute.GetType().Name,
+						onValueChangedAttribute.CallbackName,
+						target.GetType().Name);
+
+					Debug.LogWarning(warning, property.serializedObject.targetObject);
+				}
+				else if (callbackMethod.ReturnType == typeof(void) &&
+						 callbackMethod.GetParameters().Length == 0)
 				{
 					callbackMethod.Invoke(target, new object[] { });
 				}
 				else
 				{
 					string warning = string.Format(
-						"{0} can invoke only methods with 'void' return type and 0 parameters",
-						onValueChangedAttribute.GetType().Name);
+						"{0} callback '{1}' can invoke only methods with 'void' return type and 0 parameters",
+						onValueChangedAttribute.GetType().Name,
+						onValueChangedAttribute.CallbackName);
 
 					Debug.LogWarning(warning, property.serializedObject.targetObject);
 				}

@@ -87,7 +87,10 @@ namespace XiaoCao
                 {
                     panel.Show(data);
                 }
-
+                else
+                {
+                    Debug.LogError($"-- panel {type} NeedUIData false");
+                }
                 return;
             }
 

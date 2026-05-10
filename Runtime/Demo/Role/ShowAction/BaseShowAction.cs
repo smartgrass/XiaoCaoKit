@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NaughtyAttributes;
 using TEngine;
 using UnityEngine;
 using static XiaoCao.NpcShowAction;
@@ -13,6 +14,9 @@ namespace XiaoCao
     public abstract class BaseShowAction : GameStartMono
     {
         [Multiline(12)] public string taskLines;
+
+        [Dropdown(nameof(GetShowActKeyList))] [OnValueChanged(nameof(OnTestShowActKeyChange))] [Label("ActKey")]
+        public string testShowActKey;
 
         public virtual CharacterController Cc => GameDataCommon.LocalPlayer.idRole.cc;
         
@@ -196,7 +200,7 @@ namespace XiaoCao
                         {
                             break;
                         }
-
+                        //Event:DoSkill,id
                         if (array[0] == "DoSkill")
                         {
                             string skillId = array[1];
@@ -205,6 +209,16 @@ namespace XiaoCao
                             var role = GetRole();
                             
                             yield return role.data_R.roleControl.IEWaitActCombo(cmdList, null);
+                        }
+                        //Event:DoExtraItem,id
+                        if (array[0] == "DoExtraItem")
+                        {
+                            string typeId = array[1];
+                            Player0 role = GetRole() as Player0;
+                            if (role != null)
+                            {
+                                role.TryUseExtraSkill(typeId);
+                            }
                         }
                     }
 
@@ -238,6 +252,30 @@ namespace XiaoCao
 
 
         // 执行本地坐标移动 - 使用CharacterController
+        /// <summary>
+        /// 获取可选的 ShowAct Key 下拉列表。
+        /// </summary>
+        public List<string> GetShowActKeyList()
+        {
+            return ShowActKeys.GetShortKeys();
+        }
+
+        protected void OnTestShowActKeyChange()
+        {
+            if (string.IsNullOrEmpty(testShowActKey))
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(taskLines))
+            {
+                taskLines = $"{testShowActKey}:";
+                return;
+            }
+
+            taskLines += $"\n{testShowActKey}:";
+        }
+
         private IEnumerator MoveToLocalPosition(ShowActMoveData moveData)
         {
             // 计算目标世界位置

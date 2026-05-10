@@ -44,7 +44,7 @@ namespace XiaoCao
 
             if (InputData.skillInput == GameSetting.SkillCountOnBar)
             {
-                owner.TryUseExtraSkill();
+                owner.TryUseExtraSkill(BattleData.Current.GetSelectedExtraItem()?.typeId);
                 Data_P.norAckCache = false;
             }
             else if (InputData.skillInput >= 0)

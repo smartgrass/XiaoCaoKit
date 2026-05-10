@@ -10,15 +10,16 @@ namespace XiaoCao.UI
     public class HomeMainPanel : HomePanelBase
     {
         public Button fightBtn;
-        public Button skillBtn;
+        public Button growBtn;//打开提升角色面板
         public NorBtn switchRoleBtn;
         public CharacterImage characterImage;
         public GameObject[] subViews;
+        private int _currentSubViewIndex;
 
         private void Start()
         {
             fightBtn.onClick.AddListener(() => { HomeHud.Inst.SwitchPanel(EHomePanel.FightPanel); });
-            skillBtn.onClick.AddListener(() => { ShowSubView(1); });
+            growBtn.onClick.AddListener(() => { ShowSubView(1); });
             switchRoleBtn.btn.onClick.AddListener(OnSwitchRole);
             characterImage.config.roleKey = $"Role_{ConfigMgr.Inst.LocalRoleSetting.selectRole}";
             switchRoleBtn.titleText.text = characterImage.config.roleKey.ToLocalizeStr();
@@ -48,10 +49,39 @@ namespace XiaoCao.UI
         void ShowSubView(int index)
         {
             Debug.Log($"-- ShowSubView {index}");
+            _currentSubViewIndex = index;
             for (int i = 0; i < subViews.Length; i++)
             {
                 subViews[i].SetActive(i == index);
             }
+        }
+
+        /// <summary>
+        /// 切换 Home 主界面的子视图。
+        /// </summary>
+        public void ShowSubView(EHomeSubView subView)
+        {
+            ShowSubView((int)subView);
+        }
+
+        /// <summary>
+        /// 判断指定子视图当前是否处于显示状态。
+        /// </summary>
+        public bool IsSubViewActive(EHomeSubView subView)
+        {
+            int index = (int)subView;
+            return index >= 0 &&
+                   index < subViews.Length &&
+                   subViews[index] != null &&
+                   subViews[index].activeSelf;
+        }
+
+        /// <summary>
+        /// 获取当前激活的子视图枚举。
+        /// </summary>
+        public EHomeSubView GetCurrentSubView()
+        {
+            return (EHomeSubView)_currentSubViewIndex;
         }
     }
 

@@ -11,6 +11,9 @@ namespace XiaoCao
     {
         public static PlayerSaveData LocalSavaData => GameAllData.playerSaveData;
 
+        [NonSerialized] private int cachedInitPlayerAttrLv = -1;
+        [NonSerialized] private PlayerAttr cachedInitPlayerAttr;
+
         public int lv;
 
         public int raceId = 0;
@@ -125,6 +128,8 @@ namespace XiaoCao
                 storyProgress = new StoryProgress();
             }
 
+            storyProgress.CheckNull();
+
             if (levelPassData == null)
             {
                 levelPassData = new LevelPassData();
@@ -200,13 +205,23 @@ namespace XiaoCao
 
             return dict;
         }
-
-        public PlayerAttr GetPlayerAttr()
+        /// <summary>
+        /// 获取初始化版本的PlayerAttr,未获得加成之前
+        /// </summary>
+        /// <param name="clone">是否返回缓存副本，true 时避免外部修改污染缓存。</param>
+        /// <returns></returns>
+        public PlayerAttr GetInitPlayerAttr(bool clone = true)
         {
-            PlayerAttr attr = new PlayerAttr();
-            AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
-            attr.Init(0, lv, setting);
-            return attr;
+            int currentLv = Mathf.Max(1, lv);
+            if (cachedInitPlayerAttr == null || cachedInitPlayerAttrLv != currentLv)
+            {
+                cachedInitPlayerAttrLv = currentLv;
+                cachedInitPlayerAttr = new PlayerAttr();
+                AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
+                cachedInitPlayerAttr.Init(0, currentLv, setting);
+            }
+
+            return clone ? cachedInitPlayerAttr.Clone() : cachedInitPlayerAttr;
         }
 
         public static void SavaData()

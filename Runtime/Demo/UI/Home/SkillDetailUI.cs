@@ -66,8 +66,7 @@ namespace XiaoCao.UI
             if (!isEnough)
             {
                 //提示
-                // UITool.ShowTip(LocalizeKey.NotEnoughItem.ToLocalizeStr());
-                Toast.Show("str", 1);
+                Toast.Show(LocalizeKey.NoEnough.ToLocalizeStr(), 1);
                 return;
             }
 

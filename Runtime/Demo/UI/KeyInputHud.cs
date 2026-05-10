@@ -889,7 +889,8 @@ namespace XiaoCao
         private bool TryUseCurrentExtraSkill()
         {
             // 短按按钮 / Tab 时，直接释放当前首选的特殊道具技能。
-            bool isUseSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.TryUseExtraSkill();
+            bool isUseSuccess = GameDataCommon.LocalPlayer != null &&
+                                GameDataCommon.LocalPlayer.TryUseExtraSkill(BattleData.Current.GetSelectedExtraItem()?.typeId);
             if (isUseSuccess && extraSkillBtn != null && extraSkillBtn.effectTween != null)
             {
                 extraSkillBtn.effectTween.Play();

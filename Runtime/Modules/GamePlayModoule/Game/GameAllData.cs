@@ -281,6 +281,7 @@ namespace XiaoCao
                 return false;
             }
 
+            PlayExtraItemSfx(extraItem);
             extraItem.EnterCD();
             if (!extraItem.isUnCount)
             {
@@ -289,6 +290,16 @@ namespace XiaoCao
 
             CleanupExtraItems();
             return true;
+        }
+
+        private void PlayExtraItemSfx(BattleExtraItemData extraItem)
+        {
+            if (extraItem == null || string.IsNullOrEmpty(extraItem.sfxName))
+            {
+                return;
+            }
+
+            SoundMgr.Inst.PlayClip(extraItem.sfxName);
         }
 
         private void CleanupExtraItems()
@@ -311,6 +322,7 @@ namespace XiaoCao
         public EQuality quality;
         public int count;
         public bool isUnCount;
+        public string sfxName;
         public float baseCd;
         public float cdFinishTime;
 
@@ -326,6 +338,7 @@ namespace XiaoCao
                 quality = item.quality,
                 count = Mathf.Max(1, count),
                 isUnCount = config != null && config.isUnCount,
+                sfxName = config == null ? null : config.sfxName,
                 baseCd = config == null ? 0 : Mathf.Max(0, config.cdTime)
             };
         }
@@ -579,7 +592,7 @@ namespace XiaoCao
         public const float TimeStopDuration = 4f;
         public const float HealHpPercent = 0.2f;
         private const string SupportRoleAlreadySummonedKey = "SupportRoleAlreadySummoned";
-        private const string SupportRoleEnemyId = "E_0";
+        private const string SupportRoleEnemyId = "E_0_Friend";
         private const float SupportRoleForwardDistance = 3f;
         private const float SupportRoleSideDistance = 1.5f;
 
@@ -660,6 +673,8 @@ namespace XiaoCao
 
             supportRole.SetTeam(XCSetting.PlayerTeam);
             supportRole.IsAiOn = true;
+            var addData = supportRole.idRole.GetComponent<AddEnemyData>();
+            // addData.
             supportRole.enemyData.movement.MoveToImmediate(summonPos);
             supportRole.SetFriend(player);
             return supportRole;

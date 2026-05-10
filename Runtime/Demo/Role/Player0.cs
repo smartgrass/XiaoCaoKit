@@ -160,7 +160,10 @@ namespace XiaoCao
             return true;
         }
 
-        public bool TryUseExtraSkill()
+        /// <summary>
+        /// 尝试使用额外道具技能，传入 typeId 时会优先定位对应道具。
+        /// </summary>
+        public bool TryUseExtraSkill(string typeId = null)
         {
             if (GameAllData.CommonData.gameState != GameState.Running)
             {
@@ -174,6 +177,27 @@ namespace XiaoCao
 
             if (BattleData.Current.HasExtraItemSkill())
             {
+                // 传入额外道具类型时，先切换到对应的道具再执行释放。
+                if (!string.IsNullOrEmpty(typeId))
+                {
+                    List<BattleExtraItemData> extraItems = BattleData.Current.GetExtraItems();
+                    int extraItemIndex = extraItems.FindIndex(data => data != null && data.typeId == typeId);
+                    if (extraItemIndex < 0)
+                    {
+                        return false;
+                    }
+
+                    int previousSelectedIndex = BattleData.Current.selectedExtraItemIndex;
+                    BattleData.Current.SelectExtraItem(extraItemIndex);
+                    bool isUseSuccess = BattleData.Current.TryUseSelectedExtraItem();
+                    if (!isUseSuccess)
+                    {
+                        BattleData.Current.SelectExtraItem(previousSelectedIndex);
+                    }
+
+                    return isUseSuccess;
+                }
+
                 return BattleData.Current.TryUseSelectedExtraItem();
             }
 
@@ -409,6 +433,38 @@ namespace XiaoCao
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
             GetAttribute(EAttr.NoDamage).BaseValue = 0;
+        }
+
+        /// <summary>
+        /// 创建属性副本，避免外部修改影响缓存数据。
+        /// </summary>
+        public PlayerAttr Clone()
+        {
+            PlayerAttr copy = new PlayerAttr
+            {
+                lv = lv,
+                maxExp = maxExp,
+                hp = hp,
+                mp = mp,
+                RoleId = RoleId,
+                attrDic = new Dictionary<string, AttributeValue>()
+            };
+
+            foreach (var item in attrDic)
+            {
+                AttributeValue sourceAttr = item.Value;
+                AttributeValue targetAttr = new AttributeValue();
+                targetAttr.BaseValue = sourceAttr.BaseValue;
+                foreach (var modifier in sourceAttr.Modifiers)
+                {
+                    targetAttr.Modifiers[modifier.Key] = modifier.Value;
+                }
+
+                targetAttr.UpdateAttributeModifiers();
+                copy.attrDic[item.Key] = targetAttr;
+            }
+
+            return copy;
         }
 
         public AttributeValue GetAttribute(EAttr eAttr, float defaultValue = 0)

@@ -73,6 +73,44 @@ namespace XiaoCao.UI
             equipSkillCells = new List<SkillItemCell>(skillEquipParent.GetComponentsInChildren<SkillItemCell>(false));
         }
 
+        /// <summary>
+        /// 刷新技能页显示，供新手引导主动重绘。
+        /// </summary>
+        public void RefreshGuideUI()
+        {
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// 获取技能详情面板实例。
+        /// </summary>
+        public SkillDetailUI GetSkillDetailUI()
+        {
+            return skillDetailUI;
+        }
+
+        /// <summary>
+        /// 获取指定技能在技能总览中的格子。
+        /// </summary>
+        public SkillItemCell GetSkillCell(string skillId)
+        {
+            if (!IsInit || allSkillCells == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < allSkillCells.Count; i++)
+            {
+                SkillItemCell cell = allSkillCells[i];
+                if (cell != null && cell.skillId == skillId && cell.gameObject.activeInHierarchy)
+                {
+                    return cell;
+                }
+            }
+
+            return null;
+        }
+
         private void CheckLen(List<string> skillList)
         {
             int minLen = 6;

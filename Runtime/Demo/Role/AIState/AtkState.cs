@@ -24,6 +24,8 @@ namespace XiaoCao
         [XCLabel("前摇索敌")]
         public bool isAutoLock = true;
 
+        public bool isOtherSkill;
+
         private float Timer { get; set; }
         private bool IsInited { get; set; }
 
@@ -121,7 +123,8 @@ namespace XiaoCao
         private void AtkStart()
         {
             control.MoveSpeedDown(0);
-            control.owner.AIMsg(ActMsgType.Skill, atkMsg);
+            ActMsgType type = isOtherSkill ? ActMsgType.OtherSkill : ActMsgType.Skill;
+            control.owner.AIMsg(type, atkMsg);
         }
     }
 }

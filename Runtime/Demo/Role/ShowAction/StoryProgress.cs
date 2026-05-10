@@ -6,39 +6,49 @@ namespace XiaoCao
     [Serializable]
     public class StoryProgress
     {
-        // 已完成的剧情ID列表
+        // 已完成的剧情 ID 列表
         public HashSet<string> completedStoryIds = new HashSet<string>();
-        
-        // 当前正在进行的剧情ID
+
+        // 当前正在进行的剧情 ID
         public string currentStoryId = "";
-        
+
         // 剧情变量，用于存储剧情中的各种状态
         public Dictionary<string, int> storyVariables = new Dictionary<string, int>();
-        
+
+        /// <summary>
+        /// 补齐剧情进度中的空字段，兼容旧存档。
+        /// </summary>
+        public void CheckNull()
+        {
+            completedStoryIds ??= new HashSet<string>();
+            storyVariables ??= new Dictionary<string, int>();
+            currentStoryId ??= string.Empty;
+        }
+
         // 添加已完成的剧情
         public void AddCompletedStory(string storyId)
         {
             completedStoryIds.Add(storyId);
         }
-        
+
         // 检查剧情是否已完成
         public bool IsStoryCompleted(string storyId)
         {
             return completedStoryIds.Contains(storyId);
         }
-        
+
         // 设置当前剧情
         public void SetCurrentStory(string storyId)
         {
             currentStoryId = storyId;
         }
-        
+
         // 设置剧情变量
         public void SetStoryVariable(string variableName, int value)
         {
             storyVariables[variableName] = value;
         }
-        
+
         // 获取剧情变量
         public int GetStoryVariable(string variableName, int defaultValue = 0)
         {
@@ -46,11 +56,11 @@ namespace XiaoCao
             {
                 return value;
             }
+
             return defaultValue;
         }
     }
-    
-    
+
     /* 示例
      // 记录完成剧情
     PlayerSaveData.LocalSavaData.storyProgress.AddCompletedStory("story_001");

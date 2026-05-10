@@ -22,6 +22,7 @@ public class TalkPanel : PanelBase
     
     
     public override UIPanelType PanelType => UIPanelType.TalkPanel;
+    public override bool NeedUIData => true;
 
     private void Awake()
     {

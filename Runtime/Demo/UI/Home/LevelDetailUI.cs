@@ -46,6 +46,22 @@ namespace XiaoCao.UI
             //UpdateReward();
         }
 
+        /// <summary>
+        /// 获取当前详情面板正在展示的关卡 Key。
+        /// </summary>
+        public string GetCurrentLevelKey()
+        {
+            return _levelKey;
+        }
+
+        /// <summary>
+        /// 判断详情面板当前是否正在展示指定关卡。
+        /// </summary>
+        public bool IsShowingLevel(string levelKey)
+        {
+            return gameObject.activeSelf && _levelKey == levelKey;
+        }
+
         public void Hide()
         {
             gameObject.SetActive(false);

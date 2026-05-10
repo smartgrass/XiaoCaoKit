@@ -163,6 +163,39 @@ namespace XiaoCao.UI
             RefreshCurrentChapterBtn();
         }
 
+        /// <summary>
+        /// 切换并刷新指定章节的关卡列表。
+        /// </summary>
+        public void ShowChapter(int chapter)
+        {
+            ShowChapterView(chapter);
+            SetChapterSelectVisible(false);
+            SetModeSelectVisible(false);
+        }
+
+        /// <summary>
+        /// 获取指定章节与关卡对应的按钮实例。
+        /// </summary>
+        public LevelBtn GetLevelButton(int chapter, int levelIndex)
+        {
+            if (curChapter != chapter)
+            {
+                ShowChapterView(chapter);
+            }
+
+            LevelBtn[] levelBtns = levels.GetComponentsInChildren<LevelBtn>(true);
+            for (int i = 0; i < levelBtns.Length; i++)
+            {
+                LevelBtn levelBtn = levelBtns[i];
+                if (levelBtn != null && levelBtn.curChapter == chapter && levelBtn.LevelIndex == levelIndex)
+                {
+                    return levelBtn;
+                }
+            }
+
+            return null;
+        }
+
         void OpenChapterSelectView()
         {
             InitChapterBtn();
