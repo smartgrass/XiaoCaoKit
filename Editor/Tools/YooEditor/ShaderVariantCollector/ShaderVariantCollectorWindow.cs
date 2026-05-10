@@ -63,6 +63,11 @@ public class ShaderVariantCollectorWindow : EditorWindow
                 _packageField.RegisterValueChangedCallback(evt =>
                 {
                     _currentPackageName = _packageField.value;
+                    _collectOutputField.SetValueWithoutNotify(ShaderVariantCollectorSetting.GeFileSavePath(_currentPackageName));
+                    _processCapacitySlider.SetValueWithoutNotify(ShaderVariantCollectorSetting.GeProcessCapacity(_currentPackageName));
+#if !UNITY_2020_3_OR_NEWER
+                    _processCapacitySlider.label = $"Capacity ({_processCapacitySlider.value})";
+#endif
                 });
                 packageContainer.Add(_packageField);
             }
