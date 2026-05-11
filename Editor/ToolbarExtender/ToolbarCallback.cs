@@ -11,6 +11,7 @@ using UnityEngine.Experimental.UIElements;
 
 namespace UnityToolbarExtender
 {
+#if !UNITY_6000_0_OR_NEWER
 	public static class ToolbarCallback
 	{
 		static Type m_toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
@@ -108,4 +109,5 @@ namespace UnityToolbarExtender
 			if (handler != null) handler();
 		}
 	}
+#endif
 }

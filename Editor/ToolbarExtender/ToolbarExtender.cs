@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace UnityToolbarExtender
 {
+#if !UNITY_6000_0_OR_NEWER
 	[InitializeOnLoad]
+#endif
 	public static class ToolbarExtender
 	{
 		static int m_toolCount;
@@ -17,6 +19,7 @@ namespace UnityToolbarExtender
 
 		static ToolbarExtender()
 		{
+#if !UNITY_6000_0_OR_NEWER
 			Type toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.Toolbar");
 			
 #if UNITY_2019_1_OR_NEWER
@@ -41,6 +44,7 @@ namespace UnityToolbarExtender
 			ToolbarCallback.OnToolbarGUI = OnGUI;
 			ToolbarCallback.OnToolbarGUILeft = GUILeft;
 			ToolbarCallback.OnToolbarGUIRight = GUIRight;
+#endif
 		}
 
 #if UNITY_2019_3_OR_NEWER

@@ -1,0 +1,34 @@
+{
+  "name": "com.unity.shadervariantscollector",
+  "version": "1.0.0",
+  "displayName": "Shader Variants Collector",
+  "description": "A Unity editor tool for collecting and managing shader variants in ShaderVariantCollection assets.",
+  "unity": "2021.3",
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  },
+  "keywords": [
+    "shader",
+    "variants",
+    "collection",
+    "editor",
+    "tool"
+  ],
+  "author": {
+    "name": "Colocasia",
+    "email": "358277299@qq.com",
+    "url": "https://github.com/Colocasia"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Colocasia/ShaderVariantsCollector.git"
+  },
+  "samples": [
+    {
+      "displayName": "Example Usage",
+      "description": "Contains example scripts showing how to use the Shader Variants Collector API.",
+      "path": "Samples~/ExampleUsage"
+    }
+  ]
+} 

@@ -67,15 +67,15 @@ namespace XiaoCaoEditor
                 Debug.LogError("--- 未找到可收集的YooAsset包");
                 return;
             }
-
-            string savePath = GetShaderVariantSavePath(packageName);
-            ShaderVariantCollectorSetting.SetFileSavePath(packageName, savePath);
-            int processCapacity = ShaderVariantCollectorSetting.GeProcessCapacity(packageName);
-            Debug.Log($"--- CollectShaderVariants package:{packageName} savePath:{savePath}");
-            ShaderVariantCollector.Run(savePath, packageName, Mathf.Max(1, processCapacity), () =>
-            {
-                Debug.Log($"--- CollectShaderVariants success package:{packageName} savePath:{savePath}");
-            });
+            //
+            // string savePath = GetShaderVariantSavePath(packageName);
+            // ShaderVariantCollectorSetting.SetFileSavePath(packageName, savePath);
+            // int processCapacity = ShaderVariantCollectorSetting.GeProcessCapacity(packageName);
+            // Debug.Log($"--- CollectShaderVariants package:{packageName} savePath:{savePath}");
+            // ShaderVariantCollector.Run(savePath, packageName, Mathf.Max(1, processCapacity), () =>
+            // {
+            //     Debug.Log($"--- CollectShaderVariants success package:{packageName} savePath:{savePath}");
+            // });
         }
 
         public static void ProjectBuild()
@@ -186,15 +186,7 @@ namespace XiaoCaoEditor
 
             return packageNames[0];
         }
-
-        /// <summary>
-        /// 获取着色器变体输出路径。
-        /// </summary>
-        private static string GetShaderVariantSavePath(string packageName)
-        {
-            return ShaderVariantCollectorSetting.GeFileSavePath(packageName);
-        }
-
+        
         public static void StartBuld(bool IsBuildYooAseet, bool IsBuildPackage, BuildTarget buildTarget)
         {
             BuildTool.CheckSaveScene();

@@ -10,9 +10,9 @@ public class SoundPanel : SubPanel
 
     public bool isSave;
 
-    public const string MainVolumeKey = "MasterVolume";
-    public const string MusicVolumeKey = "MusicVolume";
-    public const string SFXVolumeKey = "SFXVolume";
+    public const string MainVolumeKey = "Master";
+    public const string MusicVolumeKey = "Music";
+    public const string SFXVolumeKey = "SFX";
 
     public TMP_Dropdown bgmDropDown;
 

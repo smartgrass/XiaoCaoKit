@@ -81,10 +81,10 @@ namespace XiaoCaoEditor
 
         private static void ShowToolbarMenu(Rect rect)
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
-            {
-                return;
-            }
+            // if (EditorApplication.isPlayingOrWillChangePlaymode)
+            // {
+            //     return;
+            // }
 
             var menu = new GenericMenu();
             for (int i = 0; i < _resourceModeNames.Length; i++)
@@ -123,12 +123,69 @@ namespace XiaoCaoEditor
             }
 
             _toolbarElement.content = CreateToolbarContent();
-            _toolbarElement.enabled = !EditorApplication.isPlayingOrWillChangePlaymode;
+            RebuildToolbarElement();
+            // _toolbarElement.enabled = !EditorApplication.isPlayingOrWillChangePlaymode;
+            _toolbarElement.enabled = false;
+            _toolbarElement.enabled = true;
+            // EditorApplication.delayCall -= UnityEditorInternal.InternalEditorUtility.RepaintAllViews;
+            // EditorApplication.delayCall += UnityEditorInternal.InternalEditorUtility.RepaintAllViews;
+            //
+        }
+
+        /// <summary>
+        /// 尝试调用 Unity 主工具栏元素的内部刷新方法。
+        /// </summary>
+        private static void RebuildToolbarElement()
+        {
+            try
+            {
+                var rebuildMethod = FindToolbarRefreshMethod(_toolbarElement.GetType());
+                rebuildMethod?.Invoke(_toolbarElement, null);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+
+        /// <summary>
+        /// 查找当前 Unity 版本可用的工具栏内部刷新方法。
+        /// </summary>
+        private static System.Reflection.MethodInfo FindToolbarRefreshMethod(System.Type elementType)
+        {
+            const System.Reflection.BindingFlags flags =
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic |
+                System.Reflection.BindingFlags.DeclaredOnly;
+
+            string[] methodNames =
+            {
+                "RebuildContent",
+                "RefreshContent",
+                "UpdateContent"
+            };
+
+            while (elementType != null)
+            {
+                foreach (string methodName in methodNames)
+                {
+                    var method = elementType.GetMethod(methodName, flags);
+                    if (method != null && method.GetParameters().Length == 0)
+                    {
+                        return method;
+                    }
+                }
+
+                elementType = elementType.BaseType;
+            }
+
+            return null;
         }
 #else
         static void OnToolbarGUI()
         {
-            EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
+            // EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
             {
                 GUILayout.Space(10);
                 GUILayout.FlexibleSpace();
@@ -149,7 +206,7 @@ namespace XiaoCaoEditor
                 GUILayout.FlexibleSpace();
                 GUILayout.Space(400);
             }
-            EditorGUI.EndDisabledGroup();
+            // EditorGUI.EndDisabledGroup();
         }
 #endif
     }
