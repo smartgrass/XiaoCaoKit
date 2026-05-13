@@ -78,7 +78,10 @@ namespace XiaoCao
 
         public EGameMode eGameMode;
 
+        //只能用来判断关卡内的状态 没法判断
         public GameState gameState;
+        
+        public EGameStage gameStage;
 
         public Player0 Player0 { get; set; }
 
@@ -466,6 +469,13 @@ namespace XiaoCao
     public enum EGameMode
     {
         Nor,//关卡模式
+    }    
+    //场景 实际可以与SceneName关联
+    public enum EGameStage
+    {
+        Other, 
+        Home, //主页
+        Level //关卡
     }
 
     public struct RebornModeConfig

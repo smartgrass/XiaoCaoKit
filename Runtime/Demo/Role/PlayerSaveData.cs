@@ -224,6 +224,12 @@ namespace XiaoCao
             return clone ? cachedInitPlayerAttr.Clone() : cachedInitPlayerAttr;
         }
 
+        public void ReLoadPlayerAttr()
+        {
+            cachedInitPlayerAttr = null;
+            GetInitPlayerAttr();
+        }
+
         public static void SavaData()
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);

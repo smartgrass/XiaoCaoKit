@@ -24,6 +24,12 @@ namespace XiaoCao.UI
         private void Awake()
         {
             upgradeBtn.onClick.AddListener(OnUpgradeBtnClick);
+            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
+        }
+
+        private void OnDestroy()
+        {
+            UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
         }
 
         private void OnEnable()
@@ -57,6 +63,14 @@ namespace XiaoCao.UI
             Toast.Show(LocalizeKey.LevelUp.ToLocalizeStr());
             PlayerSaveData.lv = nextLv;
             PlayerSaveData.SavaData();
+            UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.RoleLevelChange);
+        }
+
+        /// <summary>
+        /// 响应角色等级变化并刷新角色面板。
+        /// </summary>
+        private void OnRoleLevelChange()
+        {
             UpdateUI();
         }
 

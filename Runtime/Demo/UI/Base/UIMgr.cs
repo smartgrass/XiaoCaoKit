@@ -31,6 +31,8 @@ namespace XiaoCao
 
         public HashSet<PanelBase> showingPanels = new HashSet<PanelBase>();
 
+        //标记后 将不轻易解除Canvas
+        public bool keepHideMidCanvas = false;
 
         public TalkPanel talkPanel;
 

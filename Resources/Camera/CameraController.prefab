@@ -163,7 +163,7 @@ MonoBehaviour:
     aimSafeAngle: 15
     seeR: 9
     seeAngle: 45
-    swipeSpeedX: 0.1
+    swipeSpeedX: 0.2
     swipeSpeedY: 0.8
   shakeIntensity: 1
   test_shakeTime: 0.5

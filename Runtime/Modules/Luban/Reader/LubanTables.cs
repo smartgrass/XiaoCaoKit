@@ -119,7 +119,7 @@ namespace cfg
         {
             var setting = GetSkillUpgradeSetting(skillId);
 
-            int lvIndex = Math.Min(lv, setting.Cost.Count - 1);
+            int lvIndex = Mathf.Clamp(lv - 1, 0, setting.Cost.Count - 1);
             int coin = setting.Cost[lvIndex];
 
             XiaoCao.Item item = new XiaoCao.Item(XiaoCao.ItemType.Coin, nameof(XiaoCao.ItemType.Coin), coin);

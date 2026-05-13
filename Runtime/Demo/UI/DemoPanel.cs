@@ -20,6 +20,7 @@ public class DemoPanel : SubPanel
         {
             AddMobileInput();
         }
+
         AddUnlockAllLevelBtn();
     }
 
@@ -66,6 +67,16 @@ public class DemoPanel : SubPanel
         {
             GameDebugTool.UnlockAllLevel(GameAllData.playerSaveData);
             SaveMgr.SaveData(GameAllData.playerSaveData);
+        });
+        AddButton(LocalizeKey.KillEnemyDebug, () =>
+        {
+            foreach (var role in RoleMgr.Inst.roleDic.Values)
+            {
+                if (!role.IsPlayer && role.Enable && !role.IsDie && role.IsAiOn)
+                {
+                    role.OnDie(new AtkInfo());
+                }
+            }
         });
     }
 

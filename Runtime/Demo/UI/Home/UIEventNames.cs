@@ -8,6 +8,7 @@ namespace XiaoCao.UI
         // 面板切换相关事件
         public const string SwitchSubView = "SwitchSubView";
         public const string SkillChange = "SkillLevelChange";
+        public const string RoleLevelChange = "RoleLevelChange";
         
   
 

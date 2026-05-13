@@ -222,7 +222,7 @@ namespace XiaoCao
         private void FixUpdateCamRotate(Transform VCamTran)
         {
             curAngleY += _inputLook.x * setting_topDown.swipeSpeedY * Time.fixedDeltaTime;
-            curAngleX += _inputLook.y * -1f * setting_topDown.swipeSpeedX * Time.fixedDeltaTime;
+            curAngleX += _inputLook.y * setting_topDown.swipeSpeedX * Time.fixedDeltaTime;
             curAngleX = ClampAngle(curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
             VCamTran.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
             _inputLook = Vector2.zero;
@@ -473,7 +473,7 @@ namespace XiaoCao
         public float seeR = 8;
         public float seeAngle = 45;
 
-        [Header("滑动转向速度")] public float swipeSpeedX = 0.1f;
+        [Header("滑动转向速度 x是上下角")] public float swipeSpeedX = 0.1f;
         public float swipeSpeedY = 0.5f;
     }
 }

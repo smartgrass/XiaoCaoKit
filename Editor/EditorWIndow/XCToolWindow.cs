@@ -416,13 +416,21 @@ namespace AssetEditor.Editor
             {
                 return;
             }
-
-            if (GameDataCommon.Current.gameState == GameState.Running)
-            {
-                GameDataCommon.LocalPlayer.data_R.playerAttr.lv = playerLevel;
-                GameDataCommon.LocalPlayer.InitRoleData();
-                HotFlags.PlayerAttrChange = true;
-            }
+            //
+            // if (GameDataCommon.Current.gameState == GameState.Running)
+            // {
+                Debug.Log($"--  level change {playerLevel} {GameDataCommon.Current.gameState}");
+                PlayerSaveData.LocalSavaData.lv = playerLevel;
+                PlayerSaveData.SavaData();
+                if (GameDataCommon.LocalPlayer!=null)
+                {
+                    GameDataCommon.LocalPlayer.data_R.playerAttr.lv = playerLevel;
+                    GameDataCommon.LocalPlayer.InitRoleData();
+                    HotFlags.PlayerAttrChange = true;
+                }
+                GameAllData.playerSaveData.ReLoadPlayerAttr();
+                UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.RoleLevelChange);
+            // }
         }
 
 

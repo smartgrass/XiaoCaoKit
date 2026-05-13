@@ -54,6 +54,7 @@ namespace XiaoCao
 
 
         public static string UnlockAllLevel = "UnlockAllLevel";
+        public static string KillEnemyDebug = "KillEnemyDebug";
 
         public static string GetLevelName(int chapter, int level)
         {

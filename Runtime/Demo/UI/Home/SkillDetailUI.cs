@@ -17,6 +17,9 @@ namespace XiaoCao.UI
         //标题
         public TMP_Text titleText;
 
+        //技能图标
+        public Image skillIcon;
+
         //描述
         public TMP_Text desText;
 
@@ -50,8 +53,32 @@ namespace XiaoCao.UI
         private void UpdateUI()
         {
             titleText.text = $"{LocalizeKey.GetSkillNameKey(skillId).ToLocalizeStr()}";
+            UpdateIcon();
             desText.text = GetDesStr();
             UpdateCost();
+        }
+
+        /// <summary>
+        /// 刷新详情面板的技能图标。
+        /// </summary>
+        private void UpdateIcon()
+        {
+            if (skillIcon == null)
+            {
+                Transform iconTransform = transform.Find("detail/skillIcon");
+                if (iconTransform != null)
+                {
+                    skillIcon = iconTransform.GetComponent<Image>();
+                }
+            }
+
+            if (skillIcon == null)
+            {
+                return;
+            }
+
+            skillIcon.sprite = SpriteResHelper.LoadSkillIcon(skillId);
+            skillIcon.enabled = skillIcon.sprite != null;
         }
 
 

@@ -54,11 +54,13 @@ public class TalkMgr : Singleton<TalkMgr>, IMapMsgSender
             currentTalkIndex = 0;
             _chapterTalkData = null;
             UIMgr.Inst.HideView(UIPanelType.TalkPanel);
+            UIMgr.Inst.MidCanvasEnable(isReShowCanvas);
             if (isReShowCanvas)
             {
-                UIMgr.Inst.MidCanvasEnable(true);
                 UIMgr.Inst.CheckPlayInputAble();
             }
+
+            CharacterCaptureManager.Inst.ClearCameras(UIPanelType.TalkPanel.ToString());
         }
     }
 
@@ -100,13 +102,13 @@ public class TalkMgr : Singleton<TalkMgr>, IMapMsgSender
         }
         else if (node.talkType == TalkType.End)
         {
-            bool isHide = true;
+            bool isReShowCanvas = true;
             if (node.array.Length > 1)
             {
-                isHide = bool.Parse(node.Str1);
+                isReShowCanvas = bool.Parse(node.Str1);
             }
-
-            EndTalk(isHide);
+            
+            EndTalk(isReShowCanvas);
         }
         else if (node.talkType == TalkType.ShowCanvas)
         {
@@ -238,7 +240,7 @@ public class TalkData : IUIData
 
     public Texture GetSpeakerAvatar()
     {
-        Texture texture = CharacterCaptureManager.Inst.GetSpeakerAvatar(Str2);
+        Texture texture = CharacterCaptureManager.Inst.GetSpeakerAvatar(Str2,nameof(UIPanelType.TalkPanel));
         return texture;
     }
 }

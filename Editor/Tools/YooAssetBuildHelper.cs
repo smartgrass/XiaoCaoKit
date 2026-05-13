@@ -19,7 +19,13 @@ public static class YooAssetBuildHelper
         foreach (var PackageName in GetYooAssetBuildPackageNames())
         {
             EBuildPipeline BuildPipeline = AssetBundleBuilderSetting.GetPackageBuildPipeline(PackageName);
-
+            //防止编辑丢配置
+            if (BuildPipeline != EBuildPipeline.RawFileBuildPipeline && PackageName == "RawPackage")
+            {
+                BuildPipeline = EBuildPipeline.RawFileBuildPipeline;
+                AssetBundleBuilderSetting.SetPackageBuildPipeline(PackageName, BuildPipeline);
+                Debug.LogError($"-- re set RawPackage RawFileBuildPipeline!");
+            }
             BuildParameters buildParameters = BuildPipeline == EBuildPipeline.BuiltinBuildPipeline ?
                 GetBuildPara(PackageName) : GetBuildParaRaw(PackageName);
 
@@ -78,7 +84,7 @@ public static class YooAssetBuildHelper
         para.PackageVersion = GetDefaultPackageVersion();
         para.VerifyBuildingResult = true;
         para.FileNameStyle = fileNameStyle;
-        para.BuildinFileCopyOption = buildinFileCopyOption;
+        para.BuildinFileCopyOption = EBuildinFileCopyOption.ClearAndCopyAll;
         para.BuildinFileCopyParams = buildinFileCopyParams;
         para.EncryptionServices = null;
         return para;

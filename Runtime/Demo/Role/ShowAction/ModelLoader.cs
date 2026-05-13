@@ -13,6 +13,7 @@ public class ModelLoader
     public GameObject loadedModel; // 保存当前加载的模型引用
 
     public CameraCapture cameraCapture;
+    public string addTag;
 
     // 引用配置数据
     private ModelConfigSo ConfigSo => ConfigMgr.Inst.ModelConfigDataSo;
