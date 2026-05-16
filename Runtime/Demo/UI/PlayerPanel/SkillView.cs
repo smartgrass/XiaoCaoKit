@@ -7,7 +7,7 @@ using XiaoCao;
 
 namespace XiaoCao.UI
 {
-    public class SkillView : MonoBehaviour
+    public class SkillView : EnableShowUI
     {
         //所有技能
         public Transform allSkillParent;
@@ -46,9 +46,8 @@ namespace XiaoCao.UI
         {
             return new List<string>(cells.ConvertAll(cell => cell.skillId));
         }
-
-
-        private void OnEnable()
+        
+        public override void OnEnable()
         {
             //隐藏子界面 
             skillDetailUI.gameObject.SetActive(false);
@@ -57,8 +56,7 @@ namespace XiaoCao.UI
             UpdateUI();
         }
 
-
-        private void UpdateUI()
+        public override void UpdateUI()
         {
             if (!ResMgr.IsLoadBaseFinish)
             {

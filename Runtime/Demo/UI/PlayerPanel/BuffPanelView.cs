@@ -11,7 +11,7 @@ using static XiaoCao.BuffControl;
 
 namespace XiaoCao
 {
-    public class BuffPanelView : MonoBehaviour
+    public class BuffPanelView : EnableShowUI
     {
         public Transform buffContainer; // 已装备buff的容器
         public Transform textContainer;
@@ -26,15 +26,15 @@ namespace XiaoCao
 
         private PlayerBuffs playerBuffs;
 
-        public void Init()
+        public override void OnEnable()
         {
             playerBuffs = PlayerHelper.GetPlayerBuffControl().playerBuffs;
             switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
-            RefreshUI();
+            UpdateUI();
         }
 
-        public void RefreshUI()
+        public override void UpdateUI()
         {
             int count = playerBuffs.EquippedExBuffs.Count;
             cellList.Clear();
@@ -101,7 +101,7 @@ namespace XiaoCao
 
         private void OnBuffChange()
         {
-            RefreshUI();
+            UpdateUI();
         }
 
 

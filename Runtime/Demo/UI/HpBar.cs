@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TEngine;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,8 +28,9 @@ namespace XiaoCao
         //Color Setting
         public static Color White = Color.white;
 
-
-        private Transform _targetTF;
+        public TextMeshProUGUI lvText;
+        
+        private Transform _targetTf;
         private Vector3 _offset;
 
 
@@ -56,7 +58,7 @@ namespace XiaoCao
 
         public void SetFollow(Transform tf, Vector3 offset)
         {
-            _targetTF = tf;
+            _targetTf = tf;
             _offset = offset;
         }
 
@@ -64,16 +66,30 @@ namespace XiaoCao
         {
             float h = role.idRole.cc.height;
 
-            _targetTF = role.idRole.transform;
+            _targetTf = role.idRole.transform;
 
             //_offset = Vector3.zero;
             //transform.SetParent(role.gameObject.transform, false);
             _offset = Vector3.up * h + role.idRole.hpBarOffset;
         }
 
-        public void UpdatePostion()
+        /// <summary>
+        /// 刷新血条上的等级文本。
+        /// </summary>
+        public void UpdateLvText(int lv)
         {
-            transform.position = _targetTF.TransformPoint(_offset);
+            if (lvText == null)
+            {
+                return;
+            }
+
+            lvText.text = $"Lv {lv}";
+        }
+        
+
+        public void UpdatePosition()
+        {
+            transform.position = _targetTf.TransformPoint(_offset);
             //Watch Cam
             Vector3 dir = -CameraMgr.Main.transform.position + transform.position;
             transform.rotation = Quaternion.LookRotation(dir);

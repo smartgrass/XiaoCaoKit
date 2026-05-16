@@ -102,6 +102,7 @@ namespace XiaoCao.UI
             {
                 //自动装备   
                 SkillView.EquipSkill(skillId);
+                PlayerSaveData.SavaData();
             }
 
             UpdateUI();

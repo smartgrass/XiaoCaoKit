@@ -226,7 +226,7 @@ namespace XiaoCao
 
             BlackScreen.FadeOutAnim();
 
-            GameEvent.Send(EGameEvent.GameStartFinsh.ToInt());
+            GameEvent.Send(EGameEvent.GameStartFinish.ToInt());
 
             if (!IsReload)
             {

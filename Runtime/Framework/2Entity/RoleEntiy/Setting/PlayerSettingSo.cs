@@ -50,7 +50,7 @@ namespace XiaoCao
         public int id = 0;
         public int Id => id;
 
-        [Header("1为boss")]
+        [Header("boss=1")]
         public int special;
         
         public int maxLevel = 50;
@@ -75,8 +75,12 @@ namespace XiaoCao
         public float recoverCdIfOnHurt = 4; //角色未受伤后多久触发恢复
 
         public float actionRecover = 0.1f; //攻击时恢复
-
+        
+        [XCLabel("不受击时恢复速度")]
         public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
+
+        [XCLabel("最短受击动画间隔, boss偏高")]
+        public float hitAnimSpan = 0.1f; //受击动画间隔
 
         public bool IsBoss => special == 1;
     }

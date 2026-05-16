@@ -543,16 +543,16 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
-        LevelEnd = 2, //关卡结束 0失败 1成功 //ELevelResult
-
+        
         ///<see cref="GameStartMono"/>
-        GameStartFinsh = 2,
+        GameStartFinish = 2,
         CameraChange = 3,
         RoleChange = 4,
         UIPanelBtnGlow = 5,
         OnGetItem = 6, //捡到物品时
         AddFriend = 7,
         OnCoinChange = 8, //资源变化
+        LevelEnd = 9, //关卡结束 0失败 1成功 //ELevelResult
 
         PlayerEvent = 100, //分界线
         PlayerPlaySkill = 101,

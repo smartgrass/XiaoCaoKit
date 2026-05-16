@@ -1059,11 +1059,11 @@ namespace XiaoCao
             noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
             deadTime = role.data_R.moveSetting.deadTime;
             isBoss = attr.IsBoss;
+            hitAnimSpan = attr.hitAnimSpan;
             if (isBoss)
             {
                 role.AddTag(RoleTagCommon.Boss);
             }
-            hitAnimSpan = isBoss ? 0.5f : 0.1f;
         }
 
         public void SetNoBreakTime(float time, bool isForce = false)

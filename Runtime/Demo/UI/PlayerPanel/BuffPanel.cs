@@ -8,12 +8,11 @@ namespace XiaoCao
         public override void Init()
         {
             view = gameObject.GetComponent<BuffPanelView>();
-            view.Init();
         }
 
         public override void RefreshUI()
         {
-            view.RefreshUI();
+            view.UpdateUI();
         }
 
     }

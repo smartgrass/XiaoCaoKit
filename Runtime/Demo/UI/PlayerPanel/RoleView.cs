@@ -10,7 +10,7 @@ using XiaoCaoKit.UI;
 
 namespace XiaoCao.UI
 {
-    public class RoleView : MonoBehaviour
+    public class RoleView : EnableShowUI
     {
         public Button upgradeBtn;
         public TMP_Text levelText;
@@ -32,10 +32,6 @@ namespace XiaoCao.UI
             UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
         }
 
-        private void OnEnable()
-        {
-            UpdateUI();
-        }
 
         /// <summary>
         /// 刷新角色页显示，供新手引导主动重绘。
@@ -87,7 +83,7 @@ namespace XiaoCao.UI
         }
 
 
-        private void UpdateUI()
+        public override void UpdateUI()
         {
             if (!ResMgr.IsLoadBaseFinish)
             {

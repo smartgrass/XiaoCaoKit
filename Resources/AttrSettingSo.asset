@@ -28,6 +28,7 @@ MonoBehaviour:
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.2
+    hitAnimSpan: 0.1
   - desc: "\u654C\u4EBA-\u57FA\u672C"
     id: 1
     special: 0
@@ -43,6 +44,7 @@ MonoBehaviour:
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.1
+    hitAnimSpan: 0.1
   - desc: "\u654C\u4EBA-boss"
     id: 2
     special: 1
@@ -58,3 +60,4 @@ MonoBehaviour:
     recoverCdIfOnHurt: 4
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.1
+    hitAnimSpan: 0.7

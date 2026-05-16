@@ -2,6 +2,7 @@ using EasyUI.Toast;
 using NaughtyAttributes;
 using System.Collections.Generic;
 using DG.Tweening;
+using EasyUI.Helpers;
 using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,7 +26,7 @@ namespace XiaoCao
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
-        
+
 
         public KeyInputHud keyInputHud;
 
@@ -93,6 +94,7 @@ namespace XiaoCao
                 {
                     Debug.LogError($"-- panel {type} NeedUIData false");
                 }
+
                 return;
             }
 
@@ -146,28 +148,41 @@ namespace XiaoCao
 
         private void Update()
         {
-            //电脑端
+            if (Application.isMobilePlatform)
+            {
+                return;
+            }
+
+            if (DialogManager.HasDialog())
+            {
+                return;
+            }
+            
+            //Esc
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (lastpanel != null && lastpanel.IsShowing && lastpanel.HideEsc)
+                {
+                    HideView(lastpanel.PanelType);
+                }
+            }
+
+
+            //无ui时
             if (showingPanels.Count <= 0)
             {
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    ShowView(UIPanelType.SettingPanel);
-                }
-                else if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.F1))
+                // if (Input.GetKeyDown(KeyCode.Escape))
+                // {
+                //     ShowView(UIPanelType.SettingPanel);
+                // }
+                if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.F1))
                 {
                     ShowView(UIPanelType.PlayerPanel);
                 }
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    if (lastpanel != null && lastpanel.IsShowing && lastpanel.HideEsc)
-                    {
-                        HideView(lastpanel.PanelType);
-                    }
-                }
-                else if (Input.GetKeyDown(XCInputSetting.Space))
+                if (Input.GetKeyDown(XCInputSetting.Space))
                 {
                     if (lastpanel != null && lastpanel.IsShowing)
                     {
@@ -246,7 +261,7 @@ namespace XiaoCao
         {
             if (!string.IsNullOrEmpty(key))
             {
-                PopToast(key.ToLocalizeStr(),time);
+                PopToast(key.ToLocalizeStr(), time);
             }
         }
 

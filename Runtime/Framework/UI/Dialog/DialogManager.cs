@@ -58,6 +58,11 @@ namespace XiaoCao.UI
             }
         }
 
+        public static bool HasDialog()
+        {
+            return currentDialog;
+        }
+
         internal static void NotifyDialogDestroyed(DialogPanel dialog)
         {
             if (currentDialog == dialog)
@@ -78,6 +83,14 @@ namespace XiaoCao.UI
         private static Transform GetCanvasRoot()
         {
             return UICanvasMgr.Inst.GetCanvasParent();
+        }
+
+        public static void OnConfirmClick()
+        {
+            if (currentDialog)
+            {
+                currentDialog.confirmButton.onClick.Invoke();
+            }
         }
     }
 }

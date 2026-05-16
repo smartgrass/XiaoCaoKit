@@ -37,6 +37,18 @@ namespace XiaoCao.UI
             BattleData.Current.UIEnter = false;
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                DialogManager.HideDialog();
+            }
+            else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+            {
+                DialogManager.OnConfirmClick();
+            }
+        }
+
         /// <summary>
         /// 显示对话框
         /// </summary>

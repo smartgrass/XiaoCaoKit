@@ -44,5 +44,14 @@ namespace EasyUI.Toast
 
             _toastUI.Dismiss();
         }
+
+        // public static bool IsShowing()
+        // {
+        //     if (!IsLoaded || _toastUI == null)
+        //     {
+        //         return false;
+        //     }
+        //     return true;
+        // }
     }
 }

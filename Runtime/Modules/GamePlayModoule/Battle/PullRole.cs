@@ -49,7 +49,8 @@ namespace XiaoCao.Battle
                 Vector3 dir = role.transform.position - transform.position;
                 float dis = dir.magnitude;
                 dir.Normalize();
-                float curForce = forceCurve.Evaluate(ScaledRadius / ScaledRadius + (dis * 1.5f));
+                //注意除数不能为0
+                float curForce = forceCurve.Evaluate(ScaledRadius / (ScaledRadius + dis * 1.5f));
 
                 dir *= curForce * force * Time.fixedDeltaTime;
 

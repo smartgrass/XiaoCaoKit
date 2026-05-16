@@ -107,7 +107,7 @@ namespace XiaoCao
                     }
                     else
                     {
-                        UpdataEnemyHpBar(role);
+                        UpdateEnemyHpBar(role);
                     }
                 }
             }
@@ -121,13 +121,13 @@ namespace XiaoCao
                 playerBar.UpdateArmorBar(role.ShowArmorPercentage);
                 if (!dataChange.Contains((int)ENowAttr.Level))
                 {
-                    UpdateLvText(GameDataCommon.LocalPlayer.Level);
+                    playerBar.UpdateLvText(GameDataCommon.LocalPlayer.Level);
                     dataChange.Add((int)ENowAttr.Level);
                 }
             }
         }
 
-        private void UpdataEnemyHpBar(Role role)
+        private void UpdateEnemyHpBar(Role role)
         {
             if (!CanShowEnemyHpBar(role))
             {
@@ -150,7 +150,7 @@ namespace XiaoCao
             }
             else if (bar.gameObject.activeSelf)
             {
-                bar.UpdatePostion();
+                bar.UpdatePosition();
             }
         }
 
@@ -190,7 +190,7 @@ namespace XiaoCao
         {
             foreach (var item in itemHpBarDic)
             {
-                item.Value.UpdatePostion();
+                item.Value.UpdatePosition();
             }
         }
 
@@ -250,6 +250,7 @@ namespace XiaoCao
             bar.InitColor(role);
             bar.transform.SetParent(worldHpBarParent, false);
             bar.SetFollowRole(role);
+            bar.UpdateLvText(role.Level);
             return bar;
         }
 
@@ -281,6 +282,7 @@ namespace XiaoCao
 
             bar.gameObject.SetActive(true);
             bar.InitColor(role);
+            bar.UpdateLvText(role.Level);
             RefreshBossBarParentState();
             return bar;
         }
@@ -379,11 +381,6 @@ namespace XiaoCao
 
                 ShowDamageText(numStr, GameDataCommon.LocalPlayer.transform.position, color);
             }
-        }
-
-        void UpdateLvText(int lv)
-        {
-            lvText.text = $"Lv {lv}";
         }
 
         public void OnExitLevelBtn()

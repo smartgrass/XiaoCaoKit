@@ -27,11 +27,6 @@ namespace XiaoCao.UI
 
             base.Init();
 
-            // var buffPanel = AddPanel<BuffPanel>("Buff", "BuffPanel");
-            // var playerShowPanel = AddPanel<PlayerShowPanel>("Role", "PlayerShowPanel");
-
-            //var skillPanel = AddPanel<SkillPanel>("Skill", "SkillPanel");
-
 
             for (var index = 0; index < groups.Count; index++)
             {
@@ -69,8 +64,8 @@ namespace XiaoCao.UI
 
             var tabBtn = group.tabBtn;
             tabBtn.onClick.AddListener(() => { SwitchPanel(group.panelName); });
-            // tabBtn.Select();
-            // tabBtnGo.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(group.panelName);
+
+            subPanel.Init();
             list.Add(subPanel);
             return subPanel;
         }
