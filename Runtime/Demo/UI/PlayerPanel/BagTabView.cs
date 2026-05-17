@@ -1,21 +1,12 @@
-﻿using NaughtyAttributes;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 namespace XiaoCao.UI
 {
-    /// <summary>
-    /// 背包, 技能界面
-    /// </summary>
-    public class PlayerTabPanel : TabStandardPanel
+    /// <see cref="BuffView"/>
+    /// <see cref=""/>
+    public class BagTabView : TabView
     {
-        public override UIPanelType PanelType => UIPanelType.PlayerPanel;
-
-        public Image titleImage;
-
         public List<TabPanelGroup> groups = new List<TabPanelGroup>();
 
         public override void Init()
@@ -34,34 +25,17 @@ namespace XiaoCao.UI
                 var subPanel = InitGroup(group);
                 subPanel.gameObject.SetActive(index == 0);
             }
+
             SwitchPanel(groups[0].panelName);
-            if (GameDataCommon.Current.isFighting)
-            {
-                gameObject.SetActive(false);
-            }
         }
 
-        [Button]
-        public override void OnCloseBtnClick()
-        {
-            if (GameDataCommon.Current.isFighting)
-            {
-                UIMgr.Inst.HideView(UIPanelType.PlayerPanel);
-            }
-            else
-            {
-                UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SwitchSubView, EHomeSubView.Main);
-            }
-        }
 
         private SubPanel InitGroup(TabPanelGroup group)
         {
             var subPanel = new SimpleSubPanel();
             subPanel.gameObject = group.panel;
-            subPanel.standardPanel = this;
             subPanel.subPanelName = group.panelName;
             subPanel.TabBtn = group.tabBtn;
-
             var tabBtn = group.tabBtn;
             tabBtn.onClick.AddListener(() => { SwitchPanel(group.panelName); });
 
@@ -72,9 +46,10 @@ namespace XiaoCao.UI
 
         public override void SwitchPanel(string subPanelName)
         {
+            Debug.Log($"--  SwitchPanel {subPanelName}");
             base.SwitchPanel(subPanelName);
-            var group = groups.Find((a) => a.panelName == subPanelName);
-            titleImage.sprite = group.iconSprite;
+            // var group = groups.Find((a) => a.panelName == subPanelName);
+            // titleImage.sprite = group.iconSprite;
         }
     }
 }

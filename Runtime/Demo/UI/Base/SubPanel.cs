@@ -17,9 +17,7 @@ public abstract class SubPanel
     public GameObject gameObject;
 
     public UIPrefabs Prefabs;
-
-    public TabStandardPanel standardPanel;
-
+    
     public Transform transform => gameObject.transform;
 
     public Button TabBtn { get; set; }

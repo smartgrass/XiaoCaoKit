@@ -23,8 +23,7 @@ namespace XiaoCao.UI
                 FindSubPanel(subPanel, findPanel);
             }
 
-
-            subPanel.standardPanel = this;
+            
             subPanel.Prefabs = prefabs;
             subPanel.subPanelName = panelName;
 

@@ -15,6 +15,12 @@ namespace XiaoCaoKit
         public static void SetCellListCount(Transform parent, int showCount)
         {
             int childCount = parent.childCount;
+            if (childCount == 0)
+            {
+                Debug.LogError($"{parent.name} 缺少用于复制的子物体模板");
+                return;
+            }
+
             GameObject prefab = parent.GetChild(0).gameObject;
             int deltaCount = showCount - childCount;
             if (deltaCount > 0)
@@ -25,14 +31,12 @@ namespace XiaoCaoKit
                     go.SetActive(true);
                 }
             }
-            else
+
+            childCount = parent.childCount;
+            for (int i = 0; i < childCount; i++)
             {
-                childCount = parent.childCount;
-                for (int i = showCount; i < childCount; i++)
-                {
-                    GameObject go = parent.GetChild(i).gameObject;
-                    go.SetActive(false);
-                }
+                GameObject go = parent.GetChild(i).gameObject;
+                go.SetActive(i < showCount);
             }
         }
     }

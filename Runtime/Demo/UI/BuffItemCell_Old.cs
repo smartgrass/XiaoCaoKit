@@ -2,13 +2,12 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using Image = UnityEngine.UI.Image;
 
-namespace XiaoCao
+namespace XiaoCao.UI
 {
-    ///<see cref="BuffPanelView"/>
-    public class BuffItemCell : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
+    //旧版可拖拽 现不再使用
+    public class BuffItemCell_Old : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
     {
         public Image bg;
 
@@ -20,9 +19,10 @@ namespace XiaoCao
 
         [XCHeader("DebugView")] public BuffItem buffItem;
 
-        public BuffItemCell TempItemCell { get; set; }
+        public BuffItemCell_Old TempItemCell { get; set; }
 
-        public bool IsEquiped { get; set; }
+        //暂时不再区分,默认为true
+        public bool IsEquiped => true;
 
         public int Index { get; set; }
         public bool CanDrag { get; set; }
@@ -33,7 +33,7 @@ namespace XiaoCao
 
         public Action<BuffItem> OnButtonClick;
 
-        public BuffPanelView panelView;
+        public BuffView view;
 
         private void Start()
         {
@@ -113,7 +113,7 @@ namespace XiaoCao
             TempItemCell.gameObject.SetActive(false);
 
             //判断落点 获取位置的BuffItem
-            BuffItemCell nextCell = GetPointBuffItemCell(eventData);
+            BuffItemCell_Old nextCell = GetPointBuffItemCell(eventData);
 
             bool isNull = nextCell == null;
 
@@ -145,7 +145,7 @@ namespace XiaoCao
             EnableRayCast(true);
         }
 
-        private bool IsCanUgrade(BuffItemCell nextCell, out bool isMaxLevel)
+        private bool IsCanUgrade(BuffItemCell_Old nextCell, out bool isMaxLevel)
         {
             isMaxLevel = false;
             //升级设计: Ex, 同类型, 同等级
@@ -180,24 +180,24 @@ namespace XiaoCao
         }
 
         //需要拦截同类型ExBuff
-        void ExChange(BuffItemCell nextCell)
+        void ExChange(BuffItemCell_Old nextCell)
         {
             PlayerHelper.LocalPlayerBuffs.MoveBuff(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             OnBuffChangeAct?.Invoke();
         }
 
-        void UpgradeBuff(BuffItemCell nextCell)
+        void UpgradeBuff(BuffItemCell_Old nextCell)
         {
             PlayerHelper.LocalPlayerBuffs.CombineItem(IsEquiped, Index, nextCell.IsEquiped, nextCell.Index);
             OnBuffChangeAct?.Invoke();
         }
 
-        public BuffItemCell GetPointBuffItemCell(PointerEventData eventData)
+        public BuffItemCell_Old GetPointBuffItemCell(PointerEventData eventData)
         {
             if (eventData.pointerCurrentRaycast.gameObject)
             {
                 Debug.Log($"--- {eventData.pointerCurrentRaycast.gameObject.name}");
-                return eventData.pointerCurrentRaycast.gameObject.GetComponent<BuffItemCell>();
+                return eventData.pointerCurrentRaycast.gameObject.GetComponent<BuffItemCell_Old>();
             }
 
             return null;

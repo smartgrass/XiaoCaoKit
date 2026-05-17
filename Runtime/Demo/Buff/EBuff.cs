@@ -74,6 +74,6 @@ namespace XiaoCao
         None = -1,
         Nor = 0,
         Ex = 2,
-        Revive = 3
+        // Revive = 3
     }
 }

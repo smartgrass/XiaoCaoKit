@@ -14,7 +14,10 @@ namespace XiaoCaoKit.UI
             base.ApplyState();
             foreach (var uiColor in uiColorGroups)
             {
-                uiColor.img.color = uiColor.colors[state];
+                if (uiColor.img)
+                {
+                    uiColor.img.color = uiColor.colors[state];
+                }
             }
         }
     }
@@ -22,7 +25,7 @@ namespace XiaoCaoKit.UI
     [System.Serializable]
     public class UIColor
     {
-        public Image img;
+        public Graphic img;//Image,Text都可以用
         public Color[] colors;
     }
 }
