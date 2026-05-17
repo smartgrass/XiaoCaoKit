@@ -287,8 +287,7 @@ namespace XiaoCao
                 //加速速成处理
                 moveSmooth = moveSmooth / XCTime.timeScale;
             }
-
-
+            
             float targetAnimMoveSpeed = inputTotal;
 
 

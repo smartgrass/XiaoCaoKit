@@ -23,6 +23,7 @@ namespace XiaoCao
 
         public static string Buff = "Buff";
         public static string BuffEffect = "BuffEffect";
+        public static string AllBuffEffect = "AllBuffEffect";
         public static string EquippedBuffEffect = "EquippedBuffEffect";
 
         public static string BuildTime = "BuildTime";
@@ -101,10 +102,20 @@ namespace XiaoCao
                 string key = GetBuffNameKey(item.ToBuffItem().GetFirstEBuff);
                 return key.ToLocalizeStr();
             }
+            else if(item.type == ItemType.ExtraItem)
+            {
+                string key = GetBuffNameKey(item.ToBuffItem().GetFirstEBuff);
+                return key.ToLocalizeStr();
+            }
 
             return item.typeId.ToLocalizeStr();
         }
 
+        public static string GetExtraItemDescKey(string extraItemId)
+        {
+            return "ExtraItemDesc/" + extraItemId;
+        }
+        
         #endregion
 
         #region Buff

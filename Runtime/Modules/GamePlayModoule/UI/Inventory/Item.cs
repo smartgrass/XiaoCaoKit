@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace XiaoCao
 {
@@ -66,6 +67,18 @@ namespace XiaoCao
         public static BuffItem ToBuffItem(this Item item)
         {
             return BuffItem.Create(item);
+        }
+
+        public static BattleExtraItemData ToBattleExtraItemData(this Item item)
+        {
+            BattleExtraItemSubConfig config = ConfigMgr.Inst.BattleExtraItemConfigSo?.GetConfig(item.typeId);
+            if (config == null)
+            {
+                Debug.LogWarning($"--- no extra item config {item.typeId}");
+                return null;
+            }
+
+            return BattleExtraItemData.Create(item, config, item.num);
         }
 
         public static HolyRelicItem ToHolyRelicItem(this Item item)

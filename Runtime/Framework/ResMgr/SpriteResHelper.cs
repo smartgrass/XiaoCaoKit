@@ -39,6 +39,7 @@ public static class SpriteResHelper
         string endPath = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
         return ResMgr.LoadAseetOrDefault<Sprite>(endPath, DefaultItemSpritePath);
     }
+    
 
     public static Sprite LoadRoleIcon(string roleKey)
     {

@@ -10,6 +10,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
     public class ItemPickBuffSelect : MonoBehaviour
     {
         public int getCount = 2;
+        
+        public int addBuffLevel;
 
         public RewardBuffPoolSo buffPool;
 
@@ -17,6 +19,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 
         public bool forceShowUI;
 
+
+        
         private bool _isPicked;
 
         private void OnTriggerEnter(Collider other)
@@ -46,6 +50,11 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
             foreach (var eBuff in buffs)
             {
                 BuffItem buffItem = BuffHelper.CreatBuffItem(eBuff);
+                if (addBuffLevel > 0)
+                {
+                    buffItem.level = addBuffLevel;
+                }
+
                 buffItems.Add(buffItem);
             }
 

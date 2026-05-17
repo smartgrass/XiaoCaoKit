@@ -421,6 +421,11 @@ namespace XiaoCao
 
         public static BuffControl GetPlayerBuffControl(int playerId = -1)
         {
+            if (!GameDataCommon.Current.isFighting)
+            {
+                //在home场景
+                return null;
+            }
             if (playerId < 0)
             {
                 return GameDataCommon.LocalPlayer.component.buffControl;

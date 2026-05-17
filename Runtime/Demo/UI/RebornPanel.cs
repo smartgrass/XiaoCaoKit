@@ -19,6 +19,9 @@ namespace XiaoCao.UI
         public Button reloadBtn; // 重开本关
         public Button exitBtn; // 退出到大厅
 
+        public TMPro.TMP_Text costText;
+        public TMPro.TMP_Text hasCoinText;
+
         public void Init()
         {
             gameObject.SetActive(false);
@@ -39,6 +42,8 @@ namespace XiaoCao.UI
             gameObject.SetActive(true);
             UIMgr.Inst.PopUIEnable(true, name);
             RefreshRebornBtnState();
+            costText.text = $"<sprite=0>{GameMgr.Inst.GetCurrentRebornCost()}";
+            hasCoinText.text = $"<sprite=0>{PlayerSaveData.LocalSavaData.Coin}";
         }
 
         public override void Hide()
@@ -64,7 +69,8 @@ namespace XiaoCao.UI
 
         private void OnReviveBtnClicked()
         {
-            Debug.Log($"-- click reborn cost:{GameMgr.Inst.GetCurrentRebornCost()} count:{BattleData.Current.paidRebornCount}");
+            Debug.Log(
+                $"-- click reborn cost:{GameMgr.Inst.GetCurrentRebornCost()} count:{BattleData.Current.paidRebornCount}");
             if (!GameMgr.Inst.TryPaidReborn())
             {
                 RefreshRebornBtnState();

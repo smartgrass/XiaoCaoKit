@@ -29,7 +29,8 @@ namespace XiaoCao.UI
 
         public override void OnEnable()
         {
-            playerBuffs = PlayerHelper.GetPlayerBuffControl().playerBuffs;
+            var control = PlayerHelper.GetPlayerBuffControl();
+            playerBuffs = control != null ? playerBuffs : null;
             switchBtn.onClick.RemoveListener(OnSwitchBtn);
             switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
@@ -38,7 +39,25 @@ namespace XiaoCao.UI
 
         public override void UpdateUI()
         {
-            int hasCount = playerBuffs.EquippedExBuffs.Count;
+            if (tempBuffItem == null)
+            {
+                switchBtn.gameObject.SetActive(false);
+            }
+
+            if (playerBuffs == null)
+            {
+                playerBuffs = new PlayerBuffs();
+            }
+
+            int norBuffCount = playerBuffs.norBuff.IsEnable ? 1 : 0;
+            List<BuffItem> buffList = new List<BuffItem>();
+            if (norBuffCount > 0)
+            {
+                buffList.Add(playerBuffs.norBuff);
+            }
+
+            buffList.AddRange(playerBuffs.EquippedExBuffs);
+            int hasCount = buffList.Count;
             int showCount = Math.Max(baseCount, hasCount);
             _cellList.Clear();
             UITool.SetCellListCount(buffContainer, showCount);
@@ -55,7 +74,7 @@ namespace XiaoCao.UI
                 var cell = _cellList[i];
                 if (i < hasCount)
                 {
-                    var item = playerBuffs.EquippedExBuffs[i];
+                    var item = buffList[i];
 
                     cell.Index = i;
                     SetBuffCellInfo(cell, item);
@@ -79,6 +98,7 @@ namespace XiaoCao.UI
             var buffInfoList = playerBuffs.EquippedExBuffs.GetBuffInfos().Combine();
             Debug.Log($"--- count {buffInfoList.Count} {playerBuffs.EquippedExBuffs.GetBuffInfos().Count}");
             ShowBuffText(buffInfoList, playerBuffs.norBuff.GetBuffs.Combine());
+            buffTitle.text = $"{LocalizeKey.AllBuffEffect.ToLocalizeStr()}";
         }
 
         private void ShowBuffText(List<BuffInfo> buffInfoList, List<BuffInfo> passiveBuffList = null)
@@ -87,6 +107,11 @@ namespace XiaoCao.UI
             if (passiveBuffList == null)
             {
                 passiveBuffList = new List<BuffInfo>();
+            }
+
+            if (buffInfoList == null)
+            {
+                buffInfoList = new List<BuffInfo>();
             }
 
             int textCount = buffInfoList.Count + passiveBuffList.Count;
@@ -122,10 +147,18 @@ namespace XiaoCao.UI
             //显示单个buff
             if (item.GetBuffType != EBuffType.None)
             {
-                buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level + 1}";
+                // buffTitle.text = $"{LocalizeKey.BuffEffect.ToLocalizeStr()} lv{item.level + 1}";
+                buffTitle.text = $"{LocalizeKey.GetBuffNameKey(item.GetFirstEBuff).ToLocalizeStr()} lv{item.level + 1}";
                 switchBtn.gameObject.SetActive(true);
                 tempBuffItem = item;
-                ShowBuffText(item.buffs);
+                if (item.GetBuffType == EBuffType.Nor)
+                {
+                    ShowBuffText(null, item.buffs);
+                }
+                else
+                {
+                    ShowBuffText(item.buffs);
+                }
             }
             else
             {

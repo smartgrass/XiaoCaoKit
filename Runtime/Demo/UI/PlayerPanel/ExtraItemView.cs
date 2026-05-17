@@ -14,7 +14,7 @@ namespace XiaoCao.UI
     {
         public Transform itemContainer;
 
-        [XCHeader("道具详情")] public TextMeshProUGUI itemTitle;
+        public TextMeshProUGUI itemTitle;
 
         public TextMeshProUGUI itemDesc;
 
@@ -112,22 +112,17 @@ namespace XiaoCao.UI
 
         private void RefreshDetail(BattleExtraItemData item)
         {
-            Item viewItem = item.ToItem();
             BattleExtraItemSubConfig config = ConfigMgr.Inst.BattleExtraItemConfigSo?.GetConfig(item.typeId);
+            itemTitle.text = item.typeId.ToLocalizeStr();
 
-            if (itemTitle != null)
-            {
-                itemTitle.text = viewItem.GetItemName();
-            }
-
-            string mainDesc = GetExtraItemDesc(item, config);
+            string mainDesc = LocalizeKey.GetExtraItemDescKey(item.typeId).ToLocalizeStr();
 
             string cdStr = GetCdText(item);
- 
+
             itemDesc.text = $"{mainDesc}{cdStr}";
             if (itemIcon != null)
             {
-                itemIcon.sprite = viewItem.GetItemSprite();
+                itemIcon.sprite = item.ToItem().GetItemSprite();
                 itemIcon.enabled = true;
             }
         }
@@ -151,29 +146,16 @@ namespace XiaoCao.UI
                 itemIcon.enabled = false;
             }
         }
-
-        private string GetExtraItemDesc(BattleExtraItemData item, BattleExtraItemSubConfig config)
-        {
-            if (config == null || string.IsNullOrEmpty(config.desc))
-            {
-                return item.typeId.ToLocalizeStr();
-            }
-
-            if (LocalizeMgr.Inst.HasKey(config.desc))
-            {
-                return config.desc.ToLocalizeStr();
-            }
-
-            return config.desc;
-        }
+        
 
         private string GetCdText(BattleExtraItemData item)
         {
             if (item.baseCd > 0)
             {
-                string numStr= item.baseCd.ToString("0.#");
-                return $"\n{"CD".ToLocalizeStr()}{numStr}s";
+                string numStr = item.baseCd.ToString("0.#");
+                return $"\n{"CD".ToLocalizeStr()}:{numStr}s";
             }
+
             return "";
         }
     }

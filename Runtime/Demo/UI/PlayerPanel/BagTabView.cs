@@ -4,7 +4,7 @@ using UnityEngine;
 namespace XiaoCao.UI
 {
     /// <see cref="BuffView"/>
-    /// <see cref=""/>
+    /// <see cref="ExtraItemView"/>
     public class BagTabView : TabView
     {
         public List<TabPanelGroup> groups = new List<TabPanelGroup>();
