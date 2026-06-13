@@ -56,6 +56,8 @@ public class TriggerEndExplode : MonoBehaviour, ITriggerEnd
             atk = source.atk,
             baseAtk = source.baseAtk,
             isCrit = source.isCrit,
+            critDamage = source.critDamage,
+            isDamageProcessed = source.isDamageProcessed,
             skillId = source.skillId,
             subSkillId = source.subSkillId,
         };

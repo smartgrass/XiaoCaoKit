@@ -15,6 +15,8 @@ namespace XiaoCao.UI
         public Transform rewardParent;
         public Transform outlineFlow;
         public Transform outline;
+        public TMP_Text passTimeText;
+        public TMP_Text enemyLevelText;
 
         public int curChapter;
 
@@ -47,6 +49,8 @@ namespace XiaoCao.UI
             btn.interactable = passState != LevelPassState.Lock;
             stateChange.SetState((int)passState);
             UpdateOutlineState(passState);
+            UpdatePassTimeText(passState);
+            UpdateEnemyLevelText();
             scaleTween?.SyncInteractableState();
             UpdateReward();
         }
@@ -54,6 +58,57 @@ namespace XiaoCao.UI
         private LevelPassState GetPassState(int chapter, int index)
         {
             return PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapter, index);
+        }
+
+        /// <summary>
+        /// 根据通关状态刷新关卡耗时文本。
+        /// </summary>
+        private void UpdatePassTimeText(LevelPassState passState)
+        {
+            if (!passTimeText)
+            {
+                return;
+            }
+
+            string passTimeStr = "";
+            if (passState != LevelPassState.Pass ||
+                !PlayerSaveData.LocalSavaData.levelPassData.TryGetPassTime(curChapter, LevelIndex, out float passTime))
+            {
+                passTimeStr = "--";
+            }
+            else
+            {
+                passTimeStr = FormatPassTime(passTime);
+            }
+
+
+            passTimeText.text = $"{"PassLevelTime".ToLocalizeStr()}: {passTimeStr}";
+        }
+
+        /// <summary>
+        /// 根据关卡配置刷新敌人等级文本。
+        /// </summary>
+        private void UpdateEnemyLevelText()
+        {
+            if (!enemyLevelText)
+            {
+                return;
+            }
+
+            string levelKey = MapNames.GetLevelKey(curChapter, LevelIndex);
+            int enemyLevel = LubanTables.GetLevelSetting(levelKey).EnemyBaseLevel;
+            enemyLevelText.text = $"{LocalizeKey.EnemyLevel.ToLocalizeStr()}: Lv{enemyLevel}";
+        }
+
+        /// <summary>
+        /// 将秒数格式化为关卡耗时文本。
+        /// </summary>
+        private static string FormatPassTime(float passTime)
+        {
+            int totalSeconds = Mathf.Max(0, Mathf.FloorToInt(passTime));
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return $"{minutes:D2}:{seconds:D2}";
         }
 
         private void UpdateOutlineState(LevelPassState passState)

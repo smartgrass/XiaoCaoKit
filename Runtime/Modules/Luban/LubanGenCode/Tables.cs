@@ -18,6 +18,7 @@ public partial class Tables
     public ChapterSettingReader ChapterSettingReader {get; }
     public CreateEnemyGroupsReader CreateEnemyGroupsReader {get; }
     public SkillUpgradeSettingReader SkillUpgradeSettingReader {get; }
+    public ChallengeRewardSettingReader ChallengeRewardSettingReader {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
@@ -26,6 +27,7 @@ public partial class Tables
         ChapterSettingReader = new ChapterSettingReader(loader("chaptersettingreader"));
         CreateEnemyGroupsReader = new CreateEnemyGroupsReader(loader("createenemygroupsreader"));
         SkillUpgradeSettingReader = new SkillUpgradeSettingReader(loader("skillupgradesettingreader"));
+        ChallengeRewardSettingReader = new ChallengeRewardSettingReader(loader("challengerewardsettingreader"));
         ResolveRef();
     }
     
@@ -36,6 +38,7 @@ public partial class Tables
         ChapterSettingReader.ResolveRef(this);
         CreateEnemyGroupsReader.ResolveRef(this);
         SkillUpgradeSettingReader.ResolveRef(this);
+        ChallengeRewardSettingReader.ResolveRef(this);
     }
 }
 

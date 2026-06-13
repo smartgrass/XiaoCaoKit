@@ -222,6 +222,8 @@ namespace XiaoCao
         {
             MapMgr.Inst.SetPlayerStartPos();
 
+            LevelData.Current.enterLevelTime = Time.time;
+
             GameMgr.Inst.SetGameState(GameState.Running);
 
             BlackScreen.FadeOutAnim();

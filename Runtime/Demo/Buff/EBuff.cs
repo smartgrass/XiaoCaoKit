@@ -28,9 +28,9 @@ namespace XiaoCao
         [InspectorName("主动技能伤害5%")] SkillDamageMult,
 
         [InspectorName("普攻速度增加15%")] NorAtkSpeedAdd,
-
-        [InspectorName("exBuff分界线")] NorBuffEndIndex = 100,
-
+        
+        [InspectorName("exBuff分界线,即后面的为特殊纹章")] NorBuffEndIndex = 100,
+        
         [InspectorName("自动召唤魔法导弹,cd{0:0.#}s")] MagicMissile = 101,
 
         [InspectorName("使用剑刃攻击时,产生额外剑气,每10次攻击,前{0:0}次触发")] ExtraSlash = 102,

@@ -1128,6 +1128,7 @@ namespace XiaoCao
         //非基础属性 分界线
         NorAtkSpeedAdd,
         NoDamage, //无伤
+        CritDamage, //额外暴击伤害
     }
 
     public static class EAttrExtend

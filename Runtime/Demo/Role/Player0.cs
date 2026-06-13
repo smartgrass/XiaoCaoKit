@@ -401,6 +401,8 @@ namespace XiaoCao
 
         public float Crit => GetAttribute(EAttr.Crit).CurrentValue;
 
+        public float CritDamage => GetAttribute(EAttr.CritDamage).CurrentValue;
+
         //吸血 
         public float AtkRecoverHp => GetAttribute(EAttr.AtkRecoverHp).CurrentValue;
 
@@ -431,6 +433,7 @@ namespace XiaoCao
             GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * power);
             GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * power);
             GetAttribute(EAttr.Crit).BaseValue = 0;
+            GetAttribute(EAttr.CritDamage).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
             GetAttribute(EAttr.NoDamage).BaseValue = 0;
         }

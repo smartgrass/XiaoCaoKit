@@ -48,7 +48,7 @@ namespace XiaoCao.UI
         private HomeHud _homeHud;
         private HomeMainPanel _mainPanel;
         private HomeFightPanel _fightPanel;
-        private RoleView _roleView;
+        private RoleTabView _roleTabView;
         private SkillView _skillView;
         private PlayerTabPanel _playerTabPanel;
         private LevelDetailUI _levelDetailUI;
@@ -295,7 +295,7 @@ namespace XiaoCao.UI
 
             _mainPanel ??= _homeHud.GetComponentInChildren<HomeMainPanel>(true);
             _fightPanel ??= _homeHud.GetComponentInChildren<HomeFightPanel>(true);
-            _roleView ??= _homeHud.GetComponentInChildren<RoleView>(true);
+            _roleTabView ??= _homeHud.GetComponentInChildren<RoleTabView>(true);
             _skillView ??= _homeHud.GetComponentInChildren<SkillView>(true);
             _playerTabPanel ??= _homeHud.GetComponentInChildren<PlayerTabPanel>(true);
             _levelDetailUI ??= _fightPanel != null
@@ -521,14 +521,14 @@ namespace XiaoCao.UI
                 return;
             }
 
-            if (_roleView == null || _roleView.upgradeBtn == null)
+            if (_roleTabView == null || _roleTabView.upgradeBtn == null)
             {
                 return;
             }
 
-            _roleView.RefreshGuideUI();
+            _roleTabView.RefreshGuideUI();
             SetGuideTarget(
-                _roleView.upgradeBtn.transform as RectTransform,
+                _roleTabView.upgradeBtn.transform as RectTransform,
                 RoleUpgradeGuideText,
                 OnRoleUpgradeByGuide,
                 "role_upgrade");
@@ -693,9 +693,9 @@ namespace XiaoCao.UI
         private void OnRoleUpgradeByGuide()
         {
             bool shouldAdvanceToSkillStep = _currentStep == GuideStep.RoleUpgrade;
-            if (_roleView != null && _roleView.upgradeBtn != null)
+            if (_roleTabView != null && _roleTabView.upgradeBtn != null)
             {
-                _roleView.upgradeBtn.onClick.Invoke();
+                _roleTabView.upgradeBtn.onClick.Invoke();
             }
 
             if (shouldAdvanceToSkillStep)
@@ -812,7 +812,7 @@ namespace XiaoCao.UI
         private void EnsureMainRoleView()
         {
             EnsureMainPanel();
-            _roleView?.RefreshGuideUI();
+            _roleTabView?.RefreshGuideUI();
         }
 
         /// <summary>
@@ -860,9 +860,9 @@ namespace XiaoCao.UI
                 return roleTabButton != null && roleTabButton.gameObject.activeInHierarchy;
             }
 
-            return _roleView != null &&
-                   _roleView.upgradeBtn != null &&
-                   _roleView.upgradeBtn.gameObject.activeInHierarchy;
+            return _roleTabView != null &&
+                   _roleTabView.upgradeBtn != null &&
+                   _roleTabView.upgradeBtn.gameObject.activeInHierarchy;
         }
 
         /// <summary>

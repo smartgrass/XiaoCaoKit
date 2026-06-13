@@ -153,6 +153,7 @@ namespace XiaoCao
             PlayerAttr attr = Info.role.PlayerAttr;
             int baseAtk = attr.Atk;
             bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
+            float critDamage = attr.CritDamage;
             AtkCommponent.maxTriggerTime = maxTriggerTime;
             AtkCommponent.curTriggerTime = 0;
 
@@ -166,6 +167,7 @@ namespace XiaoCao
                 baseAtk = baseAtk,
                 atk = baseAtk,
                 isCrit = isCrit,
+                critDamage = critDamage,
                 atker = Info.role.id
             };
             info.maxTriggerAct += OnMaxTrigger;

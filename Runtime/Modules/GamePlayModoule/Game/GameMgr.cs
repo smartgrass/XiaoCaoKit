@@ -107,14 +107,20 @@ namespace XiaoCao
         //完成
         public void LevelFinish()
         {
-            LevelData.Current.finishLevelTime = Time.time;
+            LevelData levelData = LevelData.Current;
+            levelData.finishLevelTime = Time.time;
             GameEvent.Send<ELevelResult>(EGameEvent.LevelEnd.ToInt(), ELevelResult.Success);
-            BattleData.Current.levelData.levelResult = ELevelResult.Success;
+            levelData.levelResult = ELevelResult.Success;
             // UIMgr.PopToastKey(LocalizeKey.LevelSuccess,5);
             //写入存档
             LevelInfo levelInfo = GameDataCommon.Current.GetLevelInfo;
+            float passTime = levelData.enterLevelTime > 0
+                ? Mathf.Max(0, levelData.finishLevelTime - levelData.enterLevelTime)
+                : 0;
             Debug.Log($"-- pass level {levelInfo.chapter}_{levelInfo.index}");
-            PlayerSaveData.LocalSavaData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
+            var levelPassData = PlayerSaveData.LocalSavaData.levelPassData;
+            levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
+            levelPassData.SetPassTime(levelInfo.chapter, levelInfo.index, passTime);
             PlayerSaveData.SavaData();
             if (MapMgr.Inst)
             {

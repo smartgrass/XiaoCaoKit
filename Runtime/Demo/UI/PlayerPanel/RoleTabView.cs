@@ -10,7 +10,7 @@ using XiaoCaoKit.UI;
 
 namespace XiaoCao.UI
 {
-    public class RoleView : EnableShowUI
+    public class RoleTabView : TabView
     {
         public Button upgradeBtn;
         public TMP_Text levelText;
@@ -25,11 +25,19 @@ namespace XiaoCao.UI
         {
             upgradeBtn.onClick.AddListener(OnUpgradeBtnClick);
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
+            UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.BlessingChange, OnRoleLevelChange);
         }
 
         private void OnDestroy()
         {
             UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
+            UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.BlessingChange, OnRoleLevelChange);
+        }
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            UpdateUI();
         }
 
 
@@ -83,7 +91,7 @@ namespace XiaoCao.UI
         }
 
 
-        public override void UpdateUI()
+        public void UpdateUI()
         {
             if (!ResMgr.IsLoadBaseFinish)
             {
@@ -114,8 +122,9 @@ namespace XiaoCao.UI
 
             fullLvChange.SetState(0);
             UpdateCost();
-
             int nextLv = PlayerSaveData.lv + 1;
+            levelText.text = $"lv{PlayerSaveData.lv} -> lv{nextLv}";
+
             if (!IsEnoughCost(nextLv, false))
             {
                 //将升级按钮变灰
@@ -128,7 +137,7 @@ namespace XiaoCao.UI
 
         private void ShowPlayerAttr()
         {
-            UITool.SetCellListCount(attrTextParent, 5);
+            UITool.SetCellListCount(attrTextParent, 6);
 
             var texts = attrTextParent.GetComponentsInChildren<TMP_Text>();
             PlayerAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
@@ -138,6 +147,7 @@ namespace XiaoCao.UI
             texts[2].text = GetRoleAttrShowText(EAttr.Atk, attr);
             texts[3].text = GetRoleAttrShowText(EAttr.Def, attr);
             texts[4].text = GetRoleAttrShowText(EAttr.Crit, attr);
+            texts[5].text = GetRoleAttrShowText(EAttr.CritDamage, attr);
         }
 
         private void UpdateCost()
@@ -159,6 +169,16 @@ namespace XiaoCao.UI
             if (attr == EAttr.MaxHp)
             {
                 return $"{"Hp".ToLocalizeStr()}:{playerAttr.hp}/{playerAttr.MaxHp}";
+            }
+
+            if (attr == EAttr.Crit)
+            {
+                return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue:0.##}%";
+            }
+
+            if (attr == EAttr.CritDamage)
+            {
+                return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue * 100f:0.##}%";
             }
 
             return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue}";

@@ -42,6 +42,10 @@ namespace XiaoCao
         public static string SkillDesc = "SkillDesc";
         public static string NeedLv = "NeedLv";
         public static string LevelUp = "LevelUp";
+        public static string BlessingFullLevel = "Blessing/FullLevel";
+        public static string BlessingCostLine = "Blessing/CostLine";
+        public static string BlessingListParentMissing = "Blessing/ListParentMissing";
+        public static string BlessingCellCountNotEnough = "Blessing/CellCountNotEnough";
         public static string GuideOpenGrowPanel = "Guide/OpenGrowPanel";
         public static string GuideOpenRoleTab = "Guide/OpenRoleTab";
         public static string GuideRoleUpgrade = "Guide/RoleUpgrade";
@@ -84,6 +88,10 @@ namespace XiaoCao
             return $"skill_{skillId}_desc";
         }
 
+        public static string GetBlessingNameKey(EBlessing blessing)
+        {
+            return $"Blessing/{blessing}";
+        }
 
         //技能命名 skill_[id]
         //技能命描述 skill_[id]_des
@@ -171,6 +179,20 @@ namespace XiaoCao
             {
                 Debuger.LogError($"格式化失败: {e.Message}");
                 return format; // 返回原始格式字符串或自定义错误信息
+            }
+        }
+
+        public static string FormatWithArgs(string key, params object[] values)
+        {
+            string format = key.ToLocalizeStr();
+            try
+            {
+                return string.Format(format, values);
+            }
+            catch (FormatException e)
+            {
+                Debuger.LogError($"格式化失败: {e.Message}");
+                return format;
             }
         }
 

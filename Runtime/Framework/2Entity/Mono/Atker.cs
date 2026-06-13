@@ -154,6 +154,8 @@ public class AtkInfo
     public int atk = 1; //倍率计算后
     public int baseAtk = 1; //角色基础攻击力.
     public bool isCrit; //暴击
+    public float critDamage; //额外暴击伤害
+    public bool isDamageProcessed; //是否已经完成伤害倍率结算
 
     public string skillId;
     public int subSkillId = 0;
@@ -204,12 +206,14 @@ public class AtkInfoHelper
         PlayerAttr attr = player.PlayerAttr;
         bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
         int baseAtk = attr.Atk;
+        float critDamage = attr.CritDamage;
         var info = new AtkInfo()
         {
             team = player.team,
             skillId = skillId,
             baseAtk = baseAtk,
             isCrit = isCrit,
+            critDamage = critDamage,
             atker = player.id,
         };
         info.AutoSetAtkValue();
@@ -218,7 +222,18 @@ public class AtkInfoHelper
 
     public static void ProcessAtkInfo(AtkInfo ackInfo)
     {
+        if (ackInfo.isDamageProcessed)
+        {
+            return;
+        }
+
+        if (ackInfo.isCrit)
+        {
+            ackInfo.atk = Mathf.RoundToInt(ackInfo.atk * (2f + Mathf.Max(0, ackInfo.critDamage)));
+        }
+
         float GetDamageFactor = BattleData.Current.GetDamageFactor(ackInfo.team);
         ackInfo.atk = (int)(ackInfo.atk * GetDamageFactor);
+        ackInfo.isDamageProcessed = true;
     }
 }

@@ -36,6 +36,9 @@ namespace XiaoCao
 
         public const int MaxSkillBarSetting = 6;
 
+        // 祝福等级存档
+        public Dictionary<EBlessing, int> blessingLevelDic = new Dictionary<EBlessing, int>();
+
         //ItemUI
         public Inventory inventory = new Inventory();
 
@@ -117,6 +120,8 @@ namespace XiaoCao
                 skillUnlockDic = new Dictionary<string, int>();
             }
 
+            CheckBlessingNull();
+
             if (string.IsNullOrEmpty(prefabId))
             {
                 prefabId = "P_0";
@@ -168,6 +173,108 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 确保祝福存档字段可用，并兼容旧存档。
+        /// </summary>
+        public void CheckBlessingNull()
+        {
+            blessingLevelDic ??= new Dictionary<EBlessing, int>();
+            foreach (EBlessing blessing in BlessingRule.AllBlessings)
+            {
+                if (!blessingLevelDic.ContainsKey(blessing))
+                {
+                    blessingLevelDic[blessing] = 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取指定祝福当前等级。
+        /// </summary>
+        public int GetBlessingLevel(EBlessing blessing)
+        {
+            CheckBlessingNull();
+            blessingLevelDic.TryGetValue(blessing, out int level);
+            return Mathf.Clamp(level, 0, BlessingRule.MaxLevel);
+        }
+
+        /// <summary>
+        /// 获取指定祝福碎片的持有数量。
+        /// </summary>
+        public int GetBlessingFragmentCount(EBlessing blessing)
+        {
+            if (inventory == null)
+            {
+                inventory = new Inventory();
+            }
+
+            return inventory.GetItemCount(BlessingRule.GetFragmentItemKey(blessing));
+        }
+
+        /// <summary>
+        /// 获取指定祝福升到下一级所需碎片数量。
+        /// </summary>
+        public int GetBlessingNextCost(EBlessing blessing)
+        {
+            int currentLevel = GetBlessingLevel(blessing);
+            if (BlessingRule.IsMaxLevel(currentLevel))
+            {
+                return 0;
+            }
+
+            return BlessingRule.GetUpgradeCost(blessing, currentLevel + 1);
+        }
+
+        /// <summary>
+        /// 判断指定祝福当前是否可以升级。
+        /// </summary>
+        public bool CanUpgradeBlessing(EBlessing blessing)
+        {
+            int currentLevel = GetBlessingLevel(blessing);
+            if (BlessingRule.IsMaxLevel(currentLevel))
+            {
+                return false;
+            }
+
+            int cost = GetBlessingNextCost(blessing);
+            return GetBlessingFragmentCount(blessing) >= cost;
+        }
+
+        /// <summary>
+        /// 消耗碎片并提升指定祝福等级。
+        /// </summary>
+        public bool TryUpgradeBlessing(EBlessing blessing)
+        {
+            CheckBlessingNull();
+            if (inventory == null)
+            {
+                inventory = new Inventory();
+            }
+
+            int currentLevel = GetBlessingLevel(blessing);
+            if (BlessingRule.IsMaxLevel(currentLevel))
+            {
+                return false;
+            }
+
+            int cost = BlessingRule.GetUpgradeCost(blessing, currentLevel + 1);
+            string itemKey = BlessingRule.GetFragmentItemKey(blessing);
+            if (!inventory.CheckEnoughItem(itemKey, cost))
+            {
+                return false;
+            }
+
+            if (!inventory.ConsumeItem(itemKey, cost))
+            {
+                return false;
+            }
+
+            blessingLevelDic[blessing] = currentLevel + 1;
+            ReLoadPlayerAttr();
+            SavaData();
+            return true;
+        }
+
         public void AddSkillLevel(string skillId)
         {
             if (!skillUnlockDic.ContainsKey(skillId))
@@ -206,7 +313,7 @@ namespace XiaoCao
             return dict;
         }
         /// <summary>
-        /// 获取初始化版本的PlayerAttr,未获得加成之前
+        /// 获取初始化版本的PlayerAttr，包含存档养成加成。
         /// </summary>
         /// <param name="clone">是否返回缓存副本，true 时避免外部修改污染缓存。</param>
         /// <returns></returns>
@@ -219,9 +326,39 @@ namespace XiaoCao
                 cachedInitPlayerAttr = new PlayerAttr();
                 AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
                 cachedInitPlayerAttr.Init(0, currentLv, setting);
+                ApplyBlessingAttr(cachedInitPlayerAttr);
             }
 
             return clone ? cachedInitPlayerAttr.Clone() : cachedInitPlayerAttr;
+        }
+
+        /// <summary>
+        /// 将祝福等级折算为玩家基础属性加成。
+        /// </summary>
+        private void ApplyBlessingAttr(PlayerAttr attr)
+        {
+            CheckBlessingNull();
+            foreach (EBlessing blessing in BlessingRule.AllBlessings)
+            {
+                int level = GetBlessingLevel(blessing);
+                if (level <= 0)
+                {
+                    continue;
+                }
+
+                attr.ChangeAttrValue(
+                    BlessingRule.GetPrimaryAttr(blessing),
+                    BlessingRule.GetModifierKey(blessing),
+                    BlessingRule.GetPrimaryModifier(blessing, level));
+
+                if (blessing == EBlessing.Crit)
+                {
+                    attr.ChangeAttrValue(
+                        EAttr.CritDamage,
+                        BlessingRule.GetCritDamageModifierKey(),
+                        new AttributeModifier { Add = BlessingRule.GetCritDamageBonus(level) });
+                }
+            }
         }
 
         public void ReLoadPlayerAttr()
@@ -291,7 +428,7 @@ namespace XiaoCao
 
         public bool HasGetFirstReward(int chapter, int index)
         {
-            string key = chapter + "_" + index;
+            string key = GetLevelKey(chapter, index);
             if (!otherStates.TryGetValue(key, out var state))
             {
                 return false;
@@ -302,7 +439,7 @@ namespace XiaoCao
 
         public void SetHasGetFirstReward(int chapter, int index, bool isOn = true)
         {
-            string key = chapter + "_" + index;
+            string key = GetLevelKey(chapter, index);
             if (!otherStates.ContainsKey(key))
             {
                 otherStates[key] = new LevelOtherState();
@@ -312,12 +449,57 @@ namespace XiaoCao
             state.hasGetFirstReward = isOn;
             otherStates[key] = state;
         }
+
+        /// <summary>
+        /// 获取指定关卡已记录的通关耗时。
+        /// </summary>
+        public bool TryGetPassTime(int chapter, int index, out float passTime)
+        {
+            passTime = 0;
+            string key = GetLevelKey(chapter, index);
+            if (!otherStates.TryGetValue(key, out var state) || state.passTime <= 0)
+            {
+                return false;
+            }
+
+            passTime = state.passTime;
+            return true;
+        }
+
+        /// <summary>
+        /// 记录指定关卡的通关耗时。
+        /// </summary>
+        public void SetPassTime(int chapter, int index, float passTime)
+        {
+            if (passTime <= 0)
+            {
+                return;
+            }
+
+            string key = GetLevelKey(chapter, index);
+            if (!otherStates.ContainsKey(key))
+            {
+                otherStates[key] = new LevelOtherState();
+            }
+
+            var state = otherStates[key];
+            state.passTime = passTime;
+            otherStates[key] = state;
+        }
+
+        private static string GetLevelKey(int chapter, int index)
+        {
+            return chapter + "_" + index;
+        }
     }
 
     public struct LevelOtherState
     {
         //是否获取首通奖励
         public bool hasGetFirstReward;
+
+        //通关耗时,单位秒; <=0 表示未记录
+        public float passTime;
     }
 
     public enum LevelPassState

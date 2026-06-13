@@ -9,6 +9,7 @@ namespace XiaoCao.UI
         public const string SwitchSubView = "SwitchSubView";
         public const string SkillChange = "SkillLevelChange";
         public const string RoleLevelChange = "RoleLevelChange";
+        public const string BlessingChange = "BlessingChange";
         
   
 
