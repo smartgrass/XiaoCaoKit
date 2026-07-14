@@ -112,25 +112,29 @@ namespace XiaoCao
 
         public void SetPlayerStartPos()
         {
-            if (LevelControl != null)
+            if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
             {
-                if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
-                {
-                    GameDataCommon.LocalPlayer.Movement.MoveToImmediate(GetStartPos());
-                }
-                else
-                {
-                    Debug.LogError("---  no player creat");
-                }
+                GameDataCommon.LocalPlayer.Movement.MoveToImmediate(GetStartPos());
+            }
+            else
+            {
+                Debug.LogError("---  no player creat");
             }
         }
 
         private Vector3 GetStartPos()
         {
+            if (GameDataCommon.Current.gameStage == EGameStage.Home)
+            {
+                var home = transform.GetComponentInChildren<HomeMapControl>();
+                return home.GetStartPos();
+            }
+
             if (!LevelControl)
             {
                 return Vector3.zero;
             }
+
 
             return LevelControl.GetStartPos();
         }

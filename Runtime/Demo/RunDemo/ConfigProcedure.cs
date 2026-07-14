@@ -228,8 +228,6 @@ namespace XiaoCao
 
             BlackScreen.FadeOutAnim();
 
-            GameEvent.Send(EGameEvent.GameStartFinish.ToInt());
-
             if (!IsReload)
             {
                 DelayRun().Forget();

@@ -13,7 +13,8 @@ namespace XiaoCao
     {
         public CinemachineVirtualCamera vcam_topDown;
 
-        public CamData3rd setting_3rd;
+        public CamDataCommon data3Rd;
+        public CamDataHome dataHome;
         public CamDataTopDown setting_topDown;
 
         public float shakeIntensity = 1;
@@ -75,6 +76,7 @@ namespace XiaoCao
             }
         }
 
+        public bool IsRunning => GameDataCommon.Current.gameState == GameState.Running;
 
         [OnValueChanged(nameof(TurnMode))] [SerializeField]
         private CameraMode _mode;
@@ -95,13 +97,24 @@ namespace XiaoCao
             }
 
             isInited = true;
+            vcam_topDown.gameObject.SetActive(true);
             TurnMode();
         }
 
         void TurnMode()
         {
-            vcam_topDown.gameObject.SetActive(true);
-            TopDownInit();
+            if (_mode == CameraMode.ThirdPerson)
+            {
+                curAngleX = dataHome.defaultAngle.x;
+                curAngleY = dataHome.defaultAngle.y;
+            }
+            else
+            {
+                curAngleX = setting_topDown.defaultAngle.x;
+                curAngleY = setting_topDown.defaultAngle.y;
+            }
+
+            CFT.m_CameraDistance = setting_topDown.camDistance;
         }
 
         public void OnUpdate()
@@ -141,6 +154,10 @@ namespace XiaoCao
         
         private void TransparentObjects()
         {
+            if (!CheckHasPlayer())
+            {
+                return;
+            }
             Vector3 selfPosition = player0.transform.position + Vector3.up;
             Vector3 cameraPosition = CameraMgr.Main.transform.position;
             var rayDistance = Vector3.Distance(selfPosition, cameraPosition);
@@ -174,21 +191,34 @@ namespace XiaoCao
             _materialList = materials;
         }
 
+        private bool CheckHasPlayer()
+        {
+            if (player0 == null)
+            {
+                player0 = GameDataCommon.LocalPlayer;
+            }
+
+            return player0!=null;
+        }
+
         public void OnFixedUpdate()
         {
-            if (Mode == CameraMode.ThirdPerson)
+            if (IsRunning)
             {
-                On3rdCamFixedUpdate();
-            }
-            else
-            {
-                TopDownFixedUpdate();
-            }
-            
-            if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
-            {
-                TransparentObjects();
-                lastTransparentUpdate = Time.time;
+                if (Mode == CameraMode.ThirdPerson)
+                {
+                    On3rdCamFixedUpdate();
+                }
+                else
+                {
+                    TopDownFixedUpdate();
+                }
+                            
+                if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
+                {
+                    TransparentObjects();
+                    lastTransparentUpdate = Time.time;
+                }
             }
         }
 
@@ -205,16 +235,9 @@ namespace XiaoCao
             }
         }
 
-        void TopDownInit()
-        {
-            curAngleX = setting_topDown.defaultAngle.x;
-            curAngleY = setting_topDown.defaultAngle.y;
-            CFT.m_CameraDistance = setting_topDown.camDistance;
-        }
-
         void TopDownFixedUpdate()
         {
-            CheckPlayer();
+            CheckPlayerLockEnemy();
             UIMgr.Inst.battleHud.AnimTargetFixUpdate();
             FixUpdateCamRotate(vcam_topDown.transform);
         }
@@ -223,7 +246,7 @@ namespace XiaoCao
         {
             curAngleY += _inputLook.x * setting_topDown.swipeSpeedY * Time.fixedDeltaTime;
             curAngleX += _inputLook.y * setting_topDown.swipeSpeedX * Time.fixedDeltaTime;
-            curAngleX = ClampAngle(curAngleX, setting_3rd.BottomClamp, setting_3rd.TopClamp);
+            curAngleX = ClampAngle(curAngleX, data3Rd.BottomClamp, data3Rd.TopClamp);
             VCamTran.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
             _inputLook = Vector2.zero;
         }
@@ -235,11 +258,10 @@ namespace XiaoCao
 
 
         //相机索敌
-        public void CheckPlayer()
+        public void CheckPlayerLockEnemy()
         {
             bool isAutoLockEnmey = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
-
-
+            
             player0 = GameDataCommon.LocalPlayer;
 
             //暂时夺取控制
@@ -417,7 +439,7 @@ namespace XiaoCao
 
             if (Mode == CameraMode.TowDown)
             {
-                TopDownInit();
+                TurnMode();
             }
 
             CameraMgr.Inst.aimer.SetAim(lookAt, 0);
@@ -453,10 +475,15 @@ namespace XiaoCao
     }
 
     [Serializable]
-    public class CamData3rd
+    public class CamDataCommon
     {
         public float TopClamp = 45.0f;
         public float BottomClamp = -15.0f;
+    }
+    [Serializable]
+    public class CamDataHome
+    {
+        public Vector2 defaultAngle = new Vector2(15, 0);
     }
 
     [Serializable]

@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao.UI;
 using XiaoCaoKit;
+using XiaoCaoKit.UI;
 
 namespace XiaoCao
 {
@@ -23,10 +24,12 @@ namespace XiaoCao
 
         public BattleHud battleHud;
 
+        public HomeFightPanel homeFightPanel;
+        
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
-
+        
 
         public KeyInputHud keyInputHud;
 
@@ -62,6 +65,20 @@ namespace XiaoCao
             buffSelectPanel.Init();
             rebornPanel?.Init();
             OnChangeInputType(GameSetting.UserInputType);
+            OnStageUISet(GameDataCommon.Current.gameStage);
+        }
+
+        //入口和战斗ui有所区别
+        private void OnStageUISet(EGameStage currentGameStage)
+        {
+            if (currentGameStage ==   EGameStage.Level)
+            {
+                battleHud.gameObject.SetActive(true);
+            }
+            else if (currentGameStage == EGameStage.Home)
+            {
+                battleHud.gameObject.SetActive(true);
+            }
         }
 
         private void OnDestroy()
@@ -157,7 +174,7 @@ namespace XiaoCao
             {
                 return;
             }
-            
+
             //Esc
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -235,6 +252,8 @@ namespace XiaoCao
                     return talkPanel;
                 case UIPanelType.RebornPanel:
                     return rebornPanel;
+                case UIPanelType.HomeFightPanel:
+                    return homeFightPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

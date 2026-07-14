@@ -7,7 +7,8 @@ using XiaoCao.UI;
 
 namespace XiaoCao.UI
 {
-    public class HomeMainPanel : HomePanelBase
+    [Obsolete]
+    public class HomeMainPanel : MonoBehaviour
     {
         public Button fightBtn;
         public Button growBtn;//打开提升角色面板

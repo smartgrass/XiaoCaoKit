@@ -549,8 +549,6 @@ namespace XiaoCao
         None = 0,
         GameStateChange = 1,
         
-        ///<see cref="GameStartMono"/>
-        GameStartFinish = 2,
         CameraChange = 3,
         RoleChange = 4,
         UIPanelBtnGlow = 5,

@@ -1,15 +1,16 @@
-﻿using NaughtyAttributes;
+﻿using System;
+using NaughtyAttributes;
 using TEngine;
 using UnityEngine;
 using XiaoCao;
 using EGameEvent = XiaoCao.EGameEvent;
+
 /// <summary>
 /// 用于获取 GameStart回调, 控制时序
 /// </summary>
 public class GameStartMono : MonoBehaviour
 {
-    [ReadOnly]
-    public bool isGameStarted;
+    [ReadOnly] public bool isGameStarted;
 
     private bool hasAddListener;
 
@@ -22,9 +23,18 @@ public class GameStartMono : MonoBehaviour
         else
         {
             hasAddListener = true;
-            GameEvent.AddEventListener(EGameEvent.GameStartFinish.ToInt(), OnGameStart);
+            GameEvent.AddEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), GameStateChange);
         }
     }
+
+    private void GameStateChange(GameState state1, GameState state2)
+    {
+        if (state2 == GameState.Running)
+        {
+            OnGameStart();
+        }
+    }
+
 
     public virtual void OnDestroy()
     {
@@ -36,7 +46,7 @@ public class GameStartMono : MonoBehaviour
     {
         if (hasAddListener)
         {
-            GameEvent.RemoveEventListener(EGameEvent.GameStartFinish.ToInt(), OnGameStart);
+            GameEvent.RemoveEventListener<GameState, GameState>(EGameEvent.GameStateChange.ToInt(), GameStateChange);
         }
     }
 

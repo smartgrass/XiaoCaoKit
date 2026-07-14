@@ -7,8 +7,11 @@ using XiaoCaoKit;
 
 namespace XiaoCao.UI
 {
-    public class HomeFightPanel : HomePanelBase
+    //选关ui
+    public class HomeFightPanel : PanelBase
     {
+        public override UIPanelType PanelType => UIPanelType.HomeFightPanel;
+
         public Transform levels;
         public Transform chapters;
         public LevelDetailUI levelDetailUI;
@@ -41,6 +44,17 @@ namespace XiaoCao.UI
             ShowChapterView(GetCurrentChapter());
             SetChapterSelectVisible(false);
             SetModeSelectVisible(false);
+        }
+
+
+        public override void Show(IUIData data = null)
+        {
+            gameObject.SetActive(true);
+        }
+
+        public override void Hide()
+        {
+            gameObject.SetActive(false);
         }
 
         void InitChapterSelectUI()
@@ -161,6 +175,7 @@ namespace XiaoCao.UI
             }
 
             RefreshCurrentChapterBtn();
+            levelsScrollView.GetComponent<ScrollRect>().normalizedPosition = new Vector2(0, 0.5f);
         }
 
         /// <summary>
@@ -299,7 +314,7 @@ namespace XiaoCao.UI
                 return;
             }
 
-            HomeHud.Inst.SwitchPanel(EHomePanel.MainPanel);
+            UIMgr.Inst.HideView(UIPanelType.HomeFightPanel);
         }
 
         void OnSelectLevelMode()

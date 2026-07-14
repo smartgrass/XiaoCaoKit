@@ -12,7 +12,7 @@ namespace XiaoCao
         {
             //这里做点编辑器开关
             Debuger.LogLevel = LogLevel.Info;
-
+            GameDataCommon.Current.gameStage = EGameStage.Level;
             ProcedureMgr procedureMgr = ProcedureMgr.Inst.InitOnce();
             //LoadOnce;
             procedureMgr.AddTask(new PreLoadPoolProcedure());

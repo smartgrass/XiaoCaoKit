@@ -8,7 +8,7 @@ namespace XiaoCao.UI
 {
     /// <see cref="HomeMainPanel"/>
     /// <see cref="HomeFightPanel"/>
-    public class HomeHud : MonoBehaviour, ICanvasMgr
+    public class HomeHud : MonoBehaviour
     {
         private const string GuideRootPrefabPath = "Assets/_Res/UI/HomeUI/HomeGuideRoot.prefab";
 
@@ -21,7 +21,6 @@ namespace XiaoCao.UI
         private void Awake()
         {
             Inst = this;
-            UICanvasMgr.Inst.canvasMgr = this;
             canvas = transform.GetComponentInParent<Canvas>();
             GameDataCommon.Current.isFighting = false;
         }
