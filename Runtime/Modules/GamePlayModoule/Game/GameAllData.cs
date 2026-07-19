@@ -153,7 +153,7 @@ namespace XiaoCao
 
         ///<see cref="UIMgr.CheckPlayInputAble"/>
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
-
+        
         public bool UIEnter;
         public bool isDialogShow;
         public float fightValue = 50; //战斗值 0~100
@@ -573,6 +573,7 @@ namespace XiaoCao
 
         //Map 300
         MapMsg = 300,
+        HomeItemMsg = 301,
     }
 
     public static class EventTypeExtend

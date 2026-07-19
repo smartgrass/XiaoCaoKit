@@ -21,6 +21,7 @@ namespace XiaoCao
             GameDataCommon.Current.gameStage = EGameStage.Home;
             if (loadPlayer)
             {
+                ProcedureMgr.Inst.AddTask(new MapProcedure());
                 ProcedureMgr.Inst.AddTask(new PlayerProcedure());
                 ProcedureMgr.Inst.AddTask(new ToRunningStateProcedure());
                 await ProcedureMgr.Inst.Run();

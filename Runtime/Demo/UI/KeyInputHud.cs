@@ -722,11 +722,11 @@ namespace XiaoCao
 
         private void CheckExtraSkillKeyInput()
         {
-            if (GameSetting.UserInputType == UserInputType.Touch)
-            {
-                ResetExtraSkillKeyState(true);
-                return;
-            }
+            // if (GameSetting.UserInputType == UserInputType.Touch)
+            // {
+            //     ResetExtraSkillKeyState(true);
+            //     return;
+            // }
 
             bool canUseExtraSkill = extraSkillBtn != null &&
                                     extraSkillBtn.isActiveAndEnabled &&

@@ -50,6 +50,7 @@ public class SettingPanel : PrefabsTabPanel
             GameMgr.Inst.ReloadScene, GameMgr.Inst.BackHome);
     }
 
+    
     public override void Hide()
     {
         base.Hide();

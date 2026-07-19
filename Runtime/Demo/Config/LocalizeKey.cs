@@ -30,6 +30,7 @@ namespace XiaoCao
         public static string SwapCameraSpeed = "SwapCameraSpeed";
         public static string AnglePower = "AnglePower";
         public static string IsExitLevel = "IsExitLevel";
+        public static string IsBackLauncher = "IsBackLauncher";
         public static string LevelFinish = "LevelFinish";//Map完成使用
         public static string LevelSuccess = "LevelSuccess";
         public static string LevelFail = "LevelFail";

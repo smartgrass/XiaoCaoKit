@@ -166,6 +166,10 @@ namespace XiaoCao
             //StartCoroutine(LoadSceneInBackground(sceneName));
         }
 
+        public void BackToLauncher()
+        {
+            // LoadScene(SceneNames.Home);
+        }
 
         /// <see cref="MapNames"/>
         public void LoadLevelScene(string levelId)

@@ -257,6 +257,7 @@ namespace XiaoCao
         public PlayerSetting playerSetting;
 
         public List<int> friends = new List<int>();
+        public bool isNorAtkBlock;
 
         internal string GetBarSkillId(int index)
         {

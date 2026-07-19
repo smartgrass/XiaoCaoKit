@@ -73,4 +73,11 @@ namespace XiaoCao.UI
             titleImage.sprite = group.iconSprite;
         }
     }
+
+    public enum PlayerSubTabNames
+    {
+        RoleView,
+        SkillView,
+        BagTab
+    }
 }

@@ -13,7 +13,7 @@ namespace XiaoCao
     {
         public CinemachineVirtualCamera vcam_topDown;
 
-        public CamDataCommon data3Rd;
+        public CamDataCommon dataCommon;
         public CamDataHome dataHome;
         public CamDataTopDown setting_topDown;
 
@@ -107,11 +107,15 @@ namespace XiaoCao
             {
                 curAngleX = dataHome.defaultAngle.x;
                 curAngleY = dataHome.defaultAngle.y;
+                CFT.m_ScreenX = dataHome.screenXY.x;
+                CFT.m_ScreenY = dataHome.screenXY.y;
             }
             else
             {
                 curAngleX = setting_topDown.defaultAngle.x;
                 curAngleY = setting_topDown.defaultAngle.y;
+                CFT.m_ScreenX = dataCommon.screenXY.x;
+                CFT.m_ScreenY = dataCommon.screenXY.y;
             }
 
             CFT.m_CameraDistance = setting_topDown.camDistance;
@@ -246,7 +250,7 @@ namespace XiaoCao
         {
             curAngleY += _inputLook.x * setting_topDown.swipeSpeedY * Time.fixedDeltaTime;
             curAngleX += _inputLook.y * setting_topDown.swipeSpeedX * Time.fixedDeltaTime;
-            curAngleX = ClampAngle(curAngleX, data3Rd.BottomClamp, data3Rd.TopClamp);
+            curAngleX = ClampAngle(curAngleX, dataCommon.BottomClamp, dataCommon.TopClamp);
             VCamTran.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0.0f);
             _inputLook = Vector2.zero;
         }
@@ -479,11 +483,13 @@ namespace XiaoCao
     {
         public float TopClamp = 45.0f;
         public float BottomClamp = -15.0f;
+        public Vector2 screenXY = new Vector2(0.5f, 0.7f);
     }
     [Serializable]
     public class CamDataHome
     {
         public Vector2 defaultAngle = new Vector2(15, 0);
+        public Vector2 screenXY = new Vector2(0.5f, 0.78f);
     }
 
     [Serializable]

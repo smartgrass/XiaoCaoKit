@@ -206,6 +206,11 @@ namespace XiaoCao
                 return;
             }
 
+            if (Data_P.isNorAtkBlock)
+            {
+                return;
+            }
+
             //如处于busy中,排除处于平a中
             if (IsBusy() && !IsOnNorAck())
             {

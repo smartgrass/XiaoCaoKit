@@ -36,6 +36,10 @@ namespace XiaoCao
 
         public GameObject gameWinTip;
 
+        public RectTransform tipRect;
+        private RectTransform _canRect;
+        private TMP_Text _tipText;
+
         private AssetPool pool;
 
         private readonly Vector3 hidePos = new Vector3(0, -999, 0);
@@ -62,6 +66,8 @@ namespace XiaoCao
             exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
             exitLevelBtn.transform.gameObject.SetActive(false);
             gameWinTip.gameObject.SetActive(false);
+            _canRect = transform.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+            _tipText = tipRect.GetComponentInChildren<TMP_Text>(true);
         }
 
         //ELevelResult
@@ -88,6 +94,7 @@ namespace XiaoCao
             {
                 NorHpBarUpdate();
                 UpdateItemHpBar();
+                TipUpdate();
             }
         }
 
@@ -264,7 +271,7 @@ namespace XiaoCao
                     bossBarPool.Push(bossBarTemplate);
                 }
             }
-            
+
             HpBar bar = null;
             if (bossBarPool.Count > 0)
             {
@@ -586,5 +593,63 @@ namespace XiaoCao
         }
 
         #endregion
+
+        #region triggerItemTip
+
+        private UITipData tipData;
+
+        public void ShowTriggerItemTip(string key, 
+            Vector3 worldPos, Vector2 offset)
+        {
+            tipRect.gameObject.SetActive(true);
+            _tipText.text = key.ToLocalizeStr();
+            tipData.worldPos = worldPos;
+            tipData.uiOffset = offset;
+            tipData.isShowing = true;
+            tipData.uiKey = key;
+            GameDataCommon.LocalPlayer.playerData.isNorAtkBlock = true;
+        }
+
+        public void TipUpdate()
+        {
+            if (tipData.isShowing)
+            {
+                var uiPos = WorldScreenHelper.WorldToAnchorPos(tipData.worldPos, _canRect);
+                tipRect.anchoredPosition = uiPos + tipData.uiOffset;
+                if (GameDataCommon.LocalPlayer != null)
+                {
+                    var inputData = GameDataCommon.LocalPlayer.playerData.inputData;
+                    if (Input.GetKeyDown(KeyCode.J) || inputData.inputs[InputKey.NorAck])
+                    {
+                        TriggerUI();
+                    }
+                }
+            }
+        }
+
+        public void TriggerUI()
+        {
+            GameEvent.Send<string>(EGameEvent.HomeItemMsg.ToInt(), tipData.uiKey);
+        }
+
+        public void HideTriggerItemTip()
+        {
+            tipRect.gameObject.SetActive(false);
+            tipData.isShowing = false;
+            if (GameDataCommon.LocalPlayer != null)
+            {
+                GameDataCommon.LocalPlayer.playerData.isNorAtkBlock = false;
+            }
+        }
+
+        #endregion
+    }
+
+    public struct UITipData
+    {
+        public bool isShowing;
+        public Vector3 worldPos;
+        public Vector2 uiOffset;
+        public string uiKey;
     }
 }
