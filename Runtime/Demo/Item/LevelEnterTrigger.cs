@@ -18,7 +18,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item
             {
                 return;
             }
-            UIMgr.Inst.ShowView(UIPanelType.HomeFightPanel);
+            UIMgr.Inst.ShowView(UIPanelType.LevelSelectPanel);
         }
     }
 }

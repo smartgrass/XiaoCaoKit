@@ -121,6 +121,10 @@ namespace XiaoCao
             var levelPassData = PlayerSaveData.LocalSavaData.levelPassData;
             levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
             levelPassData.SetPassTime(levelInfo.chapter, levelInfo.index, passTime);
+            if (!BattleData.Current.playerHasDead)
+            {
+                levelPassData.SetHasNoDeathPass(levelInfo.chapter, levelInfo.index);
+            }
             PlayerSaveData.SavaData();
             if (MapMgr.Inst)
             {

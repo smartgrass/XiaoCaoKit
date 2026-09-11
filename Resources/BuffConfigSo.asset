@@ -56,11 +56,13 @@ MonoBehaviour:
   - eBuff: 102
     addInfoArray:
     - values:
-      - 4
+      - 3
     - values:
-      - 8
+      - 5
     - values:
-      - 10
+      - 7
+    - values:
+      - 9
   - eBuff: 103
     addInfoArray:
     - values:

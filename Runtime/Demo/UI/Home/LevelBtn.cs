@@ -12,11 +12,14 @@ namespace XiaoCao.UI
     public class LevelBtn : NorBtn
     {
         public UIStateChange stateChange;
-        public Transform rewardParent;
         public Transform outlineFlow;
         public Transform outline;
-        public TMP_Text passTimeText;
-        public TMP_Text enemyLevelText;
+        public Transform starsRoot;
+        public Sprite starOnSprite;
+        public Sprite starOffSprite;
+        public Image[] starImages;
+        public GameObject selectShowObject;
+        public GameObject selectHideObject;
 
         public int curChapter;
 
@@ -37,6 +40,13 @@ namespace XiaoCao.UI
         {
             EnsureScaleTween();
             scaleTween?.SyncInteractableState();
+            CacheStarImages();
+        }
+
+        public void SetSelected(bool selected)
+        {
+            selectShowObject?.SetActive(selected);
+            selectHideObject?.SetActive(!selected);
         }
 
         public void Show(int chapter, int index)
@@ -50,9 +60,8 @@ namespace XiaoCao.UI
             stateChange.SetState((int)passState);
             UpdateOutlineState(passState);
             UpdatePassTimeText(passState);
-            UpdateEnemyLevelText();
+            UpdateStarState(passState);
             scaleTween?.SyncInteractableState();
-            UpdateReward();
         }
 
         private LevelPassState GetPassState(int chapter, int index)
@@ -61,44 +70,90 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
+        /// 根据关卡结果刷新三颗星。
+        /// </summary>
+        private void UpdateStarState(LevelPassState passState)
+        {
+            if (!CacheStarImages())
+            {
+                return;
+            }
+
+            int starCount = 0;
+            if (passState == LevelPassState.Pass)
+            {
+                starCount = PlayerSaveData.LocalSavaData.levelPassData.GetLevelStarCount(curChapter, LevelIndex);
+            }
+
+            for (int i = 0; i < starImages.Length; i++)
+            {
+                Image starImage = starImages[i];
+                if (!starImage)
+                {
+                    continue;
+                }
+
+                bool isOn = i < starCount;
+                if (isOn && starOnSprite != null)
+                {
+                    starImage.sprite = starOnSprite;
+                }
+                else if (!isOn && starOffSprite != null)
+                {
+                    starImage.sprite = starOffSprite;
+                }
+
+                starImage.enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// 缓存星星图片组件，避免每次刷新都重复查找。
+        /// </summary>
+        private bool CacheStarImages()
+        {
+            if (starImages != null && starImages.Length > 0)
+            {
+                return true;
+            }
+
+            if (starsRoot == null)
+            {
+                starsRoot = transform.Find("stars");
+            }
+
+            if (starsRoot == null || starsRoot.childCount == 0)
+            {
+                return false;
+            }
+
+            starImages = new Image[starsRoot.childCount];
+            for (int i = 0; i < starsRoot.childCount; i++)
+            {
+                starImages[i] = starsRoot.GetChild(i).GetComponent<Image>();
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// 根据通关状态刷新关卡耗时文本。
         /// </summary>
         private void UpdatePassTimeText(LevelPassState passState)
         {
-            if (!passTimeText)
-            {
-                return;
-            }
-
-            string passTimeStr = "";
-            if (passState != LevelPassState.Pass ||
-                !PlayerSaveData.LocalSavaData.levelPassData.TryGetPassTime(curChapter, LevelIndex, out float passTime))
-            {
-                passTimeStr = "--";
-            }
-            else
-            {
-                passTimeStr = FormatPassTime(passTime);
-            }
-
-
-            passTimeText.text = $"{"PassLevelTime".ToLocalizeStr()}: {passTimeStr}";
+            // string passTimeStr = "";
+            // if (passState != LevelPassState.Pass ||
+            //     !PlayerSaveData.LocalSavaData.levelPassData.TryGetPassTime(curChapter, LevelIndex, out float passTime))
+            // {
+            //     passTimeStr = "--";
+            // }
+            // else
+            // {
+            //     passTimeStr = FormatPassTime(passTime);
+            // }
+            //
         }
-
-        /// <summary>
-        /// 根据关卡配置刷新敌人等级文本。
-        /// </summary>
-        private void UpdateEnemyLevelText()
-        {
-            if (!enemyLevelText)
-            {
-                return;
-            }
-
-            string levelKey = MapNames.GetLevelKey(curChapter, LevelIndex);
-            int enemyLevel = LubanTables.GetLevelSetting(levelKey).EnemyBaseLevel;
-            enemyLevelText.text = $"{LocalizeKey.EnemyLevel.ToLocalizeStr()}: Lv{enemyLevel}";
-        }
+        
 
         /// <summary>
         /// 将秒数格式化为关卡耗时文本。
@@ -145,29 +200,6 @@ namespace XiaoCao.UI
             }
 
             return latestUnlockedLevel == index;
-        }
-
-        private void UpdateReward()
-        {
-            if (rewardParent == null)
-            {
-                return;
-            }
-
-            string levelKey = MapNames.GetLevelKey(curChapter, LevelIndex);
-            var rewards = LevelSettingHelper.GetReward(levelKey);
-            if (rewards == null)
-            {
-                UITool.SetCellListCount(rewardParent, 0);
-                return;
-            }
-
-            UITool.SetCellListCount(rewardParent, rewards.Count);
-            var cells = rewardParent.GetComponentsInChildren<ItemCell>(false);
-            for (int i = 0; i < rewards.Count && i < cells.Length; i++)
-            {
-                cells[i].SetItem(rewards[i], UIItemTextType.NoNum);
-            }
         }
 
         private void EnsureScaleTween()

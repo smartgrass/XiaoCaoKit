@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -7,7 +6,7 @@ using XiaoCao;
 
 namespace XiaoCao.UI
 {
-    public class SkillView : EnableShowUI
+    public class ActiveSkillView : EnableShowUI
     {
         //所有技能
         public Transform allSkillParent;

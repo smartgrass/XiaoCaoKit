@@ -378,6 +378,7 @@ namespace XiaoCao
 
             if (IsLocalMainPlayer)
             {
+                BattleData.Current.playerHasDead = true;
                 GameEvent.Send<int>(EGameEvent.PlayerDead.ToInt(), id);
             }
             

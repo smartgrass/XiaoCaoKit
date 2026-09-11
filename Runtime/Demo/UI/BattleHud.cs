@@ -36,9 +36,15 @@ namespace XiaoCao
 
         public GameObject gameWinTip;
 
-        public RectTransform tipRect;
+        // public RectTransform tipRect;
         private RectTransform _canRect;
-        private TMP_Text _tipText;
+        // private TMP_Text _tipText;
+        public RectTransform popTipRect;
+        private TMP_Text _popTipText;
+        private CanvasGroup _popTipCanvasGroup;
+        private Sequence _popTipTween;
+        private Transform _popTipTarget;
+        private float _popTipOffsetY;
 
         private AssetPool pool;
 
@@ -67,7 +73,8 @@ namespace XiaoCao
             exitLevelBtn.transform.gameObject.SetActive(false);
             gameWinTip.gameObject.SetActive(false);
             _canRect = transform.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
-            _tipText = tipRect.GetComponentInChildren<TMP_Text>(true);
+            // _tipText = tipRect.GetComponentInChildren<TMP_Text>(true);
+            InitPopTip();
         }
 
         //ELevelResult
@@ -86,6 +93,7 @@ namespace XiaoCao
             GameEvent.RemoveEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
             GameEvent.RemoveEventListener<ELevelResult>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
+            _popTipTween?.Kill();
         }
 
         private void Update()
@@ -95,6 +103,7 @@ namespace XiaoCao
                 NorHpBarUpdate();
                 UpdateItemHpBar();
                 TipUpdate();
+                PopTipUpdate();
             }
         }
 
@@ -598,15 +607,23 @@ namespace XiaoCao
 
         private UITipData tipData;
 
-        public void ShowTriggerItemTip(string key, 
-            Vector3 worldPos, Vector2 offset)
+        /// <summary>
+        /// 显示跟随指定目标的交互提示。
+        /// </summary>
+        public void ShowTriggerItemTip(string key, Transform target, float offsetY)
         {
-            tipRect.gameObject.SetActive(true);
-            _tipText.text = key.ToLocalizeStr();
-            tipData.worldPos = worldPos;
-            tipData.uiOffset = offset;
+            if (target == null)
+            {
+                return;
+            }
+
+            // tipRect.gameObject.SetActive(true);
+            // _tipText.text = key.ToLocalizeStr();
+            tipData.target = target;
+            tipData.offsetY = offsetY;
             tipData.isShowing = true;
             tipData.uiKey = key;
+            // UpdateTipRectPosition(tipRect, target, offsetY);
             GameDataCommon.LocalPlayer.playerData.isNorAtkBlock = true;
         }
 
@@ -614,8 +631,6 @@ namespace XiaoCao
         {
             if (tipData.isShowing)
             {
-                var uiPos = WorldScreenHelper.WorldToAnchorPos(tipData.worldPos, _canRect);
-                tipRect.anchoredPosition = uiPos + tipData.uiOffset;
                 if (GameDataCommon.LocalPlayer != null)
                 {
                     var inputData = GameDataCommon.LocalPlayer.playerData.inputData;
@@ -634,22 +649,136 @@ namespace XiaoCao
 
         public void HideTriggerItemTip()
         {
-            tipRect.gameObject.SetActive(false);
+            // tipRect.gameObject.SetActive(false);
             tipData.isShowing = false;
+            tipData.target = null;
             if (GameDataCommon.LocalPlayer != null)
             {
                 GameDataCommon.LocalPlayer.playerData.isNorAtkBlock = false;
             }
         }
 
+        /// <summary>
+        /// 按目标世界坐标和高度偏移刷新提示 UI 位置。
+        /// </summary>
+        private bool UpdateTipRectPosition(RectTransform rect, Transform target, float offsetY)
+        {
+            if (rect == null || target == null)
+            {
+                return false;
+            }
+
+            if (_canRect == null)
+            {
+                Canvas canvas = transform.GetComponentInParent<Canvas>();
+                if (canvas == null)
+                {
+                    return false;
+                }
+            
+                _canRect = canvas.GetComponent<RectTransform>();
+            }
+
+            Vector3 worldPos = target.position + Vector3.up * offsetY;
+            rect.anchoredPosition = WorldScreenHelper.WorldToAnchorPos(worldPos, _canRect);
+            return true;
+        }
+
         #endregion
+
+        #region PopTip
+
+        /// <summary>
+        /// 初始化弹出提示的文本和淡入淡出控制。
+        /// </summary>
+        private void InitPopTip()
+        {
+            if (popTipRect == null)
+            {
+                return;
+            }
+
+            _popTipText = popTipRect.GetComponentInChildren<TMP_Text>(true);
+            _popTipCanvasGroup = popTipRect.GetComponent<CanvasGroup>();
+            if (_popTipCanvasGroup == null)
+            {
+                _popTipCanvasGroup = popTipRect.gameObject.AddComponent<CanvasGroup>();
+            }
+
+            _popTipCanvasGroup.alpha = 0;
+            popTipRect.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 在指定目标上方弹出一段本地化提示文本。
+        /// </summary>
+        public void PopTip(string str, Transform target, float offsetY)
+        {
+            if (popTipRect == null || target == null)
+            {
+                return;
+            }
+
+            if (_popTipText == null || _popTipCanvasGroup == null)
+            {
+                InitPopTip();
+            }
+
+            if (_canRect == null)
+            {
+                _canRect = transform.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+            }
+
+            if (_popTipText != null)
+            {
+                _popTipText.text = str.ToLocalizeStr();
+            }
+
+            _popTipTarget = target;
+            _popTipOffsetY = offsetY;
+            UpdateTipRectPosition(popTipRect, _popTipTarget, _popTipOffsetY);
+            popTipRect.gameObject.SetActive(true);
+            _popTipCanvasGroup.alpha = 1;
+
+            _popTipTween?.Kill();
+            _popTipTween = DOTween.Sequence();
+            _popTipTween.AppendInterval(1);
+            _popTipTween.Append(DOTween.To(() => _popTipCanvasGroup.alpha, value => _popTipCanvasGroup.alpha = value,
+                0, 0.35f));
+            _popTipTween.OnComplete(() =>
+            {
+                _popTipTarget = null;
+                popTipRect.gameObject.SetActive(false);
+            });
+        }
+
+        /// <summary>
+        /// 刷新弹出提示的跟随位置。
+        /// </summary>
+        private void PopTipUpdate()
+        {
+            if (popTipRect == null || !popTipRect.gameObject.activeSelf)
+            {
+                return;
+            }
+
+            if (!UpdateTipRectPosition(popTipRect, _popTipTarget, _popTipOffsetY))
+            {
+                _popTipTween?.Kill();
+                _popTipTarget = null;
+                popTipRect.gameObject.SetActive(false);
+            }
+        }
+
+        #endregion
+        
     }
 
     public struct UITipData
     {
         public bool isShowing;
-        public Vector3 worldPos;
-        public Vector2 uiOffset;
+        public Transform target;
+        public float offsetY;
         public string uiKey;
     }
 }

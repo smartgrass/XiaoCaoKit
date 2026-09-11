@@ -451,6 +451,41 @@ namespace XiaoCao
         }
 
         /// <summary>
+        /// 判断指定关卡是否已经记录无死亡通关。
+        /// </summary>
+        public bool HasNoDeathPass(int chapter, int index)
+        {
+            if (GetPassState(chapter, index) != LevelPassState.Pass)
+            {
+                return false;
+            }
+
+            string key = GetLevelKey(chapter, index);
+            return otherStates.TryGetValue(key, out var state) && state.hasNoDeathPass;
+        }
+
+        /// <summary>
+        /// 记录指定关卡的无死亡通关状态。
+        /// </summary>
+        public void SetHasNoDeathPass(int chapter, int index, bool isOn = true)
+        {
+            if (!isOn)
+            {
+                return;
+            }
+
+            string key = GetLevelKey(chapter, index);
+            if (!otherStates.ContainsKey(key))
+            {
+                otherStates[key] = new LevelOtherState();
+            }
+
+            var state = otherStates[key];
+            state.hasNoDeathPass = true;
+            otherStates[key] = state;
+        }
+
+        /// <summary>
         /// 获取指定关卡已记录的通关耗时。
         /// </summary>
         public bool TryGetPassTime(int chapter, int index, out float passTime)
@@ -483,8 +518,44 @@ namespace XiaoCao
             }
 
             var state = otherStates[key];
-            state.passTime = passTime;
+            if (state.passTime <= 0 || passTime < state.passTime)
+            {
+                state.passTime = passTime;
+            }
             otherStates[key] = state;
+        }
+
+        /// <summary>
+        /// 获取指定关卡当前记录的星星数量。
+        /// </summary>
+        public int GetLevelStarCount(int chapter, int index)
+        {
+            if (GetPassState(chapter, index) != LevelPassState.Pass)
+            {
+                return 0;
+            }
+
+            int starCount = 1;
+            if (HasNoDeathPass(chapter, index))
+            {
+                starCount++;
+            }
+
+            if (TryGetPassTime(chapter, index, out float passTime) &&
+                passTime <= GetStarPassTimeLimit(chapter, index))
+            {
+                starCount++;
+            }
+
+            return Mathf.Clamp(starCount, 0, 3);
+        }
+
+        /// <summary>
+        /// 获取三星通关的时间阈值，默认 8 分钟，后续可按关卡单独扩展。
+        /// </summary>
+        public int GetStarPassTimeLimit(int chapter, int index)
+        {
+            return 8 * 60;
         }
 
         private static string GetLevelKey(int chapter, int index)
@@ -497,6 +568,9 @@ namespace XiaoCao
     {
         //是否获取首通奖励
         public bool hasGetFirstReward;
+
+        // 是否记录无死亡通关
+        public bool hasNoDeathPass;
 
         //通关耗时,单位秒; <=0 表示未记录
         public float passTime;

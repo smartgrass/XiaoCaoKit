@@ -26,6 +26,8 @@ namespace XiaoCao
 
         public HomeFightPanel homeFightPanel;
         
+        public LevelSelectPanel levelSelectPanel;
+        
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
@@ -254,6 +256,9 @@ namespace XiaoCao
                     return rebornPanel;
                 case UIPanelType.HomeFightPanel:
                     return homeFightPanel;
+                case UIPanelType.LevelSelectPanel:
+                    levelSelectPanel ??= GetComponentInChildren<LevelSelectPanel>(true);
+                    return levelSelectPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

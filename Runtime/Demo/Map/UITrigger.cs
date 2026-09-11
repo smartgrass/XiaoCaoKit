@@ -45,6 +45,7 @@ namespace XiaoCao
         PlayerPanel = 2,
         LevelResultPanel = 3,
         TalkPanel = 4,
+        LevelSelectPanel = 5,
         BuffSelectPanel = 11,  // 添加Buff选择面板类型
         RebornPanel = 12,      // 添加复活面板类型
         DebugPanel = 99,

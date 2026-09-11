@@ -135,6 +135,7 @@ namespace XiaoCao
         public int selectedExtraItemIndex;
         public int supportRoleId = -1;
         public int paidRebornCount;
+        public bool playerHasDead;
 
         public static bool IsTimeStop
         {

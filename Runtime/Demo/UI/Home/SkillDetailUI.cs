@@ -101,7 +101,7 @@ namespace XiaoCao.UI
             if (nextLv == 1)
             {
                 //自动装备   
-                SkillView.EquipSkill(skillId);
+                ActiveSkillView.EquipSkill(skillId);
                 PlayerSaveData.SavaData();
             }
 

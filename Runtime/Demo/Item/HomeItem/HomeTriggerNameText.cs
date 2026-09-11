@@ -1,0 +1,79 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using XiaoCao.UI;
+
+namespace XiaoCaoKit.Runtime.Demo.Item
+{
+    /// <summary>负责 Home 触发器名字牌的查找、创建和文本缓存。</summary>
+    public sealed class HomeTriggerNameText
+    {
+        private const string RootName = "Canvas_Talk";
+        private readonly Transform owner;
+        private GameObject root;
+        private TMP_Text text;
+        private Image bgImage;
+        public string uiKey;
+
+        /// <summary>创建名字牌管理器。</summary>
+        public HomeTriggerNameText(Transform owner,string uiKey)
+        {
+            this.owner = owner;
+            this.uiKey = uiKey;
+        }
+
+        /// <summary>名字牌根节点。</summary>
+        public GameObject Root => root;
+
+        /// <summary>名字牌文本组件。</summary>
+        public TMP_Text Text => text;
+
+        /// <summary>确保名字牌节点存在并缓存文本组件。</summary>
+        public void Ensure(float offsetY)
+        {
+            if (root && text)
+            {
+                return;
+            }
+
+            if (!root)
+            {
+                var find = owner.Find(RootName);
+                if (find)
+                {
+                    root = find.gameObject;
+                }
+                else
+                {
+                    var prefab = Resources.Load<GameObject>(RootName);
+                    if (!prefab)
+                    {
+                        return;
+                    }
+
+                    root = Object.Instantiate(prefab, owner);
+                    root.name = RootName;
+                    root.transform.localPosition = Vector3.up * offsetY;
+                }
+            }
+
+            if (root)
+            {
+                text = root.GetComponentInChildren<TMP_Text>();
+                bgImage = root.GetComponentInChildren<Image>();
+                HideUI();
+                text.text = uiKey.ToLocalizeStr();
+            }
+        }
+
+        public void ShowUI()
+        {
+            bgImage.enabled = true;
+        }
+
+        public void HideUI()
+        {
+            bgImage.enabled = false;
+        }
+    }
+}

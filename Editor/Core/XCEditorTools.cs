@@ -498,6 +498,92 @@ namespace XiaoCaoEditor
 
     }
 
+    public static class XCSpriteTool
+    {
+        /// <summary>
+        /// 将选中的多 Sprite 纹理拆分并导出为同目录 PNG。
+        /// </summary>
+        [MenuItem(XCEditorTools.AssetCheck + "拆分子Sprite")]
+        private static void SplitSubSprite()
+        {
+            Texture2D texture = Selection.activeObject as Texture2D;
+            if (texture == null)
+            {
+                Debug.LogWarning("请选择一个 Texture2D 资源后再执行拆分。");
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+            string folderPath = Path.GetDirectoryName(assetPath);
+            Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(assetPath)
+                .OfType<Sprite>()
+                .ToArray();
+
+            if (sprites.Length == 0)
+            {
+                Debug.LogWarning($"资源 {assetPath} 没有可拆分的子 Sprite。");
+                return;
+            }
+
+            RenderTexture sourceRT = null;
+            try
+            {
+                sourceRT = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+                Graphics.Blit(texture, sourceRT);
+
+                int exportedCount = 0;
+                foreach (Sprite sprite in sprites)
+                {
+                    Rect rect = sprite.textureRect;
+                    int width = Mathf.RoundToInt(rect.width);
+                    int height = Mathf.RoundToInt(rect.height);
+                    if (width <= 0 || height <= 0)
+                    {
+                        continue;
+                    }
+
+                    Texture2D spriteTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+                    RenderTexture previous = RenderTexture.active;
+                    RenderTexture.active = sourceRT;
+                    spriteTexture.ReadPixels(new Rect(rect.x, rect.y, rect.width, rect.height), 0, 0);
+                    spriteTexture.Apply();
+                    RenderTexture.active = previous;
+
+                    string fileName = sprite.name;
+                    foreach (char invalidChar in System.IO.Path.GetInvalidFileNameChars())
+                    {
+                        fileName = fileName.Replace(invalidChar, '_');
+                    }
+
+                    string exportPath = Path.Combine(folderPath, fileName + ".png");
+                    File.WriteAllBytes(exportPath, spriteTexture.EncodeToPNG());
+                    AssetDatabase.ImportAsset(exportPath, ImportAssetOptions.ForceSynchronousImport);
+
+                    TextureImporter textureImporter = AssetImporter.GetAtPath(exportPath) as TextureImporter;
+                    if (textureImporter != null)
+                    {
+                        textureImporter.textureType = TextureImporterType.Sprite;
+                        textureImporter.spriteImportMode = SpriteImportMode.Single;
+                        textureImporter.SaveAndReimport();
+                    }
+
+                    Object.DestroyImmediate(spriteTexture);
+                    exportedCount++;
+                }
+
+                AssetDatabase.Refresh();
+                Debug.Log($"已将 {exportedCount} 个子 Sprite 导出到 {folderPath}。");
+            }
+            finally
+            {
+                if (sourceRT != null)
+                {
+                    RenderTexture.ReleaseTemporary(sourceRT);
+                }
+                RenderTexture.active = null;
+            }
+        }
+    }
 
     public static class CommandHelper
     {

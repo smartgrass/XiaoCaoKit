@@ -8,7 +8,7 @@ using XiaoCao.UI;
 
 namespace XiaoCao.UI
 {
-    /// <see cref="SkillView"/>
+    /// <see cref="ActiveSkillView"/>
     public class SkillItemCell : MonoBehaviour, IPointerClickHandler
     {
         public Image bg;
