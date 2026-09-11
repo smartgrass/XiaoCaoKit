@@ -101,12 +101,16 @@ namespace XiaoCao
             Tran = instance.transform;
             PlayerTF = info.playerTF;
 
-            if (isPs && instance.TryGetComponent<ParticleSystem>(out ParticleSystem ps))
+            if (isPs)
             {
-                //控制特效播放速度
-                InitPs(ps);
+                ParticleSystem ps = instance.GetComponentInChildren<ParticleSystem>(true);
+                if (ps != null)
+                {
+                    InitPs(ps);
+                }
             }
             ReSetStartPos();
+            Ps?.Play(true);
 
             CheckAtkMsg(info);
 
@@ -136,11 +140,12 @@ namespace XiaoCao
         private void InitPs(ParticleSystem ps)
         {
             Ps = ps;
+            //取出对象池时清理上一次播放残留的粒子，避免粒子在旧位置继续显示
+            Ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (!Info.GetAnimSpeed.IsFEqual(1))
             {
                 SetPsSpeed(ps, Info.GetAnimSpeed);
             }
-            Ps.Play();
         }
 
 
@@ -242,7 +247,7 @@ namespace XiaoCao
             }
             if (Ps)
             {
-                Ps.Stop();
+                Ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
             Debug.Log($"--- Release {Tran.gameObject}");
             Tran.gameObject.SetActive(false);

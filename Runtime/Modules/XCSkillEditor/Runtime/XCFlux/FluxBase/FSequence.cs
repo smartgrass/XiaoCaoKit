@@ -70,8 +70,6 @@ namespace Flux
         public enum ESequenceAction
         {
 	        None,
-			[InspectorName("检查出招配置")]
-	        CheckCmdSetting
         }
         
         #endregion

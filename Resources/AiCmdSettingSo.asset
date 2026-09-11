@@ -61,4 +61,5 @@ MonoBehaviour:
     des: 
     cmdSkillList:
     - 501
+    - 502
     rollId: Roll

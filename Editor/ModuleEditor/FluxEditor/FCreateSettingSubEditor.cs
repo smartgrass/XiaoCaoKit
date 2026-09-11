@@ -4,6 +4,7 @@ using System.IO;
 using FluxEditor;
 using NaughtyAttributes;
 using XiaoCao;
+using XiaoCaoEditor;
 
 // 假设 FSequenceSubEditor 已经定义，这里省略其具体实现
 public class FCreateSettingSubEditor : FSequenceSubEditor
@@ -109,5 +110,5 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
             Debug.LogError($"无法加载预制体: {targetPrefabPath}");
         }
     }
-
+    
 }

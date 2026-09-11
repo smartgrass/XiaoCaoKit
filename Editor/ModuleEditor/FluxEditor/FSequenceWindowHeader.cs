@@ -11,6 +11,7 @@ using System.Linq;
 using System.IO;
 using NUnit.Framework;
 using XiaoCao;
+using XiaoCaoEditor;
 
 namespace FluxEditor
 {
@@ -267,48 +268,65 @@ namespace FluxEditor
 
                 FSequence.ESequenceAction action = (FSequence.ESequenceAction)pro.enumValueIndex;
                 //复原
+                //暂无功能
                 pro.enumValueIndex = (int)FSequence.ESequenceAction.None;
-                if (action == FSequence.ESequenceAction.CheckCmdSetting)
+            }
+        }
+
+        private void DoSelectAiConfig()
+        {
+            FSequence sequence = GetSequence();
+            var config =
+                AssetDatabase.LoadAssetAtPath<ScriptableObject>(
+                    $"Assets/_Res/Role/AI/AI_{sequence.SeqSetting.raceId}.asset");
+            if (config == null)
+            {
+                config = AssetDatabase.LoadAssetAtPath<ScriptableObject>($"Assets/_Res/Role/AI/AI_0.asset");
+            }
+
+            Selection.activeObject = config;
+        }
+
+        private void DoCheckCmdSetting()
+        {
+            FSequence sequence = GetSequence();
+            //获取raceId
+            var raceId = int.Parse(sequence.SeqSetting.raceId);
+            //查找cmdSetting
+            var setting =
+                AssetDatabase.LoadAssetAtPath<AiCmdSettingSo>(
+                    "Assets/XiaoCaoKit/Resources/AiCmdSettingSo.asset");
+            Assert.NotNull(setting);
+
+            if (!setting.ContainsKey(raceId))
+            {
+                List<AiSkillCmdSetting> list = new List<AiSkillCmdSetting>(setting.array);
+                var newOne = new AiSkillCmdSetting();
+                newOne.CmdSettingId = raceId;
+                newOne.cmdSkillList = new List<string>();
+                list.Add(newOne);
+                setting.array = list.ToArray();
+                setting.hasInited = false;
+                setting.ContainsKey(raceId);
+            }
+            var raceCmd = setting.map[raceId];
+            //判断是否存在前技能id
+            bool hasSkillId = false;
+            foreach (var skillId in raceCmd.cmdSkillList)
+            {
+                if (skillId == sequence._skillId)
                 {
-                    //获取raceId
-                    var raceId = int.Parse(sequence.SeqSetting.raceId);
-                    //查找cmdSetting
-                    var setting =
-                        AssetDatabase.LoadAssetAtPath<AiCmdSettingSo>(
-                            "Assets/XiaoCaoKit/Resources/AiCmdSettingSo.asset");
-                    Assert.NotNull(setting);
-
-                    if (!setting.ContainsKey(raceId))
-                    {
-                        List<AiSkillCmdSetting> list = new List<AiSkillCmdSetting>(setting.array);
-                        var newOne = new AiSkillCmdSetting();
-                        newOne.CmdSettingId = raceId;
-                        newOne.cmdSkillList = new List<string>();
-                        list.Add(newOne);
-                        setting.array = list.ToArray();
-                        setting.hasInited = false;
-                        setting.ContainsKey(raceId);
-                    }
-                    var raceCmd = setting.map[raceId];
-                    //判断是否存在前技能id
-                    bool hasSkillId = false;
-                    foreach (var skillId in raceCmd.cmdSkillList)
-                    {
-                        if (skillId == sequence._skillId)
-                        {
-                            hasSkillId = true;
-                        }
-                    }
-
-                    //没有则自动添加
-                    if (!hasSkillId)
-                    {
-                        raceCmd.cmdSkillList.Add(sequence._skillId);
-                        _sequenceWindow.ShowNotification(
-                            new GUIContent($"添加skillId {sequence._skillId} 到 raceId {raceId}"));
-                        EditorUtility.SetDirty(setting);
-                    }
+                    hasSkillId = true;
                 }
+            }
+
+            //没有则自动添加
+            if (!hasSkillId)
+            {
+                raceCmd.cmdSkillList.Add(sequence._skillId);
+                _sequenceWindow.ShowNotification(
+                    new GUIContent($"添加skillId {sequence._skillId} 到 raceId {raceId}"));
+                EditorUtility.SetDirty(setting);
             }
         }
 
@@ -342,10 +360,14 @@ namespace FluxEditor
 
         #endregion
 
+        private FSequence GetSequence()
+        {
+            return _sequenceWindow.GetSequenceEditor().Sequence;
+        }
+        
         public void OnGUI()
         {
             FSequence sequence = _sequenceWindow.GetSequenceEditor().Sequence;
-
             bool selectedIndexOutOfRange = _selectedSequenceIndex >= _sequences.Length;
             if ((_selectedSequenceIndex < 0 && sequence != null) ||
                 selectedIndexOutOfRange ||
@@ -366,10 +388,14 @@ namespace FluxEditor
             if (Event.current.type == EventType.ContextClick && rect_0.Contains(Event.current.mousePosition))
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("编辑界面代码"), false, this.EditorCode);
-                menu.AddItem(new GUIContent("创建新配置工具"), false, this.CreateSetting);
-                menu.AddItem(new GUIContent("切换模型"), false, this.SwitchModel);
-                menu.AddItem(new GUIContent("帮助文档"), false, this.ShowHelp);
+                menu.AddItem(new GUIContent("新建配置工具"), false, this.CreateSetting);
+                // menu.AddItem(new GUIContent("操作/切换模型"), false, this.SwitchModel);
+                menu.AddItem(new GUIContent("操作/基础动画配置工具"), false, BasicAnimationConfigWindow.Open);
+                menu.AddItem(new GUIContent("操作/检查出招配置"), false, DoCheckCmdSetting);
+                menu.AddItem(new GUIContent("操作/选中Ai配置"), false, DoSelectAiConfig);
+                menu.AddItem(new GUIContent("帮助/帮助文档"), false, this.ShowHelp);
+                menu.AddItem(new GUIContent("帮助/编辑界面代码"), false, this.EditorCode);
+                menu.AddItem(new GUIContent("帮助/编辑菜单代码"), false, this.EditorMenuCode);
                 menu.ShowAsContext();
                 Event.current.Use();
             }
@@ -496,6 +522,46 @@ namespace FluxEditor
             int line = GetLineNumber(fileAssetPath, "[SeqHeaderShow");
             Debug.Log($"--- EditorCode {fileAssetPath} line {line}");
             AssetDatabase.OpenAsset(script, line);
+        }        
+        
+        void EditorMenuCode()
+        {
+            MonoScript script = FindEditorScript(nameof(FSequenceWindowHeader));
+            if (script == null)
+            {
+                Debug.LogError($"--- no script found: {nameof(FSequenceWindowHeader)}.cs");
+                return;
+            }
+
+            var fileAssetPath = AssetDatabase.GetAssetPath(script);
+            Debug.Log($"--- fileAssetPath {fileAssetPath}");
+            int line = GetLineNumber(fileAssetPath, "menu.AddItem(");
+            Debug.Log($"--- EditorCode {fileAssetPath} line {line}");
+            AssetDatabase.OpenAsset(script, line);
+        }
+
+        /// <summary>
+        /// 通过 Unity 资源搜索获取编辑器脚本资源。
+        /// </summary>
+        private static MonoScript FindEditorScript(string scriptName)
+        {
+            string[] guids = AssetDatabase.FindAssets($"{scriptName} t:MonoScript", new[] { "Assets" });
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileNameWithoutExtension(path) != scriptName)
+                {
+                    continue;
+                }
+
+                MonoScript script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                if (script != null)
+                {
+                    return script;
+                }
+            }
+
+            return null;
         }
 
         void ShowHelp()
