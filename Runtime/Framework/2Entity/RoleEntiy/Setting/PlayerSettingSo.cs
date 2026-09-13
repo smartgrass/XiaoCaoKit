@@ -79,8 +79,10 @@ namespace XiaoCao
         [XCLabel("不受击时恢复速度")]
         public float noHurtRecoverSpeed = 0.2f; //不受击时恢复速度
 
-        [XCLabel("最短受击动画间隔, boss偏高")]
+        [Header("最短受击动画间隔, boss偏高")]
         public float hitAnimSpan = 0.1f; //受击动画间隔
+        [Header("处于Break状态时是否霸体")]
+        public bool isNoOnBreakState;
 
         public bool IsBoss => special == 1;
     }

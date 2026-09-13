@@ -244,7 +244,7 @@ namespace XiaoCao
                 if (!BattleData.IsTimeStop && !data_R.IsBusy)
                 {
                     //boss处理下
-                    if (data_R.breakData.IsHitAnimCdFinish)
+                    if (data_R.breakData.IsHitAnimCdFinish && IsCanBreakOnBreakState())
                     {
                         Anim.TryPlayAnim(AnimHash.Hit);
                         data_R.breakData.lastHitAnimTime = Time.time;
@@ -257,6 +257,12 @@ namespace XiaoCao
             //playerMover.SetNoGravityT(setting.NoGravityT);
             HitHelper.ShowHitEffect(transform, ackInfo);
         }
+
+        private bool IsCanBreakOnBreakState()
+        {
+            return !data_R.breakData.isNoOnBreakState;
+        }
+        
 
         public void AfterDamage(AtkInfo ackInfo)
         {
@@ -961,6 +967,8 @@ namespace XiaoCao
 
         public float hitAnimSpan = 0.5f;
 
+        public bool isNoOnBreakState;
+        
         private BreakCdState _state;
 
         public BreakCdState SetState
@@ -1061,6 +1069,7 @@ namespace XiaoCao
             deadTime = role.data_R.moveSetting.deadTime;
             isBoss = attr.IsBoss;
             hitAnimSpan = attr.hitAnimSpan;
+            isNoOnBreakState = attr.isNoOnBreakState;
             if (isBoss)
             {
                 role.AddTag(RoleTagCommon.Boss);

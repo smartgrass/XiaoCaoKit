@@ -389,6 +389,7 @@ namespace FluxEditor
             {
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("新建配置工具"), false, this.CreateSetting);
+                menu.AddItem(new GUIContent("角色资源引用窗口"), false, OpenRoleReferenceWindow);
                 // menu.AddItem(new GUIContent("操作/切换模型"), false, this.SwitchModel);
                 menu.AddItem(new GUIContent("操作/基础动画配置工具"), false, BasicAnimationConfigWindow.Open);
                 menu.AddItem(new GUIContent("操作/检查出招配置"), false, DoCheckCmdSetting);
@@ -494,6 +495,12 @@ namespace FluxEditor
             _sequenceSO.ApplyModifiedProperties();
 
             GUI.enabled = true;
+        }
+
+        private void OpenRoleReferenceWindow()
+        {
+            var id = GetSequence().SeqSetting.raceId;
+            RoleReferenceWindow.Open(id);
         }
 
         private void SwitchModel()

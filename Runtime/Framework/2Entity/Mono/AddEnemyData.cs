@@ -4,7 +4,7 @@ using XiaoCao;
 
 public class AddEnemyData : MonoBehaviour
 {
-    [XCLabel("属性配置")] public int attSettingId = 1;
+    [XCLabel("数值配置(boss为2)")] public int attSettingId = 1;
 
     [XCLabel("skillCmd配置(较少改动)")] public int cmdSettingId = -1;
 #if UNITY_EDITOR
@@ -13,7 +13,7 @@ public class AddEnemyData : MonoBehaviour
     [XCLabel("AI行为配置string")]
     public string aiId = "0";
     //"Debug View"
-    [XCHeader("输入aiId刷新,仅用于显示")] [Label("")] [NaughtyAttributes.ReadOnly]
+    [XCLabel("输入aiId刷新,仅用于显示")] [NaughtyAttributes.ReadOnly]
     public ActPoolFSM debugAi;
 
     /// <summary>

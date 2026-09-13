@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 using FluxEditor;
@@ -12,6 +13,10 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
     [Label("输入命名")]
     public string str = "Lancer";
     public string raceId="99";
+
+    [Label("已生成物")]
+    public List<Object> created;
+    
 
     [Button("创建Setting")]
     void Create()
@@ -56,6 +61,8 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
         seqSetting.targetAnimtorController = targetController;
         seqSetting.forEditorAC = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(editorControllerPath);
 
+        created.Add(targetController);
+        created.Add(seqSetting);
         EditorUtility.SetDirty(seqSetting);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -97,7 +104,7 @@ public class FCreateSettingSubEditor : FSequenceSubEditor
                 EditorUtility.SetDirty(prefabInstance);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
-
+                created.Add(prefabInstance);
                 Debug.Log($"成功创建并设置Body预制体: {targetPrefabPath}");
             }
             else
