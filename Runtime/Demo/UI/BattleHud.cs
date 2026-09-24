@@ -119,7 +119,7 @@ namespace XiaoCao
                 {
                     if (role.IsPlayer)
                     {
-                        UpdataPlayerHpBar(role);
+                        UpdatePlayerHpBar(role);
                     }
                     else
                     {
@@ -129,7 +129,7 @@ namespace XiaoCao
             }
         }
 
-        private void UpdataPlayerHpBar(Role role)
+        private void UpdatePlayerHpBar(Role role)
         {
             if (role.IsRuning)
             {
@@ -155,10 +155,14 @@ namespace XiaoCao
             if (bar == null)
             {
                 bar = CreateEnemyHpBar(role);
-                barDic[role.id] = bar;
+                barDic[role.id] = bar; 
             }
 
             bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
+            if (role.Hp <= 0)
+            {
+                bar.gameObject.SetActive(false);
+            }
             bar.UpdateArmorBar(role.ShowArmorPercentage);
             if (IsBossBar(bar))
             {
@@ -218,6 +222,13 @@ namespace XiaoCao
         {
             if (roleChangeType == RoleChangeType.Add)
             {
+                return;
+            }
+
+            //玩家不移除显示
+            if (id == GameDataCommon.LocalPlayer.id)
+            {
+                Debug.Log($"-- player bar rm");
                 return;
             }
 

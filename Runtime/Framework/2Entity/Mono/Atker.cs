@@ -152,6 +152,7 @@ public class AtkInfo
     public int atker; //攻击者
     public int beAtker; //被攻击者
     public int atk = 1; //倍率计算后
+    public float effectDamage; //计算防御值后伤害数值
     public int baseAtk = 1; //角色基础攻击力.
     public bool isCrit; //暴击
     public float critDamage; //额外暴击伤害

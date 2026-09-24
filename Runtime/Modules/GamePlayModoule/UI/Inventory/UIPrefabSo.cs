@@ -21,6 +21,8 @@ namespace XiaoCao
         public ColorSettingSo hpBarColorSettingSo;
         
         public ColorSettingSo buffColorSettingSo;
+        
+        public ColorSettingSo itemColorSettingSo;
 
         public GameObject btnGlowEffect;
 

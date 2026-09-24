@@ -22,6 +22,64 @@ namespace cfg
         private static CreateEnemyGroupsReader CreateEnemyGroupsReader =>
             LubanTables.Inst.Tables.CreateEnemyGroupsReader;
 
+        private static ItemInfoReader ItemInfoReader =>
+            LubanTables.Inst.Tables.ItemInfoReader;
+
+        private static ForgeRelicSettingReader ForgeRelicSettingReader =>
+            LubanTables.Inst.Tables.ForgeRelicSettingReader;
+
+        /// <summary>
+        /// 获取全部圣器锻造配置。
+        /// </summary>
+        public static List<ForgeRelicSetting> GetAllForgeRelicSettings()
+        {
+            return ForgeRelicSettingReader.DataList;
+        }
+
+        /// <summary>
+        /// 获取指定页面的圣器锻造配置。
+        /// </summary>
+        public static List<ForgeRelicSetting> GetForgeRelicSettings(int page)
+        {
+            List<ForgeRelicSetting> result = new List<ForgeRelicSetting>();
+            List<ForgeRelicSetting> settings = ForgeRelicSettingReader.DataList;
+            for (int i = 0; i < settings.Count; i++)
+            {
+                ForgeRelicSetting setting = settings[i];
+                if (setting.Page == page)
+                {
+                    result.Add(setting);
+                }
+            }
+
+            result.Sort((left, right) => left.Row.CompareTo(right.Row));
+            return result;
+        }
+
+        /// <summary>
+        /// 根据物品 id 获取物品信息配置。
+        /// </summary>
+        /// <param name="itemId">物品配置 id。</param>
+        /// <returns>物品信息配置；未找到时返回 null。</returns>
+        public static ItemInfo GetItemInfo(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                return null;
+            }
+
+            return ItemInfoReader.GetOrDefault(itemId);
+        }
+
+        /// <summary>
+        /// 获取全部物品信息配置。
+        /// </summary>
+        /// <returns>物品信息配置列表。</returns>
+        public static List<ItemInfo> GetAllItemInfo()
+        {
+            return ItemInfoReader.DataList;
+        }
+
         public static ChapterSetting GetChapterSetting(int key)
         {
             var ret = ChapterSettingReader.GetOrDefault(key);

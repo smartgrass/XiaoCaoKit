@@ -34,7 +34,15 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 
         public static Dictionary<string, List<string>> TalkDic = new Dictionary<string, List<string>>()
         {
-            { "Role_1", new List<string>() { "Talk_Role_1_0" } }
+            {
+                "Role_1", new List<string>()
+                {
+                    "Talk_Role_1_0",
+                    "Talk_Role_1_1",
+                    "Talk_Role_1_2",
+                } 
+                
+            }
         };
     }
 }

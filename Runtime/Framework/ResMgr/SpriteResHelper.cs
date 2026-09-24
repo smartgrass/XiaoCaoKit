@@ -24,8 +24,24 @@ public static class SpriteResHelper
             var so = RunTimePoolMgr.Inst.staticResSoUsing.buffSpriteSo;
             return BuffItem.Create(item).GetBuffSprite();
         }
+        else if (item.type == ItemType.HolyRelic)
+        {
+            //Relic/Weapon_4_30 -> Weapon_4_30
+            string relicShortName = item.typeId.RemoveHead("Relic/");
 
-        if (item.type == ItemType.ExtraItem && item.typeId == BattleExtraItemType.SupportRole)
+            relicShortName = relicShortName.Remove(relicShortName.LastIndexOf("_"));
+
+            Sprite relic = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/Relic/{relicShortName}.png");
+            if (relic)
+            {
+                return relic;
+            }
+            
+            relicShortName = relicShortName.Remove(relicShortName.LastIndexOf("_"));
+
+            return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/Relic/{relicShortName}.png");
+        }
+        else if (item.type == ItemType.ExtraItem && item.typeId == BattleExtraItemType.SupportRole)
         {
             Sprite supportRoleIcon = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png");
             if (supportRoleIcon != null)

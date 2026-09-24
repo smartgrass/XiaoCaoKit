@@ -17,6 +17,7 @@ namespace cfg
         HolyRelic = 1,
         Coin = 2,
         Buff = 3,
+        ExtraItem = 4,
     }
 
 } 

@@ -452,7 +452,7 @@ namespace AssetEditor.Editor
             PoolMgr.Inst.ClearAllPool(false);
         }
 
-        [Button("Buff + 圣器", Line99)]
+        [Button("Buff", Line99)]
         void GetBuffs()
         {
             if (!Application.isPlaying)
@@ -475,6 +475,60 @@ namespace AssetEditor.Editor
                     PlayerHelper.AddBuff(0, buffItem);
                 }
             }
+        }
+
+        /// <summary>
+        /// 给本地玩家发放调试用圣器。
+        /// </summary>
+        [Button("圣器", Line99)]
+        void GetRelic()
+        {
+            if (!Application.isPlaying)
+            {
+                return;
+            }
+
+            string[] relicIds =
+            {
+                "Relic/Weapon_1_15",
+                "Relic/Helmet_1_15",
+                "Relic/Armor_1_15"
+            };
+
+            PlayerSaveData saveData = PlayerSaveData.LocalSavaData;
+            if (saveData == null)
+            {
+                Debug.LogError("-- player save data is null");
+                return;
+            }
+
+            saveData.inventory ??= new Inventory();
+            saveData.inventory.items ??= new System.Collections.Generic.List<Item>();
+
+            foreach (string relicId in relicIds)
+            {
+                Item relicItem = CreateDebugRelicItem(relicId);
+                saveData.inventory.AddItem(relicItem);
+                GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), relicItem);
+            }
+
+            PlayerSaveData.SavaData();
+            Debug.Log("-- get debug relics");
+        }
+
+        /// <summary>
+        /// 创建调试面板发放的圣器物品。
+        /// </summary>
+        private static Item CreateDebugRelicItem(string relicId)
+        {
+            string[] idParts = relicId.Split('_');
+            EQuality quality = EQuality.White;
+            if (idParts.Length > 1 && int.TryParse(idParts[1], out int qualityValue))
+            {
+                quality = (EQuality)qualityValue;
+            }
+
+            return new Item(ItemType.HolyRelic, relicId, 1, quality);
         }
 
         [Button("ReLoadConfig ", Line99)]

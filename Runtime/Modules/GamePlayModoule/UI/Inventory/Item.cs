@@ -4,7 +4,7 @@ using UnityEngine;
 namespace XiaoCao
 {
     ///定位<see cref="Inventory"/>
-    namespace XCItem
+    namespace XCItem 
     {
     }
 
@@ -81,9 +81,9 @@ namespace XiaoCao
             return BattleExtraItemData.Create(item, config, item.num);
         }
 
-        public static HolyRelicItem ToHolyRelicItem(this Item item)
+        public static RelicItem ToHolyRelicItem(this Item item)
         {
-            return HolyRelicItem.Create(item);
+            return RelicItem.Create(item);
         }
     }
 }

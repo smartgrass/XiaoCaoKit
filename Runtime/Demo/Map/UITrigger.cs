@@ -48,6 +48,8 @@ namespace XiaoCao
         LevelSelectPanel = 5,
         BuffSelectPanel = 11,  // 添加Buff选择面板类型
         RebornPanel = 12,      // 添加复活面板类型
+        ForgePanel = 13, //锻造台
+        TaskPanel = 14, //任务界面
         DebugPanel = 99,
     }
 }

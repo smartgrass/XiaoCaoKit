@@ -152,6 +152,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
         DoExploded();
         //隐藏原body
         HideSelf();
+        
         UIMgr.Inst.battleHud.RemoveItemHpBar(transform);
 
         ExecuteHelper.DoExecute(transform);

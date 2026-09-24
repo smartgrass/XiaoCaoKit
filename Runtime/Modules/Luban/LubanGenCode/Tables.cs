@@ -19,6 +19,11 @@ public partial class Tables
     public CreateEnemyGroupsReader CreateEnemyGroupsReader {get; }
     public SkillUpgradeSettingReader SkillUpgradeSettingReader {get; }
     public ChallengeRewardSettingReader ChallengeRewardSettingReader {get; }
+    public ItemInfoReader ItemInfoReader {get; }
+    /// <summary>
+    /// 圣器锻造配置
+    /// </summary>
+    public ForgeRelicSettingReader ForgeRelicSettingReader {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
@@ -28,6 +33,8 @@ public partial class Tables
         CreateEnemyGroupsReader = new CreateEnemyGroupsReader(loader("createenemygroupsreader"));
         SkillUpgradeSettingReader = new SkillUpgradeSettingReader(loader("skillupgradesettingreader"));
         ChallengeRewardSettingReader = new ChallengeRewardSettingReader(loader("challengerewardsettingreader"));
+        ItemInfoReader = new ItemInfoReader(loader("iteminforeader"));
+        ForgeRelicSettingReader = new ForgeRelicSettingReader(loader("forgerelicsettingreader"));
         ResolveRef();
     }
     
@@ -39,6 +46,8 @@ public partial class Tables
         CreateEnemyGroupsReader.ResolveRef(this);
         SkillUpgradeSettingReader.ResolveRef(this);
         ChallengeRewardSettingReader.ResolveRef(this);
+        ItemInfoReader.ResolveRef(this);
+        ForgeRelicSettingReader.ResolveRef(this);
     }
 }
 

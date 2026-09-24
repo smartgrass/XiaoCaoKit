@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TEngine;
 using UnityEngine;
 
@@ -100,8 +99,6 @@ namespace XiaoCao
         //持有物
         public List<Item> holdItems = new List<Item>();
 
-        public List<Item> equippedHolyRelics = new List<Item>();
-
         // 如果没有完成任何剧情，则认为是新玩家
         public bool IsNewPlayer => !levelPassData.chapterPassDic.ContainsKey(0);
 
@@ -114,6 +111,9 @@ namespace XiaoCao
             {
                 inventory = new Inventory();
             }
+
+            inventory.items ??= new List<Item>();
+            inventory.equippedHolyRelics ??= new List<Item>();
 
             if (skillUnlockDic == null)
             {
@@ -294,24 +294,6 @@ namespace XiaoCao
             return level;
         }
 
-        // 存档时调用
-        public void SaveEquippedHolyRelics(Dictionary<string, Item> equippedDict)
-        {
-            equippedHolyRelics = equippedDict.Values.ToList();
-        }
-
-        // 读档时调用
-        public Dictionary<string, Item> LoadEquippedHolyRelics()
-        {
-            var dict = new Dictionary<string, Item>();
-            foreach (var item in equippedHolyRelics)
-            {
-                var relic = HolyRelicItem.Create(item);
-                dict[relic.modName] = item;
-            }
-
-            return dict;
-        }
         /// <summary>
         /// 获取初始化版本的PlayerAttr，包含存档养成加成。
         /// </summary>

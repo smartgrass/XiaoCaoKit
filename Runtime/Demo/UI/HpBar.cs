@@ -99,7 +99,7 @@ namespace XiaoCao
         {
             if (healthPercentage <= 0)
             {
-                gameObject.SetActive(false);
+                fillImage.fillAmount = 0;
                 return;
             }
 

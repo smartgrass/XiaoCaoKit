@@ -15,12 +15,12 @@ MonoBehaviour:
   array:
   - desc: "\u73A9\u5BB6"
     id: 0
-    special: 0
+    settingTag: 0
     maxLevel: 50
-    endHp: 6000
-    endMp: 1200
-    endAtk: 250
-    endDef: 500
+    baseHp: 150
+    atkMult: 1
+    defMult: 1
+    hpMult: 1
     offsetLevel: 10
     maxArmor: 4
     armorDef: 0.5
@@ -29,14 +29,15 @@ MonoBehaviour:
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.2
     hitAnimSpan: 0.1
+    isNoOnBreakState: 0
   - desc: "\u654C\u4EBA-\u57FA\u672C"
     id: 1
-    special: 0
+    settingTag: 0
     maxLevel: 50
-    endHp: 7000
-    endMp: 1200
-    endAtk: 180
-    endDef: 500
+    baseHp: 100
+    atkMult: 0.7
+    defMult: 1
+    hpMult: 1.5
     offsetLevel: 10
     maxArmor: 8
     armorDef: 0.3
@@ -45,14 +46,15 @@ MonoBehaviour:
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.1
     hitAnimSpan: 0.1
+    isNoOnBreakState: 0
   - desc: "\u654C\u4EBA-boss"
     id: 2
-    special: 1
+    settingTag: 0
     maxLevel: 50
-    endHp: 25000
-    endMp: 1200
-    endAtk: 180
-    endDef: 500
+    baseHp: 100
+    atkMult: 1
+    defMult: 1
+    hpMult: 2.5
     offsetLevel: 10
     maxArmor: 20
     armorDef: 0.9
@@ -61,3 +63,4 @@ MonoBehaviour:
     actionRecover: 0.1
     noHurtRecoverSpeed: 0.1
     hitAnimSpan: 0.7
+    isNoOnBreakState: 0

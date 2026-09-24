@@ -28,6 +28,8 @@ namespace XiaoCao
         
         public LevelSelectPanel levelSelectPanel;
         
+        public ForgePanel forgePanel;
+        
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
@@ -66,6 +68,7 @@ namespace XiaoCao
             talkPanel.Init();
             buffSelectPanel.Init();
             rebornPanel?.Init();
+            forgePanel.Hide();
             OnChangeInputType(GameSetting.UserInputType);
             OnStageUISet(GameDataCommon.Current.gameStage);
         }
@@ -257,8 +260,9 @@ namespace XiaoCao
                 case UIPanelType.HomeFightPanel:
                     return homeFightPanel;
                 case UIPanelType.LevelSelectPanel:
-                    levelSelectPanel ??= GetComponentInChildren<LevelSelectPanel>(true);
                     return levelSelectPanel;
+                case UIPanelType.ForgePanel:
+                    return forgePanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;
@@ -301,6 +305,11 @@ namespace XiaoCao
 
         public static void PopRewardBuffItem()
         {
+        }
+
+        public void PopItemDetail()
+        {
+            //Assets/_Res/UI/ItemDetailPop.prefab
         }
     }
 

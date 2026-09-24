@@ -157,7 +157,7 @@ namespace XiaoCao
         
         public bool UIEnter;
         public bool isDialogShow;
-        public float fightValue = 50; //战斗值 0~100
+        public float fightValue = 50; //战斗值 0~100 用于大招开启条件,暂无使用
         public string curBodyName;
 
         ///<see cref="BattleFlagNames"/>

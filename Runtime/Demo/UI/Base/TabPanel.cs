@@ -97,5 +97,6 @@ public class TabPanelGroup
     public string panelName;
     public GameObject panel;
     public Button tabBtn;
+    [Header("iconSprite 可空")]
     public Sprite iconSprite;
 }

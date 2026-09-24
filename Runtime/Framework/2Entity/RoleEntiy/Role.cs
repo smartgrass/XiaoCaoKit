@@ -195,7 +195,7 @@ namespace XiaoCao
                 CamEffectMgr.Inst.CamShakeEffect(setting.ShakeLevel);
             }
 
-            //非死亡则往下执行
+            //伤害计算; 返回值判断是否死亡
             if (!BaseDamageCheck(ackInfo))
             {
                 SoundMgr.Inst.PlayHitAudio("Dead");
@@ -262,7 +262,7 @@ namespace XiaoCao
         {
             return !data_R.breakData.isNoOnBreakState;
         }
-        
+
 
         public void AfterDamage(AtkInfo ackInfo)
         {
@@ -276,7 +276,7 @@ namespace XiaoCao
 
         public void ChangeNowValue(ENowAttr eAttr, float delta)
         {
-            data_R.playerAttr.ChangeNowValue(ENowAttr.Hp, delta);
+            data_R.playerAttr.ChangeNowValue(eAttr, delta);
         }
 
         //击退处理
@@ -338,15 +338,22 @@ namespace XiaoCao
                 return false;
             }
 
-            float hurtProcess = atkInfo.atk / MaxHp;
+            float effectDamage = DamageHelper.CalcDamageAtkInfo(atkInfo, data_R.playerAttr.Def);
+
+            atkInfo.effectDamage = effectDamage;
+            float hurtProcess = effectDamage / MaxHp;
             if (Hp / MaxHp > tempHpProcces)
             {
+                //AddFightVale 暂无使用
                 //小兵为10 boss可能为30
                 BattleData.Current.AddFightVale(hurtProcess * 10);
             }
 
-            Debug.Log($"--- atkInfo.atk {atkInfo.atk}");
-            int targetHp = Math.Max(Mathf.RoundToInt(Hp - atkInfo.atk), 0);
+            Debug.Log($"--- atkInfo.atk {effectDamage}");
+            //防御值计算
+
+
+            int targetHp = Math.Max(Mathf.RoundToInt(Hp - effectDamage), 0);
             if (targetHp <= 0)
             {
                 Hp = 0;
@@ -354,10 +361,10 @@ namespace XiaoCao
                 return false;
             }
 
-            Hp -= atkInfo.atk;
+            Hp -= (int)effectDamage;
 
 
-            HitHelper.ShowDamageText(transform, atkInfo.atk, atkInfo);
+            HitHelper.ShowDamageText(transform, (int)effectDamage, atkInfo);
 
             GameEvent.Send<int, bool, AtkInfo>(EGameEvent.RoleHurt.ToInt(), id, IsPlayer, atkInfo);
 
@@ -387,7 +394,7 @@ namespace XiaoCao
                 BattleData.Current.playerHasDead = true;
                 GameEvent.Send<int>(EGameEvent.PlayerDead.ToInt(), id);
             }
-            
+
             gameObject.layer = Layers.WITHOUT_BODY;
         }
 
@@ -444,10 +451,11 @@ namespace XiaoCao
 
         public virtual void OnAtkDamage(AtkInfo info)
         {
-            float AtkRecoverHp = PlayerAttr.AtkRecoverHp;
-            if (AtkRecoverHp > 0)
+            //计算被动受击回血
+            float atkRecoverHp = PlayerAttr.AtkRecoverHp;
+            if (atkRecoverHp > 0)
             {
-                float recover = info.atk * AtkRecoverHp;
+                float recover = info.atk * atkRecoverHp;
                 PlayerAttr.ChangeNowValue(ENowAttr.Hp, recover);
             }
 
@@ -968,7 +976,7 @@ namespace XiaoCao
         public float hitAnimSpan = 0.5f;
 
         public bool isNoOnBreakState;
-        
+
         private BreakCdState _state;
 
         public BreakCdState SetState
@@ -1067,7 +1075,7 @@ namespace XiaoCao
             actionRecover = attr.actionRecover;
             noHurtRecoverSpeed = attr.noHurtRecoverSpeed;
             deadTime = role.data_R.moveSetting.deadTime;
-            isBoss = attr.IsBoss;
+            isBoss = attr.settingTag == AttrSettingTag.Boss;
             hitAnimSpan = attr.hitAnimSpan;
             isNoOnBreakState = attr.isNoOnBreakState;
             if (isBoss)

@@ -32,6 +32,27 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 将完整物品数据加入背包，并按物品键合并相同物品。
+        /// </summary>
+        public void AddItem(Item item)
+        {
+            if (item == null || item.num <= 0)
+            {
+                return;
+            }
+
+            Item findItem = items.Find(inventoryItem =>
+                inventoryItem != null && inventoryItem.ItemKey == item.ItemKey);
+            if (findItem != null)
+            {
+                findItem.num += item.num;
+                return;
+            }
+
+            items.Add(new Item(item.type, item.typeId, item.num, item.quality));
+        }
+
         // 从背包中移除物品
         public void RemoveItem(string itemName)
         {
@@ -122,7 +143,7 @@ namespace XiaoCao
         #endregion
 
         // 装备圣器（按指定index槽位）
-        public bool EquipHolyRelic(HolyRelicItem relic, int index)
+        public bool EquipHolyRelic(RelicItem relic, int index)
         {
             var item = relic.ToItem();
 
@@ -157,11 +178,11 @@ namespace XiaoCao
         }
 
         // 卸载圣器
-        public bool UnEquipHolyRelic(EHolyRelicType relicType)
+        public bool UnEquipHolyRelic(ERelicType relicType)
         {
             var equipped = equippedHolyRelics.FirstOrDefault(i =>
             {
-                var h = HolyRelicItem.Create(i);
+                var h = RelicItem.Create(i);
                 return h.relicType == relicType;
             });
             if (equipped != null)
@@ -175,29 +196,31 @@ namespace XiaoCao
         }
 
         // 获取已装备的圣器
-        public List<HolyRelicItem> GetEquippedHolyRelics()
+        public List<RelicItem> GetEquippedHolyRelics()
         {
-            return equippedHolyRelics.Select(i => HolyRelicItem.Create(i)).ToList();
+            return equippedHolyRelics.Select(i => RelicItem.Create(i)).ToList();
         }
     }
 
     //int Level
     public enum EQuality
     {
-        White = 0,
-        Green = 1,
-        Blue = 2,
-        Purple = 3,
-        Orange = 4,
-        Red = 5
+        White = 0, //普通
+        Green = 1, //精良
+        Blue = 2, //稀有
+        Purple = 3, //史诗
+        Orange = 4, //传说
+        Red = 5 //神话
     }
 
     //圣器类型
-    public enum EHolyRelicType
+    public enum ERelicType
     {
-        Might, //力量
-        Resonance, //共鸣
-        Primeval, // 根源
+        Weapon, //武器
+        Helmet, //头盔
+        Armor, //盔甲
+        Shoe, //靴子
+        Jewelry, //饰品
     }
 
     // 物品类型枚举
@@ -205,15 +228,15 @@ namespace XiaoCao
     {
         None = -1, //无效
         Consumable = 0, //消耗品
-        HolyRelic = 1, //装备
+        HolyRelic = 1, //圣器
         Coin = 2, //钱
         Buff = 3, //纹章
         ExtraItem = 4 , //关卡内可以使用的道具
     }
 
-    public struct HolyRelicItem : ISubItem
+    public struct RelicItem : ISubItem
     {
-        public EHolyRelicType relicType;
+        public ERelicType relicType;
         public EQuality quality;
         public string modName; //圣器部件名称
         public int level; //圣器等级
@@ -229,19 +252,19 @@ namespace XiaoCao
             return item;
         }
 
-        public static HolyRelicItem Create(Item item)
+        public static RelicItem Create(Item item)
         {
-            HolyRelicItem holyRelic = new HolyRelicItem();
+            RelicItem relic = new RelicItem();
             string[] strArray = item.typeId.Split('_');
-            EHolyRelicType relicType;
-            Enum.TryParse<EHolyRelicType>(strArray[0], out relicType);
+            ERelicType relicType;
+            Enum.TryParse<ERelicType>(strArray[0], out relicType);
 
-            holyRelic.relicType = relicType;
-            holyRelic.modName = strArray[1];
-            holyRelic.quality = item.quality;
-            holyRelic.level = item.num;
-            holyRelic.upgradeLevel = int.Parse(strArray[2]);
-            return holyRelic;
+            relic.relicType = relicType;
+            relic.modName = strArray[1];
+            relic.quality = item.quality;
+            relic.level = item.num;
+            relic.upgradeLevel = int.Parse(strArray[2]);
+            return relic;
         }
     }
 
@@ -254,22 +277,31 @@ namespace XiaoCao
 
     public class HolyRelicHelper
     {
-        public static EHolyRelicType GetHolyRelicType(string itemName)
+        public static ERelicType GetHolyRelicType(string itemName)
         {
-            if (itemName.Contains("Might"))
+            if (itemName.Contains("Relic/Jewelry"))
             {
-                return EHolyRelicType.Might;
+                return ERelicType.Jewelry;
             }
-            else if (itemName.Contains("Resonance"))
+            else if (itemName.Contains("Relic/Shoe"))
             {
-                return EHolyRelicType.Resonance;
+                return ERelicType.Shoe;
             }
-            else if (itemName.Contains("Primeval"))
+            else if (itemName.Contains("Relic/Armor"))
             {
-                return EHolyRelicType.Primeval;
+                return ERelicType.Armor;
+            }
+            else if (itemName.Contains("Relic/Helmet"))
+            {
+                return ERelicType.Helmet;
+            }
+            else if (itemName.Contains("Relic/Weapon"))
+            {
+                return ERelicType.Weapon; 
             }
 
-            return EHolyRelicType.Might; // 默认返回
+            Debug.LogError($"-- ? no Type {itemName}");
+            return ERelicType.Weapon; // 默认返回
         }
 
         //public static string GetR

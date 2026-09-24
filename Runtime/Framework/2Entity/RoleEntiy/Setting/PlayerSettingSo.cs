@@ -46,23 +46,18 @@ namespace XiaoCao
     public class AttrSetting : IIndex
     {
         public string desc = "备注";
-
         public int id = 0;
         public int Id => id;
-
-        [Header("boss=1")]
-        public int special;
         
+        public AttrSettingTag settingTag;
         public int maxLevel = 50;
 
-        //线性增长 设定50级
-        public float endHp = 5000;
-
-        public float endMp = 1200;
-
-        public float endAtk = 250;
-
-        public float endDef = 500;
+        public int baseHp = 100;
+        
+        //倍率微调
+        public float atkMult = 1;
+        public float defMult = 1;
+        public float hpMult = 1;
 
         public float offsetLevel = 10;
 
@@ -83,8 +78,12 @@ namespace XiaoCao
         public float hitAnimSpan = 0.1f; //受击动画间隔
         [Header("处于Break状态时是否霸体")]
         public bool isNoOnBreakState;
+    }
 
-        public bool IsBoss => special == 1;
+    public enum AttrSettingTag
+    {
+        None,
+        Boss
     }
 
 

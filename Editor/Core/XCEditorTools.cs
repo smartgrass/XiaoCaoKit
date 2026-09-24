@@ -534,18 +534,25 @@ namespace XiaoCaoEditor
                 int exportedCount = 0;
                 foreach (Sprite sprite in sprites)
                 {
-                    Rect rect = sprite.textureRect;
-                    int width = Mathf.RoundToInt(rect.width);
-                    int height = Mathf.RoundToInt(rect.height);
-                    if (width <= 0 || height <= 0)
+                    // 使用原始纹理坐标，避免 textureRect 在图集/Tight Packing 下指向错误区域或抛异常。
+                    Rect sourceRect = sprite.rect;
+                    int x = Mathf.RoundToInt(sourceRect.x);
+                    int y = Mathf.RoundToInt(sourceRect.y);
+                    int width = Mathf.RoundToInt(sourceRect.width);
+                    int height = Mathf.RoundToInt(sourceRect.height);
+                    if (width <= 0 || height <= 0 ||
+                        x < 0 || y < 0 ||
+                        x + width > texture.width ||
+                        y + height > texture.height)
                     {
+                        Debug.LogWarning($"子 Sprite {sprite.name} 的源纹理区域无效：{sourceRect}。");
                         continue;
                     }
 
                     Texture2D spriteTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
                     RenderTexture previous = RenderTexture.active;
                     RenderTexture.active = sourceRT;
-                    spriteTexture.ReadPixels(new Rect(rect.x, rect.y, rect.width, rect.height), 0, 0);
+                    spriteTexture.ReadPixels(new Rect(x, y, width, height), 0, 0);
                     spriteTexture.Apply();
                     RenderTexture.active = previous;
 

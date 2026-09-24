@@ -36,6 +36,7 @@ namespace XiaoCao
                 {
                     selectRole = 0;
                 }
+
                 idRole.bodyName = selectRole == 0 ? ConfigMgr.Inst.GetSettingSkinName() : $"Role_{selectRole}";
                 AddTag(RoleTagCommon.MainPlayer);
                 GameDataCommon.Current.Player0 = this;
@@ -49,9 +50,9 @@ namespace XiaoCao
             playerData.playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
             GetPlayerCmdList(true);
             data_R.playerAttr.lv = savaData.lv;
-            
+
             playerData.playerSetting.skillIdList = savaData.skillBarSetting;
-            
+
             InitRoleData();
             RoleIdentityType = RoleIdentityType.Player;
 
@@ -395,7 +396,7 @@ namespace XiaoCao
         public float hp; //实时数值
         public float mp;
 
-        public float MaxHp =>  GetAttribute(EAttr.MaxHp).CurrentValue;
+        public float MaxHp => GetAttribute(EAttr.MaxHp).CurrentValue;
         public int MaxMp => (int)GetAttribute(EAttr.MaxMp).CurrentValue;
         public int Atk => (int)GetAttribute(EAttr.Atk).CurrentValue;
         public int Def => (int)GetAttribute(EAttr.Def).CurrentValue;
@@ -426,13 +427,10 @@ namespace XiaoCao
             }
 
             maxExp = 100 + 100 * (lv % 10);
-
-            float power = (lv + setting.offsetLevel) / setting.maxLevel;
-
-            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(setting.endHp * power);
-            GetAttribute(EAttr.MaxMp).BaseValue = mp = (int)(setting.endMp * power);
-            GetAttribute(EAttr.Atk).BaseValue = (int)(setting.endAtk * power);
-            GetAttribute(EAttr.Def).BaseValue = (int)(setting.endDef * power);
+            
+            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.baseHp;
+            GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.atkMult);
+            GetAttribute(EAttr.Def).BaseValue = (int)(CharacterAttrCalc.GetBaseDEF(lv) * setting.defMult);
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.CritDamage).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
