@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 using TEngine;
 using UnityEngine;
 using XiaoCao.Render;
+using XiaoCao.UI;
 using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
@@ -1139,7 +1140,7 @@ namespace XiaoCao
         Atk,
         Crit,
         Def,
-        SkillCDOff,
+        SkillCdOff,
         AtkRecoverHp,
         MoveSpeedMult,
 
@@ -1149,11 +1150,54 @@ namespace XiaoCao
         CritDamage, //额外暴击伤害
     }
 
-    public static class EAttrExtend
+    public static class EnumExtend
     {
         private static bool IsBaseAttr(this EAttr eAttr)
         {
             return (int)eAttr <= (int)EAttr.AtkRecoverHp;
+        }
+
+        public static string ToLocalizedName(this EQuality quality)
+        {
+            string key = $"Quality/{(int)quality}";
+            return key.ToLocalizeStr();
+        }
+
+        public static Color GetQualityColor(this EQuality quality)
+        {
+            ColorSettingSo colorSetting = UIPrefabSo.Inst.itemColorSettingSo;
+            return colorSetting.values[(int)quality];
+        }
+
+        public static string ToLocalizedName(this EAttr eAttr)
+        {
+            string key = $"{eAttr}";
+            return key.ToLocalizeStr();
+        }
+
+        public static string GetEAttrNumString(this EAttr attr, float num)
+        {
+            if (attr == EAttr.MaxHp)
+            {
+                return $"{RoundAttrValue(num)}";
+            }
+
+            if (attr == EAttr.Crit)
+            {
+                return $"{num:0.##}%";
+            }
+
+            if (attr == EAttr.CritDamage)
+            {
+                return $"{num * 100f:0.##}%";
+            }
+
+            return $"{RoundAttrValue(num)}";
+        }
+
+        private static int RoundAttrValue(float value)
+        {
+            return Mathf.RoundToInt(value);
         }
     }
 

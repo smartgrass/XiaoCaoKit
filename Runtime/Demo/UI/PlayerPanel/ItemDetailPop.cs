@@ -49,11 +49,6 @@ namespace XiaoCao
                 Debug.LogWarning($"物品详情缺少 ItemInfo 配置：{item.typeId}");
                 SetText(item.typeId, string.Empty, string.Empty);
             }
-            else
-            {
-                SetText(itemInfo.Name, itemInfo.DescCN, itemInfo.ObtainWayCN);
-            }
-
             RefreshItemCell(item);
         }
 

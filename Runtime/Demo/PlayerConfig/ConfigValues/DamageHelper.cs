@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public class DamageHelper
 {
-    //K：防御常数（平衡参数，自行调整，推荐 1000/1500/2000）
+    //K：防御常数（平衡参数，自行调整，推荐 1000/1500/2000） 
     private const float K = 1000f; // 全局固定防御常数
 
     //攻击,防御,穿透

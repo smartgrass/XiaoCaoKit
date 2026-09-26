@@ -164,24 +164,17 @@ namespace XiaoCao.UI
             }
         }
 
-        string GetRoleAttrShowText(EAttr attr, PlayerAttr playerAttr)
+        /// <summary>
+        /// 格式化角色属性显示值，统一按四舍五入显示整数。
+        /// </summary>
+        private string GetRoleAttrShowText(EAttr attr, PlayerAttr playerAttr)
         {
             if (attr == EAttr.MaxHp)
             {
-                return $"{"Hp".ToLocalizeStr()}:{playerAttr.hp}/{playerAttr.MaxHp}";
+                return $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(playerAttr.hp)}/{attr.GetEAttrNumString(playerAttr.MaxHp)}";
             }
 
-            if (attr == EAttr.Crit)
-            {
-                return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue:0.##}%";
-            }
-
-            if (attr == EAttr.CritDamage)
-            {
-                return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue * 100f:0.##}%";
-            }
-
-            return $"{attr.ToString().ToLocalizeStr()}:{playerAttr.GetAttribute(attr).CurrentValue}";
+            return $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(playerAttr.GetAttribute(attr).CurrentValue)}";
         }
     }
 }

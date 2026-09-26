@@ -80,7 +80,7 @@ namespace XiaoCao
 
         //只能用来判断关卡内的状态 没法判断
         public GameState gameState;
-        
+
         public EGameStage gameStage;
 
         public Player0 Player0 { get; set; }
@@ -94,7 +94,7 @@ namespace XiaoCao
 
         public string levelName;
 
-        public LevelInfo GetLevelInfo => MapNames.GetLevelInfoByName(levelName);
+        public LevelInfo GetLevelInfo => LevelInfo.ParseString(levelName);
 
         //暂无使用
         // public int selectRole;
@@ -154,7 +154,7 @@ namespace XiaoCao
 
         ///<see cref="UIMgr.CheckPlayInputAble"/>
         public DataListener<bool> CanPlayerControl = new DataListener<bool>(true);
-        
+
         public bool UIEnter;
         public bool isDialogShow;
         public float fightValue = 50; //战斗值 0~100 用于大招开启条件,暂无使用
@@ -427,6 +427,7 @@ namespace XiaoCao
                 //在home场景
                 return null;
             }
+
             if (playerId < 0)
             {
                 return GameDataCommon.LocalPlayer.component.buffControl;
@@ -471,15 +472,17 @@ namespace XiaoCao
             return false;
         }
     }
+
     //PlayMode 容易重名,改为EGameMode
     public enum EGameMode
     {
-        Nor,//关卡模式
-    }    
+        Nor, //关卡模式
+    }
+
     //场景 实际可以与SceneName关联
     public enum EGameStage
     {
-        Other, 
+        Other,
         Home, //主页
         Level //关卡
     }
@@ -549,7 +552,7 @@ namespace XiaoCao
     {
         None = 0,
         GameStateChange = 1,
-        
+
         CameraChange = 3,
         RoleChange = 4,
         UIPanelBtnGlow = 5,

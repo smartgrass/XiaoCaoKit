@@ -17,8 +17,8 @@ public sealed partial class ForgeRelicSetting : Luban.BeanBase
     public ForgeRelicSetting(ByteBuf _buf) 
     {
         Id = _buf.ReadString();
-        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);ForgeMaterials = new System.Collections.Generic.List<XiaoCao.Item>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { XiaoCao.Item _e0;  _e0 = ExternalTypeUtil.ToItem(Item.DeserializeItem(_buf)); ForgeMaterials.Add(_e0);}}
-        DefaultUnlocked = _buf.ReadBool();
+        AddCost = _buf.ReadFloat();
+        UnlockedCondition = _buf.ReadString();
         Page = _buf.ReadInt();
         Row = _buf.ReadInt();
     }
@@ -33,13 +33,13 @@ public sealed partial class ForgeRelicSetting : Luban.BeanBase
     /// </summary>
     public readonly string Id;
     /// <summary>
-    /// 锻造材料
+    /// 额外消耗倍率,默认0
     /// </summary>
-    public readonly System.Collections.Generic.List<XiaoCao.Item> ForgeMaterials;
+    public readonly float AddCost;
     /// <summary>
     /// 是否默认解锁
     /// </summary>
-    public readonly bool DefaultUnlocked;
+    public readonly string UnlockedCondition;
     /// <summary>
     /// 所处页数（从0开始）
     /// </summary>
@@ -65,8 +65,8 @@ public sealed partial class ForgeRelicSetting : Luban.BeanBase
     {
         return "{ "
         + "id:" + Id + ","
-        + "forgeMaterials:" + Luban.StringUtil.CollectionToString(ForgeMaterials) + ","
-        + "defaultUnlocked:" + DefaultUnlocked + ","
+        + "addCost:" + AddCost + ","
+        + "unlockedCondition:" + UnlockedCondition + ","
         + "page:" + Page + ","
         + "row:" + Row + ","
         + "}";

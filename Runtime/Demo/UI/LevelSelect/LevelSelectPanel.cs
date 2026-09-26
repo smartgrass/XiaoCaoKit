@@ -164,7 +164,7 @@ namespace XiaoCao.UI
                 return;
             }
 
-            string levelKey = MapNames.GetLevelKey(_currentChapter, _selectedLevelIndex);
+            string levelKey = LevelInfo.GetLevelKey(_currentChapter, _selectedLevelIndex);
 
             if (rewardTitleText != null)
             {
@@ -268,7 +268,7 @@ namespace XiaoCao.UI
                 return "暂无章节信息。";
             }
 
-            string levelKey = MapNames.GetLevelKey(chapterSetting.Id, selectedLevelIndex);
+            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, selectedLevelIndex);
             LevelSetting selected = LubanTables.GetLevelSetting(levelKey);
             string levelTitle = selected != null ? selected.Title : "当前关卡";
             return $"{levelTitle}\n当前章节包含 {chapterSetting.Levels.Count} 个关卡，适合继续推进主线进度。";
@@ -284,7 +284,7 @@ namespace XiaoCao.UI
                 return null;
             }
 
-            string levelKey = MapNames.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
+            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
             var setting = LubanTables.GetLevelSetting(levelKey);
             if (setting == null || string.IsNullOrEmpty(setting.ImgName))
             {
@@ -304,7 +304,7 @@ namespace XiaoCao.UI
                 return 0;
             }
 
-            string levelKey = MapNames.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
+            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
             LevelSetting setting = LubanTables.GetLevelSetting(levelKey);
             return setting == null ? 0 : setting.EnemyBaseLevel * 100;
         }
@@ -454,7 +454,7 @@ namespace XiaoCao.UI
                 return;
             }
 
-            string levelKey = MapNames.GetLevelKey(_currentChapter, _selectedLevelIndex);
+            string levelKey = LevelInfo.GetLevelKey(_currentChapter, _selectedLevelIndex);
             GameMgr.Inst.LoadLevelScene(levelKey);
         }
 

@@ -25,6 +25,9 @@ namespace XiaoCao
         public Button breakDownSureBtn;
         public Button breakDownCancelBtn;
 
+        public RelicShowDetail relicShowDetail;
+        public RelicOnEquipDetail relicOnEquipDetail;
+
         public int baseCount = 24;
 
         //ui显示排序
@@ -54,12 +57,23 @@ namespace XiaoCao
         {
             _breakDownItems.Clear();
             SetBreakDownMode(false);
+            if (relicShowDetail)
+            {
+                relicShowDetail.gameObject.SetActive(false);
+            }
+
+            if (relicOnEquipDetail)
+            {
+                relicOnEquipDetail.gameObject.SetActive(false);
+            }
+
             UpdateUI();
         }
 
         private void OnDestroy()
         {
             quickEquipBtn?.onClick.RemoveListener(OnQuickEquipClick);
+            quickUnEquipBtn?.onClick.RemoveListener(OnQuickUnEquipClick);
             breakDownBtn?.onClick.RemoveListener(OnBreakDownClick);
             breakDownSureBtn?.onClick.RemoveListener(OnBreakDownSureClick);
             breakDownCancelBtn?.onClick.RemoveListener(OnBreakDownCancelClick);
@@ -115,13 +129,13 @@ namespace XiaoCao
 
                 Item item = GetEquippedRelic(TypeList[i]);
                 ShowEquipCell(cell, item);
-                BindEquipCell(cell, item);
+                BindEquipCell(cell);
             }
 
             for (int i = showCount; i < cells.Length; i++)
             {
                 ShowEquipCell(cells[i], null);
-                BindEquipCell(cells[i], null);
+                BindEquipCell(cells[i]);
             }
         }
 
@@ -162,11 +176,8 @@ namespace XiaoCao
 
             SetCellSelected(cell, _breakDownItems.Contains(item));
         }
-
-        /// <summary>
-        /// 绑定装备槽在分解模式下的点击事件。
-        /// </summary>
-        private void BindEquipCell(EquipRelicCell cell, Item item)
+        
+        private void BindEquipCell(EquipRelicCell cell)
         {
             if (cell?.itemCell?.btn == null)
             {
@@ -174,14 +185,17 @@ namespace XiaoCao
             }
 
             cell.itemCell.btn.onClick.RemoveAllListeners();
-            cell.itemCell.btn.interactable = item != null && _isBreakDownMode;
-            if (item == null)
-            {
-                return;
-            }
+            cell.itemCell.btn.onClick.AddListener(() =>
+                {
+                    relicOnEquipDetail.Show(cell.itemCell.Item);
+                    relicOnEquipDetail.SetDataChangeAction(OnEquipDataChange);
+                }
+            );
+        }
 
-            Item selectedItem = item;
-            cell.itemCell.btn.onClick.AddListener(() => OnEquipCellClick(selectedItem, cell));
+        void OnEquipDataChange(Item item)
+        {
+            UpdateUI();
         }
 
         /// <summary>
@@ -203,7 +217,7 @@ namespace XiaoCao
             PlayerAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
             string[] attrTexts =
             {
-                $"{("Hp".ToLocalizeStr())}:{attr.hp:0.##}/{attr.MaxHp:0.##}",
+                $"{("Hp".ToLocalizeStr())}:{Mathf.RoundToInt(attr.hp)}/{Mathf.RoundToInt(attr.MaxHp)}",
                 $"{("Atk".ToLocalizeStr())}:{attr.Atk}",
                 $"{("Def".ToLocalizeStr())}:{attr.Def}"
             };
@@ -215,9 +229,30 @@ namespace XiaoCao
             }
         }
 
-        //一键卸载
+        /// <summary>
+        /// 一键卸下所有已装备圣器并刷新属性缓存。
+        /// </summary>
         private void OnQuickUnEquipClick()
         {
+            if (PlayerSaveData == null)
+            {
+                return;
+            }
+
+            EnsureInventoryData();
+            List<Item> equippedItems = PlayerSaveData.inventory.equippedHolyRelics;
+            for (int i = equippedItems.Count - 1; i >= 0; i--)
+            {
+                Item item = equippedItems[i];
+                if (item != null)
+                {
+                    PlayerSaveData.inventory.items.Add(item);
+                }
+            }
+
+            equippedItems.Clear();
+            SaveRelicData();
+            UpdateUI();
         }
 
         /// <summary>
@@ -390,9 +425,18 @@ namespace XiaoCao
                 return;
             }
 
-            EquipRelic(item, relicType);
-            SaveRelicData();
-            UpdateUI();
+            relicShowDetail.Show(item);
+            relicShowDetail.SetEquipAction(EquipRelicCallBlack);
+        }
+
+        private void EquipRelicCallBlack(Item item)
+        {
+            if (TryGetRelicType(item, out ERelicType equippedType))
+            {
+                EquipRelic(item, equippedType);
+                SaveRelicData();
+                UpdateUI();
+            }
         }
 
         /// <summary>
@@ -503,23 +547,6 @@ namespace XiaoCao
             breakDownCancelBtn?.gameObject.SetActive(isBreakDownMode);
         }
 
-        /// <summary>
-        /// 选择或取消选择一个待分解圣器。
-        /// </summary>
-        private void OnEquipCellClick(Item item, EquipRelicCell cell)
-        {
-            if (!_isBreakDownMode || item == null)
-            {
-                return;
-            }
-
-            if (!_breakDownItems.Add(item))
-            {
-                _breakDownItems.Remove(item);
-            }
-
-            SetCellSelected(cell, _breakDownItems.Contains(item));
-        }
 
         /// <summary>
         /// 使用装备槽预制体中的边框显示选中状态。
@@ -575,6 +602,7 @@ namespace XiaoCao
         /// </summary>
         private void SaveRelicData()
         {
+            PlayerSaveData.ReLoadPlayerAttr();
             PlayerSaveData.SavaData();
         }
     }

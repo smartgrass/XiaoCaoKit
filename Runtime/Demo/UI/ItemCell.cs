@@ -66,7 +66,12 @@ namespace XiaoCao
                 return;
             }
             ColorSettingSo colorSetting = UIPrefabSo.Inst.itemColorSettingSo;
-            float a = 132f / 255;  
+            float a = 132f / 255;
+            if (colorSetting.values.Length <= (int)quality)
+            {
+                Debug.LogError($"-- colorSetting len {colorSetting.values.Length} <= {quality} {(int)quality})");
+            }
+            
             var color = colorSetting.values[(int)quality];
             color.a = a;
             qualityBg.color = color;

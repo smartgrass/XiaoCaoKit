@@ -16,7 +16,7 @@ namespace XiaoCao
         public float borderHeight = 100;
 
         [Button("刷新高度")]
-        private void UpdateSize()
+        public void UpdateSize()
         {
             if (cellRoot == null)
             {

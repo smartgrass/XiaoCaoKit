@@ -113,7 +113,10 @@ public class IniFile
                 if (line == "") continue;
 
                 // 跳过注释
-                if (line.StartsWith("//")) continue;
+                if (line.StartsWith("//")) continue;   
+                
+                // 跳过注释
+                if (line.StartsWith("[//")) continue;
 
 
                 // 处理 Section

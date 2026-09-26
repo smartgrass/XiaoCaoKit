@@ -309,6 +309,8 @@ namespace XiaoCao
                 AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
                 cachedInitPlayerAttr.Init(0, currentLv, setting);
                 ApplyBlessingAttr(cachedInitPlayerAttr);
+                ApplyEquippedRelicAttr(cachedInitPlayerAttr);
+                cachedInitPlayerAttr.hp = cachedInitPlayerAttr.MaxHp;
             }
 
             return clone ? cachedInitPlayerAttr.Clone() : cachedInitPlayerAttr;
@@ -343,12 +345,45 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 将当前已装备圣器的数值加成到玩家基础属性。
+        /// </summary>
+        private void ApplyEquippedRelicAttr(PlayerAttr attr)
+        {
+            if (inventory?.equippedHolyRelics == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < inventory.equippedHolyRelics.Count; i++)
+            {
+                Item item = inventory.equippedHolyRelics[i];
+                if (item == null || item.type != ItemType.HolyRelic || string.IsNullOrEmpty(item.typeId))
+                {
+                    continue;
+                }
+
+                string modifierKey = $"RelicAttr_{i}_{item.ItemKey}";
+                foreach (var (attrType, value) in RelicValueCalc.GetRelicValue(item))
+                {
+                    attr.ChangeAttrValue(attrType, modifierKey, new AttributeModifier { Add = value });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 重新计算存档养成后的玩家初始化属性。
+        /// </summary>
         public void ReLoadPlayerAttr()
         {
             cachedInitPlayerAttr = null;
             GetInitPlayerAttr();
         }
 
+        public void SavaThisData()
+        {
+            SaveMgr.SaveData(this);
+        }
         public static void SavaData()
         {
             SaveMgr.SaveData(PlayerSaveData.LocalSavaData);

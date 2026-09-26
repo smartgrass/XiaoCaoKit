@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using cfg;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -11,17 +15,30 @@ namespace XiaoCao
     public class RelicShowDetail : MonoBehaviour
     {
         public TMP_Text nameText;
-        public TMP_Text descText;
-        public TMP_Text getWayText;//获取途径
-        
-        public ItemCell itemCell;
+        public TMP_Text qualityText;
 
+        public Transform attrTextContainer;
+        public Transform attrNumTextContainer;
+        private AttrNameNumGroupUI _attrNameNumGroupUI;
+
+        public ItemCell itemCell;
         public Button equipBtn;
-        
+        public Button backBtn;
+        public Button hideBtn;
+        public ControlUISizeByCellCount controlUISize;
+
         /// <summary>
         /// 当前正在显示的物品。
         /// </summary>
         public Item CurrentItem { get; private set; }
+
+        private Action<Item> _equipAction;
+
+        private void Awake()
+        {
+            BindEvent();
+            _attrNameNumGroupUI = new AttrNameNumGroupUI(attrTextContainer, attrNumTextContainer);
+        }
 
         /// <summary>
         /// 显示指定物品的详情。
@@ -31,6 +48,26 @@ namespace XiaoCao
         {
             gameObject.SetActive(true);
             SetItem(item);
+            controlUISize?.UpdateSize();
+        }
+
+        public void BindEvent()
+        {
+            equipBtn.onClick.AddListener(OnEquip);
+            backBtn.onClick.AddListener(Hide);
+            hideBtn.onClick.AddListener(Hide);
+        }
+
+        public void SetEquipAction(Action<Item> action)
+        {
+            _equipAction = action;
+        }
+
+
+        private void OnEquip()
+        {
+            _equipAction?.Invoke(CurrentItem);
+            Hide();
         }
 
         /// <summary>
@@ -46,17 +83,15 @@ namespace XiaoCao
                 return;
             }
 
-            ItemInfo itemInfo = LubanTables.GetItemInfo(item.typeId);
-            if (itemInfo == null)
-            {
-                Debug.LogWarning($"物品详情缺少 ItemInfo 配置：{item.typeId}");
-                SetText(item.typeId, string.Empty, string.Empty);
-            }
-            else
-            {
-                SetText(itemInfo.Name, itemInfo.DescCN, itemInfo.ObtainWayCN);
-            }
+            var relicItem = item.ToRelicItem();
 
+            //显示名字 显示品级
+            nameText.text = relicItem.LocalizeName;
+            nameText.color = relicItem.GetColor();
+            qualityText.text = $"{"QualityName".ToLocalizeStr()}: {(item.quality).ToLocalizedName()}";
+
+            var valueDic = RelicValueCalc.GetRelicValue(item);
+            _attrNameNumGroupUI.ShowAttrUI(valueDic.Keys.ToList(), valueDic.Values.ToList());
             RefreshItemCell(item);
         }
 
@@ -75,12 +110,7 @@ namespace XiaoCao
         private void Clear()
         {
             CurrentItem = null;
-            SetText(string.Empty, string.Empty, string.Empty);
-
-            if (itemCell != null)
-            {
-                itemCell.gameObject.SetActive(false);
-            }
+            _equipAction = null;
         }
 
         /// <summary>
@@ -103,26 +133,84 @@ namespace XiaoCao
             itemCell.icon.sprite = item.GetItemSprite();
             itemCell.icon.enabled = itemCell.icon.sprite != null;
         }
+    }
+
+    public class AttrNameNumGroupUI
+    {
+        public AttrNameNumGroupUI(Transform nameTextContainer, Transform numTextContainer)
+        {
+            this.nameTextContainer = nameTextContainer;
+            this.numTextContainer = numTextContainer;
+        }
+
+        public Transform nameTextContainer;
+        public Transform numTextContainer;
 
         /// <summary>
-        /// 写入详情弹窗中的三个文本字段。
+        /// 按属性列表刷新名称和值文本，并根据属性数量管理文本对象。
         /// </summary>
-        private void SetText(string itemName, string description, string obtainWay)
+        /// <param name="attrList">需要显示的属性列表。</param>
+        /// <param name="valueList">与属性列表对应的属性值列表。</param>
+        public void ShowAttrUI(List<EAttr> attrList, List<float> valueList)
         {
-            if (nameText != null)
+            int showCount = attrList.Count;
+            var nameTexts = GetTextList(nameTextContainer, showCount);
+            var numTexts = GetTextList(numTextContainer, showCount);
+
+            for (int i = 0; i < showCount; i++)
             {
-                nameText.text = itemName ?? string.Empty;
+                if (i < nameTexts.Length)
+                {
+                    nameTexts[i].text = attrList[i].ToLocalizedName();
+                }
+
+                if (i < numTexts.Length)
+                {
+                    float value = valueList[i];
+                    numTexts[i].text = attrList[i].GetEAttrNumString(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取容器中的 TMP 文本，不足时复制首个文本，多余文本隐藏。
+        /// </summary>
+        private TMP_Text[] GetTextList(Transform container, int showCount)
+        {
+            if (container == null)
+            {
+                return Array.Empty<TMP_Text>();
             }
 
-            if (descText != null)
+            TMP_Text[] texts = container.GetComponentsInChildren<TMP_Text>(true);
+            if (texts.Length == 0)
             {
-                descText.text = description ?? string.Empty;
+                if (showCount > 0)
+                {
+                    Debug.LogError($"{container.name} 缺少用于复制的 TMP_Text 模板");
+                }
+
+                return texts;
             }
 
-            if (getWayText != null)
+            if (texts.Length < showCount)
             {
-                getWayText.text = obtainWay ?? string.Empty;
+                TMP_Text template = texts[0];
+                for (int i = texts.Length; i < showCount; i++)
+                {
+                    TMP_Text newText = UnityEngine.Object.Instantiate(template, container);
+                    newText.gameObject.SetActive(true);
+                }
+
+                texts = container.GetComponentsInChildren<TMP_Text>(true);
             }
+
+            for (int i = 0; i < texts.Length; i++)
+            {
+                texts[i].gameObject.SetActive(i < showCount);
+            }
+
+            return texts;
         }
     }
 }

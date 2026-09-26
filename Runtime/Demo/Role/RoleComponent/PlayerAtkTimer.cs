@@ -14,7 +14,7 @@ namespace XiaoCao
 
         public Dictionary<string, SkillCdData> dic = new Dictionary<string, SkillCdData>();
 
-        public float GetSkillCDOff => owner.data_R.playerAttr.GetValue(EAttr.SkillCDOff);
+        public float GetSkillCDOff => owner.data_R.playerAttr.GetValue(EAttr.SkillCdOff);
 
         public float DebugSkillCdScale { get; set; } = 1f;
 

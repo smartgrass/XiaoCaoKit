@@ -54,6 +54,8 @@ namespace XiaoCao
             playerData.playerSetting.skillIdList = savaData.skillBarSetting;
 
             InitRoleData();
+            data_R.playerAttr = savaData.GetInitPlayerAttr();
+            data_R.playerAttr.RoleId = id;
             RoleIdentityType = RoleIdentityType.Player;
 
             component.input = new PlayerInput(this);

@@ -65,8 +65,8 @@ namespace XiaoCao
             get => GameDataCommon.Current.levelName;
         }
 
-        public string GetLevelNameText => MapNames.GetLevelInfoByName(LevelName).GetLevelName();
-        public LevelInfo GetLevelInfo => MapNames.GetLevelInfoByName(LevelName);
+        public string GetLevelNameText => LevelInfo.ParseString(LevelName).GetLevelName();
+        public LevelInfo GetLevelInfo => LevelInfo.ParseString(LevelName);
 
         public string GetLevelEnemyInfoKey(string groupName)
         {

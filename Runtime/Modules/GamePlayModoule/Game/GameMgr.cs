@@ -304,44 +304,23 @@ namespace XiaoCao
         public static readonly string Home = "Home";
     }
 
+    /// <summary>
+    /// 绑定prefab层
+    /// </summary>
     public static class MapNames
     {
         //story与level拆开,方便跳过剧情
         //如果是在游戏中 则不是无法跳过,或者做其他定制化的处理
         public static readonly string Level1 = "level_0_1";
 
-        public static string GetLevelKey(int chapter, int index)
-        {
-            return $"level_{chapter}_{index}";
-        }
+        // public static string GetLevelKey(int chapter, int index)
+        // {
+        //     return $"level_{chapter}_{index}";
+        // }
 
-        public static LevelInfo GetLevelInfoByName(string levelName)
-        {
-            var array = levelName.Split('_');
-
-            return new LevelInfo()
-            {
-                chapter = int.Parse(array[1]),
-                index = int.Parse(array[2])
-            };
-        }
-    }
-    
-    
-    /// <see cref="MapNames.GetLevelInfoByName"/>
-    public struct LevelInfo
-    {
-        public int chapter;
-        public int index;
-
-        public string GetLevelName()
-        {
-            return LocalizeKey.GetLevelName(chapter, index);
-        }
-
-        public static LevelInfo ParseString(string levelName)
-        {
-            return MapNames.GetLevelInfoByName(levelName);
-        }
+        // public static LevelInfo GetLevelInfoByName(string levelName)
+        // {
+        //     return LevelInfo.ParseString(levelName);
+        // }
     }
 }

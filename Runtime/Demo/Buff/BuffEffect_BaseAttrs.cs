@@ -123,7 +123,7 @@ namespace XiaoCao.Buff
     public class BuffEffect_SkillCDOff : BuffEffect_BaseAttrModify
     {
         public override EBuff Buff => EBuff.SkillCDOff;
-        public override EAttr EAttr => EAttr.SkillCDOff;
+        public override EAttr EAttr => EAttr.SkillCdOff;
 
         public override void ApplyEffect(string key, BuffInfo buff, int targetId)
         {

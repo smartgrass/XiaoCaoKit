@@ -18,12 +18,9 @@ public sealed partial class ItemInfo : Luban.BeanBase
     {
         Id = _buf.ReadString();
         ItemType = (XiaoCao.ItemType)_buf.ReadInt();
-        Name = _buf.ReadString();
         LocalizeKey = _buf.ReadString();
         Quality = _buf.ReadInt();
-        DescCN = _buf.ReadString();
         ObtainWay = _buf.ReadString();
-        ObtainWayCN = _buf.ReadString();
     }
 
     public static ItemInfo DeserializeItemInfo(ByteBuf _buf)
@@ -40,10 +37,6 @@ public sealed partial class ItemInfo : Luban.BeanBase
     /// </summary>
     public readonly XiaoCao.ItemType ItemType;
     /// <summary>
-    /// 名称
-    /// </summary>
-    public readonly string Name;
-    /// <summary>
     /// 本地化key
     /// </summary>
     public readonly string LocalizeKey;
@@ -52,26 +45,15 @@ public sealed partial class ItemInfo : Luban.BeanBase
     /// </summary>
     public readonly int Quality;
     /// <summary>
-    /// 描述(仅用于查看,读取有不同规则)
-    /// </summary>
-    public readonly string DescCN;
-    /// <summary>
     /// 获取途径
     /// </summary>
     public readonly string ObtainWay;
-    /// <summary>
-    /// 获取途径(仅用于查看)
-    /// </summary>
-    public readonly string ObtainWayCN;
    
     public const int __ID__ = 1241839233;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
-        
-        
-        
         
         
         
@@ -84,12 +66,9 @@ public sealed partial class ItemInfo : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "ItemType:" + ItemType + ","
-        + "name:" + Name + ","
         + "localizeKey:" + LocalizeKey + ","
         + "quality:" + Quality + ","
-        + "descCN:" + DescCN + ","
         + "obtainWay:" + ObtainWay + ","
-        + "obtainWayCN:" + ObtainWayCN + ","
         + "}";
     }
 }

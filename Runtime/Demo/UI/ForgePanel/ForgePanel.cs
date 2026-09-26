@@ -17,13 +17,21 @@ namespace XiaoCao.UI
     {
         public override UIPanelType PanelType => UIPanelType.ForgePanel;
 
-        [Header("界面")]
-        public Transform slots;
+        [Header("界面")] public Transform slots;
         public Transform tabs;
-        public Button backButton;
+        public Button backBtn;
+
+        [Header("锻造详情")] public TMP_Text forgeItemNameText;
+        public ItemCell forgeItemCell;
+        public Transform materialSlots;
+        public Button confirmForgeBtn;
+
+        public GameObject lockObject;
+        public GameObject unlockObject;
 
         private readonly List<int> _pages = new List<int>();
         private int _currentPage;
+        private ForgeRelicSetting _selectedForgeSetting;
         private bool _isInitialized;
 
         private void Awake()
@@ -61,14 +69,9 @@ namespace XiaoCao.UI
 
             slots ??= transform.Find("Slots");
             tabs ??= transform.Find("TABS");
-
-            if (backButton == null)
-            {
-                Transform backRoot = transform.Find("BackBtn");
-                backButton = backRoot?.GetComponentInChildren<Button>(true);
-            }
-
-            backButton?.onClick.AddListener(OnClickBack);
+            
+            backBtn.onClick.AddListener(OnClickBack);
+            confirmForgeBtn?.onClick.AddListener(OnClickConfirmForge);
             _isInitialized = true;
         }
 
@@ -222,15 +225,11 @@ namespace XiaoCao.UI
             {
                 ForgeRelicSetting configRow = rowRelics[i];
                 ItemCell relicCell = cells[i];
-                SetItemCell(relicCell, CreateRelicItem(configRow), UIItemTextType.NoNum);
-                SetLockState(relicCell, !configRow.DefaultUnlocked);
+                SetItemCell(relicCell, RelicItem.CreateItem(configRow.Id), UIItemTextType.NoNum);
+                SetLockState(relicCell, !configRow.IsRelicUnlock());
 
-                if (relicCell.btn != null)
-                {
-                    relicCell.btn.onClick.RemoveAllListeners();
-                    relicCell.btn.interactable = configRow.DefaultUnlocked;
-                    relicCell.btn.onClick.AddListener(() => TryForge(configRow));
-                }
+                relicCell.btn.onClick.RemoveAllListeners();
+                relicCell.btn.onClick.AddListener(() => ShowForgeDetail(configRow));
             }
         }
 
@@ -253,33 +252,90 @@ namespace XiaoCao.UI
         private static void SetLockState(ItemCell cell, bool isLocked)
         {
             Transform lockTransform = cell.transform.Find("lock");
-            if (lockTransform == null)
-            {
-                lockTransform = cell.transform.Find("hasGet");
-            }
-
-            if (lockTransform != null)
+            if (lockTransform)
             {
                 lockTransform.gameObject.SetActive(isLocked);
             }
         }
 
         /// <summary>
-        /// 将 Luban 圣器配置转换为背包物品。
+        /// 打开锻造详情，并展示当前圣器的产出物与所需材料。
         /// </summary>
-        private static Item CreateRelicItem(ForgeRelicSetting configRow)
+        private void ShowForgeDetail(ForgeRelicSetting configRow)
         {
-            string qualityStr = configRow.Id.Split("_")[1];
-            EQuality quality = int.TryParse(qualityStr, out int qualityInt) ? (EQuality)qualityInt : 0;
-            return new Item(ItemType.HolyRelic, configRow.Id, 1, quality);
+            _selectedForgeSetting = configRow;
+            RefreshForgeDetail();
         }
+
+        /// <summary>
+        /// 刷新锻造详情中的产出物、材料数量和制作按钮状态。
+        /// </summary>
+        private void RefreshForgeDetail()
+        {
+            if (_selectedForgeSetting == null)
+            {
+                return;
+            }
+
+            bool unlock = _selectedForgeSetting.IsRelicUnlock();
+            lockObject.SetActive(!unlock);
+            unlockObject.SetActive(unlock);
+
+            RelicItem relic = _selectedForgeSetting.GetRelicItem();
+            var item = relic.ToItem();
+            List<Item> materials = ForgeCostCalc.GetNeedItems(relic);
+
+            if (forgeItemNameText != null)
+            {
+                forgeItemNameText.text = relic.LocalizeName;
+                forgeItemNameText.color = relic.GetColor();
+            }
+
+            SetItemCell(forgeItemCell, item, UIItemTextType.NoNum);
+            forgeItemCell.btn?.onClick.RemoveAllListeners();
+            if (forgeItemCell.btn != null)
+            {
+                forgeItemCell.btn.interactable = false;
+            }
+
+            UITool.SetCellListCount(materialSlots, materials.Count);
+            ItemCell[] cells = materialSlots.GetComponentsInChildren<ItemCell>(true);
+            for (int i = 0; i < materials.Count && i < cells.Length; i++)
+            {
+                ItemCell materialCell = cells[i];
+                SetItemCell(materialCell, materials[i], UIItemTextType.NeedNum);
+                materialCell.btn?.onClick.RemoveAllListeners();
+                if (materialCell.btn != null)
+                {
+                    materialCell.btn.interactable = false;
+                }
+            }
+
+            Inventory inventory = PlayerSaveData.LocalSavaData?.inventory;
+            confirmForgeBtn.interactable =
+                inventory != null && inventory.CheckEnoughItemList(materials, false);
+        }
+
+        /// <summary>
+        /// 点击详情界面的制作按钮，检查并消耗材料后发放圣器。
+        /// </summary>
+        private void OnClickConfirmForge()
+        {
+            if (_selectedForgeSetting == null)
+            {
+                return;
+            }
+
+            TryForge(_selectedForgeSetting);
+        }
+
 
         /// <summary>
         /// 检查并消耗材料，将锻造完成的圣器放入背包。
         /// </summary>
         private void TryForge(ForgeRelicSetting configRow)
         {
-            if (!configRow.DefaultUnlocked)
+            if (configRow.IsRelicUnlock())
             {
                 Toast.Show("该圣器尚未解锁", 1);
                 return;
@@ -292,7 +348,8 @@ namespace XiaoCao.UI
                 return;
             }
 
-            List<Item> materials = configRow.ForgeMaterials;
+            var relicItem = configRow.GetRelicItem();
+            List<Item> materials = ForgeCostCalc.GetNeedItems(relicItem);
             if (!inventory.CheckEnoughItemList(materials, false))
             {
                 Toast.Show("锻造材料不足", 1);
@@ -300,12 +357,13 @@ namespace XiaoCao.UI
             }
 
             inventory.CheckEnoughItemList(materials, true);
-            Item relicItem = CreateRelicItem(configRow);
-            inventory.AddItem(relicItem);
+
+            inventory.AddItem(relicItem.ToItem());
             PlayerSaveData.SavaData();
             Toast.Show("圣器锻造成功", 1);
             RefreshRows();
         }
+
 
         private void OnClickBack()
         {

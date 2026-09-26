@@ -27,7 +27,7 @@ namespace XiaoCao
                     return type.ToString();
                 }
 
-                return $"{typeId}_{quality}";
+                return $"{typeId}";
             }
         }
 
@@ -81,9 +81,9 @@ namespace XiaoCao
             return BattleExtraItemData.Create(item, config, item.num);
         }
 
-        public static RelicItem ToHolyRelicItem(this Item item)
+        public static RelicItem ToRelicItem(this Item item)
         {
-            return RelicItem.Create(item);
+            return RelicItem.CreateByItem(item);
         }
     }
 }

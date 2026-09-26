@@ -36,10 +36,10 @@ namespace XiaoCao.UI
 
         public void Show(int chapter, int level)
         {
-            _levelKey = MapNames.GetLevelKey(chapter, level);
+            _levelKey = LevelInfo.GetLevelKey(chapter, level);
             gameObject.SetActive(true);
             //获取select Level
-            LevelInfo levelInfo = MapNames.GetLevelInfoByName(_levelKey);
+            LevelInfo levelInfo = LevelInfo.ParseString(_levelKey);
             descText.text = levelInfo.GetLevelName();
             // descText.text += "\n" + LocalizeKey.EnemyLevel.ToLocalizeStr() + " : " +
             //                  LubanTables.GetLevelSetting(_levelKey).EnemyBaseLevel.ToString();
