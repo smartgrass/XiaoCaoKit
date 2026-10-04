@@ -18,22 +18,28 @@ namespace XiaoCao
 
         public TextMeshProUGUI text;
 
-        public EItemClickMode  clickMode;
-        
+        public EItemClickMode clickMode;
+
         public Action<ItemCell> clickAction;
-        
+
 
         private void Awake()
         {
-            if (btn!=null)
+            if (btn != null)
             {
                 btn.onClick.AddListener(OnBtnClick);
             }
         }
 
+        /// <summary>
+        /// 写入格子显示的物品与数量文本,并同步刷新图标和品质底色。
+        /// </summary>
         public ItemCell SetItem(Item item, UIItemTextType textType = UIItemTextType.Default)
         {
             this.Item = item;
+            //图标只由物品决定,统一在格子内部刷新,调用方无需再单独设置
+            icon.sprite = item.GetItemSprite();
+            icon.enabled = icon.sprite != null;
             SetQualityBg(item.quality);
             if (textType == UIItemTextType.NeedNum)
             {
@@ -44,7 +50,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    text.text = $"{hasCount}/{item.num}";
+                    text.text = $"<color=#50FF99>{hasCount}</color>/{item.num}";
                 }
             }
             else if (textType == UIItemTextType.NoNum)
@@ -55,7 +61,7 @@ namespace XiaoCao
             {
                 text.text = item.num.ToString();
             }
-    
+
             return this;
         }
 
@@ -65,26 +71,31 @@ namespace XiaoCao
             {
                 return;
             }
+
             ColorSettingSo colorSetting = UIPrefabSo.Inst.itemColorSettingSo;
             float a = 132f / 255;
             if (colorSetting.values.Length <= (int)quality)
             {
                 Debug.LogError($"-- colorSetting len {colorSetting.values.Length} <= {quality} {(int)quality})");
             }
-            
+
             var color = colorSetting.values[(int)quality];
             color.a = a;
             qualityBg.color = color;
         }
 
-        public void SetMask(string mask)
+        /// <summary>
+        /// 常用参数  hasGet
+        /// </summary>
+        public void SetMask(string mask,bool maskActive  = true)
         {
             var maskTf = transform.Find(mask);
             if (maskTf)
             {
-                maskTf.gameObject.SetActive(true);
+                maskTf.gameObject.SetActive(maskActive);
             }
         }
+        
 
         public void SetNum(int num)
         {

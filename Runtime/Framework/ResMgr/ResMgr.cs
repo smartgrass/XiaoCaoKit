@@ -115,6 +115,29 @@ public class ResMgr
         }
     }
 
+    /// <summary>
+    /// 加载图集里的子资源, 例: Crystal_B.png 中的子图 Crystal_B_1, 找不到返回null
+    /// </summary>
+    public static T LoadSubAseet<T>(string path, string subAssetName) where T : Object
+    {
+        if (!Loader.CheckLocationValid(path))
+        {
+            Debug.LogWarning($"--- no Asset {path}");
+            return null;
+        }
+
+        var handle = Loader.LoadSubAssetsSync<T>(path);
+        foreach (var assetObject in handle.AllAssetObjects)
+        {
+            if (assetObject.name == subAssetName)
+            {
+                return assetObject as T;
+            }
+        }
+
+        return null;
+    }
+
     //只加载, 没有实例化
     public static Object LoadAseet(string path)
     {

@@ -15,6 +15,9 @@ namespace XiaoCao
 
         public int lv;
 
+        //角色经验值, 只累计在角色身上, 不进入背包
+        public int exp;
+
         public int raceId = 0;
 
         public string prefabId;
@@ -378,6 +381,20 @@ namespace XiaoCao
         {
             cachedInitPlayerAttr = null;
             GetInitPlayerAttr();
+        }
+
+        /// <summary>
+        /// 增加角色经验值; 经验值累计在角色身上, 不进入背包
+        /// </summary>
+        public void AddExp(int value)
+        {
+            if (value <= 0)
+            {
+                return;
+            }
+
+            exp += value;
+            SavaData();
         }
 
         public void SavaThisData()

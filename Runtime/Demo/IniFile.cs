@@ -74,6 +74,52 @@ public class IniFile
         return false;
     }
 
+    /// <summary>
+    /// 根据配置的value反查key, 命中第一个就返回
+    /// </summary>
+    public bool TryGetKeyByValue(string value, out string ret)
+    {
+        foreach (var section in m_sectionList)
+        {
+            foreach (var keyValue in section.Dic)
+            {
+                if (keyValue.Value == value)
+                {
+                    ret = keyValue.Key;
+                    return true;
+                }
+            }
+        }
+        ret = null;
+        return false;
+    }
+
+    /// <summary>
+    /// key是否存在于任意section
+    /// </summary>
+    public bool HasKey(string key)
+    {
+        foreach (var section in m_sectionList)
+        {
+            if (section.Dic.ContainsKey(key))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 读取绝对路径的配置文件(不限制在GameConfig目录下)
+    /// </summary>
+    public void LoadFromFullPath(string fullPath)
+    {
+        using (FileStream fs = new FileStream(fullPath, FileMode.Open))
+        {
+            LoadFromStream(fs);
+        }
+    }
+
     public bool TryGetValue(string sectionName, string key, out string ret)
     {
         IniSection section = GetSection(sectionName);

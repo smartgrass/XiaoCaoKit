@@ -12,7 +12,7 @@ namespace XiaoCao
     /// <summary>
     /// 物品详情弹窗，负责根据物品配置显示名称、描述和获取途径。
     /// </summary>
-    public class RelicShowDetail : MonoBehaviour
+    public class RelicOnBagDetail : MonoBehaviour
     {
         public TMP_Text nameText;
         public TMP_Text qualityText;
@@ -125,13 +125,6 @@ namespace XiaoCao
 
             itemCell.gameObject.SetActive(true);
             itemCell.SetItem(item, UIItemTextType.NoNum);
-            if (itemCell.icon == null)
-            {
-                return;
-            }
-
-            itemCell.icon.sprite = item.GetItemSprite();
-            itemCell.icon.enabled = itemCell.icon.sprite != null;
         }
     }
 

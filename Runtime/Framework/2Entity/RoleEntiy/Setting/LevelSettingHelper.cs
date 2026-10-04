@@ -25,11 +25,33 @@ namespace XiaoCao
             return setting.EnemyBaseLevel + setting.EnemyLevelAdd * addLevel;
         }
         
+        /// <summary>
+        /// 关卡通关奖励: 配置奖励 + 关卡经验值
+        /// 经验值用 <see cref="ItemType.OtherValue"/> 加 typeId <see cref="OtherValueItemId.Exp"/> 表示, 不进入背包
+        /// </summary>
         public static List<Item> GetReward(string levelName)
         {
             var setting = LubanTables.GetLevelSetting(levelName);
-            return setting.Reward;
-        }        
+
+            //配置奖励是配置表数据, 复制一份再补充经验值
+            List<Item> rewardList = new List<Item>(setting.Reward);
+
+            //经验值按关卡Id计算
+            int exp = LevelRewardCalc.GetExp(setting.Id);
+            if (exp > 0)
+            {
+                rewardList.Add(new Item(ItemType.OtherValue, OtherValueItemId.Exp, exp));
+            }
+            //获得金币 
+            int coin = LevelRewardCalc.GetCoin(setting.Id);
+            if (coin > 0)
+            {
+                rewardList.Add(new Item(ItemType.Coin,nameof(ItemType.Coin),coin));
+            }
+
+            return rewardList;
+        }
+
         public static List<Item> GetFirstReward(string levelName)
         {
             var setting = LubanTables.GetLevelSetting(levelName);
@@ -101,6 +123,9 @@ namespace XiaoCao
                     break;
                 case ItemType.Buff:
                     RewardBuff(item);
+                    break;
+                case ItemType.OtherValue:
+                    item.RewardOtherValue();
                     break;
                 default:
                     break;

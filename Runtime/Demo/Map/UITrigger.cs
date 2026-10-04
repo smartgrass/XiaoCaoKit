@@ -40,7 +40,6 @@ namespace XiaoCao
     public enum UIPanelType
     {
         Null = -1,
-        HomeFightPanel =0,
         SettingPanel = 1,
         PlayerPanel = 2,
         LevelResultPanel = 3,

@@ -81,13 +81,6 @@ namespace XiaoCaoKit
 
             //如果hasFirstReward
 
-            foreach (Item item in list)
-            {
-                var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, rewardParent);
-                item.RewardItem();
-                rewardItem.GetComponent<ItemCell>().SetItem(item);
-            }
-
             foreach (Item item in firstRewardList)
             {
                 var rewardItem = Instantiate(UIPrefabSo.Inst.itemCellPrefab, firstRewardParent);

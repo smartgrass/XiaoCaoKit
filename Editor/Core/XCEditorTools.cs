@@ -54,6 +54,7 @@ namespace XiaoCaoEditor
         public const string ShatterTool = "XiaoCao/ShatterTool";
         public const string AddAnimParamWindow = "XiaoCao/AddAnimParamWindow";
         public const string PlayerSaveDataWindow = "XiaoCao/玩家存档面板";
+        public const string TestValueEditorWindow = "XiaoCao/数值测试面板";
         
 
         //其他

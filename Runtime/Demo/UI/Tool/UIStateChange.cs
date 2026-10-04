@@ -35,7 +35,7 @@ namespace XiaoCaoKit.UI
         {
             if (state < 0 || state >= uiGroups.Count)
             {
-                Debug.LogError($"UIStateChange: state {state} out of range");
+                // Debug.LogError($"UIStateChange: state {state} out of range");
                 return;
             }
 

@@ -58,7 +58,7 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// </summary>
     public readonly string ImgName;
     /// <summary>
-    /// 奖励:HolyRelic,&quot;name&quot;,1|HolyRelic,&quot;name&quot;,1
+    /// 奖励:HolyRelic,&quot;name&quot;,1|HolyRelic,&quot;name&quot;,1, 一般走公式
     /// </summary>
     public readonly System.Collections.Generic.List<XiaoCao.Item> Reward;
     /// <summary>

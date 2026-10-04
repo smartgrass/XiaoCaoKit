@@ -23,8 +23,6 @@ namespace XiaoCao
         public Canvas midCanvas;
 
         public BattleHud battleHud;
-
-        public HomeFightPanel homeFightPanel;
         
         public LevelSelectPanel levelSelectPanel;
         
@@ -257,8 +255,6 @@ namespace XiaoCao
                     return talkPanel;
                 case UIPanelType.RebornPanel:
                     return rebornPanel;
-                case UIPanelType.HomeFightPanel:
-                    return homeFightPanel;
                 case UIPanelType.LevelSelectPanel:
                     return levelSelectPanel;
                 case UIPanelType.ForgePanel:

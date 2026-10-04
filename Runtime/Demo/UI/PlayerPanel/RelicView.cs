@@ -20,13 +20,22 @@ namespace XiaoCao
 
         public Button quickEquipBtn;
         public Button quickUnEquipBtn;
-        public Button breakDownBtn;
 
-        public Button breakDownSureBtn;
-        public Button breakDownCancelBtn;
-
-        public RelicShowDetail relicShowDetail;
+        public RelicOnBagDetail relicOnBagDetail;
         public RelicOnEquipDetail relicOnEquipDetail;
+
+        [Header("分解相关")] 
+        public GameObject breakDownUI; //分解面板
+        public Button breakDownBtn; //分解入口
+
+        public Button breakDownSureBtn; //确认分解
+        public Button breakDownCancelBtn; //取消分解
+        public Transform breakDownRewardRoot; //分解产出预览的格子容器
+
+        [Header("模式互斥显示")]
+        public GameObject leftPanel; //正常模式的左侧圣器装备区
+        public GameObject rightBtnGroup; //正常模式的右侧按钮组
+
 
         public int baseCount = 24;
 
@@ -49,34 +58,28 @@ namespace XiaoCao
             quickEquipBtn.onClick.AddListener(OnQuickEquipClick);
             quickUnEquipBtn.onClick.AddListener(OnQuickUnEquipClick);
             breakDownBtn.onClick.AddListener(OnBreakDownClick);
-            breakDownSureBtn?.onClick.AddListener(OnBreakDownSureClick);
-            breakDownCancelBtn?.onClick.AddListener(OnBreakDownCancelClick);
+            breakDownSureBtn.onClick.AddListener(OnBreakDownSureClick);
+            breakDownCancelBtn.onClick.AddListener(OnBreakDownCancelClick);
         }
 
         public override void OnEnable()
         {
+            //每次打开面板都回到普通模式,并清空上一次遗留的分解勾选
             _breakDownItems.Clear();
             SetBreakDownMode(false);
-            if (relicShowDetail)
-            {
-                relicShowDetail.gameObject.SetActive(false);
-            }
-
-            if (relicOnEquipDetail)
-            {
-                relicOnEquipDetail.gameObject.SetActive(false);
-            }
+            relicOnBagDetail.gameObject.SetActive(false);
+            relicOnEquipDetail.gameObject.SetActive(false);
 
             UpdateUI();
         }
 
         private void OnDestroy()
         {
-            quickEquipBtn?.onClick.RemoveListener(OnQuickEquipClick);
-            quickUnEquipBtn?.onClick.RemoveListener(OnQuickUnEquipClick);
-            breakDownBtn?.onClick.RemoveListener(OnBreakDownClick);
-            breakDownSureBtn?.onClick.RemoveListener(OnBreakDownSureClick);
-            breakDownCancelBtn?.onClick.RemoveListener(OnBreakDownCancelClick);
+            quickEquipBtn.onClick.RemoveListener(OnQuickEquipClick);
+            quickUnEquipBtn.onClick.RemoveListener(OnQuickUnEquipClick);
+            breakDownBtn.onClick.RemoveListener(OnBreakDownClick);
+            breakDownSureBtn.onClick.RemoveListener(OnBreakDownSureClick);
+            breakDownCancelBtn.onClick.RemoveListener(OnBreakDownCancelClick);
         }
 
         /// <summary>
@@ -91,10 +94,12 @@ namespace XiaoCao
 
             EnsureInventoryData();
             _sortedBagRelics = GetSortedBagRelics();
+            //先切换面板显隐再刷新内容,避免退出分解时左侧面板还处于隐藏状态导致刷新被跳过
+            SetBreakDownMode(_isBreakDownMode);
             ShowEquippedRelics();
             ShowBagRelics();
             ShowPlayerAttr();
-            SetBreakDownMode(_isBreakDownMode);
+            RefreshBreakDownReward();
         }
 
         /// <summary>
@@ -112,11 +117,6 @@ namespace XiaoCao
         /// </summary>
         private void ShowEquippedRelics()
         {
-            if (relicCellRoot == null)
-            {
-                return;
-            }
-
             EquipRelicCell[] cells = relicCellRoot.GetComponentsInChildren<EquipRelicCell>(true)
                 .OrderBy(cell => cell.transform.GetSiblingIndex())
                 .ToArray();
@@ -168,11 +168,6 @@ namespace XiaoCao
             }
 
             cell.itemCell.SetItem(item, UIItemTextType.NoNum);
-            if (cell.itemCell.icon != null)
-            {
-                cell.itemCell.icon.sprite = item.GetItemSprite();
-                cell.itemCell.icon.enabled = cell.itemCell.icon.sprite != null;
-            }
 
             SetCellSelected(cell, _breakDownItems.Contains(item));
         }
@@ -203,11 +198,6 @@ namespace XiaoCao
         /// </summary>
         private void ShowPlayerAttr()
         {
-            if (attrTextContainer == null)
-            {
-                return;
-            }
-
             TMP_Text[] texts = attrTextContainer.GetComponentsInChildren<TMP_Text>(false);
             if (texts.Length == 0)
             {
@@ -256,7 +246,7 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 点击一键装备，为每种圣器选择综合等级最高的背包物品。
+        /// 点击一键装备，为每种圣器在背包与已装备之间选出综合等级最高的一个。
         /// </summary>
         private void OnQuickEquipClick()
         {
@@ -274,7 +264,8 @@ namespace XiaoCao
                     .FirstOrDefault(item =>
                         TryGetRelicType(item, out ERelicType itemType) && itemType == relicType);
 
-                if (bestItem == null)
+                //只有背包里的最优圣器优于当前已装备的圣器时才替换
+                if (bestItem == null || !IsBetterRelic(bestItem, GetEquippedRelic(relicType)))
                 {
                     continue;
                 }
@@ -309,11 +300,6 @@ namespace XiaoCao
         /// </summary>
         private void ShowBagRelics()
         {
-            if (bagRelicCellRoot == null)
-            {
-                return;
-            }
-
             int hasCount = _sortedBagRelics.Count;
             int showCount = Math.Max(baseCount, hasCount);
 
@@ -356,28 +342,17 @@ namespace XiaoCao
             cell.SetItem(item, UIItemTextType.NoNum);
             cell.clickMode = EItemClickMode.Custom;
             cell.clickAction = OnBagRelicCellClick;
+            cell.qualityBg.enabled = true;
+            cell.btn.interactable = true;
 
-            if (cell.icon != null)
-            {
-                cell.icon.sprite = item.GetItemSprite();
-                cell.icon.enabled = cell.icon.sprite != null;
-            }
-
-            if (cell.qualityBg != null)
-            {
-                cell.qualityBg.enabled = true;
-            }
-
-            if (cell.btn != null)
-            {
-                cell.btn.interactable = !_isBreakDownMode;
-            }
+            //分解模式下的勾选状态跟随选中集合,避免格子复用时残留打勾
+            cell.SetMask("hasGet", _breakDownItems.Contains(item));
         }
 
         /// <summary>
         /// 清理空背包格子，避免复用格子时残留圣器显示。
         /// </summary>
-        private static void ClearBagRelicCell(ItemCell cell)
+        private void ClearBagRelicCell(ItemCell cell)
         {
             if (cell == null)
             {
@@ -386,47 +361,35 @@ namespace XiaoCao
 
             cell.clickMode = EItemClickMode.None;
             cell.clickAction = null;
-
-            if (cell.icon != null)
-            {
-                cell.icon.sprite = null;
-                cell.icon.enabled = false;
-            }
-
-            if (cell.qualityBg != null)
-            {
-                cell.qualityBg.enabled = false;
-            }
-
-            if (cell.text != null)
-            {
-                cell.text.text = string.Empty;
-            }
-
-            if (cell.btn != null)
-            {
-                cell.btn.interactable = false;
-            }
+            cell.SetMask("hasGet", false);
+            cell.icon.sprite = null;
+            cell.icon.enabled = false;
+            cell.qualityBg.enabled = false;
+            cell.text.text = string.Empty;
+            cell.btn.interactable = false;
         }
-
-        /// <summary>
-        /// 点击背包圣器时装备到对应槽位。
-        /// </summary>
+        
         private void OnBagRelicCellClick(ItemCell cell)
         {
-            if (_isBreakDownMode || cell == null)
+            if (_isBreakDownMode)
             {
+                //分解模式下点击切换选中状态,并同步打勾与产出预览
+                if (_breakDownItems.Remove(cell.Item))
+                {
+                    cell.SetMask("hasGet", false);
+                }
+                else
+                {
+                    _breakDownItems.Add(cell.Item);
+                    cell.SetMask("hasGet", true);
+                }
+
+                RefreshBreakDownReward();
                 return;
             }
 
-            Item item = cell.Item;
-            if (!TryGetRelicType(item, out ERelicType relicType))
-            {
-                return;
-            }
-
-            relicShowDetail.Show(item);
-            relicShowDetail.SetEquipAction(EquipRelicCallBlack);
+            relicOnBagDetail.Show(cell.Item);
+            relicOnBagDetail.SetEquipAction(EquipRelicCallBlack);
         }
 
         private void EquipRelicCallBlack(Item item)
@@ -500,7 +463,7 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 完成当前选中的圣器分解。分解产物暂不发放。
+        /// 完成当前选中的圣器分解：消耗选中的圣器，并按 ForgeCostCalc 的规则发放分解产物。
         /// </summary>
         private void OnBreakDownSureClick()
         {
@@ -510,14 +473,37 @@ namespace XiaoCao
             }
 
             EnsureInventoryData();
-            for (int i = PlayerSaveData.inventory.equippedHolyRelics.Count - 1; i >= 0; i--)
+            Inventory inventory = PlayerSaveData.inventory;
+
+            //先复制一份选中项,避免遍历过程中修改集合
+            List<Item> breakDownList = _breakDownItems.Where(item => item != null).ToList();
+            if (breakDownList.Count == 0)
             {
-                Item item = PlayerSaveData.inventory.equippedHolyRelics[i];
-                if (_breakDownItems.Contains(item))
+                return;
+            }
+
+            int breakDownCount = 0;
+            foreach (Item item in breakDownList)
+            {
+                if (!inventory.items.Remove(item) && !inventory.equippedHolyRelics.Remove(item))
                 {
-                    PlayerSaveData.inventory.equippedHolyRelics.RemoveAt(i);
+                    //既不在背包也不在装备位,说明数据已经变化,跳过
+                    continue;
+                }
+
+                breakDownCount++;
+                foreach (Item reward in ForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
+                {
+                    inventory.AddItem(reward);
                 }
             }
+
+            if (breakDownCount == 0)
+            {
+                return;
+            }
+
+            Debug.Log($"圣器分解完成,共分解 {breakDownCount} 件");
 
             _breakDownItems.Clear();
             SetBreakDownMode(false);
@@ -536,15 +522,59 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 切换分解模式下的按钮和装备槽交互状态。
+        /// 按当前选中的圣器刷新分解产出预览，相同材料会合并数量。
+        /// </summary>
+        private void RefreshBreakDownReward()
+        {
+            Dictionary<string, Item> rewardDic = new Dictionary<string, Item>();
+            foreach (Item item in _breakDownItems)
+            {
+                foreach (Item reward in ForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
+                {
+                    if (rewardDic.TryGetValue(reward.ItemKey, out Item existReward))
+                    {
+                        existReward.num += reward.num;
+                    }
+                    else
+                    {
+                        rewardDic.Add(reward.ItemKey, reward);
+                    }
+                }
+            }
+
+            //按类型和品级排序,避免HashSet遍历顺序不同导致预览每次跳位
+            List<Item> rewards = rewardDic.Values
+                .OrderBy(reward => reward.type)
+                .ThenByDescending(reward => reward.quality)
+                .ToList();
+
+            UITool.SetCellListCount(breakDownRewardRoot, rewards.Count);
+
+            ItemCell[] cells = breakDownRewardRoot.GetComponentsInChildren<ItemCell>(true);
+            for (int i = 0; i < rewards.Count && i < cells.Length; i++)
+            {
+                SetRewardCell(cells[i], rewards[i]);
+            }
+        }
+
+        /// <summary>
+        /// 写入单个分解产出格子的数量与品质底色。
+        /// </summary>
+        private static void SetRewardCell(ItemCell cell, Item item)
+        {
+            cell.SetItem(item);
+            cell.qualityBg.enabled = true;
+        }
+
+        /// <summary>
+        /// 切换分解模式：分解面板与正常模式的装备区/按钮组互斥显示。
         /// </summary>
         private void SetBreakDownMode(bool isBreakDownMode)
         {
             _isBreakDownMode = isBreakDownMode;
-            quickEquipBtn?.gameObject.SetActive(!isBreakDownMode);
-            breakDownBtn?.gameObject.SetActive(!isBreakDownMode);
-            breakDownSureBtn?.gameObject.SetActive(isBreakDownMode);
-            breakDownCancelBtn?.gameObject.SetActive(isBreakDownMode);
+            breakDownUI.SetActive(_isBreakDownMode);
+            leftPanel.SetActive(!_isBreakDownMode);
+            rightBtnGroup.SetActive(!_isBreakDownMode);
         }
 
 
@@ -595,6 +625,31 @@ namespace XiaoCao
             }
 
             return item.num + (int)item.quality * 10;
+        }
+
+        /// <summary>
+        /// 判断候选圣器是否严格优于当前圣器，比较规则与背包排序一致：先比综合等级，再比品质。
+        /// </summary>
+        private static bool IsBetterRelic(Item candidate, Item current)
+        {
+            if (candidate == null)
+            {
+                return false;
+            }
+
+            if (current == null)
+            {
+                return true;
+            }
+
+            int candidateScore = GetRelicScore(candidate);
+            int currentScore = GetRelicScore(current);
+            if (candidateScore != currentScore)
+            {
+                return candidateScore > currentScore;
+            }
+
+            return (int)candidate.quality > (int)current.quality;
         }
 
         /// <summary>

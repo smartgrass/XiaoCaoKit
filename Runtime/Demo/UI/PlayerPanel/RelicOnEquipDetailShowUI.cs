@@ -11,7 +11,7 @@ namespace XiaoCao
     /// <summary>
     /// 圣器普通详情窗口，负责显示基础信息和处理窗口按钮。
     /// </summary>
-    public class RelicOnEquipShowWindow : MonoBehaviour
+    public class RelicOnEquipDetailShowUI : MonoBehaviour
     {
         public TMP_Text nameText;
         public TMP_Text qualityText;
@@ -71,7 +71,7 @@ namespace XiaoCao
             RelicItem relicItem = item.ToRelicItem();
             if (nameText != null)
             {
-                nameText.text = RelicDetailHelper.GetRelicTitle(relicItem);
+                nameText.text = relicItem.LocalizeName;
                 nameText.color = relicItem.GetColor();
             }
 
@@ -129,13 +129,6 @@ namespace XiaoCao
 
             itemCell.gameObject.SetActive(true);
             itemCell.SetItem(item, UIItemTextType.NoNum);
-            if (itemCell.icon == null)
-            {
-                return;
-            }
-
-            itemCell.icon.sprite = item.GetItemSprite();
-            itemCell.icon.enabled = itemCell.icon.sprite != null;
         }
     }
 }

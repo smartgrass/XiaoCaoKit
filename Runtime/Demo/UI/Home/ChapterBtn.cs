@@ -13,18 +13,18 @@ namespace XiaoCao.UI
             var chapterSetting = LubanTables.GetChapterSetting(chapter);
             LevelPassState passState = GetChapterPassState(chapter, chapterSetting);
 
-            int totalLevelCount = chapterSetting?.Levels?.Count ?? 0;
+            int totalLevelCount = chapterSetting.MaxLevel;
             int completedLevelCount = 0;
-            if (chapterSetting != null)
+
+
+            for (int i = 0; i < totalLevelCount; i++)
             {
-                foreach (int levelIndex in chapterSetting.Levels)
+                if (GetPassState(chapter, i + 1) == LevelPassState.Pass)
                 {
-                    if (GetPassState(chapter, levelIndex) == LevelPassState.Pass)
-                    {
-                        completedLevelCount++;
-                    }
+                    completedLevelCount++;
                 }
             }
+
 
             titleText.text = $"{LocalizeKey.GetChapterName(chapter)}";
             btn.interactable = passState != LevelPassState.Lock;
@@ -33,12 +33,12 @@ namespace XiaoCao.UI
 
         private LevelPassState GetChapterPassState(int chapter, ChapterSetting chapterSetting)
         {
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
+            if (chapterSetting == null)
             {
                 return LevelPassState.Lock;
             }
 
-            int firstLevelIndex = chapterSetting.Levels[0];
+            int firstLevelIndex = 1;
             return GetPassState(chapter, firstLevelIndex);
         }
 

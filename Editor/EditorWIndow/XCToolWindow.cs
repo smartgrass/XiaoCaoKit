@@ -6,13 +6,18 @@ using NaughtyAttributes;
 using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using cfg;
 using TEngine;
 using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using XiaoCao.UI;
 using XiaoCaoEditor;
+using Item = XiaoCao.Item;
+using ItemType = XiaoCao.ItemType;
 using RangeAttribute = UnityEngine.RangeAttribute;
 
 namespace AssetEditor.Editor
@@ -488,12 +493,16 @@ namespace AssetEditor.Editor
                 return;
             }
 
-            string[] relicIds =
+            var settings = LubanTables.GetForgeRelicSettings(0);
+            List<string> relicIds = new List<string>();
+            
+            foreach (var setting in settings)
             {
-                "Relic/Weapon_1_15",
-                "Relic/Helmet_1_15",
-                "Relic/Armor_1_15"
-            };
+                if (RandomHelper.GetRandom(0.5f))
+                {
+                    relicIds.Add(setting.Id);
+                }
+            }
 
             PlayerSaveData saveData = PlayerSaveData.LocalSavaData;
             if (saveData == null)
@@ -555,17 +564,10 @@ namespace AssetEditor.Editor
             PlayerHelper.AddBuff(0, buffItem);
         }
 
-        [Button("LogAllLocalize", Line99)]
-        void LogAllLocalize()
+        [Button("测试数值面板", Line99)]
+        void TestValueEditor()
         {
-            foreach (var section in LocalizeMgr.Inst.localizeData.SectionList)
-            {
-                Debug.Log($"-- section {section.SectionName}");
-                foreach (var dic in section.Dic)
-                {
-                    Debug.Log($"-- dic {dic.Key} {dic.Value}");
-                }
-            }
+            TestValueEditorWindow.Open();
         }
         
     }

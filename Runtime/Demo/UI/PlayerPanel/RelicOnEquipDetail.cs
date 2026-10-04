@@ -9,8 +9,8 @@ namespace XiaoCao
     /// </summary>
     public class RelicOnEquipDetail : MonoBehaviour
     {
-        public RelicOnEquipShowWindow onEquipShowWindow;
-        public RelicOnEquipUpgradeWindow onEquipUpgradeWindow;
+        public RelicOnEquipDetailShowUI onEquipDetailShowUI;
+        public RelicOnEquipDetailUpgradeUI onEquipDetailUpgradeUI;
 
         /// <summary>
         /// 当前正在显示的物品。
@@ -21,8 +21,8 @@ namespace XiaoCao
         
         private void Awake()
         {
-            onEquipShowWindow?.SetActions(OnUnEquip, ShowUpgradeWindow, Hide);
-            onEquipUpgradeWindow?.SetActions(OnConfirmUpgrade, ShowDetailWindow, Hide);
+            onEquipDetailShowUI?.SetActions(OnUnEquip, ShowUpgradeWindow, Hide);
+            onEquipDetailUpgradeUI?.SetActions(OnConfirmUpgrade, ShowDetailWindow, Hide);
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace XiaoCao
                 return;
             }
 
-            onEquipShowWindow?.Refresh(item);
-            onEquipUpgradeWindow?.Refresh(item);
+            onEquipDetailShowUI?.Refresh(item);
+            onEquipDetailUpgradeUI?.Refresh(item);
         }
 
         /// <summary>
@@ -100,8 +100,8 @@ namespace XiaoCao
                 return;
             }
 
-            onEquipShowWindow?.Hide();
-            onEquipUpgradeWindow?.Show(CurrentItem);
+            onEquipDetailShowUI?.Hide();
+            onEquipDetailUpgradeUI?.Show(CurrentItem);
         }
 
         /// <summary>
@@ -109,8 +109,8 @@ namespace XiaoCao
         /// </summary>
         private void ShowDetailWindow()
         {
-            onEquipShowWindow?.Show();
-            onEquipUpgradeWindow?.Hide();
+            onEquipDetailShowUI?.Show();
+            onEquipDetailUpgradeUI?.Hide();
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace XiaoCao
             SaveRelicData();
             DefaultUnEquip(CurrentItem);
             SetItem(CurrentItem);
-            onEquipUpgradeWindow?.Show(CurrentItem);
+            onEquipDetailUpgradeUI?.Show(CurrentItem);
         }
 
         /// <summary>
@@ -187,8 +187,8 @@ namespace XiaoCao
         private void Clear()
         {
             CurrentItem = null;
-            onEquipShowWindow?.Hide();
-            onEquipUpgradeWindow?.Hide();
+            onEquipDetailShowUI?.Hide();
+            onEquipDetailUpgradeUI?.Hide();
         }
     }
 }

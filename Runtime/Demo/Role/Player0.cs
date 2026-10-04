@@ -393,7 +393,6 @@ namespace XiaoCao
     public class PlayerAttr
     {
         public int lv;
-        public int maxExp;
 
         public float hp; //实时数值
         public float mp;
@@ -427,8 +426,6 @@ namespace XiaoCao
             {
                 Debug.Log($"--- set player level {lv}");
             }
-
-            maxExp = 100 + 100 * (lv % 10);
             
             GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.baseHp;
             GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.atkMult);
@@ -447,7 +444,6 @@ namespace XiaoCao
             PlayerAttr copy = new PlayerAttr
             {
                 lv = lv,
-                maxExp = maxExp,
                 hp = hp,
                 mp = mp,
                 RoleId = RoleId,

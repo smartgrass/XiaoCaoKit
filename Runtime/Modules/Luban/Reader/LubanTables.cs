@@ -2,6 +2,7 @@
 using Luban;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 using XiaoCao;
@@ -37,7 +38,7 @@ namespace cfg
         }
 
         /// <summary>
-        /// 获取指定页面的圣器锻造配置。
+        /// 获取指定页面的圣器锻造配置，按行号升序；同一行内保持表内配置顺序。
         /// </summary>
         public static List<ForgeRelicSetting> GetForgeRelicSettings(int page)
         {
@@ -52,8 +53,8 @@ namespace cfg
                 }
             }
 
-            result.Sort((left, right) => left.Row.CompareTo(right.Row));
-            return result;
+            //List.Sort 不稳定，会把同一行内的配置顺序打乱；用稳定的 OrderBy 保证同 Row 内维持表内顺序
+            return result.OrderBy(setting => setting.Row).ToList();
         }
 
         /// <summary>

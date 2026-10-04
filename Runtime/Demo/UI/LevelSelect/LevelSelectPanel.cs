@@ -102,28 +102,20 @@ namespace XiaoCao.UI
         /// </summary>
         private void RefreshLevelList()
         {
-            if (_currentChapterSetting?.Levels == null || _currentChapterSetting.Levels.Count == 0)
-            {
-                return;
-            }
-
             if (!CacheLevelListRoot())
             {
                 return;
             }
 
-            UITool.SetCellListCount(levelListRoot, _currentChapterSetting.Levels.Count);
+            UITool.SetCellListCount(levelListRoot, _currentChapterSetting.MaxLevel);
             LevelBtn[] levelBtns = levelListRoot.GetComponentsInChildren<LevelBtn>(true);
-            for (int i = 0; i < _currentChapterSetting.Levels.Count && i < levelBtns.Length; i++)
+            for (int i = 0; i < _currentChapterSetting.MaxLevel && i < levelBtns.Length; i++)
             {
-                int levelIndex = _currentChapterSetting.Levels[i];
+                int levelIndex = i + 1;
                 LevelBtn levelBtn = levelBtns[i];
                 levelBtn.Show(_currentChapter, levelIndex);
                 levelBtn.SetSelected(false);
-                levelBtn.onClick = () =>
-                {
-                    OnSelectLevel(levelIndex);
-                };
+                levelBtn.onClick = () => { OnSelectLevel(levelIndex); };
             }
 
             SetLevelBtnSelected(_selectedLevelIndex);
@@ -140,7 +132,7 @@ namespace XiaoCao.UI
             {
                 levelTitle.text = $"{chapterName}-{_selectedLevelIndex}";
             }
-            
+
             if (stageImage != null)
             {
                 stageImage.sprite = LoadStageSprite(_currentChapterSetting);
@@ -158,7 +150,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void RefreshRewardPanel()
         {
-            if (_currentChapterSetting?.Levels == null || _currentChapterSetting.Levels.Count == 0)
+            if (_currentChapterSetting.MaxLevel == 0)
             {
                 ClearRewardPanel();
                 return;
@@ -232,7 +224,8 @@ namespace XiaoCao.UI
             }
 
             var levelInfo = LevelInfo.ParseString(levelKey);
-            bool hasFirstReward = PlayerSaveData.LocalSavaData.levelPassData.HasGetFirstReward(levelInfo.chapter, levelInfo.index);
+            bool hasFirstReward =
+                PlayerSaveData.LocalSavaData.levelPassData.HasGetFirstReward(levelInfo.chapter, levelInfo.index);
             var cells = firstRewardRoot.GetComponentsInChildren<ItemCell>(false);
             for (int i = 0; i < firstRewards.Count && i < cells.Length; i++)
             {
@@ -258,33 +251,13 @@ namespace XiaoCao.UI
             }
         }
 
-        /// <summary>
-        /// 生成章节简介文本。
-        /// </summary>
-        private static string BuildChapterDesc(ChapterSetting chapterSetting, int selectedLevelIndex)
-        {
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
-            {
-                return "暂无章节信息。";
-            }
-
-            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, selectedLevelIndex);
-            LevelSetting selected = LubanTables.GetLevelSetting(levelKey);
-            string levelTitle = selected != null ? selected.Title : "当前关卡";
-            return $"{levelTitle}\n当前章节包含 {chapterSetting.Levels.Count} 个关卡，适合继续推进主线进度。";
-        }
 
         /// <summary>
         /// 读取章节展示图。
         /// </summary>
         private static Sprite LoadStageSprite(ChapterSetting chapterSetting)
         {
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
-            {
-                return null;
-            }
-
-            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
+            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, 1);
             var setting = LubanTables.GetLevelSetting(levelKey);
             if (setting == null || string.IsNullOrEmpty(setting.ImgName))
             {
@@ -299,12 +272,7 @@ namespace XiaoCao.UI
         /// </summary>
         private static int GetRecommendedPower(ChapterSetting chapterSetting)
         {
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
-            {
-                return 0;
-            }
-
-            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, chapterSetting.Levels[0]);
+            string levelKey = LevelInfo.GetLevelKey(chapterSetting.Id, 1);
             LevelSetting setting = LubanTables.GetLevelSetting(levelKey);
             return setting == null ? 0 : setting.EnemyBaseLevel * 100;
         }
@@ -314,15 +282,10 @@ namespace XiaoCao.UI
         /// </summary>
         private static int GetPassCount(ChapterSetting chapterSetting)
         {
-            if (chapterSetting?.Levels == null)
-            {
-                return 0;
-            }
-
             int count = 0;
-            for (int i = 0; i < chapterSetting.Levels.Count; i++)
+            for (int i = 0; i < chapterSetting.MaxLevel; i++)
             {
-                int levelIndex = chapterSetting.Levels[i];
+                int levelIndex = i + 1;
                 if (PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapterSetting.Id, levelIndex) ==
                     LevelPassState.Pass)
                 {
@@ -355,15 +318,10 @@ namespace XiaoCao.UI
         /// </summary>
         private static int GetLatestChallengeableLevel(ChapterSetting chapterSetting)
         {
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
-            {
-                return 0;
-            }
-
             int latestLevelIndex = int.MinValue;
-            for (int i = 0; i < chapterSetting.Levels.Count; i++)
+            for (int i = 0; i < chapterSetting.MaxLevel; i++)
             {
-                int levelIndex = chapterSetting.Levels[i];
+                int levelIndex = i + 1;
                 if (PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapterSetting.Id, levelIndex) !=
                     LevelPassState.Lock)
                 {
@@ -371,7 +329,7 @@ namespace XiaoCao.UI
                 }
             }
 
-            return latestLevelIndex == int.MinValue ? chapterSetting.Levels[0] : latestLevelIndex;
+            return latestLevelIndex == int.MinValue ? 1 : latestLevelIndex;
         }
 
         /// <summary>
@@ -379,16 +337,17 @@ namespace XiaoCao.UI
         /// </summary>
         private void SetLevelBtnSelected(int levelIndex)
         {
-            if (levelListRoot == null || _currentChapterSetting?.Levels == null)
+            if (levelListRoot == null)
             {
                 return;
             }
 
             LevelBtn[] levelBtns = levelListRoot.GetComponentsInChildren<LevelBtn>(true);
-            for (int i = 0; i < _currentChapterSetting.Levels.Count && i < levelBtns.Length; i++)
+            for (int i = 0; i < _currentChapterSetting.MaxLevel && i < levelBtns.Length; i++)
             {
                 var levelBtn = levelBtns[i];
-                levelBtn.SetSelected(_currentChapterSetting.Levels[i] == levelIndex);
+                //默认从1开始算
+                levelBtn.SetSelected(i + 1 == levelIndex);
             }
         }
 
@@ -449,11 +408,6 @@ namespace XiaoCao.UI
         /// </summary>
         private void OnClickEnter()
         {
-            if (_currentChapterSetting?.Levels == null || _currentChapterSetting.Levels.Count == 0)
-            {
-                return;
-            }
-
             string levelKey = LevelInfo.GetLevelKey(_currentChapter, _selectedLevelIndex);
             GameMgr.Inst.LoadLevelScene(levelKey);
         }
@@ -469,7 +423,7 @@ namespace XiaoCao.UI
             levelView.SetActive(true);
             ShowChapter(chapterIndex);
         }
-        
+
         /// <summary>
         /// 返回上一层界面。
         /// </summary>
@@ -509,12 +463,12 @@ namespace XiaoCao.UI
         private static bool IsChapterUnlocked(int chapter)
         {
             var chapterSetting = LubanTables.GetChapterSetting(chapter);
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
+            if (chapterSetting == null)
             {
                 return false;
             }
 
-            int firstLevelIndex = chapterSetting.Levels[0];
+            int firstLevelIndex = 1;
             LevelPassState passState =
                 PlayerSaveData.LocalSavaData.levelPassData.GetPassState(chapter, firstLevelIndex);
             return passState != LevelPassState.Lock;

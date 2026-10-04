@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace XiaoCao
@@ -17,6 +18,12 @@ namespace XiaoCao
         public int num; // 数量/等级
         public EQuality quality;
 
+        public int InstanceId
+        {
+            get => num;
+            set => num = value;
+        }
+        
         //真正的存储的id
         public string ItemKey
         {
@@ -26,7 +33,7 @@ namespace XiaoCao
                 {
                     return type.ToString();
                 }
-
+                //TODO 装备不可堆叠+身份识别问题
                 return $"{typeId}";
             }
         }
@@ -57,6 +64,9 @@ namespace XiaoCao
         }
     }
 
+    /// SubItem 需要配置
+    /// <see cref="SpriteResHelper.GetItemSprite"/>
+    /// <see cref="LocalizeKey.GetItemName"/>
     public interface ISubItem
     {
         public Item ToItem();
@@ -69,6 +79,11 @@ namespace XiaoCao
             return BuffItem.Create(item);
         }
 
+        public static CrystalItem ToCrystalItem(this Item item)
+        {
+            return CrystalItem.Create(item.typeId, item.num);
+        }
+        
         public static BattleExtraItemData ToBattleExtraItemData(this Item item)
         {
             BattleExtraItemSubConfig config = ConfigMgr.Inst.BattleExtraItemConfigSo?.GetConfig(item.typeId);
@@ -85,5 +100,64 @@ namespace XiaoCao
         {
             return RelicItem.CreateByItem(item);
         }
+
+        /// <summary>
+        /// 结算 OtherValue 类道具: 这类道具不是实际物品, 不进入背包, 直接作用到角色身上
+        /// </summary>
+        public static void RewardOtherValue(this Item item)
+        {
+            switch (item.typeId)
+            {
+                case OtherValueItemId.Exp:
+                    PlayerSaveData.LocalSavaData.AddExp(item.num);
+                    break;
+                default:
+                    Debug.LogWarning($"--- no reward handle, OtherValue typeId: {item.typeId}");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 合并可堆叠物品, 如金币,矿石; 可堆叠物品按物品键累加数量, 并保持首次出现的顺序
+        /// 圣器不可堆叠, Buff 无需处理, 两者原样保留
+        /// </summary>
+        /// <returns>合并后的新列表, 不修改传入的列表</returns>
+        public static List<Item> CombineList(this List<Item> list)
+        {
+            List<Item> result = new List<Item>();
+            Dictionary<string, Item> combineDic = new Dictionary<string, Item>();
+
+            foreach (Item item in list)
+            {
+                if (!IsCombineAbleType(item.type))
+                {
+                    //圣器, Buff 不合并
+                    result.Add(new Item(item.type, item.typeId, item.num, item.quality));
+                    continue;
+                }
+
+                if (combineDic.TryGetValue(item.ItemKey, out Item combineItem))
+                {
+                    combineItem.num += item.num;
+                }
+                else
+                {
+                    Item newItem = new Item(item.type, item.typeId, item.num, item.quality);
+                    combineDic.Add(item.ItemKey, newItem);
+                    result.Add(newItem);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 是否可合并: 圣器不可堆叠, Buff 由各自系统处理
+        /// </summary>
+        private static bool IsCombineAbleType(ItemType type)
+        {
+            return type != ItemType.HolyRelic && type != ItemType.Buff;
+        }
+        
     }
 }

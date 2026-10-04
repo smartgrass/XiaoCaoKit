@@ -86,6 +86,17 @@ namespace XiaoCao
             _instance.OnLanguageChanged?.Invoke();
         }
 
+        /// <summary>
+        /// 重新读取当前语言的本地化文件, 本地化配置被外部修改后调用
+        /// </summary>
+        public static void ReloadLangData()
+        {
+            //_instance为空时Inst会自动完成一次加载
+            LocalizeMgr mgr = Inst;
+            LoadLangData(CurLanguage);
+            mgr.OnLanguageChanged?.Invoke();
+        }
+
         public bool HasKey(string key)
         {
             if (localizeData.TryGetFristValue(key, out string value))

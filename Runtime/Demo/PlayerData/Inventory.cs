@@ -5,7 +5,6 @@ using System.Linq;
 using cfg;
 using UnityEngine;
 using UnityEngine.Serialization;
-using XiaoCao.UI;
 
 namespace XiaoCao
 {
@@ -20,6 +19,13 @@ namespace XiaoCao
         // 添加物品到背包
         public void AddItem(ItemType itemType, string itemName, int itemCount)
         {
+            //OtherValue 不是实际物品, 直接结算到角色身上, 不进入背包
+            if (itemType == ItemType.OtherValue)
+            {
+                new Item(itemType, itemName, itemCount).RewardOtherValue();
+                return;
+            }
+
             Item findItem = FindItemByName(itemName);
             if (findItem != null)
             {
@@ -44,16 +50,35 @@ namespace XiaoCao
                 return;
             }
 
-            Item findItem = items.Find(inventoryItem =>
-                inventoryItem != null && inventoryItem.ItemKey == item.ItemKey);
-            if (findItem != null)
+            //OtherValue 不是实际物品, 直接结算到角色身上, 不进入背包
+            if (item.type == ItemType.OtherValue)
             {
-                findItem.num += item.num;
+                item.RewardOtherValue();
                 return;
             }
 
+            if (IsNumaAbleType(item.type))
+            {
+                //可堆叠 直接增加数量
+                Item findItem = items.Find(inventoryItem =>
+                    inventoryItem != null && inventoryItem.ItemKey == item.ItemKey);
+                if (findItem != null)
+                {
+                    findItem.num += item.num;
+                    return;
+                }
+            }
+
+
             items.Add(new Item(item.type, item.typeId, item.num, item.quality));
         }
+
+        ////是否可堆叠
+        private bool IsNumaAbleType(ItemType type)
+        {
+            return type != ItemType.HolyRelic;
+        }
+
 
         // 从背包中移除物品
         public void RemoveItem(string itemName)
@@ -234,70 +259,21 @@ namespace XiaoCao
         Coin = 2, //钱
         Buff = 3, //纹章
         ExtraItem = 4, //关卡内可以使用的道具
+        OtherValue  = 5, //不进入背包,非实际物品,如经验值
     }
 
-    public struct RelicItem : ISubItem
+    /// <summary>
+    /// <see cref="ItemType.OtherValue"/> 道具的 typeId 约定
+    /// </summary>
+    public static class OtherValueItemId
     {
-        public ERelicType relicType;
-        public EQuality quality;
-        public string typeId;
-        public int level; //圣器等级
+        public const string Exp = "Exp"; //经验值, 直接加在角色身上
+    }
 
-        public string LocalizeName => GetName();
-
-        public Color GetColor() => quality.GetQualityColor();
-
-        public List<AddAttr> AddAttr { get; set; }
-
-        public Item ToItem()
-        {
-            Item item = new Item(ItemType.HolyRelic, typeId, level, quality);
-            return item;
-        }
-
-        public static RelicItem CreateByItem(Item item)
-        {
-            return Create(item.typeId);
-        }
-
-        public static Item CreateItem(string typeId)
-        {
-            return Create(typeId).ToItem();
-        }
-
-        //示例: Relic/Weapon_1_10
-        public static RelicItem Create(string typeId)
-        {
-            RelicItem relic = new RelicItem();
-            string[] strArray = typeId.Split('_');
-            if (strArray.Length < 3)
-            {
-                throw new Exception($"Invalid relic {typeId}");
-            }
-
-            string relicTypeName = strArray[0].Replace("Relic/", string.Empty);
-            Enum.TryParse<ERelicType>(relicTypeName, out var relicType);
-
-            var quality = (EQuality)int.Parse(strArray[1]);
-
-            relic.typeId = typeId;
-            relic.relicType = relicType;
-            relic.quality = quality;
-            relic.level = int.Parse(strArray[2]);
-
-            return relic;
-        }
-
-        private string GetName()
-        {
-            if (LocalizeMgr.Inst.HasKey(typeId))
-            {
-                return typeId.ToLocalizeStr();
-            }
-
-            string key = $"Relic/{relicType}_{(int)quality}";
-            return key.ToLocalizeStr();
-        }
+    public enum EConsumableSubType
+    {
+        None,
+        Crystal
     }
 
     public struct AddAttr

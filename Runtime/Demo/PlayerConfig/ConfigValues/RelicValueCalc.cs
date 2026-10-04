@@ -27,9 +27,16 @@ namespace XiaoCao
             //计算公式
             //属性值 = 属性等级数值 * 类型权重 * 倍率 * 品级倍率
             float qualityRate = ((int)relicItem.quality + 1) * QualityRateBase;
+            int level = relicItem.level;
+            if (level == 0)
+            {
+                //防止数值过低
+                level = 3;
+            }
+            
             foreach (var (attr, f) in model.attrPowerDic)
             {
-                float value = GetLevelValue(attr, relicItem.level) * f * ModelValueRate * qualityRate;
+                float value = GetLevelValue(attr, level) * f * ModelValueRate * qualityRate;
                 relicValue.Add(attr, value);
             }
 

@@ -116,6 +116,17 @@ namespace XiaoCao
                 string key = GetBuffNameKey(item.ToBuffItem().GetFirstEBuff);
                 return key.ToLocalizeStr();
             }
+            else if (item.type == ItemType.HolyRelic)
+            {
+                return item.ToRelicItem().LocalizeName;
+            }
+            else if (item.type == ItemType.Consumable)
+            {
+                if (item.typeId.StartsWith(nameof(EConsumableSubType.Crystal)))
+                {
+                    return item.ToCrystalItem().LocalizeName;
+                }
+            }
 
             return item.typeId.ToLocalizeStr();
         }

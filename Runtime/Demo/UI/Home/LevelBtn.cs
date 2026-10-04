@@ -153,7 +153,7 @@ namespace XiaoCao.UI
             // }
             //
         }
-        
+
 
         /// <summary>
         /// 将秒数格式化为关卡耗时文本。
@@ -184,15 +184,11 @@ namespace XiaoCao.UI
         private bool IsLatestUnlockedLevel(int chapter, int index)
         {
             var chapterSetting = LubanTables.GetChapterSetting(chapter);
-            if (chapterSetting?.Levels == null || chapterSetting.Levels.Count == 0)
-            {
-                return false;
-            }
 
             int latestUnlockedLevel = int.MinValue;
-            for (int i = 0; i < chapterSetting.Levels.Count; i++)
+            for (int i = 0; i < chapterSetting.MaxLevel; i++)
             {
-                int level = chapterSetting.Levels[i];
+                int level = i + 1;
                 if (GetPassState(chapter, level) != LevelPassState.Lock)
                 {
                     latestUnlockedLevel = Mathf.Max(latestUnlockedLevel, level);

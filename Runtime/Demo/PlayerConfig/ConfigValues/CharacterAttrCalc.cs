@@ -32,6 +32,29 @@ public static class CharacterAttrCalc
         return GetBaseATK(level) * ATK_HpMult(level);
     }
 
+    //获取 每级升级经验
+    public static int GetNextLevelExp(int lv)
+    {
+        float k = lv / 10f;
+        float val = Mathf.Pow(2, k);
+        return (int)(75 * val);
+    }
+
+    /// <summary>
+    /// 获取从1级升到指定等级所需的累计经验
+    /// </summary>
+    public static int GetTotalExp(int lv)
+    {
+        int total = 0;
+        for (int i = 1; i < lv ; i++)
+        {
+            total += GetNextLevelExp(i);
+        }
+
+        return total;
+    }
+
+
     public static float ATK_HpMult(int level)
     {
         //默认5倍

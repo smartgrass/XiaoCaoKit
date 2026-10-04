@@ -12,7 +12,7 @@ namespace XiaoCao
     /// <summary>
     /// 圣器升级窗口，负责显示升级前后信息和处理升级面板按钮。
     /// </summary>
-    public class RelicOnEquipUpgradeWindow : MonoBehaviour
+    public class RelicOnEquipDetailUpgradeUI : MonoBehaviour
     {
         public TMP_Text nameText;
         public TMP_Text qualityText;
@@ -133,13 +133,6 @@ namespace XiaoCao
 
             itemCell.gameObject.SetActive(true);
             itemCell.SetItem(item, UIItemTextType.NoNum);
-            if (itemCell.icon == null)
-            {
-                return;
-            }
-
-            itemCell.icon.sprite = item.GetItemSprite();
-            itemCell.icon.enabled = itemCell.icon.sprite != null;
         }
 
         /// <summary>
@@ -179,14 +172,6 @@ namespace XiaoCao
     /// </summary>
     internal static class RelicDetailHelper
     {
-        /// <summary>
-        /// 获取带等级的圣器标题。
-        /// </summary>
-        public static string GetRelicTitle(RelicItem relicItem)
-        {
-            return $"{relicItem.LocalizeName} Lv{relicItem.level}";
-        }
-
         /// <summary>
         /// 创建升级后的临时物品，用于显示升级预览。
         /// </summary>
