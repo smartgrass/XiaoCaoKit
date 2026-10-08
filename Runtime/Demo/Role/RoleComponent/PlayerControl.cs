@@ -35,7 +35,7 @@ namespace XiaoCao
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            if (InputData.inputs[InputKey.LeftShift])
+            if (InputData.inputs[(int)InputKey.LeftShift])
             {
                 TryRoll();
                 Data_P.norAckCache = false;
@@ -55,13 +55,13 @@ namespace XiaoCao
                 Data_P.norAckCache = false;
             }
 
-            if (InputData.inputs[InputKey.NorAck] || Data_P.norAckCache)
+            if (InputData.inputs[(int)InputKey.NorAck] || Data_P.norAckCache)
             {
                 TryNorAck();
             }
 
             //Editor Debug用
-            if (InputData.inputs[InputKey.Tab])
+            if (InputData.inputs[(int)InputKey.Tab])
             {
                 // if (BattleData.IsTimeStop)
                 // {
@@ -75,13 +75,13 @@ namespace XiaoCao
                 // owner.component.atkTimer.ClearAllCd();
             }
 
-            if (InputData.inputs[InputKey.Focus])
+            if (InputData.inputs[(int)InputKey.Focus])
             {
                 SwitchFocus();
             }
 
 
-            if (InputData.inputs[InputKey.Space])
+            if (InputData.inputs[(int)InputKey.Space])
             {
                 TryJump();
             }

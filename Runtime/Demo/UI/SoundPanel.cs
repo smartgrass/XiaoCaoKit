@@ -1,8 +1,7 @@
-using OdinSerializer.Utilities;
 using System.Collections.Generic;
-using System.IO;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using XiaoCao;
 
 public class SoundPanel : SubPanel
@@ -16,6 +15,9 @@ public class SoundPanel : SubPanel
 
     public TMP_Dropdown bgmDropDown;
 
+    //bgm选项的稳定标识, 与下拉框索引一一对应
+    private List<string> bgmValues = new List<string>();
+
     public override void Init()
     {
         //数值调整->slider
@@ -24,42 +26,63 @@ public class SoundPanel : SubPanel
         AddSlider(SFXVolumeKey, OnSFXChange, new Vector2(0, 1), SFXVolumeGetter());
         //多选->selectBox
 
-        List<string> songList = new List<string>();
-        songList.Add("--");
-        DirectoryInfo directory = new DirectoryInfo($"{XCPathConfig.GetGameConfigDir()}/Bgm");
-        var files = directory.GetFiles("*.mp3", SearchOption.TopDirectoryOnly);
-        files.ForEach(f =>
-        {
-            songList.Add(f.Name);
-        });
+        bgmDropDown = AddDropdown(LocalizeKey.Bgm, OnBgmChange, BuildBgmShowList(), false);
+        SyncBgmDropdown();
+    }
 
-        bgmDropDown = AddDropdown(LocalizeKey.Bgm, OnBgmChange, songList, false);
+    public override void RefreshUI()
+    {
+        //语言切换后重建选项, 刷新预设项的显示文案
+        bgmDropDown.ClearOptions();
+        bgmDropDown.AddOptions(BuildBgmShowList());
+        SyncBgmDropdown();
+    }
 
-        string bgmName = LocalizeKey.Bgm.GetKeyString();
-        int index = 0;
-        if (string.IsNullOrEmpty(bgmName) && songList.Count > 1)
+    /// <summary>
+    /// 生成bgm下拉的显示文本, 同时记录与索引对应的稳定标识
+    /// </summary>
+    private List<string> BuildBgmShowList()
+    {
+        //bgm选项: 默认/无 + GameConfig/Bgm子目录下所有bgm, 显示格式: 文件名(子目录名)
+        List<string> showList = new List<string>();
+        bgmValues.Clear();
+        foreach (SoundMgr.BgmOption option in SoundMgr.GetBgmOptions())
         {
-            index = 1;
+            showList.Add(option.Display);
+            bgmValues.Add(option.Value);
         }
-        else
+
+        return showList;
+    }
+
+    /// <summary>
+    /// 按当前场景已保存的选择刷新下拉框显示
+    /// </summary>
+    private void SyncBgmDropdown()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        string savedValue = SoundMgr.GetBgmSceneKey(sceneName).GetKeyString();
+        int index = bgmValues.IndexOf(savedValue);
+        if (index < 0)
         {
-            index = songList.IndexOf(bgmName);
-            if (index < 0)
-            {
-                index = 0;
-            }
+            //未保存过时使用"默认"选项
+            index = 0;
         }
         bgmDropDown.SetValueWithoutNotify(index);
+        bgmDropDown.RefreshShownValue();
     }
 
     private void OnBgmChange(int index)
     {
-        if (index >= 0)
+        if (index < 0 || index >= bgmValues.Count)
         {
-            string bgmName = bgmDropDown.options[index].text;
-            LocalizeKey.Bgm.SetKeyString(bgmName);
-            SoundMgr.Inst.PlayBgmByName(bgmName);
+            return;
         }
+
+        //按场景保存选择, 下次进入该场景时读取对应场景的配置
+        string sceneName = SceneManager.GetActiveScene().name;
+        SoundMgr.GetBgmSceneKey(sceneName).SetKeyString(bgmValues[index]);
+        SoundMgr.Inst.PlaySettingBgm();
     }
 
     private void OnMainChange(float value)

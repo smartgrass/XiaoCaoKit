@@ -645,7 +645,7 @@ namespace XiaoCao
                 if (GameDataCommon.LocalPlayer != null)
                 {
                     var inputData = GameDataCommon.LocalPlayer.playerData.inputData;
-                    if (Input.GetKeyDown(KeyCode.J) || inputData.inputs[InputKey.NorAck])
+                    if (Input.GetKeyDown(KeyCode.J) || inputData.inputs[(int)InputKey.NorAck])
                     {
                         TriggerUI();
                     }

@@ -78,8 +78,8 @@ public class CameraCapture : MonoBehaviour
 
 
         // 确保我们正在修改一个可写的资源
-        ModelConfigSo so =
-            AssetDatabase.LoadAssetAtPath<ModelConfigSo>("Assets/XiaoCaoKit/Resources/ModelConfigSo.asset");
+        RoleTextureConfigSo so =
+            AssetDatabase.LoadAssetAtPath<RoleTextureConfigSo>($"Assets/XiaoCaoKit/Resources/{nameof(RoleTextureConfigSo)}.asset");
         int existingIndex = -1;
         ModelConfigEntry entry = null;
         for (int i = 0; i < so.array.Length; i++)
@@ -112,7 +112,7 @@ public class CameraCapture : MonoBehaviour
         entry.localEulerAngles = localEulerAngles;
         entry.size = size;
         entry.roleKey = EditorGetKey;
-
+        entry.hasTexture = true;
         if (existingIndex < 0)
         {
             // 扩展数组并添加新条目

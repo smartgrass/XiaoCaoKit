@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb102be49060e484b97601da5c41d20a, type: 3}
-  m_Name: ModelConfigSo
+  m_Name: RoleTextureConfigSo
   m_EditorClassIdentifier: 
   Des: 
   array:
@@ -25,16 +25,16 @@ MonoBehaviour:
   - roleKey: Role_0
     anim: 
     hasTexture: 1
-    localPosition: {x: 0.05, y: -3.19, z: 6.82}
-    localEulerAngles: {x: 352, y: 180, z: 1.2847246e-13}
+    localPosition: {x: -0.04, y: -1.46, z: 0.43}
+    localEulerAngles: {x: 352.78473, y: 172.26237, z: 0.9776856}
     cameraLocalPosition: {x: 0, y: 0, z: 0}
     cameraLocalEulerAngles: {x: 0, y: 0, z: 0}
-    size: 2.2
+    size: 1
   - roleKey: Role_1
     anim: 
     hasTexture: 1
-    localPosition: {x: 0.05, y: -3.19, z: 6.82}
-    localEulerAngles: {x: 352, y: 180, z: 1.0277797e-13}
+    localPosition: {x: -0.101, y: -3.226, z: 6.815}
+    localEulerAngles: {x: 352.00156, y: 178.85774, z: 0.15896235}
     cameraLocalPosition: {x: 0, y: 0, z: 0}
     cameraLocalEulerAngles: {x: 0, y: 0, z: 0}
     size: 2.2
@@ -46,4 +46,4 @@ MonoBehaviour:
     cameraLocalPosition: {x: 0, y: 0, z: 0}
     cameraLocalEulerAngles: {x: 0, y: 0, z: 0}
     size: 0.78
-  IsDebug: 1
+  IsDebugCamera: 0

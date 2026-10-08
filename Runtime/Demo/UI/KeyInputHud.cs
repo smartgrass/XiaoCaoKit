@@ -117,11 +117,11 @@ namespace XiaoCao
             if (HasIndependentRollBtn)
             {
                 rollBtn.slotType = SlotType.Inputs;
-                rollBtn.index = InputKey.LeftShift;
+                rollBtn.index = (int)InputKey.LeftShift;
             }
 
-            norAtkBtn.onClick.AddListener(() => { PlayerInput.inputs[InputKey.NorAck] = true; });
-            jumpBtn.onClick.AddListener(() => { PlayerInput.inputs[InputKey.Space] = true; });
+            norAtkBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.NorAck] = true; });
+            jumpBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.Space] = true; });
 
             SetupExtraSkillButton();
             RefreshExtraSkillBtnState(true);

@@ -8,31 +8,20 @@ using XiaoCao;
 
 namespace FluxEditor
 {
+    /// <summary>
+    /// FCommandEvent 的 Inspector:按指令名提供模版下拉框,
+    /// 并用编辑器配置驱动 BaseMsg 勾选项与 otherMsgs 预设
+    /// </summary>
     [CustomEditor(typeof(FCommandEvent), true)]
     [CanEditMultipleObjects]
     public class FCommandEventInspector : FEventInspector
     {
-        private const string MoveToTargetPosCommandName = "XCCommand_MoveToTargetPos";
-        private const string ShootToken = "Shoot";
-        private const string DropDownToken = "dropDown";
-        private static readonly string[] AtkWarmingPresetValues =
-        {
-            "AtkWarming",
-            "2",
-            "Assets/_Res/SkillPrefab/Player/atk_warming_circle.prefab"
-        };
+        private const string TemplateConfigFolder = "Assets/XiaoCaoKit/Editor/ModuleEditor/FluxEditor/XCEditor/Config";
+        private const string TemplateConfigAssetPath = TemplateConfigFolder + "/XCCommandTemplateConfig.asset";
+        private const string TemplateConfigParentFolder = "Assets/XiaoCaoKit/Editor/ModuleEditor/FluxEditor/XCEditor";
+        private const string TemplateConfigFolderName = "Config";
 
-        private static readonly string[] OtherMsgPresetDisplayNames =
-        {
-            "Choose Template...",
-            "AtkWarming"
-        };
-
-        private static readonly string[][] OtherMsgPresetValues =
-        {
-            Array.Empty<string>(),
-            AtkWarmingPresetValues
-        };
+        private static readonly List<XCCommandTemplate> EmptyTemplates = new List<XCCommandTemplate>();
 
         private SerializedProperty commandNameProperty;
         private SerializedProperty baseMsgProperty;
@@ -41,7 +30,10 @@ namespace FluxEditor
         private string[] commandValues = new string[0];
         private string[] commandDisplayNames = new string[0];
         private int selectedCommandIndex;
+        private int selectedTemplateIndex;
         private int selectedPresetIndex;
+
+        private XCCommandTemplateConfig _templateConfig;
 
         protected override void OnEnable()
         {
@@ -57,67 +49,125 @@ namespace FluxEditor
         protected override void DrawEventFields()
         {
             SyncSelectedCommandIndex();
+            //每次绘制都重新取资产,避免配置改动后被缓存的旧实例一直显示为 0 条模版
+            _templateConfig = LoadTemplateConfig();
 
+            DrawTemplateConfigBar();
             DrawCommandPopup();
+
+            XCCommandTemplateConfig.CommandGroup group = GetCurrentGroup();
+            DrawTemplateSelector(group);
             DrawBaseMsg();
-            DrawOtherMsgs();
+            DrawOtherMsgs(group);
+        }
+
+        /// <summary>
+        /// 绘制模版配置资产的状态,并提供"选中配置"入口(缺失时先创建)
+        /// </summary>
+        private void DrawTemplateConfigBar()
+        {
+            EditorGUILayout.BeginHorizontal();
+
+            if (_templateConfig == null)
+            {
+                EditorGUILayout.HelpBox("未找到指令模版配置资产", MessageType.Warning);
+                if (GUILayout.Button("创建配置", GUILayout.Width(70)))
+                {
+                    _templateConfig = CreateTemplateConfigAsset();
+                    SelectTemplateConfig();
+                }
+            }
+            else
+            {
+                EditorGUILayout.LabelField($"指令模版配置: {_templateConfig.name} (共 {_templateConfig.TotalTemplateCount} 条)", EditorStyles.miniLabel);
+                if (GUILayout.Button("选中配置", GUILayout.Width(70)))
+                {
+                    SelectTemplateConfig();
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 在 Project 窗口中选中模版配置资产,方便直接编辑模版内容
+        /// </summary>
+        private void SelectTemplateConfig()
+        {
+            if (_templateConfig == null)
+            {
+                _templateConfig = LoadTemplateConfig();
+            }
+
+            if (_templateConfig == null)
+            {
+                _templateConfig = CreateTemplateConfigAsset();
+            }
+
+            Selection.activeObject = _templateConfig;
+            EditorGUIUtility.PingObject(_templateConfig);
+            EditorUtility.FocusProjectWindow();
         }
 
         private void DrawCommandPopup()
         {
-            if (commandNameProperty == null)
-            {
-                return;
-            }
-
             EditorGUI.BeginChangeCheck();
             selectedCommandIndex = EditorGUILayout.Popup("Command Name", selectedCommandIndex, commandDisplayNames);
             if (EditorGUI.EndChangeCheck() && selectedCommandIndex >= 0 && selectedCommandIndex < commandValues.Length)
             {
                 commandNameProperty.stringValue = commandValues[selectedCommandIndex];
+                //指令变化后,之前选中的模版不再适用
+                selectedTemplateIndex = 0;
             }
         }
 
-        private void DrawBaseMsg()
+        /// <summary>
+        /// 绘制当前指令的模版下拉框:首项显示模版数量,其余为模版名,选中后写入 BaseMsg
+        /// </summary>
+        private void DrawTemplateSelector(XCCommandTemplateConfig.CommandGroup group)
         {
-            if (baseMsgProperty != null)
+            List<XCCommandTemplate> templates = group == null ? EmptyTemplates : group.templates;
+            string[] options = BuildTemplateOptions(templates);
+
+            if (selectedTemplateIndex < 0 || selectedTemplateIndex >= options.Length)
             {
-                EditorGUILayout.PropertyField(baseMsgProperty, true);
-                DrawMoveToTargetPosBaseMsgQuickConfig();
+                selectedTemplateIndex = 0;
             }
-        }
-
-        private void DrawMoveToTargetPosBaseMsgQuickConfig()
-        {
-            if (!string.Equals(commandNameProperty?.stringValue, MoveToTargetPosCommandName, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            SerializedProperty strMsgProperty = baseMsgProperty.FindPropertyRelative("strMsg");
-            if (strMsgProperty == null)
-            {
-                return;
-            }
-
-            List<string> tokens = ParseBaseMsgTokens(strMsgProperty.stringValue);
-            bool hasShoot = ContainsToken(tokens, ShootToken);
-            bool hasDropDown = ContainsToken(tokens, DropDownToken);
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("BaseMsg Quick Config", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("勾选后会同步写回 baseMsg.strMsg，保留 offset_/min_ 等其他参数。", MessageType.None);
 
             EditorGUI.BeginChangeCheck();
-            bool nextShoot = EditorGUILayout.ToggleLeft("Shoot", hasShoot);
-            bool nextDropDown = EditorGUILayout.ToggleLeft("DropDown", hasDropDown);
-            if (EditorGUI.EndChangeCheck())
+            selectedTemplateIndex = EditorGUILayout.Popup("模版", selectedTemplateIndex, options);
+            if (EditorGUI.EndChangeCheck() && selectedTemplateIndex > 0)
             {
-                strMsgProperty.stringValue = BuildMoveToTargetPosStrMsg(tokens, nextShoot, nextDropDown);
+                ApplyTemplate(templates[selectedTemplateIndex - 1]);
+            }
+
+            if (selectedTemplateIndex > 0)
+            {
+                string description = templates[selectedTemplateIndex - 1].description;
+                if (!string.IsNullOrWhiteSpace(description))
+                {
+                    EditorGUILayout.HelpBox(description, MessageType.Info);
+                }
             }
         }
 
-        private void DrawOtherMsgs()
+        /// <summary>
+        /// 绘制 BaseMsg 字段
+        /// </summary>
+        private void DrawBaseMsg()
+        {
+            if (baseMsgProperty == null)
+            {
+                return;
+            }
+
+            EditorGUILayout.PropertyField(baseMsgProperty, true);
+        }
+
+        /// <summary>
+        /// 绘制 otherMsgs 字段,以及配置里声明的预设
+        /// </summary>
+        private void DrawOtherMsgs(XCCommandTemplateConfig.CommandGroup group)
         {
             if (otherMsgsProperty == null)
             {
@@ -126,39 +176,44 @@ namespace FluxEditor
 
             EditorGUILayout.PropertyField(otherMsgsProperty, true);
 
-            if (!string.Equals(commandNameProperty?.stringValue, MoveToTargetPosCommandName, StringComparison.Ordinal))
+            if (group == null || group.otherMsgPresets.Count == 0)
             {
                 return;
+            }
+
+            if (selectedPresetIndex < 0 || selectedPresetIndex > group.otherMsgPresets.Count)
+            {
+                selectedPresetIndex = 0;
             }
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("OtherMsgs Quick Config", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox($"格式示例: [{string.Join(", ", AtkWarmingPresetValues.Select(x => $"\"{x}\""))}]", MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
-            selectedPresetIndex = EditorGUILayout.Popup("Template", selectedPresetIndex, OtherMsgPresetDisplayNames);
-            using (new EditorGUI.DisabledScope(selectedPresetIndex == 0))
+            selectedPresetIndex = EditorGUILayout.Popup("Template", selectedPresetIndex, BuildPresetOptions(group));
+            using (new EditorGUI.DisabledScope(selectedPresetIndex <= 0))
             {
                 if (GUILayout.Button("Add", GUILayout.Width(80)))
                 {
-                    AppendOtherMsgs(OtherMsgPresetValues[selectedPresetIndex]);
+                    AppendOtherMsgs(group.otherMsgPresets[selectedPresetIndex - 1].values);
                 }
 
                 if (GUILayout.Button("Replace", GUILayout.Width(80)))
                 {
-                    ReplaceOtherMsgs(OtherMsgPresetValues[selectedPresetIndex]);
+                    ReplaceOtherMsgs(group.otherMsgPresets[selectedPresetIndex - 1].values);
                 }
             }
             EditorGUILayout.EndHorizontal();
+
+            if (selectedPresetIndex > 0)
+            {
+                List<string> values = group.otherMsgPresets[selectedPresetIndex - 1].values;
+                EditorGUILayout.HelpBox($"格式示例: [{string.Join(", ", values.Select(x => $"\"{x}\""))}]", MessageType.Info);
+            }
         }
 
-        private void AppendOtherMsgs(string[] values)
+        private void AppendOtherMsgs(List<string> values)
         {
-            if (values == null || values.Length == 0 || otherMsgsProperty == null)
-            {
-                return;
-            }
-
             foreach (string value in values)
             {
                 if (string.IsNullOrWhiteSpace(value))
@@ -172,15 +227,68 @@ namespace FluxEditor
             }
         }
 
-        private void ReplaceOtherMsgs(string[] values)
+        private void ReplaceOtherMsgs(List<string> values)
         {
-            if (values == null || values.Length == 0 || otherMsgsProperty == null)
-            {
-                return;
-            }
-
             otherMsgsProperty.arraySize = 0;
             AppendOtherMsgs(values);
+        }
+
+        /// <summary>
+        /// 把模版里配置的 BaseMsg 写入当前指令(state 是运行时字段,不参与赋值)
+        /// </summary>
+        private void ApplyTemplate(XCCommandTemplate template)
+        {
+            //0默认不修改
+            if (template.baseMsg.numMsg != 0)
+            {
+                baseMsgProperty.FindPropertyRelative("numMsg").floatValue = template.baseMsg.numMsg;
+            }
+
+            baseMsgProperty.FindPropertyRelative("strMsg").stringValue = template.baseMsg.strMsg ?? string.Empty;
+        }
+
+        private XCCommandTemplateConfig.CommandGroup GetCurrentGroup()
+        {
+            if (_templateConfig == null)
+            {
+                return null;
+            }
+
+            return _templateConfig.GetGroup(commandNameProperty.stringValue);
+        }
+
+        /// <summary>
+        /// 生成模版下拉框选项:第 0 项显示模版数量,之后依次为模版名
+        /// </summary>
+        private static string[] BuildTemplateOptions(List<XCCommandTemplate> templates)
+        {
+            string[] options = new string[templates.Count + 1];
+            options[0] = $"模版数量: {templates.Count}";
+
+            for (int i = 0; i < templates.Count; i++)
+            {
+                string templateName = templates[i].templateName;
+                options[i + 1] = string.IsNullOrWhiteSpace(templateName) ? $"未命名模版 {i + 1}" : templateName;
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// 生成 otherMsgs 预设下拉框选项:第 0 项为占位提示
+        /// </summary>
+        private static string[] BuildPresetOptions(XCCommandTemplateConfig.CommandGroup group)
+        {
+            string[] options = new string[group.otherMsgPresets.Count + 1];
+            options[0] = "Choose Template...";
+
+            for (int i = 0; i < group.otherMsgPresets.Count; i++)
+            {
+                string presetName = group.otherMsgPresets[i].presetName;
+                options[i + 1] = string.IsNullOrWhiteSpace(presetName) ? $"未命名预设 {i + 1}" : presetName;
+            }
+
+            return options;
         }
 
         private void RefreshCommandOptions()
@@ -202,51 +310,57 @@ namespace FluxEditor
 
         private void SyncSelectedCommandIndex()
         {
-            string currentName = commandNameProperty == null ? string.Empty : commandNameProperty.stringValue;
-            selectedCommandIndex = Array.IndexOf(commandValues, currentName);
+            if (commandNameProperty == null)
+            {
+                return;
+            }
+
+            selectedCommandIndex = Array.IndexOf(commandValues, commandNameProperty.stringValue);
             if (selectedCommandIndex < 0)
             {
                 selectedCommandIndex = 0;
             }
         }
 
-        private static List<string> ParseBaseMsgTokens(string strMsg)
+        /// <summary>
+        /// 读取指令模版配置资产:优先取约定路径,其次在工程里搜索
+        /// </summary>
+        private static XCCommandTemplateConfig LoadTemplateConfig()
         {
-            if (string.IsNullOrWhiteSpace(strMsg))
+            XCCommandTemplateConfig config = AssetDatabase.LoadAssetAtPath<XCCommandTemplateConfig>(TemplateConfigAssetPath);
+            if (config != null)
             {
-                return new List<string>();
+                return config;
             }
 
-            return strMsg
-                .Split(',')
-                .Select(x => x.Trim())
-                .Where(x => !string.IsNullOrEmpty(x))
-                .ToList();
+            string[] guids = AssetDatabase.FindAssets("t:XCCommandTemplateConfig");
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                config = AssetDatabase.LoadAssetAtPath<XCCommandTemplateConfig>(path);
+                if (config != null)
+                {
+                    return config;
+                }
+            }
+
+            return null;
         }
 
-        private static bool ContainsToken(IEnumerable<string> tokens, string targetToken)
+        /// <summary>
+        /// 在编辑器目录下创建空的指令模版配置资产
+        /// </summary>
+        private static XCCommandTemplateConfig CreateTemplateConfigAsset()
         {
-            return tokens.Any(x => string.Equals(x, targetToken, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static string BuildMoveToTargetPosStrMsg(IEnumerable<string> tokens, bool includeShoot, bool includeDropDown)
-        {
-            List<string> result = tokens
-                .Where(x => !string.Equals(x, ShootToken, StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(x, DropDownToken, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (includeShoot)
+            if (!AssetDatabase.IsValidFolder(TemplateConfigFolder))
             {
-                result.Insert(0, ShootToken);
+                AssetDatabase.CreateFolder(TemplateConfigParentFolder, TemplateConfigFolderName);
             }
 
-            if (includeDropDown)
-            {
-                result.Insert(includeShoot ? 1 : 0, DropDownToken);
-            }
-
-            return string.Join(",", result);
+            XCCommandTemplateConfig config = ScriptableObject.CreateInstance<XCCommandTemplateConfig>();
+            AssetDatabase.CreateAsset(config, TemplateConfigAssetPath);
+            AssetDatabase.SaveAssets();
+            return config;
         }
     }
 }

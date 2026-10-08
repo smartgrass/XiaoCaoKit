@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using Object = UnityEngine.Object;
@@ -16,14 +17,14 @@ public class ModelLoader
     public string addTag;
 
     // 引用配置数据
-    private ModelConfigSo ConfigSo => ConfigMgr.Inst.ModelConfigDataSo;
+    private RoleTextureConfigSo ConfigSoSo => ConfigMgr.Inst.roleTextureConfigSo;
 
     public void Init(string key)
     {
         roleKey = key;
 
         // 检查是否有配置纹理
-        bool hasConfigTexture = ConfigSo.HasConfigTexture(roleKey);
+        bool hasConfigTexture = ConfigSoSo.HasConfigTexture(roleKey);
         //没有配置则 创建相机
         if (!hasConfigTexture)
         {
@@ -33,10 +34,9 @@ public class ModelLoader
 
     public Texture GetTexture()
     {
-        var config = ConfigSo.GetOrDefault(roleKey);
-        if (config.hasTexture)
+        if (ConfigSoSo.HasConfigTexture(roleKey))
         {
-            return config.LoadTexture;
+            return ConfigSoSo.GetOrDefault(roleKey).LoadTexture;
         }
 
         return cameraCapture.CaptureImage();
@@ -56,10 +56,16 @@ public class ModelLoader
     private void LoadModel()
     {
         loadedModel = Role.LoadModelByKey(roleKey);
+        if (roleKey.StartsWith("Role"))
+        {
+            loadedModel.GetComponent<Animator>().runtimeAnimatorController =
+                AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
+                    "Assets/_Res/Role/AnimController/0.controller");
+        }
         loadedModel.transform.SetParent(cameraCapture.transform, false);
 
         // 获取配置信息
-        var config = ConfigSo.GetOrDefault(roleKey);
+        var config = ConfigSoSo.GetOrDefault(roleKey);
         // 使用配置的位置、旋转和缩放偏移
         loadedModel.transform.localPosition = config.localPosition;
         loadedModel.transform.localEulerAngles = config.localEulerAngles;

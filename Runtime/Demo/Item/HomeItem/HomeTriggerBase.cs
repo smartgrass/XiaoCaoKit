@@ -53,11 +53,21 @@ namespace XiaoCaoKit.Runtime.Demo.Item
             //隐藏ui
             UIMgr.Inst.battleHud.HideTriggerItemTip();
             nameTextHelper.HideUI();
+            RemoveListener();
+        }
+
+        private void RemoveListener()
+        {
             if (hasAddListener)
             {
                 GameEvent.RemoveEventListener<string>(EGameEvent.HomeItemMsg.ToInt(), ReceiveMsg);
                 hasAddListener = false;
             }
+        }
+
+        private void OnDestroy()
+        {
+            RemoveListener();
         }
 
         public void ReceiveMsg(string msg)

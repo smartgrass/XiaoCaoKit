@@ -16,8 +16,27 @@ namespace XiaoCao
             {
                 task.SetNoBusy();
             }
+            else if (msgType == EntityMsgType.ObjectUnFollow)
+            {
+                UnFollowNodeObject();
+            }
+
             baseMsg.state = 0;
             Info.role.ReceiveMsg(msgType, Info.entityId, baseMsg);
+        }
+
+        /// <summary>
+        /// 让当前节点的物体脱离父节点(不再跟随角色)
+        /// </summary>
+        private void UnFollowNodeObject()
+        {
+            if (task.ObjectData == null)
+            {
+                Debuger.LogWarning($"--- ObjectUnFollowPlayer 只能放在节点(子技能)时间轴上 {Info.skillId}");
+                return;
+            }
+
+            task.ObjectData.UnFollowParent();
         }
 
 

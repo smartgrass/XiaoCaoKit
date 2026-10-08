@@ -36,7 +36,7 @@ namespace XiaoCao
             //检测触发
             if (state == XCState.Sleep)
             {
-                if (player0.playerData.inputData.inputs[InputKey.NorAck])
+                if (player0.playerData.inputData.inputs[(int)InputKey.NorAck])
                 {
                     state = XCState.Running;
                 }

@@ -229,6 +229,14 @@ namespace XiaoCao
             return retPos;
         }
 
+        /// <summary>
+        /// 脱离父节点:取消跟随角色或技能节点,并保持当前世界坐标
+        /// </summary>
+        public void UnFollowParent()
+        {
+            Tran.SetParent(null, true);
+        }
+
         public static (Vector3, Vector3) GetRePos(Vector3 castEuler, Vector3 castPos, Vector3 addAngle, Vector3 addPos)
         {
             var retAngle = castEuler + addAngle;

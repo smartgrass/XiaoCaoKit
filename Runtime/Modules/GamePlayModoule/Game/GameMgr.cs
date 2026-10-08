@@ -29,6 +29,7 @@ namespace XiaoCao
         public TimeStopMgr timeStopMgr;
         public LevelControl levelControl;
         public PoolMgr poolMgr;
+        public RoleMgr roleMgr;
 
         public SaveMgr saveMgr;
         public ConfigMgr configMgr;
@@ -48,6 +49,7 @@ namespace XiaoCao
             var dataView = gameObject.AddComponent<Test_GameDataView>();
             dataView.GetCurrentData();
             poolMgr = PoolMgr.Inst;
+            roleMgr = RoleMgr.Inst;
 #endif
         }
 
@@ -101,7 +103,8 @@ namespace XiaoCao
         public void BackHome()
         {
             SetGameState(GameState.Exit);
-            SceneManager.LoadScene(SceneNames.Home);
+            //走 Loading 场景,由 SceneLoader 统一清理 BattleData 等跨场景数据
+            LoadScene(SceneNames.Home);
         }
 
         //完成

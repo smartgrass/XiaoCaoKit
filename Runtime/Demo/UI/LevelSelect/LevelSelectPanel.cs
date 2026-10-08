@@ -85,6 +85,7 @@ namespace XiaoCao.UI
             RefreshStageHeader();
             RefreshRewardPanel();
             RefreshBottomInfo();
+            RefreshEnterBtnState();
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace XiaoCao.UI
             var cells = parent.GetComponentsInChildren<ItemCell>(false);
             for (int i = 0; i < rewards.Count && i < cells.Length; i++)
             {
-                cells[i].SetItem(rewards[i], UIItemTextType.Default);
+                cells[i].SetItem(rewards[i]);
             }
         }
 
@@ -230,7 +231,7 @@ namespace XiaoCao.UI
             for (int i = 0; i < firstRewards.Count && i < cells.Length; i++)
             {
                 Item reward = firstRewards[i];
-                cells[i].SetItem(reward, UIItemTextType.NoNum);
+                cells[i].SetItem(reward);
                 Transform maskTf = cells[i].transform.Find("hasGet");
                 if (maskTf != null)
                 {
@@ -310,7 +311,18 @@ namespace XiaoCao.UI
             RefreshStageHeader();
             RefreshRewardPanel();
             RefreshBottomInfo();
+            RefreshEnterBtnState();
             SetLevelBtnSelected(levelIndex);
+        }
+
+        /// <summary>
+        /// 选中未解锁关卡时关闭挑战按钮的点击功能。
+        /// </summary>
+        private void RefreshEnterBtnState()
+        {
+            LevelPassState passState =
+                PlayerSaveData.LocalSavaData.levelPassData.GetPassState(_currentChapter, _selectedLevelIndex);
+            enterBtn.interactable = passState != LevelPassState.Lock;
         }
 
         /// <summary>

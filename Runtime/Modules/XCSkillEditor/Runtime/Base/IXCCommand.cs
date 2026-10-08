@@ -45,6 +45,8 @@ namespace XiaoCao
         public virtual XCTask task { get; set; }
         public virtual XCCommondEvent curEvent { get; set; }
         public virtual bool IsOtherMsg { get; set; }
+        
+        //可切换时间点 0~1
         public virtual float minSwitchTime { get; set; } = 0.8f;
 
         public virtual void OnTrigger()

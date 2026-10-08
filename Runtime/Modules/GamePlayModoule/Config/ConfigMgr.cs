@@ -51,7 +51,7 @@ namespace XiaoCao
 
         public BuffConfigSo BuffConfigSo;
 
-        public ModelConfigSo ModelConfigDataSo;
+        public RoleTextureConfigSo roleTextureConfigSo;
 
         public BattleExtraItemConfigSo BattleExtraItemConfigSo;
 
@@ -109,14 +109,14 @@ namespace XiaoCao
             AttrSettingSo = LoadSoConfig<AttrSettingSo>();
             EnemyKillRewardSo = LoadSoConfig<RewardPoolSo>();
             BuffConfigSo = LoadSoConfig<BuffConfigSo>();
-            ModelConfigDataSo = LoadSoConfig<ModelConfigSo>();
+            roleTextureConfigSo = LoadSoConfig<RoleTextureConfigSo>();
             BattleExtraItemConfigSo = LoadSoConfig<BattleExtraItemConfigSo>();
             _uiPrefabSo = LoadSoConfig<UIPrefabSo>();
             GetSkinList();
             GetTestEnemyList();
             
             //增加断言 判断SkillDataSo,ModelConfigDataSo不为空
-            Debug.Assert(ModelConfigDataSo != null, "ModelConfigDataSo is null");
+            Debug.Assert(roleTextureConfigSo != null, "ModelConfigDataSo is null");
         }
 
         public static string GetTalkChapter(string chapterId)

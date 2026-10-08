@@ -8,6 +8,27 @@ namespace XiaoCao
 {
     public class ItemCell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
+        /// <summary>经验值图标使用的特殊颜色 #FFED51</summary>
+        private static readonly Color ExpIconColor = new Color32(0xFF, 0xED, 0x51, 0xFF);
+
+        private const string ExpIconMaterialPath = "Assets/_Res/UI/UI_Shader/UIFlow_Exp.mat";
+
+        private static Material _expIconMaterial;
+
+        /// <summary>经验值图标的流光材质,首次使用时加载并缓存</summary>
+        private static Material ExpIconMaterial
+        {
+            get
+            {
+                if (_expIconMaterial == null)
+                {
+                    _expIconMaterial = ResMgr.LoadAseet<Material>(ExpIconMaterialPath);
+                }
+
+                return _expIconMaterial;
+            }
+        }
+
         public Item Item { get; private set; }
 
         public Image icon;
@@ -39,6 +60,7 @@ namespace XiaoCao
             this.Item = item;
             //图标只由物品决定,统一在格子内部刷新,调用方无需再单独设置
             icon.sprite = item.GetItemSprite();
+            RefreshIconStyle(item);
             icon.enabled = icon.sprite != null;
             SetQualityBg(item.quality);
             if (textType == UIItemTextType.NeedNum)
@@ -63,6 +85,15 @@ namespace XiaoCao
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// 刷新图标颜色和材质:经验值使用金色流光材质,其他物品保持白色且不带材质
+        /// </summary>
+        private void RefreshIconStyle(Item item)
+        {
+            bool isExp = item.type == ItemType.OtherValue && item.typeId == OtherValueItemId.Exp;
+            icon.material = isExp ? ExpIconMaterial : null;
         }
 
         public void SetQualityBg(EQuality quality)

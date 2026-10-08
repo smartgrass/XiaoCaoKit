@@ -10,9 +10,21 @@ namespace XiaoCao.Render
 {
     public class BodyPhantom : MonoBehaviour
     {
-        public float meshRefreshRate = 0.08f;
+        /// <summary>间隔值的下限,避免技能配置成 0 时单帧狂刷幻影</summary>
+        private const float MinInterval = 0.01f;
+
+        /// <summary>未使用的那一路间隔统一设成这个大值,等价于关闭该判定</summary>
+        private const float UnusedInterval = 999f;
+
+        //按时间间隔触发
+        public float createByTime = 0.08f;
+        //按距离间隔触发
+        public float createByDistance = 4;
+
+        //单帧最多生成的幻影数量,避免掉帧时一帧内瞬间生成过多导致卡顿
+        public int maxCreatePerFrame = 4;
+
         public float fadeTime = 1.2f;
-        public float createPreDistance = 4;
         public Material mat;
 
         private Coroutine _coroutine;
@@ -30,11 +42,22 @@ namespace XiaoCao.Render
             }
         }
 
-        public void StartAnim(float time)
+        public void StartAnim(BaseMsg msg, float time = 0)
         {
             if (!_isInited)
             {
                 Init();
+            }
+
+            if (msg.strMsg == "Distance")
+            {
+                createByDistance = Mathf.Max(MinInterval, msg.numMsg);
+                createByTime = UnusedInterval;
+            }
+            else if (msg.strMsg == "Time")
+            {
+                createByTime = Mathf.Max(MinInterval, msg.numMsg);
+                createByDistance = UnusedInterval;
             }
 
             _maxActiveTime = time <= 0 ? 10 : time;
@@ -51,23 +74,40 @@ namespace XiaoCao.Render
 
         IEnumerator IEActivateTrail()
         {
-            float timer = meshRefreshRate / 2f;
+            float timer = 0;
             Vector3 lastCreatePos = transform.position;
+            //第一遍先触发
+            CreateOnPos(lastCreatePos);
 
             while (_maxActiveTime > 0)
             {
-                timer += XCTime.deltaTime;
-                Vector3 currentPos = transform.position;
+                float deltaTime = XCTime.deltaTime;
+                _maxActiveTime -= deltaTime;
+                timer += deltaTime;
 
-                // 检查是否达到创建幻影的时间或距离条件
-                if (timer >= meshRefreshRate || Vector3.Distance(currentPos, lastCreatePos) >= createPreDistance)
+                int createdCount = 0;
+
+                //按时间间隔补齐:帧率低时一帧内补出多个,保证幻影密度与帧率无关
+                while (timer >= createByTime && createdCount < maxCreatePerFrame)
                 {
-                    CreateOnPos(currentPos);
-                    timer = 0f; // 重置计时器
-                    lastCreatePos = currentPos; // 更新上次创建位置
+                    timer -= createByTime;
+                    CreateOnPos(transform.position);
+                    createdCount++;
                 }
 
-                _maxActiveTime -= XCTime.deltaTime;
+                //按距离间隔补齐:把这一帧的位移按间隔等分,掉帧或瞬移时拖影不会断节
+                Vector3 currentPos = transform.position;
+                Vector3 delta = currentPos - lastCreatePos;
+                float distance = delta.magnitude;
+                while (distance >= createByDistance && createdCount < maxCreatePerFrame)
+                {
+                    lastCreatePos += delta * (createByDistance / distance);
+                    CreateOnPos(lastCreatePos);
+                    createdCount++;
+                    delta = currentPos - lastCreatePos;
+                    distance = delta.magnitude;
+                }
+
                 yield return null;
             }
         }
@@ -78,7 +118,6 @@ namespace XiaoCao.Render
             copy.GetComponent<Animator>().enabled = false;
             var renderers = copy.GetComponentsInChildren<Renderer>();
             copy.transform.SetPositionAndRotation(nextPos, transform.rotation);
-            _maxActiveTime -= meshRefreshRate;
             for (int i = 0; i < renderers.Length; i++)
             {
                 var render = renderers[i];

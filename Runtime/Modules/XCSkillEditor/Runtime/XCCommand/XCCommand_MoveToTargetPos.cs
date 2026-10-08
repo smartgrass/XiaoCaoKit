@@ -7,7 +7,7 @@ namespace XiaoCao
     {
         private const string DefaultAtkWarmingPrefabPath = "Assets/_Res/SkillPrefab/Player/atk_warming_circle.prefab";
 
-        public bool isShoot; //保持速度,等
+        public bool isFixedDir; //直线方向
         public bool isDropDown;
 
         public float offset;
@@ -25,7 +25,7 @@ namespace XiaoCao
             IsOtherMsg = true;
             ResetOtherMsgData();
             createObject = null;
-            isShoot = false;
+            isFixedDir = false;
             isDropDown = false;
             offset = 0;
             minDistance = 0;
@@ -36,11 +36,11 @@ namespace XiaoCao
                 foreach (var str in array)
                 {
                     string token = str.Trim();
-                    if (token.Equals("Shoot", StringComparison.OrdinalIgnoreCase))
+                    if (token.Equals("FixedDir", StringComparison.OrdinalIgnoreCase))
                     {
-                        isShoot = true;
+                        isFixedDir = true;
                     }
-                    else if (token.Equals("dropDown", StringComparison.OrdinalIgnoreCase))
+                    else if (token.Equals("DropDown", StringComparison.OrdinalIgnoreCase))
                     {
                         isDropDown = true;
                     }
@@ -111,9 +111,12 @@ namespace XiaoCao
                 maxDistance = 5;
             }
 
-            if (isShoot)
+            if (isFixedDir)
             {
-                moveEvent.task.ObjectData.ReSetStartPos();
+                if (!moveEvent.task.IsMainTask)
+                {
+                    moveEvent.task.ObjectData.ReSetStartPos();
+                }
             }
 
             //修改终点,并且修改handle
@@ -128,8 +131,9 @@ namespace XiaoCao
             else
             {
                 role.AISetLookTarget(null);
+                //正前方
             }
-            role.transform.RotaToPos(worldEndVec, 0.4f);
+
 
             if (offset != 0)
             {
@@ -144,9 +148,9 @@ namespace XiaoCao
                 }
             }
 
-            if (isShoot)
+            if (isFixedDir)
             {
-                //连线: 起点不变,终点变为过玩家方向上x距离
+                //连线: 起点不变,终点变为起点->玩家坐标的直线方向上,等距离位置
                 Vector3 oldDelta = moveEvent.endVec - moveEvent.startVec;
                 //高度差保持不变
                 Vector3 xzDir = (worldEndVec - worldStartVec).SetY(0).normalized;
@@ -172,6 +176,7 @@ namespace XiaoCao
                     worldStartVec, worldEndVec);
                 //可以考虑handlePoint.y 和原来的一样
             }
+            role.transform.RotaToPos(worldEndVec, 1);
 
             moveEvent.endVec = worldEndVec;
             moveEvent.startVec = worldStartVec;

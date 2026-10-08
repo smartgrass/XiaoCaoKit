@@ -99,8 +99,8 @@ namespace AssetEditor.Editor
                 if (isKaiLe)
                 {
                     OnTimeScale();
-                    GetBuffs();
                     OnHidingChange();
+                    BoostSkillCdOff();
                 }
 
                 if (autoAddBuff)
@@ -232,7 +232,7 @@ namespace AssetEditor.Editor
             player.OnDamage(atkInfo);
         }
 
-        [Button("技能冷缩90%", Line1, enabledMode: EButtonEnableMode.Playmode)]
+        [Button("技能冷缩100%", Line1, enabledMode: EButtonEnableMode.Playmode)]
         void BoostSkillCdOff()
         {
             if (!Application.isPlaying || GameDataCommon.Current.gameState != GameState.Running)
@@ -246,7 +246,7 @@ namespace AssetEditor.Editor
                 return;
             }
 
-            player.component.atkTimer.DebugSkillCdScale = 0.1f;
+            player.component.atkTimer.DebugSkillCdScale = 0.01f;
             player.component.atkTimer.RefreshCooldowns();
         }
 
@@ -456,32 +456,7 @@ namespace AssetEditor.Editor
         {
             PoolMgr.Inst.ClearAllPool(false);
         }
-
-        [Button("Buff", Line99)]
-        void GetBuffs()
-        {
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-
-            for (int i = 0; i < 8; i++)
-            {
-                Item item = RewardHelper.GetItemWithPool("0", 0);
-                RewardHelper.RewardItem(item);
-            }
-
-
-            foreach (EBuff item in Enum.GetValues(typeof(EBuff)))
-            {
-                if (item.GetBuffType() == EBuffType.Ex)
-                {
-                    var buffItem = BuffHelper.CreatBuffItem(item);
-                    PlayerHelper.AddBuff(0, buffItem);
-                }
-            }
-        }
-
+        
         /// <summary>
         /// 给本地玩家发放调试用圣器。
         /// </summary>

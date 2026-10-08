@@ -135,7 +135,7 @@ namespace XiaoCao
             }
 
 
-            if (Mode == CameraMode.TowDown)
+            if (Mode is CameraMode.TowDown or CameraMode.ThirdPerson)
             {
                 if (BattleData.Current.CanPlayerControl)
                 {

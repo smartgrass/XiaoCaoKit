@@ -56,7 +56,8 @@ namespace XiaoCao.UI
             titleText.text = LocalizeKey.GetLevelName(chapter, index);
 
             LevelPassState passState = GetPassState(chapter, index);
-            btn.interactable = passState != LevelPassState.Lock;
+            // 未解锁关卡也允许点击查看详情，是否可挑战由面板上的挑战按钮控制
+            btn.interactable = true;
             stateChange.SetState((int)passState);
             UpdateOutlineState(passState);
             UpdatePassTimeText(passState);

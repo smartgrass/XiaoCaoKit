@@ -381,13 +381,16 @@ namespace XiaoCao
         //}
     }
 
-    public static class InputKey
+    /// <summary>
+    /// 玩家输入位,同时用于索引 PlayerInputData.inputs
+    /// </summary>
+    public enum InputKey
     {
-        public const int NorAck = 0;
-        public const int LeftShift = 1;
-        public const int Space = 2; //Jump
-        public const int Tab = 3;
-        public const int Focus = 4;
+        NorAck = 0,
+        LeftShift = 1,
+        Space = 2, //Jump
+        Tab = 3,
+        Focus = 4,
     }
 
     public class PlayerAttr

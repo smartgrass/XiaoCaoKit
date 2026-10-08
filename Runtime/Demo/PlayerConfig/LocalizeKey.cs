@@ -10,6 +10,8 @@ namespace XiaoCao
         public static string[] LanguageShowNames = { "中文", "English" };
         public static string Language = "Language";
         public static string Bgm = "Bgm";
+        public static string BgmDefault = "Bgm/Default"; // 默认bgm(读取场景配置)
+        public static string BgmNone = "Bgm/None"; // 无bgm
         public static string RenderQuality = "RenderQuality";
         public static string FrameRate = "FrameRate";
         public static string NoEnough = "NoEnough";

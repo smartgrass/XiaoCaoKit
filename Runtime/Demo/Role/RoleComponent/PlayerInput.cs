@@ -38,19 +38,19 @@ namespace XiaoCao
             CheckNorAtk();
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
-                data.inputs[InputKey.LeftShift] = true;
+                data.inputs[(int)InputKey.LeftShift] = true;
 
             if (Input.GetKeyDown(KeyCode.Mouse1))
-                data.inputs[InputKey.LeftShift] = true;
+                data.inputs[(int)InputKey.LeftShift] = true;
 
             if (Input.GetKeyDown(KeyCode.Space))
-                data.inputs[InputKey.Space] = true;
+                data.inputs[(int)InputKey.Space] = true;
 
             if (Input.GetKeyDown(KeyCode.Tab))
-                data.inputs[InputKey.Tab] = true;
+                data.inputs[(int)InputKey.Tab] = true;
 
             if (Input.GetKeyDown(KeyCode.F))
-                data.inputs[InputKey.Focus] = true;
+                data.inputs[(int)InputKey.Focus] = true;
 
             for (int index = 0; index < GameSetting.SkillCountOnBar; index++)
             {
@@ -73,7 +73,7 @@ namespace XiaoCao
         {
             if (Input.GetKeyDown(KeyCode.J))
             {
-                data.inputs[InputKey.NorAck] = true;
+                data.inputs[(int)InputKey.NorAck] = true;
             }
 
             if (GameSetting.UserInputType == UserInputType.Touch)
@@ -83,7 +83,7 @@ namespace XiaoCao
 
             if (Input.GetKeyDown(KeyCode.Mouse0) && !IsPointerOverBlockingUI())
             {
-                data.inputs[InputKey.NorAck] = true;
+                data.inputs[(int)InputKey.NorAck] = true;
             }
         }
 

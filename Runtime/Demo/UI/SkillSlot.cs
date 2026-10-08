@@ -398,7 +398,7 @@ namespace XiaoCao
 
         private KeyCode GetInputKeyCode()
         {
-            switch (index)
+            switch ((InputKey)index)
             {
                 case InputKey.NorAck:
                     return KeyCode.Mouse0;

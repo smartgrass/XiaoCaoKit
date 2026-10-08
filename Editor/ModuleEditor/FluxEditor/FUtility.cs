@@ -186,6 +186,17 @@ namespace FluxEditor
 		#endregion Paths / Resource Loading
 
 		#region Events
+
+		/// <summary>
+		/// Flux 只允许改写存放在 AnimatorController 里的子资产动画;
+		/// 工程里的独立 .anim(含烘焙产物)一律视为只读,避免误改原始资源
+		/// </summary>
+		public static bool IsAnimationWritableInFlux( AnimationClip clip )
+		{
+			return clip != null
+				&& AssetDatabase.IsSubAsset( clip )
+				&& AssetDatabase.LoadMainAssetAtPath( AssetDatabase.GetAssetPath( clip ) ) is AnimatorController;
+		}
 		
 		public static void Rescale( FEvent evt, FrameRange newFrameRange )
 		{
@@ -203,10 +214,21 @@ namespace FluxEditor
 				
 				if( animEvt._animationClip != null )
 				{
-					if( Flux.FUtility.IsAnimationEditable(animEvt._animationClip) )
+					if( IsAnimationWritableInFlux( animEvt._animationClip ) )
 					{
 						animEvt._animationClip.frameRate = animEvt.Sequence.FrameRate;
 						EditorUtility.SetDirty( animEvt._animationClip );
+					}
+					else if( Flux.FUtility.IsAnimationEditable(animEvt._animationClip) )
+					{
+						//工程内独立 .anim:只提示帧率不一致,不改文件也不解除引用
+						if( Mathf.RoundToInt(animEvt._animationClip.frameRate) != animEvt.Sequence.FrameRate )
+						{
+							Debug.LogWarning( string.Format("AnimationClip '{0}' ({1} fps) 与序列帧率 {2} 不一致,独立 .anim 只读,已跳过修改", 
+							                                animEvt._animationClip.name, 
+							                                animEvt._animationClip.frameRate, 
+							                                animEvt.Sequence.FrameRate ), animEvt );
+						}
 					}
 					else if( Mathf.RoundToInt(animEvt._animationClip.frameRate) != animEvt.Sequence.FrameRate )
 					{

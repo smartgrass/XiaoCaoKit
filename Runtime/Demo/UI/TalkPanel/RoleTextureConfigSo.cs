@@ -1,21 +1,19 @@
 using System;
-using System.Globalization;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
 using XiaoCao;
-using static ModelConfigSo;
 
 [CreateAssetMenu(fileName = "ModelConfigData", menuName = "SO/ModelConfigData")]
-public class ModelConfigSo : KeyMapSo<ModelConfigEntry>
+public class RoleTextureConfigSo : KeyMapSo<ModelConfigEntry>
 {
-    public bool IsDebug = false;
+    [XCLabel("编辑使用,强制开启相机")]
+    public bool IsDebugCamera = false;
     // 检查是否有预配置纹理
     public bool HasConfigTexture(string roleKey)
     {
         var config = GetOrDefault(roleKey);
 #if UNITY_EDITOR
-        if (IsDebug)
+        if (IsDebugCamera)
         {
             return false;
         }

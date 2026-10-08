@@ -42,6 +42,10 @@ namespace Flux
         {
             get
             {
+                if (commandName.StartsWith("XCCommand_"))
+                {
+                    return commandName.Replace("XCCommand_", "");
+                }
                 return commandName;
             }
         }

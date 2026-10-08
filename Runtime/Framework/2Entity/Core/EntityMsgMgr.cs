@@ -35,11 +35,11 @@ namespace XiaoCao
         SetNoGravityTime = 13,
         [InspectorName("索敌")]
         AutoDirect = 14,
-        [InspectorName("关闭身体间碰撞")]
+        [InspectorName("关闭身体间碰撞(undo)")]
         NoBodyCollision = 15,
         [InspectorName("CameraShake-int")]
         CameraShake = 16,
-        [InspectorName("幻影-flaot")]
+        [InspectorName("BodyPhantom(幻影)")]
         BodyPhantom = 17,
         [InspectorName("隐身-flaot")]
         HideRender = 18,
@@ -52,6 +52,8 @@ namespace XiaoCao
         [InspectorName("霸体时间(NoBreakTime)")]
         NoBreakTime = 22,
         SetUnRotate = 23,
+        [InspectorName("脱离父节点")]
+        ObjectUnFollow = 24,
 
 
     }

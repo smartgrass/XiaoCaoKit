@@ -646,7 +646,7 @@ namespace XiaoCao
             var p = body.GetOrAddComponent<BodyPhantom>();
             if (baseMsg.state == 0)
             {
-                p.StartAnim(baseMsg.numMsg);
+                p.StartAnim(baseMsg);
             }
             else
             {
