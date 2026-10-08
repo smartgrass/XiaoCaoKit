@@ -299,7 +299,7 @@ namespace FluxEditor
 		private void SetAnimationClip( AnimationClip animClip )
 		{
 			_animationClip.objectReferenceValue = animClip;
-			_animEvent.ControlsAnimation = AssetDatabase.IsSubAsset( animClip ) && AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GetAssetPath(animClip)) is AnimatorController;
+			_animEvent.ControlsAnimation = FluxEditor.FUtility.IsAnimationWritableInFlux( animClip );
 			_controlsAnimation.boolValue = _animEvent.ControlsAnimation;
 	        serializedObject.ApplyModifiedProperties();
 		}
@@ -316,7 +316,8 @@ namespace FluxEditor
 		// animation editing
 		public static void ScaleAnimationClip( AnimationClip clip, FrameRange range )
 		{
-	        if( clip == null )
+			//只允许缩放 AnimatorController 内的子资产动画,工程里的独立 .anim 不动
+	        if( !FluxEditor.FUtility.IsAnimationWritableInFlux( clip ) )
 	            return;
 			float oldLength = clip.length;
 			float newLength = range.Length / clip.frameRate;
