@@ -144,6 +144,9 @@ namespace XiaoCao
                 Debug.Log($"--- scene {SceneManager.GetActiveScene().name}");
             }
 
+            //编辑器/调试分支可能把等级改到下限以下, 这里统一兜住最低等级
+            data0.lv = Mathf.Max(GameSetting.MinRoleLevel, data0.lv);
+
             if (!isSuc)
             {
                 Debuger.Log($"--- creat newData");

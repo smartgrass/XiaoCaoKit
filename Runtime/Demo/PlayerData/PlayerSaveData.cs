@@ -11,7 +11,7 @@ namespace XiaoCao
         public static PlayerSaveData LocalSavaData => GameAllData.playerSaveData;
 
         [NonSerialized] private int cachedInitPlayerAttrLv = -1;
-        [NonSerialized] private PlayerAttr cachedInitPlayerAttr;
+        [NonSerialized] private RoleAttr _cachedInitRoleAttr;
 
         public int lv;
 
@@ -108,6 +108,9 @@ namespace XiaoCao
         //反序列化读取的数据, 可能会出现空的现象
         internal void CheckNull()
         {
+            //角色等级最低 1 级, 修正旧存档中可能存在的 0 级
+            lv = Mathf.Max(GameSetting.MinRoleLevel, lv);
+
             // ConfigMgr.LocalSetting.GetBoolValue 暂时不用
 
             if (inventory == null)
@@ -302,27 +305,27 @@ namespace XiaoCao
         /// </summary>
         /// <param name="clone">是否返回缓存副本，true 时避免外部修改污染缓存。</param>
         /// <returns></returns>
-        public PlayerAttr GetInitPlayerAttr(bool clone = true)
+        public RoleAttr GetInitPlayerAttr(bool clone = true)
         {
-            int currentLv = Mathf.Max(1, lv);
-            if (cachedInitPlayerAttr == null || cachedInitPlayerAttrLv != currentLv)
+            int currentLv = Mathf.Max(GameSetting.MinRoleLevel, lv);
+            if (_cachedInitRoleAttr == null || cachedInitPlayerAttrLv != currentLv)
             {
                 cachedInitPlayerAttrLv = currentLv;
-                cachedInitPlayerAttr = new PlayerAttr();
+                _cachedInitRoleAttr = new RoleAttr();
                 AttrSetting setting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
-                cachedInitPlayerAttr.Init(0, currentLv, setting);
-                ApplyBlessingAttr(cachedInitPlayerAttr);
-                ApplyEquippedRelicAttr(cachedInitPlayerAttr);
-                cachedInitPlayerAttr.hp = cachedInitPlayerAttr.MaxHp;
+                _cachedInitRoleAttr.Init(0, currentLv, setting);
+                ApplyBlessingAttr(_cachedInitRoleAttr);
+                ApplyEquippedRelicAttr(_cachedInitRoleAttr);
+                _cachedInitRoleAttr.hp = _cachedInitRoleAttr.MaxHp;
             }
 
-            return clone ? cachedInitPlayerAttr.Clone() : cachedInitPlayerAttr;
+            return clone ? _cachedInitRoleAttr.Clone() : _cachedInitRoleAttr;
         }
 
         /// <summary>
         /// 将祝福等级折算为玩家基础属性加成。
         /// </summary>
-        private void ApplyBlessingAttr(PlayerAttr attr)
+        private void ApplyBlessingAttr(RoleAttr attr)
         {
             CheckBlessingNull();
             foreach (EBlessing blessing in BlessingRule.AllBlessings)
@@ -351,7 +354,7 @@ namespace XiaoCao
         /// <summary>
         /// 将当前已装备圣器的数值加成到玩家基础属性。
         /// </summary>
-        private void ApplyEquippedRelicAttr(PlayerAttr attr)
+        private void ApplyEquippedRelicAttr(RoleAttr attr)
         {
             if (inventory?.equippedHolyRelics == null)
             {
@@ -379,12 +382,12 @@ namespace XiaoCao
         /// </summary>
         public void ReLoadPlayerAttr()
         {
-            cachedInitPlayerAttr = null;
+            _cachedInitRoleAttr = null;
             GetInitPlayerAttr();
         }
 
         /// <summary>
-        /// 增加角色经验值; 经验值累计在角色身上, 不进入背包
+        /// 增加角色经验值: 经验值累计在角色身上, 不进入背包; 经验足够时自动结算升级
         /// </summary>
         public void AddExp(int value)
         {
@@ -394,7 +397,49 @@ namespace XiaoCao
             }
 
             exp += value;
+            int levelFrom = lv;
+
+            //连续结算升级, 直到经验不够下一级或到达等级上限
+            while (lv < GameSetting.MaxRoleLevel &&
+                   exp >= CharacterAttrCalc.GetRoleNextLevelExp(lv))
+            {
+                exp -= CharacterAttrCalc.GetRoleNextLevelExp(lv);
+                lv++;
+            }
+
+            if (lv > levelFrom)
+            {
+                //有升级: 存盘并广播升级事件
+                SaveAndNotifyLevelUp(levelFrom);
+            }
+            else
+            {
+                SavaData();
+            }
+        }
+
+        /// <summary>
+        /// 提升角色等级: 等级会被限制在上下限之间, 写入存档并广播升级事件(参数: 原等级, 新等级)
+        /// </summary>
+        public void UpgradeLevel(int addLevel = 1)
+        {
+            int levelFrom = lv;
+            lv = Mathf.Clamp(levelFrom + addLevel, GameSetting.MinRoleLevel, GameSetting.MaxRoleLevel);
+            if (lv <= levelFrom)
+            {
+                return;
+            }
+
+            SaveAndNotifyLevelUp(levelFrom);
+        }
+
+        /// <summary>
+        /// 写入存档并广播升级事件, 由表现层播放升级提示
+        /// </summary>
+        private void SaveAndNotifyLevelUp(int levelFrom)
+        {
             SavaData();
+            GameEvent.Send<int, int>(EGameEvent.RoleLevelUp.ToInt(), levelFrom, lv);
         }
 
         public void SavaThisData()

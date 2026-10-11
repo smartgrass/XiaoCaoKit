@@ -170,6 +170,15 @@ namespace AssetEditor.Editor
             }
         }
 
+        [Button("选中UI", Line1)]
+        void SelectPanel()
+        {
+            if (UIMgr.Inst.lastpanel!=null)
+            {
+                Selection.activeObject = UIMgr.Inst.lastpanel.gameObject;
+            }
+        }
+
         [Button("生成队友", Line1, enabledMode: EButtonEnableMode.Playmode)]
         void GenFriend()
         {
@@ -299,9 +308,8 @@ namespace AssetEditor.Editor
         void ResetHomeGuide()
         {
             bool isGuideReset = HomeGuideController.IsGuideResetForDebug();
-            HomeGuideController guideController = HomeHud.Inst != null
-                ? HomeHud.Inst.EnsureGuideControllerForDebug()
-                : null;
+            HomeGuideController guideController =
+                UnityEngine.Object.FindFirstObjectByType<HomeGuideController>(FindObjectsInactive.Include);
 
             if (isGuideReset)
             {
@@ -429,7 +437,7 @@ namespace AssetEditor.Editor
                 PlayerSaveData.SavaData();
                 if (GameDataCommon.LocalPlayer!=null)
                 {
-                    GameDataCommon.LocalPlayer.data_R.playerAttr.lv = playerLevel;
+                    GameDataCommon.LocalPlayer.data_R.RoleAttr.lv = playerLevel;
                     GameDataCommon.LocalPlayer.InitRoleData();
                     HotFlags.PlayerAttrChange = true;
                 }

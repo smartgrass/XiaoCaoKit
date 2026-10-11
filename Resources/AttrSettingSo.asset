@@ -17,7 +17,7 @@ MonoBehaviour:
     id: 0
     settingTag: 0
     maxLevel: 50
-    baseHp: 150
+    addHp: 150
     atkMult: 1
     defMult: 1
     hpMult: 1
@@ -34,7 +34,7 @@ MonoBehaviour:
     id: 1
     settingTag: 0
     maxLevel: 50
-    baseHp: 100
+    addHp: 100
     atkMult: 0.7
     defMult: 1
     hpMult: 1.5
@@ -51,10 +51,10 @@ MonoBehaviour:
     id: 2
     settingTag: 0
     maxLevel: 50
-    baseHp: 100
-    atkMult: 1
+    addHp: 100
+    atkMult: 0.85
     defMult: 1
-    hpMult: 2.5
+    hpMult: 3
     offsetLevel: 10
     maxArmor: 20
     armorDef: 0.9

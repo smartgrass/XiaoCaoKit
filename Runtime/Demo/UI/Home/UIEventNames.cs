@@ -1,12 +1,10 @@
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// HomeHud事件类型枚举
+    /// UI 事件类型枚举
     /// </summary>
     public static class UIEventNames
     {
-        // 面板切换相关事件
-        public const string SwitchSubView = "SwitchSubView";
         public const string SkillChange = "SkillLevelChange";
         public const string RoleLevelChange = "RoleLevelChange";
         public const string BlessingChange = "BlessingChange";

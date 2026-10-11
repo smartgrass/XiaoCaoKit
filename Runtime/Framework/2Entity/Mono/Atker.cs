@@ -204,7 +204,7 @@ public class AtkInfoHelper
     /// </summary>
     public static AtkInfo CreatInfo(Role player, string skillId)
     {
-        PlayerAttr attr = player.PlayerAttr;
+        RoleAttr attr = player.RoleAttr;
         bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
         int baseAtk = attr.Atk;
         float critDamage = attr.CritDamage;

@@ -29,7 +29,7 @@ namespace XiaoCao
             }
             CreateRoleBody(skinName);
             SetTeam(XCSetting.EnemyTeam);
-            data_R.playerAttr.lv = level;
+            data_R.RoleAttr.lv = level;
             InitRoleData();
 
             component.movement = new RoleMovement(this);

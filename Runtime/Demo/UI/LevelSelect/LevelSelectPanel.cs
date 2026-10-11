@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using cfg;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,6 +38,19 @@ namespace XiaoCao.UI
         private int _selectedLevelIndex;
         private ChapterSetting _currentChapterSetting;
 
+        //方向键切换关卡时列表滚动的时间
+        private const float ScrollDuration = 0.15f;
+
+        //与玩家移动一致的垂直轴: 上(w/↑)为负方向, 下(s/↓)为正方向
+        private const string VerticalAxis = "Vertical";
+        private const float AxisDeadZone = 0.5f;
+        //长按方向键的重复节奏: 首次间隔后转为持续重复
+        private const float FirstRepeatDelay = 0.35f;
+        private const float RepeatInterval = 0.12f;
+
+        private float _axisRepeatTimer;
+        private int _axisHeldStep;
+
         private void Start()
         {
             backBtn?.onClick.AddListener(OnClickBack);
@@ -57,6 +71,9 @@ namespace XiaoCao.UI
             RefreshChapterData();
             CacheLevelListRoot();
             ShowChapter(GetCurrentChapter());
+            //打开面板时仍按住的方向键视为已消费, 避免立刻切换选中关卡
+            _axisHeldStep = GetAxisStep();
+            _axisRepeatTimer = FirstRepeatDelay;
         }
 
         /// <summary>
@@ -64,7 +81,88 @@ namespace XiaoCao.UI
         /// </summary>
         public override void Hide()
         {
+            //中断可能还在进行的列表滚动
+            levelListScrollRect.DOKill();
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 读取玩家的垂直轴输入, 按上下键(或 W/S)切换选中的关卡。
+        /// </summary>
+        private void Update()
+        {
+            //章节列表展开时, 关卡列表不响应键盘
+            if (!levelView.activeSelf)
+            {
+                _axisHeldStep = 0;
+                _axisRepeatTimer = 0f;
+                return;
+            }
+
+            int step = GetAxisStep();
+            if (step == 0)
+            {
+                //松开后重置, 下一次按下立即响应
+                _axisHeldStep = 0;
+                _axisRepeatTimer = 0f;
+                return;
+            }
+
+            if (step != _axisHeldStep)
+            {
+                //新按下(含反向): 立即切换一次
+                _axisHeldStep = step;
+                _axisRepeatTimer = FirstRepeatDelay;
+                SelectLevelByStep(step);
+                return;
+            }
+
+            _axisRepeatTimer -= Time.unscaledDeltaTime;
+            if (_axisRepeatTimer <= 0f)
+            {
+                _axisRepeatTimer = RepeatInterval;
+                SelectLevelByStep(step);
+            }
+        }
+
+        /// <summary>
+        /// 读取垂直轴方向: 上为 -1(选中上一关), 下为 1(选中下一关), 未按下为 0。
+        /// </summary>
+        private static int GetAxisStep()
+        {
+            float axis = Input.GetAxisRaw(VerticalAxis);
+            return axis >= AxisDeadZone ? -1 : axis <= -AxisDeadZone ? 1 : 0;
+        }
+
+        /// <summary>
+        /// 空格键等同于点击挑战按钮。
+        /// </summary>
+        public override void InputKeyCode(KeyCode key)
+        {
+            if (key == XCInputSetting.Space && levelView.activeSelf && enterBtn.interactable)
+            {
+                OnClickEnter();
+            }
+        }
+
+        /// <summary>
+        /// 按步进切换选中的关卡, 已在首尾时保持当前选中。
+        /// </summary>
+        private void SelectLevelByStep(int step)
+        {
+            if (_currentChapterSetting == null || _currentChapterSetting.MaxLevel <= 0)
+            {
+                return;
+            }
+
+            int targetLevelIndex = Mathf.Clamp(_selectedLevelIndex + step, 1, _currentChapterSetting.MaxLevel);
+            if (targetLevelIndex == _selectedLevelIndex)
+            {
+                return;
+            }
+
+            OnSelectLevel(targetLevelIndex);
+            ScrollToSelectedLevel(true);
         }
 
         /// <summary>
@@ -120,7 +218,7 @@ namespace XiaoCao.UI
             }
 
             SetLevelBtnSelected(_selectedLevelIndex);
-            ScrollToSelectedLevelWithoutAnimation();
+            ScrollToSelectedLevel(false);
         }
 
         /// <summary>
@@ -364,9 +462,9 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 将自动选中的关卡直接移动到纵向滚动视口中间。
+        /// 滚动关卡列表, 让选中的关卡处于纵向滚动视口中间; animated 为 true 时使用缓动。
         /// </summary>
-        private void ScrollToSelectedLevelWithoutAnimation()
+        private void ScrollToSelectedLevel(bool animated)
         {
             if (levelListScrollRect == null || levelListRoot == null)
             {
@@ -411,8 +509,22 @@ namespace XiaoCao.UI
             float normalizedPosition =
                 levelListScrollRect.verticalNormalizedPosition - targetShift / hiddenLength;
 
-            levelListScrollRect.verticalNormalizedPosition = Mathf.Clamp01(normalizedPosition);
             levelListScrollRect.velocity = Vector2.zero;
+            normalizedPosition = Mathf.Clamp01(normalizedPosition);
+            if (!animated)
+            {
+                levelListScrollRect.verticalNormalizedPosition = normalizedPosition;
+                return;
+            }
+
+            //键盘切换时平滑滚动, 避免列表位置突变
+            levelListScrollRect.DOKill();
+            DOTween.To(
+                    () => levelListScrollRect.verticalNormalizedPosition,
+                    value => levelListScrollRect.verticalNormalizedPosition = value,
+                    normalizedPosition, ScrollDuration)
+                .SetEase(Ease.OutQuad)
+                .SetTarget(levelListScrollRect);
         }
 
         /// <summary>

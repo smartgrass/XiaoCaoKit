@@ -10,7 +10,7 @@ namespace XiaoCaoKit
     public class LevelResultPanel : PanelBase
     {
         public CharacterImage characterImage;
-        public TMP_Text titleText;
+        public bool closeCharacterImage;
         public Button sureBtn;
         public TMP_Text levelNameText;
         public TMP_Text killCountText;
@@ -27,6 +27,17 @@ namespace XiaoCaoKit
         public override void Hide()
         {
             gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// 空格键等同于点击确认按钮。
+        /// </summary>
+        public override void InputKeyCode(KeyCode key)
+        {
+            if (key == XCInputSetting.Space && sureBtn.interactable)
+            {
+                OnSureBtn();
+            }
         }
 
         private void OnSureBtn()
@@ -107,8 +118,6 @@ namespace XiaoCaoKit
         private void Show(bool isSuccess, string levelName, int killCount, float timeCount)
         {
             levelNameText.text = levelName;
-            titleText.text =
-                isSuccess ? LocalizeKey.LevelSuccess.ToLocalizeStr() : LocalizeKey.LevelFail.ToLocalizeStr();
             killCountText.text = $"{LocalizeKey.KillCount.ToLocalizeStr()}: {killCount}";
             //时间 分:秒
             int minutes = (int)(timeCount / 60);
@@ -120,6 +129,10 @@ namespace XiaoCaoKit
 
         public void ReadRoleImg()
         {
+            if (closeCharacterImage)
+            {
+                return;
+            }
             characterImage.ChangeModelKey(BattleData.Current.curBodyName);
         }
     }

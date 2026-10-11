@@ -40,6 +40,7 @@ namespace XiaoCao
         public static string KillCount = "KillCount";
         public static string EnemyLevel = "EnemyLevel";
         public static string Lv = "Lv";
+        public static string Exp = "Exp"; // 经验值
         public static string LevelDamageFactor = "LevelDamageFactor";
         public static string OnceDamage = "OnceDamage";
         public static string SkillDesc = "SkillDesc";

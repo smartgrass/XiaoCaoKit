@@ -39,6 +39,9 @@ namespace XiaoCao
 
         public TextMeshProUGUI text;
 
+        [Tooltip("圣器等级文本,只在物品是圣器时显示")]
+        public TextMeshProUGUI levelText;
+
         public EItemClickMode clickMode;
 
         public Action<ItemCell> clickAction;
@@ -63,6 +66,7 @@ namespace XiaoCao
             RefreshIconStyle(item);
             icon.enabled = icon.sprite != null;
             SetQualityBg(item.quality);
+            RefreshLevelText(item);
             if (textType == UIItemTextType.NeedNum)
             {
                 int hasCount = GameAllData.playerSaveData.inventory.GetItemCount(item.ItemKey);
@@ -85,6 +89,26 @@ namespace XiaoCao
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// 刷新圣器等级:圣器显示等级,其他物品隐藏等级文本
+        /// 部分格子预制体(金币条、技能消耗格)没有等级文本节点,未绑定时跳过
+        /// </summary>
+        private void RefreshLevelText(Item item)
+        {
+            if (levelText == null)
+            {
+                return;
+            }
+
+            bool isRelic = item.type == ItemType.HolyRelic;
+            levelText.gameObject.SetActive(isRelic);
+            if (isRelic)
+            {
+                //圣器等级存在 typeId 的第 3 段,如 Relic/Weapon_1_10 的 10
+                levelText.text = $"Lv{item.ToRelicItem().level}";
+            }
         }
 
         /// <summary>

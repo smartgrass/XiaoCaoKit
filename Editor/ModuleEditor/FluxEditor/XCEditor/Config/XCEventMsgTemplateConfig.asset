@@ -29,3 +29,12 @@ MonoBehaviour:
         strMsg: Time
         state: 0
       needIsUndoOnFinish: 0
+  - msgType: 25
+    templates:
+    - templateName: "\u51CF\u4F24"
+      description: "\u6280\u80FD\u65F6\u95F4\u6BB5\u5185\u751F\u6548\u7684\u4F24\u5BB3\u51CF\u514D; numMsg \u586B 0~1 \u7684\u51CF\u514D\u6BD4\u4F8B(0.3=\u51CF\u514D30%), strMsg \u586B\u51CF\u4F24\u7684\u552F\u4E00 Key, \u52FE\u9009 isUndoOnFinish \u540E\u6280\u80FD\u6BB5\u7ED3\u675F\u6216\u4E2D\u65AD\u65F6\u81EA\u52A8\u79FB\u9664"
+      baseMsg:
+        numMsg: 0.3
+        strMsg: Skill0Reduce
+        state: 0
+      needIsUndoOnFinish: 1

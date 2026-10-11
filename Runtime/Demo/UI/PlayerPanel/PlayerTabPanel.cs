@@ -41,14 +41,7 @@ namespace XiaoCao.UI
         [Button]
         public override void OnCloseBtnClick()
         {
-            if (GameDataCommon.Current.isFighting)
-            {
-                UIMgr.Inst.HideView(UIPanelType.PlayerPanel);
-            }
-            else
-            {
-                UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SwitchSubView, EHomeSubView.Main);
-            }
+            UIMgr.Inst.HideView(UIPanelType.PlayerPanel);
         }
 
         private SubPanel InitGroup(TabPanelGroup group)

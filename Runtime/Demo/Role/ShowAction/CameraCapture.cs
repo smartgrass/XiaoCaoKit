@@ -35,13 +35,18 @@ public class CameraCapture : MonoBehaviour
         captureCamera.orthographic = true; // 正交相机，避免透视变形
     }
 
+    /// <summary>
+    /// 重新设置输出图像尺寸，并释放被替换掉的渲染纹理。
+    /// </summary>
     public void SetRenderTextureSize(int x, int y)
     {
         Debug.Log($"-- set size {x} {y}");
         textureWidth = x;
         textureHeight = y;
+        RenderTexture oldTexture = _renderTexture;
         _renderTexture = new RenderTexture(textureWidth, textureHeight, 24);
         captureCamera.targetTexture = _renderTexture;
+        ReleaseRenderTexture(oldTexture);
     }
 
     /// <summary>
@@ -55,7 +60,23 @@ public class CameraCapture : MonoBehaviour
 
     private void OnDestroy()
     {
+        //相机销毁时释放渲染纹理，避免显存泄漏
+        ReleaseRenderTexture(_renderTexture);
+        _renderTexture = null;
+    }
 
+    /// <summary>
+    /// 释放渲染纹理占用的显存。
+    /// </summary>
+    private void ReleaseRenderTexture(RenderTexture texture)
+    {
+        if (texture == null)
+        {
+            return;
+        }
+
+        texture.Release();
+        Destroy(texture);
     }
 
 

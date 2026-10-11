@@ -1692,6 +1692,7 @@ namespace FluxEditor
             {
                 Select(((FEventEditor)e).TrackEditor);
                 Selection.activeObject = ((FEventEditor)e).Evt.transform;
+                Debug.Log($"-- select event");
                 undoStr += "Event";
             }
             else if (e is FTrackEditor)

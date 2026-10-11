@@ -54,6 +54,9 @@ namespace XiaoCao
         ///<see cref="EQuality"/>
         public const int MaxBuffLevel = 5; //从0~5
 
+        //最低等级
+        public const int MinRoleLevel = 1;
+
         //满级
         public const int MaxRoleLevel = 30;
 
@@ -569,6 +572,7 @@ namespace XiaoCao
         PlayerGetBuffItem = 105,
         PlayerDead = 106,
         RoleHurt = 107,
+        RoleLevelUp = 108, //角色升级 (原等级, 新等级)
 
 
         //Enemy
@@ -620,6 +624,7 @@ namespace XiaoCao
             {
                 case BattleExtraItemType.TimeStop:
                     TimeStopMgr.Inst.StopTimeSpeed(TimeStopDuration);
+                    UIMgr.Inst.battleHud.AddBuffUI(BattleExtraItemType.TimeStop,TimeStopDuration,EBuffTimeMode.SetMax);
                     return true;
                 case BattleExtraItemType.Heal:
                     return TryHealLocalPlayer();

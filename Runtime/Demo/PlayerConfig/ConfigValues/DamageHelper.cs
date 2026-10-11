@@ -9,10 +9,10 @@ public class DamageHelper
     private const float K = 1000f; // 全局固定防御常数
 
     //攻击,防御,穿透
-    public static float CalcDamageAtkInfo(AtkInfo atkInfo, int def, float defPenetrationPercent = 0)
+    public static float CalcDamageAtkInfo(AtkInfo atkInfo, int def, float defPenetrationPercent = 0, float damageReducePercent = 0)
     {
         float effecDamage = DamageHelper.CalcDamage(atkInfo.atk,
-            def, atkInfo.isCrit, 1.75f, defPenetrationPercent);
+            def, atkInfo.isCrit, 1.75f, defPenetrationPercent, damageReducePercent);
         return effecDamage;
     }
 
@@ -22,6 +22,7 @@ public class DamageHelper
     /// <param name="defPenetrationPercent">防御穿透百分比 0~1 (0.3=30%穿透)</param>
     /// <param name="isCrit">是否暴击</param>
     /// <param name="critDmgMultiplier">暴击倍率，2.0=200%爆伤</param>
+    /// <param name="damageReducePercent">减伤百分比 0~1 (0.3=减免30%伤害)</param>
     /// <param name="damageFloor">伤害保底，建议1</param>
     /// <returns>最终伤害值</returns>
     public static float CalcDamage(
@@ -29,7 +30,8 @@ public class DamageHelper
         int targetDef,
         bool isCrit,
         float critDmgMultiplier,
-        float defPenetrationPercent = 0)
+        float defPenetrationPercent = 0,
+        float damageReducePercent = 0)
     {
         // 有效防御，不能小于0
         float effectiveDEF = Mathf.Max(targetDef * (1f - defPenetrationPercent), 0f);
@@ -41,8 +43,12 @@ public class DamageHelper
         float critMult = isCrit ? critDmgMultiplier : 1f;
         float afterCritDmg = baseDmg * critMult;
 
+        // 减伤乘区, 1为不减免
+        float reduceMult = 1f - Mathf.Clamp01(damageReducePercent);
+        float afterReduceDmg = afterCritDmg * reduceMult;
+
         // 保底伤害1
-        float finalDmg = Mathf.Max(afterCritDmg, 1);
+        float finalDmg = Mathf.Max(afterReduceDmg, 1);
 
         return finalDmg;
     }

@@ -33,7 +33,7 @@ public static class CharacterAttrCalc
     }
 
     //获取 每级升级经验
-    public static int GetNextLevelExp(int lv)
+    public static int GetRoleNextLevelExp(int lv)
     {
         float k = lv / 10f;
         float val = Mathf.Pow(2, k);
@@ -48,7 +48,7 @@ public static class CharacterAttrCalc
         int total = 0;
         for (int i = 1; i < lv ; i++)
         {
-            total += GetNextLevelExp(i);
+            total += GetRoleNextLevelExp(i);
         }
 
         return total;

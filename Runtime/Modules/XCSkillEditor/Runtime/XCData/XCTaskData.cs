@@ -87,10 +87,10 @@ namespace XiaoCao
 
         public TaskInfo Info { get; set; }
         public Transform Tran { get; set; }
-        public Transform PlayerTF { get; set; }
+        public Transform PlayerTf { get; set; }
         public ParticleSystem Ps { get; set; }
 
-        public IXCCommand command { get; set; }
+        public IXCCommand Command { get; set; }
 
         public bool HasStart { get; set; }
 
@@ -99,7 +99,7 @@ namespace XiaoCao
             this.Info = info;
             var instance = PoolMgr.Inst.Get(ObjectPath);
             Tran = instance.transform;
-            PlayerTF = info.playerTF;
+            PlayerTf = info.playerTF;
 
             if (isPs)
             {
@@ -198,7 +198,7 @@ namespace XiaoCao
                     //var anglePos = GetRePos(Info.castEuler, tf.position, eulerAngle, position);
                     //Tran.eulerAngles = anglePos.Item1;
 
-                    Tran.eulerAngles = PlayerTF.eulerAngles + eulerAngle;
+                    Tran.eulerAngles = PlayerTf.eulerAngles + eulerAngle;
                     //由于MoveEvent是用差值移动的, 所以可以直接设置位置
                     Tran.position = tf.position + Quaternion.Euler(Info.castEuler) * position;
                     Debug.Log($"--- reset Start pos {tf.name} {tf.position} add {position}");
@@ -208,18 +208,19 @@ namespace XiaoCao
             if (transfromType is TransfromType.PlayerTransfrom or TransfromType.PlyerPos)
             {
                 //实时计算,误差似乎不可避免
-                Tran.eulerAngles = PlayerTF.eulerAngles + eulerAngle;
-                Tran.position = PlayerTF.TransformPoint(position);
+                Tran.eulerAngles = PlayerTf.eulerAngles + eulerAngle;
+                Tran.position = PlayerTf.TransformPoint(position);
             }
             if (transfromType == TransfromType.PlayerTransfrom)
             {
-                Tran.SetParent(PlayerTF, true);
+                Tran.SetParent(PlayerTf, true);
             }
             else
             {
                 Tran.SetParent(Info.taskRunner.transform, true);
             }
-            Tran.localScale = scale;
+            //整体缩放:命中 ModifyDic 的 Scale 规则时,子物体按 (1 + num) 倍放大
+            Tran.localScale = scale * TaskModifyRule.GetScaleFactor(Info, this);
         }
 
         public static Vector3 GetOffset(Transform tf, Vector3 castPos)

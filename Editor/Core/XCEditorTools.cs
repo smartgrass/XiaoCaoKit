@@ -49,6 +49,7 @@ namespace XiaoCaoEditor
         public const string XCFindWindow = "XiaoCao/查询面板";
         public const string XCAnimModifyWindow ="XiaoCao/XCAnimModifyWindow";
         public const string XCAnimSpeedBakeWindow ="XiaoCao/动画速度曲线烘焙";
+        public const string XCAnimPoseBreatheWindow ="XiaoCao/给姿势加呼吸";
 
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
@@ -347,7 +348,7 @@ namespace XiaoCaoEditor
             return new Vector3(600 + subPosYIndex * 220, (posYIndex + subIndex / 5f) * 50, 0);
         }
 
-        [MenuItem(XCEditorTools.AssetCheck + "清空动画机")]
+        [MenuItem(XCEditorTools.AssetCheck + "动画机只保留1个Layer")]
         private static void ClearAnimator()
         {
             var select = Selection.activeObject;

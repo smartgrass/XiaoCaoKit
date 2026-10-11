@@ -204,7 +204,7 @@ namespace XiaoCao
                 return;
             }
 
-            PlayerAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
+            RoleAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
             string[] attrTexts =
             {
                 $"{("Hp".ToLocalizeStr())}:{Mathf.RoundToInt(attr.hp)}/{Mathf.RoundToInt(attr.MaxHp)}",
@@ -366,6 +366,7 @@ namespace XiaoCao
             cell.icon.enabled = false;
             cell.qualityBg.enabled = false;
             cell.text.text = string.Empty;
+            cell.levelText.gameObject.SetActive(false);
             cell.btn.interactable = false;
         }
         
@@ -492,7 +493,7 @@ namespace XiaoCao
                 }
 
                 breakDownCount++;
-                foreach (Item reward in ForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
+                foreach (Item reward in RelicForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
                 {
                     inventory.AddItem(reward);
                 }
@@ -529,7 +530,7 @@ namespace XiaoCao
             Dictionary<string, Item> rewardDic = new Dictionary<string, Item>();
             foreach (Item item in _breakDownItems)
             {
-                foreach (Item reward in ForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
+                foreach (Item reward in RelicForgeCostCalc.GetBreakDownItems(item.ToRelicItem()))
                 {
                     if (rewardDic.TryGetValue(reward.ItemKey, out Item existReward))
                     {

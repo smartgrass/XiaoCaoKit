@@ -49,13 +49,42 @@ namespace XiaoCao
                 rewardList.Add(new Item(ItemType.Coin,nameof(ItemType.Coin),coin));
             }
 
+            //通关矿石: 只有精英关重复刷才产出
+            Item oreItem = LevelRewardCalc.GetClearOre(setting.Id);
+            if (oreItem != null)
+            {
+                rewardList.Add(oreItem);
+            }
+
             return rewardList;
         }
 
+        /// <summary>
+        /// 关卡首通奖励: 配置奖励 + 首通经验值
+        /// 经验值用 <see cref="ItemType.OtherValue"/> 加 typeId <see cref="OtherValueItemId.Exp"/> 表示, 不进入背包
+        /// </summary>
         public static List<Item> GetFirstReward(string levelName)
         {
             var setting = LubanTables.GetLevelSetting(levelName);
-            return setting.FirstReward;
+
+            //配置奖励是配置表数据, 复制一份再补充首通经验值
+            List<Item> rewardList = new List<Item>(setting.FirstReward);
+
+            //首通经验值按关卡Id计算
+            int exp = LevelRewardCalc.CalcFirstPassExp(setting.Id);
+            if (exp > 0)
+            {
+                rewardList.Add(new Item(ItemType.OtherValue, OtherValueItemId.Exp, exp));
+            }
+
+            //首通矿石: 所有关卡都有(精英关按精英数值)
+            Item oreItem = LevelRewardCalc.GetFirstPassOre(setting.Id);
+            if (oreItem != null)
+            {
+                rewardList.Add(oreItem);
+            }
+
+            return rewardList;
         }
 
         public static int GetEnemyCoin(string levelName)

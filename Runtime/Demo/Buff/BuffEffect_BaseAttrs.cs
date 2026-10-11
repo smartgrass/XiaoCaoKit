@@ -17,7 +17,7 @@ namespace XiaoCao.Buff
             {
                 Add = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
         }
     }
 
@@ -37,7 +37,7 @@ namespace XiaoCao.Buff
             {
                 Multiply = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
         }
     }
 
@@ -66,7 +66,7 @@ namespace XiaoCao.Buff
             {
                 Add = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
         }
     }
 
@@ -92,7 +92,7 @@ namespace XiaoCao.Buff
             {
                 Multiply = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
 
             //保留hp的比例
             player.Hp = (int)(player.MaxHp * percent);
@@ -115,7 +115,7 @@ namespace XiaoCao.Buff
             {
                 Add = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
         }
     }
 
@@ -134,7 +134,7 @@ namespace XiaoCao.Buff
             {
                 Add = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
             player.component.atkTimer.UpdataCdOff();
         }
 
@@ -162,7 +162,7 @@ namespace XiaoCao.Buff
             {
                 Add = buff.addInfo[0]
             };
-            player.PlayerAttr.ChangeAttrValue(EAttr, Key, modifier);
+            player.RoleAttr.ChangeAttrValue(EAttr, Key, modifier);
         }
     }
 

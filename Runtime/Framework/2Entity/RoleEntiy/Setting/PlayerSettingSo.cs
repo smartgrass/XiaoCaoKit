@@ -1,15 +1,14 @@
 ﻿using NaughtyAttributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace XiaoCao
 {
 
     [CreateAssetMenu(menuName = "SO/PlayerSettingSo")]
-    /// player专属的设置
+    // player专属的设置
     public class PlayerSettingSo : NumMapSo<PlayerSetting>
     {
     }
@@ -18,7 +17,7 @@ namespace XiaoCao
     [Serializable]
     public class PlayerSetting : IIndex
     {
-        public int id = 0;
+        public int id;
         public int Id => id;
 
         public int norAtkCount = 3;
@@ -46,20 +45,19 @@ namespace XiaoCao
     public class AttrSetting : IIndex
     {
         public string desc = "备注";
-        public int id = 0;
+        public int id;
         public int Id => id;
         
         public AttrSettingTag settingTag;
         public int maxLevel = 50;
 
-        public int baseHp = 100;
+        [FormerlySerializedAs("baseHp")] 
+        public int addHp = 100;
         
         //倍率微调
         public float atkMult = 1;
         public float defMult = 1;
         public float hpMult = 1;
-
-        public float offsetLevel = 10;
 
         public float maxArmor = 4;
 
@@ -93,12 +91,12 @@ namespace XiaoCao
 
         public T[] array;
 
-        public bool hasInited = false;
+        public bool hasInited;
 
-        public void InitMap(T[] array)
+        public void InitMap(T[] intiArray)
         {
             hasInited = true;
-            map = ArrayToMap(array);
+            map = ArrayToMap(intiArray);
         }
 
         public T GetOrFrist(int key)

@@ -101,4 +101,14 @@ public static class SpriteResHelper
     {
         return ResMgr.LoadAseet<Sprite>(XCPathConfig.GetRoleTexturePath(roleKey));
     }
+    
+    public static Sprite LoadEmblemBuffIcon(string buffName)
+    {
+        return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/EmblemBuffIcon/{buffName}.png");
+    }
+
+    public static Sprite LoadBuffStateUIIcon(string buffName)
+    {
+        return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/{buffName}.png");
+    }
 }

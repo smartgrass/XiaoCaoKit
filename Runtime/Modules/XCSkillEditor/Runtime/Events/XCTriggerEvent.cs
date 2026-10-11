@@ -30,7 +30,8 @@ namespace XiaoCao
         public MeshType MeshType => meshInfo.meshType;
 
         public float atkSpan = 0;
-        private float atkSpanTimer = 0;
+        //下一次重置伤害判定的时间点(相对事件开始的时间)
+        private float nextSpanTime = 0;
 
         public ITrigger Trigger { get; set; }
 
@@ -45,6 +46,7 @@ namespace XiaoCao
             base.OnTrigger(startOffsetTime);
             isTriggeredEnd = false;
             hasCollision = false;
+            nextSpanTime = atkSpan;
 
             AtkCommponent = TriggerCache.GetTrigger(MeshType);
             GetTrigger();
@@ -62,19 +64,24 @@ namespace XiaoCao
         public override void OnUpdateEvent(int frame, float timeSinceTrigger)
         {
             base.OnUpdateEvent(frame, timeSinceTrigger);
-            if (!isTriggeredEnd)
+
+            if (isTriggeredEnd || atkSpan <= 0)
             {
-                if (atkSpan > 0)
-                {
-                    //重置伤害判定
-                    atkSpanTimer += XCTime.fixedDeltaTime;
-                    if (atkSpanTimer >= atkSpan)
-                    {
-                        atkSpanTimer = 0;
-                        Trigger.ReEnableHit();
-                    }
-                }
+                return;
             }
+
+            if (timeSinceTrigger < nextSpanTime)
+            {
+                return;
+            }
+
+            //一帧内跨过多个间隔(卡顿)时, 只重置一次判定, 指针一次追平
+            while (timeSinceTrigger >= nextSpanTime)
+            {
+                nextSpanTime += atkSpan;
+            }
+
+            Trigger.ReEnableHit();
         }
 
         void GetTrigger()
@@ -150,7 +157,7 @@ namespace XiaoCao
 
         private void SetAtkInfo()
         {
-            PlayerAttr attr = Info.role.PlayerAttr;
+            RoleAttr attr = Info.role.RoleAttr;
             int baseAtk = attr.Atk;
             bool isCrit = MathTool.IsInRandom(attr.Crit / 100f);
             float critDamage = attr.CritDamage;

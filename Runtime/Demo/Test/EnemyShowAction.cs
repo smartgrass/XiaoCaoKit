@@ -52,8 +52,8 @@ public class EnemyShowAction : BaseShowAction
                 if (!string.IsNullOrEmpty(showActData.content))
                 {
                     int hp = int.Parse(showActData.content);
-                    enemy0.PlayerAttr.GetAttribute(EAttr.MaxHp).BaseValue = hp;
-                    enemy0.PlayerAttr.hp = hp;
+                    enemy0.RoleAttr.GetAttribute(EAttr.MaxHp).BaseValue = hp;
+                    enemy0.RoleAttr.hp = hp;
                 }
 
                 break;

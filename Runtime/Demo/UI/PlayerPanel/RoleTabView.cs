@@ -12,18 +12,14 @@ namespace XiaoCao.UI
 {
     public class RoleTabView : TabView
     {
-        public Button upgradeBtn;
-        public TMP_Text levelText;
-        [Header("1满级")] public UIStateChange fullLvChange;
         public Transform attrTextParent;
-        public Transform costParent;
         public GameObject unFightUI;
+        public Transform roleList;
 
         private PlayerSaveData PlayerSaveData => GameAllData.playerSaveData;
 
         private void Awake()
         {
-            upgradeBtn.onClick.AddListener(OnUpgradeBtnClick);
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.BlessingChange, OnRoleLevelChange);
         }
@@ -57,16 +53,15 @@ namespace XiaoCao.UI
             }
 
 
-            int nextLv = Mathf.Max(0, PlayerSaveData.lv) + 1;
+            int nextLv = PlayerSaveData.lv + 1;
             if (!IsEnoughCost(nextLv, true))
             {
                 Debug.LogError($"-- no IsEnoughCost");
                 return;
             }
 
-            Toast.Show(LocalizeKey.LevelUp.ToLocalizeStr());
-            PlayerSaveData.lv = nextLv;
-            PlayerSaveData.SavaData();
+            //等级提升统一走 PlayerSaveData, 内部会广播升级事件弹出升级提示
+            PlayerSaveData.UpgradeLevel();
             UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.RoleLevelChange);
         }
 
@@ -100,81 +95,88 @@ namespace XiaoCao.UI
 
             ShowPlayerAttr();
 
-            if (GameDataCommon.Current.isFighting)
+            //UnFight 属于 Home 场景的内容, 关卡内隐藏主控角色列表
+            if (GameDataCommon.Current.gameStage == EGameStage.Home)
             {
-                unFightUI.SetActive(false);
+                unFightUI.SetActive(true);
+                RefreshRoleList();
             }
             else
             {
-                ShowUpgradeUI();
-                unFightUI.SetActive(true);
+                unFightUI.SetActive(false);
             }
         }
 
-        private void ShowUpgradeUI()
+        /// <summary>
+        /// 刷新主控角色列表: 按解锁数量生成 RoleCell, 并把 LocalRoleSetting.selectRole 对应的格子置为选中。
+        /// </summary>
+        private void RefreshRoleList()
         {
-            if (PlayerSaveData.lv >= GameSetting.MaxRoleLevel)
+            LocalRoleSetting roleSetting = ConfigMgr.Inst.LocalRoleSetting;
+            int roleCount = roleSetting.GetRoleCount();
+
+            UITool.SetCellListCount(roleList, roleCount);
+
+            RoleCell[] cells = roleList.GetComponentsInChildren<RoleCell>(true);
+            for (int i = 0; i < roleCount; i++)
             {
-                //角色满级
-                fullLvChange.SetState(1);
-                return;
+                cells[i].SetRole(i, i == roleSetting.selectRole, OnRoleCellClick);
             }
+        }
 
-            fullLvChange.SetState(0);
-            UpdateCost();
-            int nextLv = PlayerSaveData.lv + 1;
-            levelText.text = $"lv{PlayerSaveData.lv} -> lv{nextLv}";
-
-            if (!IsEnoughCost(nextLv, false))
-            {
-                //将升级按钮变灰
-                upgradeBtn.interactable = false;
-                return;
-            }
-
-            upgradeBtn.interactable = true;
+        /// <summary>
+        /// 点击角色格子后写入主控角色配置, 并刷新选中状态。
+        /// </summary>
+        private void OnRoleCellClick(int roleIndex)
+        {
+            ConfigMgr.Inst.LocalRoleSetting.selectRole = roleIndex;
+            LocalRoleSetting.Save();
+            RefreshRoleList();
         }
 
         private void ShowPlayerAttr()
         {
-            UITool.SetCellListCount(attrTextParent, 6);
+            UITool.SetCellListCount(attrTextParent, 7);
 
             var texts = attrTextParent.GetComponentsInChildren<TMP_Text>();
-            PlayerAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
+            RoleAttr attr = PlayerSaveData.GetInitPlayerAttr(false);
 
             texts[0].text = $"Lv {PlayerSaveData.lv}";
-            texts[1].text = GetRoleAttrShowText(EAttr.MaxHp, attr);
-            texts[2].text = GetRoleAttrShowText(EAttr.Atk, attr);
-            texts[3].text = GetRoleAttrShowText(EAttr.Def, attr);
-            texts[4].text = GetRoleAttrShowText(EAttr.Crit, attr);
-            texts[5].text = GetRoleAttrShowText(EAttr.CritDamage, attr);
+            texts[1].text = GetRoleExpShowText();
+            texts[2].text = GetRoleAttrShowText(EAttr.MaxHp, attr);
+            texts[3].text = GetRoleAttrShowText(EAttr.Atk, attr);
+            texts[4].text = GetRoleAttrShowText(EAttr.Def, attr);
+            texts[5].text = GetRoleAttrShowText(EAttr.Crit, attr);
+            texts[6].text = GetRoleAttrShowText(EAttr.CritDamage, attr);
         }
 
-        private void UpdateCost()
+        /// <summary>
+        /// 格式化角色经验显示: 未满级显示 当前经验/升级所需经验, 满级后只显示累计经验。
+        /// </summary>
+        private string GetRoleExpShowText()
         {
-            List<Item> list = LubanTables.GetRoleUpgradeItems(PlayerSaveData.lv + 1);
-            UITool.SetCellListCount(costParent, list.Count);
-
-            var cells = costParent.GetComponentsInChildren<ItemCell>(false);
-            for (int i = 0; i < list.Count; i++)
+            string expName = LocalizeKey.Exp.ToLocalizeStr();
+            if (PlayerSaveData.lv >= GameSetting.MaxRoleLevel)
             {
-                var item = list[i];
-                var cell = cells[i];
-                cell.SetItem(item, UIItemTextType.NeedNum);
+                return $"{expName}:{PlayerSaveData.exp}";
             }
+
+            int nextLevelExp = CharacterAttrCalc.GetRoleNextLevelExp(PlayerSaveData.lv);
+            return $"{expName}:{PlayerSaveData.exp}/{nextLevelExp}";
         }
 
         /// <summary>
         /// 格式化角色属性显示值，统一按四舍五入显示整数。
         /// </summary>
-        private string GetRoleAttrShowText(EAttr attr, PlayerAttr playerAttr)
+        private string GetRoleAttrShowText(EAttr attr, RoleAttr roleAttr)
         {
             if (attr == EAttr.MaxHp)
             {
-                return $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(playerAttr.hp)}/{attr.GetEAttrNumString(playerAttr.MaxHp)}";
+                return
+                    $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(roleAttr.hp)}/{attr.GetEAttrNumString(roleAttr.MaxHp)}";
             }
 
-            return $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(playerAttr.GetAttribute(attr).CurrentValue)}";
+            return $"{attr.ToLocalizedName()}:{attr.GetEAttrNumString(roleAttr.GetAttribute(attr).CurrentValue)}";
         }
     }
 }

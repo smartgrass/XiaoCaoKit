@@ -93,7 +93,8 @@ namespace XiaoCao
             newData.IsMainTask = true;
             Task.Runner = this;
             IsAllStop = false;
-            Task.StartRun();
+            //按 TaskInfo 里的起始帧开始执行(0 = 从头),动画事件会靠 timeSinceTrigger 自动快进
+            Task.StartRun(info.startFrame * XCSetting.FramePerSec);
 
             this.debugInfo = info;
             this.debugSkillId = info.skillId;
@@ -211,6 +212,12 @@ namespace XiaoCao
         public int entityId;
         public string skillId;  //如100
 
+        //从第几帧开始执行(0 = 从头开始)
+        public float startFrame;
+
+        //本条技能链上被 NextSkill 触发的次数(起始技能为 0)
+        public int callCount;
+
         //释放技能时记录角度 和 位置
         public Vector3 castEuler;
 
@@ -226,6 +233,11 @@ namespace XiaoCao
 
         public float speedMult = 1;
 
+
+        /// <summary>
+        /// 技能运行时修改项,key 见 <see cref="TaskModifyRule"/>(如 "Scale"),播放技能前由调用方写入
+        /// </summary>
+        public Dictionary<string, ModifyTaskInfo> ModifyDic = new Dictionary<string, ModifyTaskInfo>();
 
         public XCTaskRunner taskRunner;
     }

@@ -287,7 +287,7 @@ namespace XiaoCao.UI
 
             RelicItem relic = _selectedForgeSetting.GetRelicItem();
             var item = relic.ToItem();
-            List<Item> materials = ForgeCostCalc.GetNeedItems(relic);
+            List<Item> materials = RelicForgeCostCalc.GetNeedItems(relic);
 
             if (forgeItemNameText != null)
             {
@@ -361,7 +361,7 @@ namespace XiaoCao.UI
             Inventory inventory = PlayerSaveData.LocalSavaData.inventory;
 
             var relicItem = configRow.GetRelicItem();
-            List<Item> materials = ForgeCostCalc.GetNeedItems(relicItem);
+            List<Item> materials = RelicForgeCostCalc.GetNeedItems(relicItem);
             if (!inventory.CheckEnoughItemList(materials, false))
             {
                 Toast.Show(LocalizeKey.NoEnough.ToLocalizeStr(), 1);

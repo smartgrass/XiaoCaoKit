@@ -25,9 +25,12 @@ namespace XiaoCao
     [Serializable]
     public class XCScaleEvent : XCLineEvent
     {
+        /// <summary>
+        /// 整体缩放:基础 scale 已按 ModifyDic 的 Scale 规则放大,这里让缩放过程按同样倍数放大
+        /// </summary>
         public override void ApplyDetalVec(Vector3 detal)
         {
-            Tran.localScale += detal;
+            Tran.localScale += detal * TaskModifyRule.GetScaleFactor(Info, task.ObjectData);
         }
     }
 

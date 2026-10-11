@@ -138,7 +138,7 @@ namespace XiaoCao
             }
 
 
-            float speed = baseSpeed * Data_R.roleState.moveAnimMult * Data_R.playerAttr.GetValue(EAttr.MoveSpeedMult);
+            float speed = baseSpeed * Data_R.roleState.moveAnimMult * Data_R.RoleAttr.GetValue(EAttr.MoveSpeedMult);
 
             Vector3 moveDelta = moveDir * speed * XCTime.fixedDeltaTime;
 

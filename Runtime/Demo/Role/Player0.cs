@@ -49,13 +49,13 @@ namespace XiaoCao
 
             playerData.playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
             GetPlayerCmdList(true);
-            data_R.playerAttr.lv = savaData.lv;
+            data_R.RoleAttr.lv = savaData.lv;
 
             playerData.playerSetting.skillIdList = savaData.skillBarSetting;
 
             InitRoleData();
-            data_R.playerAttr = savaData.GetInitPlayerAttr();
-            data_R.playerAttr.RoleId = id;
+            data_R.RoleAttr = savaData.GetInitPlayerAttr();
+            data_R.RoleAttr.RoleId = id;
             RoleIdentityType = RoleIdentityType.Player;
 
             component.input = new PlayerInput(this);
@@ -393,7 +393,7 @@ namespace XiaoCao
         Focus = 4,
     }
 
-    public class PlayerAttr
+    public class RoleAttr
     {
         public int lv;
 
@@ -430,21 +430,22 @@ namespace XiaoCao
                 Debug.Log($"--- set player level {lv}");
             }
             
-            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.baseHp;
+            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.addHp;
             GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.atkMult);
             GetAttribute(EAttr.Def).BaseValue = (int)(CharacterAttrCalc.GetBaseDEF(lv) * setting.defMult);
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.CritDamage).BaseValue = 0;
             GetAttribute(EAttr.MoveSpeedMult).BaseValue = 1;
             GetAttribute(EAttr.NoDamage).BaseValue = 0;
+            GetAttribute(EAttr.DamageReduce).BaseValue = 0;
         }
 
         /// <summary>
         /// 创建属性副本，避免外部修改影响缓存数据。
         /// </summary>
-        public PlayerAttr Clone()
+        public RoleAttr Clone()
         {
-            PlayerAttr copy = new PlayerAttr
+            RoleAttr copy = new RoleAttr
             {
                 lv = lv,
                 hp = hp,

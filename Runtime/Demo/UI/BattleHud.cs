@@ -18,9 +18,10 @@ namespace XiaoCao
 
         public GameObject worldHpBarPrefab;
 
-        public Transform worldHpBarParent;
-
-        public RectTransform aimImgRT;
+        private WorldCanvasChildUsing worldCanvasChildUsing;
+        private Transform WorldHpBarParent => worldCanvasChildUsing.worldHpBarParent;
+        public Canvas WorldCanvas=> worldCanvasChildUsing.worldCanvas;
+        public RectTransform AimImgRT => worldCanvasChildUsing.aimImgRT;
 
         public ItemPopHud itemPopHud;
 
@@ -28,9 +29,13 @@ namespace XiaoCao
 
         public Transform bossBarParent;
 
+        public Transform playerBuffStates;
+
+        //buff 倒计时 UI 管理器
+        public BuffStateMgr BuffStateMgr { get; private set; }
+
         public TextMeshProUGUI lvText;
 
-        public Canvas worldCanvas;
 
         public Button exitLevelBtn;
 
@@ -38,6 +43,7 @@ namespace XiaoCao
 
         // public RectTransform tipRect;
         private RectTransform _canRect;
+
         // private TMP_Text _tipText;
         public RectTransform popTipRect;
         private TMP_Text _popTipText;
@@ -57,15 +63,17 @@ namespace XiaoCao
         private HpBar bossBarTemplate;
 
 
-        public void Init()
+        public void Init(WorldCanvasChildUsing worldUsing)
         {
             pool = PoolMgr.Inst.GetOrCreatPrefabPool(worldHpBarPrefab);
+            worldCanvasChildUsing = worldUsing;
             InitBossBar();
+            BuffStateMgr = new BuffStateMgr(playerBuffStates);
             GameEvent.AddEventListener<int, RoleChangeType>(EGameEvent.RoleChange.ToInt(), OnEntityChange);
             GameEvent.AddEventListener<ENowAttr, float>(EGameEvent.LocalPlayerChangeNowAttr.ToInt(),
                 LocalPlayerChangeNowAttr);
             GameEvent.AddEventListener<ELevelResult>(EGameEvent.LevelEnd.ToInt(), OnLevelEnd);
-            worldCanvas.worldCamera = Camera.main;
+            WorldCanvas.worldCamera = Camera.main;
             InitDamageText();
             gameObject.SetActive(true);
             playerBar.SetBarColors(false);
@@ -104,6 +112,7 @@ namespace XiaoCao
                 UpdateItemHpBar();
                 TipUpdate();
                 PopTipUpdate();
+                BuffStateMgr.Update();
             }
         }
 
@@ -155,7 +164,7 @@ namespace XiaoCao
             if (bar == null)
             {
                 bar = CreateEnemyHpBar(role);
-                barDic[role.id] = bar; 
+                barDic[role.id] = bar;
             }
 
             bar.UpdateHealthBar(role.Hp / (float)role.MaxHp);
@@ -163,6 +172,7 @@ namespace XiaoCao
             {
                 bar.gameObject.SetActive(false);
             }
+
             bar.UpdateArmorBar(role.ShowArmorPercentage);
             if (IsBossBar(bar))
             {
@@ -179,7 +189,7 @@ namespace XiaoCao
             GameObject newBarGo = pool.Get();
             var bar = newBarGo.GetComponent<HpBar>();
             itemHpBarDic[target] = bar;
-            bar.transform.SetParent(worldHpBarParent, false);
+            bar.transform.SetParent(WorldHpBarParent, false);
             bar.SetFollow(target, offset);
             return bar;
         }
@@ -275,12 +285,12 @@ namespace XiaoCao
             GameObject newBarGo = pool.Get();
             var bar = newBarGo.GetComponent<HpBar>();
             bar.InitColor(role);
-            bar.transform.SetParent(worldHpBarParent, false);
+            bar.transform.SetParent(WorldHpBarParent, false);
             bar.SetFollowRole(role);
             bar.UpdateLvText(role.Level);
             return bar;
         }
-
+        
         private HpBar GetBossHpBar(Role role)
         {
             if (bossBarTemplate == null)
@@ -566,12 +576,12 @@ namespace XiaoCao
         internal void ShowAnimTarget(Vector3 position)
         {
             //Vector2 pos = WorldScreenHelper.WorldToAnchorPos(position,UIMgr.Inst.midCanvas.transform as RectTransform);
-            aimImgRT.transform.position = position;
+            AimImgRT.transform.position = position;
         }
 
         public void HideAnimTarget()
         {
-            aimImgRT.transform.position = hidePos;
+            AimImgRT.transform.position = hidePos;
         }
 
 
@@ -686,7 +696,7 @@ namespace XiaoCao
                 {
                     return false;
                 }
-            
+
                 _canRect = canvas.GetComponent<RectTransform>();
             }
 
@@ -782,7 +792,18 @@ namespace XiaoCao
         }
 
         #endregion
-        
+
+        #region BuffState
+
+        /// <summary>
+        /// 添加玩家 buff 的倒计时显示; 同名 buff 按 mode 处理: SetMax 取较大时间, Add 叠加时间。
+        /// </summary>
+        public void AddBuffUI(string buffName, float buffTime, EBuffTimeMode mode)
+        {
+            BuffStateMgr.AddBuffUI(buffName, buffTime, mode);
+        }
+
+        #endregion
     }
 
     public struct UITipData

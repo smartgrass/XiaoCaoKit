@@ -15,6 +15,9 @@ namespace FluxEditor
 
 		protected Rect _eventRect;
 
+		//缩放事件首帧大小对不上时的提示文字颜色
+		private static readonly Color START_MISMATCH_COLOR = new Color( 1f, 0.55f, 0f );
+
 		public override FSequenceEditor SequenceEditor { get { return TrackEditor != null ? TrackEditor.SequenceEditor : null; } }
 
 		public override float Height { get { return FTrackEditor.DEFAULT_TRACK_HEIGHT; } }
@@ -100,6 +103,15 @@ namespace FluxEditor
 				string text = Evt.Text;
 				if( text != null )
 					GUI.Label( _eventRect, text, GetTextStyle() );
+
+				//缩放事件首帧大小与物体实际大小对不上时,在事件块上给出文字提醒
+				if( Evt is FTweenScaleEvent scaleEvt && FScaleEventStartChecker.HasStartMismatch( scaleEvt ) )
+				{
+					Color guiColor = GUI.color;
+					GUI.color = START_MISMATCH_COLOR;
+					GUI.Label( _eventRect, " 首帧大小不符 ", GetTextStyle() );
+					GUI.color = guiColor;
+				}
 
 				break;
 

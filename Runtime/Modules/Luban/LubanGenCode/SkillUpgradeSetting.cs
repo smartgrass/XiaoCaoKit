@@ -22,6 +22,7 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
         LevelDamageFactor = _buf.ReadFloat();
         MaxLevel = _buf.ReadInt();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);Cost = new System.Collections.Generic.List<int>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { int _e0;  _e0 = _buf.ReadInt(); Cost.Add(_e0);}}
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);CostomValues = new System.Collections.Generic.List<float>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { float _e0;  _e0 = _buf.ReadFloat(); CostomValues.Add(_e0);}}
     }
 
     public static SkillUpgradeSetting DeserializeSkillUpgradeSetting(ByteBuf _buf)
@@ -35,12 +36,14 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
     public readonly float LevelDamageFactor;
     public readonly int MaxLevel;
     public readonly System.Collections.Generic.List<int> Cost;
+    public readonly System.Collections.Generic.List<float> CostomValues;
    
     public const int __ID__ = 222507301;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -58,6 +61,7 @@ public sealed partial class SkillUpgradeSetting : Luban.BeanBase
         + "levelDamageFactor:" + LevelDamageFactor + ","
         + "maxLevel:" + MaxLevel + ","
         + "cost:" + Luban.StringUtil.CollectionToString(Cost) + ","
+        + "costomValues:" + Luban.StringUtil.CollectionToString(CostomValues) + ","
         + "}";
     }
 }

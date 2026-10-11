@@ -288,8 +288,11 @@ namespace XiaoCao
                 return;
             }
 
+            //同场景配置多条bgm时随机取一条
+            string bgmName = pathList[Random.Range(0, pathList.Count)];
+
             //配置的bgm文件不存在时视同未配置
-            string fullPath = $"{XCPathConfig.GetGameConfigDir()}/{pathList[0]}";
+            string fullPath = $"{XCPathConfig.GetGameConfigDir()}/{bgmName}";
             if (!File.Exists(fullPath))
             {
                 Debug.LogWarning($"--- bgm file not found: {fullPath}");

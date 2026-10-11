@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using EasyUI.Helpers;
 using TEngine;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao.UI;
@@ -21,6 +22,7 @@ namespace XiaoCao
         //面板,窗口 ->动态加载,需要触发才加载   panel
         public Canvas topCanvas;
         public Canvas midCanvas;
+        public WorldCanvasChildUsing worldCanvasChildUsing;
 
         public BattleHud battleHud;
         
@@ -49,6 +51,8 @@ namespace XiaoCao
 
         public RebornPanel rebornPanel;
 
+        public GameObject levelUpTip;
+
         [ReadOnly] public PanelBase lastpanel;
 
         public Canvas Canvas => topCanvas;
@@ -59,7 +63,7 @@ namespace XiaoCao
         {
             base.Init();
             UICanvasMgr.Inst.canvasMgr = this;
-            battleHud?.Init();
+            battleHud?.Init(worldCanvasChildUsing);
             settingPanel?.Init();
             playerPanel?.Init();
             transform.SetParent(null);
@@ -67,8 +71,10 @@ namespace XiaoCao
             buffSelectPanel.Init();
             rebornPanel?.Init();
             forgePanel.Hide();
+            levelUpTip.gameObject.SetActive(false);
             OnChangeInputType(GameSetting.UserInputType);
             OnStageUISet(GameDataCommon.Current.gameStage);
+            GameEvent.AddEventListener<int, int>(EGameEvent.RoleLevelUp.ToInt(), OnRoleLevelUp);
         }
 
         //入口和战斗ui有所区别
@@ -86,6 +92,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
+            GameEvent.RemoveEventListener<int, int>(EGameEvent.RoleLevelUp.ToInt(), OnRoleLevelUp);
             UICanvasMgr.Inst.EventSystem.ClearAllEvents();
         }
 
@@ -306,6 +313,23 @@ namespace XiaoCao
         public void PopItemDetail()
         {
             //Assets/_Res/UI/ItemDetailPop.prefab
+        }
+
+        public void PopLevelUpTip(int levelFrom , int levelTo)
+        {
+            levelUpTip.SetActive(false);
+            var levelText = levelUpTip.transform.Find("Image/LevelText").GetComponent<TMP_Text>();
+            levelText.text = $"Lv{levelFrom}        Lv{levelTo}";
+            levelUpTip.SetActive(true);
+            
+        }
+
+        /// <summary>
+        /// 角色升级回调: 弹出升级提示
+        /// </summary>
+        private void OnRoleLevelUp(int levelFrom, int levelTo)
+        {
+            PopLevelUpTip(levelFrom, levelTo);
         }
     }
 

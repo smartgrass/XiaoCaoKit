@@ -54,6 +54,8 @@ namespace XiaoCao
         SetUnRotate = 23,
         [InspectorName("脱离父节点")]
         ObjectUnFollow = 24,
+        [InspectorName("减伤比例-float(0~1)")]
+        DamageReduce = 25,
 
 
     }

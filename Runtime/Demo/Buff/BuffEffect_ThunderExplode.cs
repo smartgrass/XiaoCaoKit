@@ -81,7 +81,7 @@ namespace XiaoCaoKit.Runtime.Demo.Buff
             // 限制连锁目标数量
             int targetCount = Mathf.Min(enemies.Count, MaxChainTargets);
             AtkInfo atkInfo = AtkInfoHelper.CreatInfo(ownerRole, Buff.ToString());
-            int damage = Mathf.RoundToInt(ownerRole.PlayerAttr.Atk * damageRate);
+            int damage = Mathf.RoundToInt(ownerRole.RoleAttr.Atk * damageRate);
             atkInfo.atk = damage;
             AtkInfoHelper.ProcessAtkInfo(atkInfo);
             SoundMgr.Inst.PlayHitAudio("Ele");

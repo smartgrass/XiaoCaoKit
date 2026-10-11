@@ -42,7 +42,7 @@ namespace XiaoCao
         //roleData
         public RoleData data_R;
 
-        public PlayerAttr PlayerAttr => data_R.playerAttr;
+        public RoleAttr RoleAttr => data_R.RoleAttr;
 
         public Action<Role> DeadAct;
 
@@ -50,18 +50,18 @@ namespace XiaoCao
 
         public int Level
         {
-            get => PlayerAttr.lv;
+            get => RoleAttr.lv;
         }
 
         public override int Hp
         {
-            get => (int)Math.Round(PlayerAttr.hp);
-            set => PlayerAttr.hp = value;
+            get => (int)Math.Round(RoleAttr.hp);
+            set => RoleAttr.hp = value;
         }
 
         public override float MaxHp
         {
-            get => PlayerAttr.MaxHp;
+            get => RoleAttr.MaxHp;
         }
 
 
@@ -72,7 +72,12 @@ namespace XiaoCao
 
         public bool IsHiding = false; //隐身
 
-        public bool IsNoDamage => PlayerAttr.GetAttribute(EAttr.NoDamage).CurrentValue > 0;
+        public bool IsNoDamage => RoleAttr.GetAttribute(EAttr.NoDamage).CurrentValue > 0;
+
+        /// <summary>
+        /// 当前减伤比例(0~1),由技能时间轴上的减伤消息在持续时间内生效
+        /// </summary>
+        public float DamageReducePercent => Mathf.Clamp01(RoleAttr.GetAttribute(EAttr.DamageReduce).CurrentValue);
 
         public bool IsAnimBreak => Anim.GetCurrentAnimatorStateInfo(0).IsTag("Break");
 
@@ -199,7 +204,11 @@ namespace XiaoCao
             //伤害计算; 返回值判断是否死亡
             if (!BaseDamageCheck(ackInfo))
             {
-                SoundMgr.Inst.PlayHitAudio("Dead");
+                if (!IsPlayer)
+                {
+                    SoundMgr.Inst.PlayHitAudio("Dead");
+                }
+
                 HitTween(ackInfo, setting, true);
                 return;
             }
@@ -277,7 +286,7 @@ namespace XiaoCao
 
         public void ChangeNowValue(ENowAttr eAttr, float delta)
         {
-            data_R.playerAttr.ChangeNowValue(eAttr, delta);
+            data_R.RoleAttr.ChangeNowValue(eAttr, delta);
         }
 
         //击退处理
@@ -339,7 +348,8 @@ namespace XiaoCao
                 return false;
             }
 
-            float effectDamage = DamageHelper.CalcDamageAtkInfo(atkInfo, data_R.playerAttr.Def);
+            float effectDamage = DamageHelper.CalcDamageAtkInfo(atkInfo, data_R.RoleAttr.Def,
+                damageReducePercent: DamageReducePercent);
 
             atkInfo.effectDamage = effectDamage;
             float hurtProcess = effectDamage / MaxHp;
@@ -413,8 +423,8 @@ namespace XiaoCao
 
         public void InitRoleData()
         {
-            var setting = ConfigMgr.Inst.AttrSettingSo;
-            int lv = data_R.playerAttr.lv;
+            var attrSettingSo = ConfigMgr.Inst.AttrSettingSo;
+            int lv = data_R.RoleAttr.lv;
             int attrSettingId = 0;
             if (!IsPlayer)
             {
@@ -422,16 +432,21 @@ namespace XiaoCao
                 attrSettingId = aiData.attSettingId;
             }
 
-            if (!setting.ContainsKey(attrSettingId))
+            if (!attrSettingSo.ContainsKey(attrSettingId))
             {
                 Debug.LogError($"--- attrSettingId no {attrSettingId}");
             }
 
-            AttrSetting attr = setting.GetOrDefault(attrSettingId, 0);
+            AttrSetting attr = attrSettingSo.GetOrDefault(attrSettingId, 0);
+
+            if (!IsPlayer)
+            {
+                AttrSettingSo.FixEnemyAttrByLevel(attr, lv);
+            }
 
             data_R.breakData.SetAttr(attr, this);
 
-            data_R.playerAttr.Init(id, lv, attr);
+            data_R.RoleAttr.Init(id, lv, attr);
         }
 
         public void RoleIn()
@@ -453,11 +468,11 @@ namespace XiaoCao
         public virtual void OnAtkDamage(AtkInfo info)
         {
             //计算被动受击回血
-            float atkRecoverHp = PlayerAttr.AtkRecoverHp;
+            float atkRecoverHp = RoleAttr.AtkRecoverHp;
             if (atkRecoverHp > 0)
             {
                 float recover = info.atk * atkRecoverHp;
-                PlayerAttr.ChangeNowValue(ENowAttr.Hp, recover);
+                RoleAttr.ChangeNowValue(ENowAttr.Hp, recover);
             }
 
             AtkDamageAct?.Invoke(info);
@@ -539,6 +554,9 @@ namespace XiaoCao
                 case EntityMsgType.NoDamage:
                     OnNoDamage(msg);
                     break;
+                case EntityMsgType.DamageReduce:
+                    OnDamageReduce(msg);
+                    break;
                 case EntityMsgType.TheWorld:
                     SetTimeStop(msg);
 
@@ -589,11 +607,29 @@ namespace XiaoCao
             if (baseMsg.state == 0)
             {
                 AttributeModifier modifier = new AttributeModifier { Add = 1 };
-                PlayerAttr.ChangeAttrValue(EAttr.NoDamage, baseMsg.strMsg, modifier);
+                RoleAttr.ChangeAttrValue(EAttr.NoDamage, baseMsg.strMsg, modifier);
             }
             else
             {
-                PlayerAttr.RemoveModifier(EAttr.NoDamage, baseMsg.strMsg);
+                RoleAttr.RemoveModifier(EAttr.NoDamage, baseMsg.strMsg);
+            }
+        }
+
+        /// <summary>
+        /// 减伤:state 0 时按 numMsg(0~1) 添加减伤比例,strMsg 作为 Modifier Key;
+        /// state 1 时移除同 Key 的减伤,消息勾选 isUndoOnFinish 可在技能段结束时自动移除
+        /// </summary>
+        private void OnDamageReduce(object msg)
+        {
+            BaseMsg baseMsg = (BaseMsg)msg;
+            if (baseMsg.state == 0)
+            {
+                AttributeModifier modifier = new AttributeModifier { Add = baseMsg.numMsg };
+                RoleAttr.ChangeAttrValue(EAttr.DamageReduce, baseMsg.strMsg, modifier);
+            }
+            else
+            {
+                RoleAttr.RemoveModifier(EAttr.DamageReduce, baseMsg.strMsg);
             }
         }
 
@@ -877,7 +913,7 @@ namespace XiaoCao
 
         public BreakData breakData = new BreakData();
 
-        public PlayerAttr playerAttr = new PlayerAttr();
+        public RoleAttr RoleAttr = new RoleAttr();
 
         public RoleMoveData roleState = new RoleMoveData();
 
@@ -1148,6 +1184,7 @@ namespace XiaoCao
         NorAtkSpeedAdd,
         NoDamage, //无伤
         CritDamage, //额外暴击伤害
+        DamageReduce, //减伤比例(0~1)
     }
 
     public static class EnumExtend

@@ -52,7 +52,7 @@ namespace XiaoCao.Buff
         public override void RemoveEffect()
         {
             var player = TargetId.GetPlayerById();
-            player.PlayerAttr.RemoveModifier(EAttr,Key);
+            player.RoleAttr.RemoveModifier(EAttr,Key);
         }
 
         /* 示例

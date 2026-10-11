@@ -232,8 +232,6 @@ public class RayCasterTrigger : MonoBehaviour, ITrigger
             endAngle -= 2 * Mathf.PI;
         }
 
-        Debug.Log($"--- angleToPoint {angleToPoint} {startAngle} {endAngle}");
-
         // 检查点是否在扇形角度范围内
         bool isWithinSector = (angleToPoint >= startAngle && angleToPoint <= endAngle) ||
                               (endAngle < startAngle && (angleToPoint >= startAngle || angleToPoint <= endAngle));
