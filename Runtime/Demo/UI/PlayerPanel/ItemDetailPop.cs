@@ -1,19 +1,16 @@
-using cfg;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace XiaoCao
 {
     /// <summary>
-    /// 物品详情弹窗，负责根据物品配置显示名称、描述和获取途径。
+    /// 物品详情弹窗，按物品类型切换普通物品与圣器两套详情界面。
     /// </summary>
     public class ItemDetailPop : MonoBehaviour
     {
-        public TMP_Text nameText;
-        public TMP_Text descText;
-        public TMP_Text getWayText;//获取途径
-        
-        public ItemCell itemCell;
+        public NorItemDetailUI norItemDetailUI;
+        public RelicItemDetailUI relicItemDetailUI;
+        public Button hideBtn;
 
         /// <summary>
         /// 当前正在显示的物品。
@@ -21,93 +18,89 @@ namespace XiaoCao
         public Item CurrentItem { get; private set; }
 
         /// <summary>
-        /// 显示指定物品的详情。
+        /// 弹出详情的来源格子，格子换物品或被隐藏时详情一并关闭。
         /// </summary>
-        /// <param name="item">需要显示的物品。</param>
-        public void Show(Item item)
+        public ItemCell SourceCell { get; private set; }
+
+        private void Awake()
         {
-            gameObject.SetActive(true);
-            SetItem(item);
+            hideBtn.onClick.AddListener(Hide);
+            norItemDetailUI.backBtn.onClick.AddListener(Hide);
+        }
+
+        private void OnDestroy()
+        {
+            BindSourceCell(null);
+            hideBtn.onClick.RemoveListener(Hide);
+            norItemDetailUI.backBtn.onClick.RemoveListener(Hide);
         }
 
         /// <summary>
-        /// 根据物品 id 查询 ItemInfo 配置并刷新详情内容。
+        /// 显示指定物品的详情：圣器走 RelicItemDetailUI，其余物品走 NorItemDetailUI。
         /// </summary>
         /// <param name="item">需要显示的物品。</param>
-        public void SetItem(Item item)
+        /// <param name="sourceCell">弹出详情的来源格子，可为空。</param>
+        public void Show(Item item, ItemCell sourceCell = null)
         {
-            CurrentItem = item;
             if (item == null)
             {
-                Clear();
                 return;
             }
 
-            ItemInfo itemInfo = LubanTables.GetItemInfo(item.typeId);
-            if (itemInfo == null)
+            //先解绑旧来源，避免刷新内容时立刻触发失效回调
+            BindSourceCell(null);
+            CurrentItem = item;
+            gameObject.SetActive(true);
+
+            bool isRelic = item.type == ItemType.HolyRelic;
+            norItemDetailUI.gameObject.SetActive(!isRelic);
+            relicItemDetailUI.gameObject.SetActive(isRelic);
+
+            if (isRelic)
             {
-                Debug.LogWarning($"物品详情缺少 ItemInfo 配置：{item.typeId}");
-                SetText(item.typeId, string.Empty, string.Empty);
+                relicItemDetailUI.SetItem(item);
             }
-            RefreshItemCell(item);
+            else
+            {
+                norItemDetailUI.SetItem(item);
+            }
+
+            BindSourceCell(sourceCell);
         }
 
         /// <summary>
-        /// 隐藏详情弹窗并清理当前显示内容。
+        /// 关闭详情弹窗并清理当前显示内容。
         /// </summary>
         public void Hide()
         {
-            Clear();
+            BindSourceCell(null);
+            CurrentItem = null;
             gameObject.SetActive(false);
         }
 
         /// <summary>
-        /// 清理详情文本和可选的物品格显示。
+        /// 绑定来源格子，同一时间只跟随一个格子；格子内容变化或被隐藏时详情自动关闭。
         /// </summary>
-        private void Clear()
+        private void BindSourceCell(ItemCell cell)
         {
-            CurrentItem = null;
-            SetText(string.Empty, string.Empty, string.Empty);
-
-            if (itemCell != null)
+            if (SourceCell != null)
             {
-                itemCell.gameObject.SetActive(false);
+                SourceCell.OnInvalidated -= OnSourceCellInvalidated;
+            }
+
+            SourceCell = cell;
+            if (SourceCell != null)
+            {
+                SourceCell.OnInvalidated += OnSourceCellInvalidated;
             }
         }
 
         /// <summary>
-        /// 同步详情中的物品格；物品格未绑定时仅显示文字信息。
+        /// 来源格子的内容已经变化，详情不再对应当前显示，直接关闭。
         /// </summary>
-        private void RefreshItemCell(Item item)
+        private void OnSourceCellInvalidated(ItemCell cell)
         {
-            if (itemCell == null)
-            {
-                return;
-            }
-
-            itemCell.gameObject.SetActive(true);
-            itemCell.SetItem(item, UIItemTextType.NoNum);
-        }
-
-        /// <summary>
-        /// 写入详情弹窗中的三个文本字段。
-        /// </summary>
-        private void SetText(string itemName, string description, string obtainWay)
-        {
-            if (nameText != null)
-            {
-                nameText.text = itemName ?? string.Empty;
-            }
-
-            if (descText != null)
-            {
-                descText.text = description ?? string.Empty;
-            }
-
-            if (getWayText != null)
-            {
-                getWayText.text = obtainWay ?? string.Empty;
-            }
+            Hide();
         }
     }
 }

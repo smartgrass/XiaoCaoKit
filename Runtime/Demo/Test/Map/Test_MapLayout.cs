@@ -44,7 +44,7 @@ public class Test_MapLayout : MonoBehaviour
 
 
     [Button("生成/排列")]
-    void TestGent()
+    public void TestGent()
     {
         if (prefab == null)
         {

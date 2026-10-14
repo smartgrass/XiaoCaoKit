@@ -301,6 +301,7 @@ namespace XiaoCao.UI
             var cells = parent.GetComponentsInChildren<ItemCell>(false);
             for (int i = 0; i < rewards.Count && i < cells.Length; i++)
             {
+                cells[i].clickMode = EItemClickMode.ShowDetail;
                 cells[i].SetItem(rewards[i]);
             }
         }
@@ -330,6 +331,7 @@ namespace XiaoCao.UI
             {
                 Item reward = firstRewards[i];
                 cells[i].SetItem(reward);
+                cells[i].clickMode = EItemClickMode.ShowDetail;
                 Transform maskTf = cells[i].transform.Find("hasGet");
                 if (maskTf != null)
                 {

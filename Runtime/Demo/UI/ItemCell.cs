@@ -46,6 +46,11 @@ namespace XiaoCao
 
         public Action<ItemCell> clickAction;
 
+        /// <summary>
+        /// 格子刷新显示的物品或自身被隐藏时触发，供由该格子弹出的界面（物品详情）自动收尾。
+        /// </summary>
+        public event Action<ItemCell> OnInvalidated;
+
 
         private void Awake()
         {
@@ -53,6 +58,12 @@ namespace XiaoCao
             {
                 btn.onClick.AddListener(OnBtnClick);
             }
+        }
+
+        private void OnDisable()
+        {
+            //格子被隐藏时（列表回收、所属界面关闭）通知依赖它的界面收尾
+            OnInvalidated?.Invoke(this);
         }
 
         /// <summary>
@@ -88,6 +99,7 @@ namespace XiaoCao
                 text.text = item.num.ToString();
             }
 
+            OnInvalidated?.Invoke(this);
             return this;
         }
 
@@ -170,7 +182,7 @@ namespace XiaoCao
             //1.默认显示详情
             if (clickMode == EItemClickMode.ShowDetail)
             {
-                UIMgr.Inst.PopItemDetail();
+                UIMgr.Inst.PopItemDetail(this);
             }
             //2.定制化需求,不做反应,只给回调
             else if (clickMode == EItemClickMode.Custom)

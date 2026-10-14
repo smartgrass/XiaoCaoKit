@@ -12,7 +12,9 @@
         "Fantasy.Unity",
         "GG.Extensions",
         "PhysicsExtension",
-        "Unity.SharpZipLib.Utils"
+        "Unity.SharpZipLib.Utils",
+        "VRM",
+        "VRM10"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

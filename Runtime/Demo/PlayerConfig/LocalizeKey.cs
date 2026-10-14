@@ -107,6 +107,8 @@ namespace XiaoCao
 
         #region Item
 
+        public static string ObtainWay = "ObtainWay"; // 获取途径
+
         public static string GetItemName(this Item item)
         {
             if (item.type == ItemType.Buff)
@@ -132,6 +134,40 @@ namespace XiaoCao
             }
 
             return item.typeId.ToLocalizeStr();
+        }
+
+        /// <summary>
+        /// 物品描述文案: 额外道具读 ExtraItemDesc/[id], 其余物品读 ItemInfo 的本地化key加 _Desc
+        /// </summary>
+        public static string GetItemDesc(this Item item)
+        {
+            string key = item.type == ItemType.ExtraItem
+                ? GetExtraItemDescKey(item.typeId)
+                : $"{GetItemLocalizeKey(item)}_Desc";
+            return key.ToLocalizeStr();
+        }
+
+        /// <summary>
+        /// 物品获取途径文案, 取自 ItemInfo 配置的 obtainWay, 未配置时返回空文本
+        /// </summary>
+        public static string GetItemObtainWay(this Item item)
+        {
+            cfg.ItemInfo info = cfg.LubanTables.GetItemInfo(item.typeId);
+            if (info == null || string.IsNullOrEmpty(info.ObtainWay))
+            {
+                return string.Empty;
+            }
+
+            return $"{ObtainWay.ToLocalizeStr()}:{info.ObtainWay}";
+        }
+
+        /// <summary>
+        /// 物品本地化key: 优先取 ItemInfo 配置, 没有配置时直接用物品 id
+        /// </summary>
+        private static string GetItemLocalizeKey(Item item)
+        {
+            cfg.ItemInfo info = cfg.LubanTables.GetItemInfo(item.typeId);
+            return info == null ? item.typeId : info.LocalizeKey;
         }
 
         public static string GetExtraItemDescKey(string extraItemId)

@@ -17,6 +17,10 @@ namespace XiaoCao
     {
         public override bool NeedDontDestroy => false;
 
+        private const string ItemDetailPopPath = "Assets/_Res/UI/ItemDetailPop.prefab";
+
+        private ItemDetailPop _itemDetailPop;
+
         //UI分类:
         //静态ui ->游戏开始就加载    hud
         //面板,窗口 ->动态加载,需要触发才加载   panel
@@ -310,9 +314,21 @@ namespace XiaoCao
         {
         }
 
-        public void PopItemDetail()
+        /// <summary>
+        /// 由物品格弹出详情窗口: 首次调用时加载预制体并挂在顶层画布下, 之后复用同一实例;
+        /// 详情跟随来源格子关闭, 格子刷新物品、被隐藏或所属界面关闭时一并收起
+        /// </summary>
+        public void PopItemDetail(ItemCell cell)
         {
-            //Assets/_Res/UI/ItemDetailPop.prefab
+            if (_itemDetailPop == null)
+            {
+                GameObject prefab = ResMgr.LoadAseet<GameObject>(ItemDetailPopPath);
+                _itemDetailPop = Instantiate(prefab, topCanvas.transform).GetComponent<ItemDetailPop>();
+                //预制体默认激活, 先关闭避免无数据时闪出空弹窗
+                _itemDetailPop.Hide();
+            }
+
+            _itemDetailPop.Show(cell.Item, cell);
         }
 
         public void PopLevelUpTip(int levelFrom , int levelTo)

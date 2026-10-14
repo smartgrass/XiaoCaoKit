@@ -144,7 +144,7 @@ namespace XiaoCao.UI
 
                 if (text != null)
                 {
-                    text.text = $"第 {page + 1} 页";
+                    text.text = $"Lv {page + 1}";
                 }
 
                 if (stateChange != null)

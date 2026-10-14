@@ -39,13 +39,13 @@ namespace XiaoCao
         NoBodyCollision = 15,
         [InspectorName("CameraShake-int")]
         CameraShake = 16,
-        [InspectorName("BodyPhantom(幻影)")]
+        [InspectorName("幻影-模版")]
         BodyPhantom = 17,
-        [InspectorName("隐身-flaot")]
+        [InspectorName("隐身(float time)")]
         HideRender = 18,
-        [InspectorName("动画速度-flaot")]
+        [InspectorName("动画速度(float speed)")]
         AnimSpeed = 19,
-        [InspectorName("无敌-string")]
+        [InspectorName("无敌(string maskId)")]
         NoDamage = 20,
         [InspectorName("时停")]
         TheWorld = 21,
