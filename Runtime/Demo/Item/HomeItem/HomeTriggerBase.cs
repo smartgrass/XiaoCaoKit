@@ -7,7 +7,7 @@ using XiaoCao.UI;
 
 namespace XiaoCaoKit.Runtime.Demo.Item
 {
-    public abstract class HomeTriggerBase : MonoBehaviour, IMapMsgSender
+    public abstract class HomeTriggerBase : MonoBehaviour
     {
         public string uiKey;
         public float offsetY = 1.5f;

@@ -58,25 +58,36 @@ namespace XiaoCao
 
         private void SetEnemy()
         {
-            Transform actionTf = transform.Find("LevelAction");
+            Transform actionTf = transform.Find(MapMgr.LevelActionNodeName);
             if (!actionTf)
             {
                 actionTf = transform.GetChild(0);
                 Debug.Log("---  no LevelAction");
             }
 
-            //遍历actionTf子物体, 查找Group开头
-            for (int i = 0; i < actionTf.childCount; i++)
+            SetEnemyRecursion(actionTf);
+        }
+
+        /// <summary>
+        /// 递归查找Group开头的节点并初始化敌人配置
+        /// LevelAction预制体加载后会多一层根节点, 所以需要递归而不是只看直接子节点
+        /// </summary>
+        private void SetEnemyRecursion(Transform parent)
+        {
+            for (int i = 0; i < parent.childCount; i++)
             {
-                Transform child = actionTf.GetChild(i);
-                if (child.name.StartsWith("Group"))
+                Transform child = parent.GetChild(i);
+                if (child.name.StartsWith(EnemyGroupComponent.GroupPrefix))
                 {
                     var key = LevelData.GetLevelEnemyInfoKey(child.name);
                     child.GetComponentsInChildren<EnemyGroupComponent>(true).ForEach(x =>
                     {
                         x.GetCreateEnemyInfoFromConfig(key);
                     });
+                    continue;
                 }
+
+                SetEnemyRecursion(child);
             }
         }
 
@@ -119,6 +130,13 @@ namespace XiaoCao
 
         public Vector3 GetStartPos()
         {
+            //优先使用LevelAction配置上的起始点覆盖
+            Transform overridTf = GetStartPointOverrid();
+            if (overridTf)
+            {
+                return overridTf.position;
+            }
+
             if (!startPoint)
             {
                 startPoint = transform.Find("startPoint");
@@ -132,6 +150,13 @@ namespace XiaoCao
 
         public Vector3 GetEndPos()
         {
+            //优先使用LevelAction配置上的结束点覆盖
+            Transform overridTf = GetEndPointOverrid();
+            if (overridTf)
+            {
+                return overridTf.position;
+            }
+
             if (!endPoint)
             {
                 endPoint = transform.Find("endPoint");
@@ -151,6 +176,62 @@ namespace XiaoCao
             {
                 return endPoint.position;
             }
+        }
+
+        /// <summary>
+        /// 获取LevelAction配置上的起终点覆盖组件, 与LevelAction配置同节点
+        /// 只缓存找到的结果, 避免LevelAction还未加载时把空结果缓存下来
+        /// </summary>
+        private LevelActionChecker _actionChecker;
+
+        private LevelActionChecker GetActionChecker()
+        {
+            if (_actionChecker)
+            {
+                return _actionChecker;
+            }
+
+            Transform actionTf = transform.Find(MapMgr.LevelActionNodeName);
+            if (actionTf)
+            {
+                //LevelAction节点下可能有多个LevelAction_xxx, 只取当前激活的那个的配置
+                for (int i = 0; i < actionTf.childCount; i++)
+                {
+                    Transform child = actionTf.GetChild(i);
+                    if (!child.name.StartsWith(MapMgr.LevelActionPrefix) || !child.gameObject.activeSelf)
+                    {
+                        continue;
+                    }
+
+                    _actionChecker = child.GetComponentInChildren<LevelActionChecker>(true);
+                    if (_actionChecker)
+                    {
+                        return _actionChecker;
+                    }
+                }
+
+                //节点自身或未激活子物体上的配置兜底
+                _actionChecker = actionTf.GetComponentInChildren<LevelActionChecker>(true);
+                if (_actionChecker)
+                {
+                    return _actionChecker;
+                }
+            }
+
+            _actionChecker = GetComponentInChildren<LevelActionChecker>(true);
+            return _actionChecker;
+        }
+
+        private Transform GetStartPointOverrid()
+        {
+            LevelActionChecker checker = GetActionChecker();
+            return checker ? checker.startPointOverrid : null;
+        }
+
+        private Transform GetEndPointOverrid()
+        {
+            LevelActionChecker checker = GetActionChecker();
+            return checker ? checker.endPointOverrid : null;
         }
 
 

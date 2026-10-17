@@ -126,6 +126,20 @@ namespace cfg
             return ret;
         }
 
+        /// <summary>
+        /// 获取关卡配置; 未找到时返回 null, 不做兜底
+        /// 用于"配置为空即回退默认值"的场景(如地图名), 避免拿到其他关卡的配置
+        /// </summary>
+        public static LevelSetting GetLevelSettingOrDefault(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return null;
+            }
+
+            return LevelSettingReader.GetOrDefault(key);
+        }
+
         public static List<LevelSetting> GetAllLevelSetting()
         {
             return LevelSettingReader.DataList;

@@ -18,7 +18,22 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
 
     public UnityEvent allKillEvent;
 
+    //group完成时发送的消息key, 默认取节点名, 编辑器只读
+    [Label("MapMsg"), ReadOnly]
     public string mapMsg;
+
+    //group完成时激活的节点名前缀
+    public const string ActiveOnEndPrefix = "End_";
+
+    //敌人组节点名前缀
+    public const string GroupPrefix = "Group";
+
+    //勾选后group完成时自动激活同级的下一个Group
+    public bool activeNextGroup;
+
+    //group完成时激活的同级节点名, 默认 End_ + mapMsg, 编辑器只读
+    [SerializeField, Label("ActiveOnEnd"), ReadOnly]
+    private string activeOnEnd;
 
     private List<EnemyCreator> creators = new List<EnemyCreator>();
 
@@ -33,8 +48,35 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     public Vector3 triggerPos;
     public Role TargetRole { get; set; }
 
+    public string GetSendMapMsg => mapMsg;
+
+    /// <summary>
+    /// 补齐默认值: mapMsg 默认取节点名, activeOnEnd 默认 End_ + mapMsg
+    /// </summary>
+    private void InitDefaultValues()
+    {
+        if (string.IsNullOrEmpty(mapMsg))
+        {
+            mapMsg = gameObject.name;
+        }
+
+        if (string.IsNullOrEmpty(activeOnEnd))
+        {
+            activeOnEnd = ActiveOnEndPrefix + mapMsg;
+        }
+    }
+
+    //编辑器下按节点名补齐默认值
+    private void OnValidate()
+    {
+        InitDefaultValues();
+    }
+
     private void Awake()
     {
+        //旧预制体没有序列化值时, 运行时补齐默认值
+        InitDefaultValues();
+
         CheckChildGroup();
 
         foreach (var creator in creators)
@@ -65,10 +107,69 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
         _triggerTimer++;
         if (_triggerTimer >= _maxTriggerTime)
         {
-            SendMapMsg();
-            allKillEvent?.Invoke();
-            GameEvent.Send(EGameEvent.EnemyGroupEndEvent.ToInt(), _maxTriggerTime, mapMsg);
+            OnGroupFinish();
         }
+    }
+
+    /// <summary>
+    /// group完成: 发送消息 + 激活指定的后续节点
+    /// </summary>
+    private void OnGroupFinish()
+    {
+        SendMapMsg();
+        ActiveEndObject();
+        ActiveNextGroup();
+        allKillEvent?.Invoke();
+        GameEvent.Send(EGameEvent.EnemyGroupEndEvent.ToInt(), _maxTriggerTime, mapMsg);
+    }
+
+    /// <summary>
+    /// 激活同级的下一个Group节点, 用于按顺序串起多波敌人
+    /// </summary>
+    private void ActiveNextGroup()
+    {
+        if (!activeNextGroup || !transform.parent)
+        {
+            return;
+        }
+
+        //从自身往后找第一个Group节点, 跳过End_等非Group节点
+        Transform parentTf = transform.parent;
+        for (int i = transform.GetSiblingIndex() + 1; i < parentTf.childCount; i++)
+        {
+            Transform nextTf = parentTf.GetChild(i);
+            if (nextTf.name.StartsWith(GroupPrefix))
+            {
+                nextTf.gameObject.SetActive(true);
+                return;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 激活同级节点下名为 activeOnEnd 的物体, 用于group完成后开启后续内容
+    /// </summary>
+    private void ActiveEndObject()
+    {
+        if (string.IsNullOrEmpty(activeOnEnd))
+        {
+            return;
+        }
+
+        Transform parentTf = transform.parent;
+        if (!parentTf)
+        {
+            return;
+        }
+
+        Transform endTf = parentTf.Find(activeOnEnd);
+        if (!endTf)
+        {
+            Debuger.Log($"--- no end object {activeOnEnd} in {parentTf.name}");
+            return;
+        }
+
+        endTf.gameObject.SetActive(true);
     }
 
     public void SendMapMsg()

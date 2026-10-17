@@ -13,7 +13,9 @@ public class MapMultiMsgReceiverExec : MonoExecute, IMapMsgReceiver, IMapMsgSend
     [Tooltip("全部接收后发送sendMsg")] public List<string> msgList = new List<string>() { "Group1" };
 
     public string sendMsg;
-    
+
+    public string GetSendMapMsg => sendMsg;
+
     public UnityEvent receiverEvent;
 
     public MonoExecute nextExecute;
@@ -32,10 +34,9 @@ public class MapMultiMsgReceiverExec : MonoExecute, IMapMsgReceiver, IMapMsgSend
             {
                 if (!string.IsNullOrEmpty(receiveMsg))
                 {
-                    GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), sendMsg);
+                    Execute();
                 }
 
-                Execute();
             }
         }
     }
@@ -56,6 +57,12 @@ public class MapMultiMsgReceiverExec : MonoExecute, IMapMsgReceiver, IMapMsgSend
         nextExecute?.Execute();
         receiverEvent.Invoke();
         UIMgr.PopToastKey(popToastKey);
+        SendMapMsg();
+    }
+
+    public void SendMapMsg()
+    {
+        GameEvent.Send<string>(EGameEvent.MapMsg.ToInt(), sendMsg);
     }
 }
 
@@ -65,4 +72,9 @@ interface IMapMsgReceiver
     void OnReceiveMsg(string receiveMsg);
 }
 
-interface IMapMsgSender { }
+interface IMapMsgSender
+{
+    string GetSendMapMsg { get; }
+
+    void SendMapMsg();
+}

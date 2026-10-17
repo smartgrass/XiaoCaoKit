@@ -4,7 +4,7 @@ using XiaoCao.UI;
 
 namespace XiaoCaoKit.Runtime.Demo.Item
 {
-    public class LevelEndTrigger : MonoBehaviour, IMapMsgSender
+    public class LevelEndTrigger : MonoBehaviour
     {
         private DialogPanel  _dialogPanel;
 

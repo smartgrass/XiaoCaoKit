@@ -4,7 +4,7 @@ using XiaoCao.UI;
 
 namespace XiaoCaoKit.Runtime.Demo.Item
 {
-    public class LevelEnterTrigger : MonoBehaviour, IMapMsgSender
+    public class LevelEnterTrigger : MonoBehaviour
     {
         private void OnTriggerEnter(Collider other)
         {

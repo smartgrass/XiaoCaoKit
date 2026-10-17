@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using XiaoCao;
 
 //单向传送门
-public class ItemPortal : MonoBehaviour, IMapMsgSender
+public class ItemPortal : MonoBehaviour
 {
     public float stayTime = 1.2f;
     [XCLabel("传送前播放特效时间")] public float moveDelay = 0.2f;

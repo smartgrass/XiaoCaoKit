@@ -11,6 +11,60 @@ namespace XiaoCao
     [XCHelper]
     public class LevelSettingHelper
     {
+        //关卡名前缀 level_0_2
+        private const string LevelNamePrefix = "level_";
+
+        //关卡敌人配置前缀 LevelAction_0_2
+        private const string LevelActionPrefix = "LevelAction_";
+
+        /// <summary>
+        /// 获取关卡使用的地图预制体名
+        /// 配置 mapPrefab 时用它(多个关卡可共用同一套地图), 未配置时回退为关卡名
+        /// </summary>
+        public static string GetMapPrefabName(string levelName)
+        {
+            var setting = LubanTables.GetLevelSettingOrDefault(levelName);
+            if (setting != null && !string.IsNullOrEmpty(setting.MapPrefab))
+            {
+                return setting.MapPrefab;
+            }
+
+            return levelName;
+        }
+
+        /// <summary>
+        /// 获取关卡的敌人配置(LevelAction)预制体名
+        /// 配置了 levelAction 时用配置名, 未配置时按默认格式: level_0_2 -> LevelAction_0_2
+        /// </summary>
+        public static string GetLevelActionName(string levelName)
+        {
+            var setting = LubanTables.GetLevelSettingOrDefault(levelName);
+            if (setting != null && !string.IsNullOrEmpty(setting.LevelAction))
+            {
+                return setting.LevelAction;
+            }
+
+            return GetDefaultLevelActionName(levelName);
+        }
+
+        /// <summary>
+        /// 默认的敌人配置预制体名: level_0_2 -> LevelAction_0_2
+        /// </summary>
+        public static string GetDefaultLevelActionName(string levelName)
+        {
+            if (string.IsNullOrEmpty(levelName))
+            {
+                return levelName;
+            }
+
+            if (levelName.StartsWith(LevelNamePrefix))
+            {
+                return LevelActionPrefix + levelName.Substring(LevelNamePrefix.Length);
+            }
+
+            return LevelActionPrefix + levelName;
+        }
+
         //获取Enemy等级
         public static int GetEnemyLevel(int addLevel)
         {

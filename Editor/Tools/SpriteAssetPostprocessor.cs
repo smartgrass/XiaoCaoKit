@@ -14,7 +14,7 @@ namespace XiaoCaoEditor
         private void OnPreprocessTexture()
         {
             // 检查文件是否在目标目录中  
-            if (!IsTargetDir(TargetDirectoryPath2))
+            if (!IsTargetDir(assetPath))
             {
                 return;
             }

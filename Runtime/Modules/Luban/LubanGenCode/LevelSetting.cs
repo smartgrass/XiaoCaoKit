@@ -18,6 +18,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
     {
         Id = _buf.ReadString();
         Title = _buf.ReadString();
+        MapPrefab = _buf.ReadString();
+        LevelAction = _buf.ReadString();
         EnemyBaseLevel = _buf.ReadInt();
         EnemyLevelAdd = _buf.ReadInt();
         EnemyCoin = _buf.ReadInt();
@@ -41,6 +43,14 @@ public sealed partial class LevelSetting : Luban.BeanBase
     /// 标题
     /// </summary>
     public readonly string Title;
+    /// <summary>
+    /// 地图预制体名;多个关卡可共用同一套地图
+    /// </summary>
+    public readonly string MapPrefab;
+    /// <summary>
+    /// 为空则按默认格式 level_0_2 -&gt; LevelAction_0_2
+    /// </summary>
+    public readonly string LevelAction;
     /// <summary>
     /// 最低等级
     /// </summary>
@@ -89,6 +99,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
         
         
         
+        
+        
     }
 
     public override string ToString()
@@ -96,6 +108,8 @@ public sealed partial class LevelSetting : Luban.BeanBase
         return "{ "
         + "id:" + Id + ","
         + "title:" + Title + ","
+        + "mapPrefab:" + MapPrefab + ","
+        + "levelAction:" + LevelAction + ","
         + "enemyBaseLevel:" + EnemyBaseLevel + ","
         + "enemyLevelAdd:" + EnemyLevelAdd + ","
         + "enemyCoin:" + EnemyCoin + ","

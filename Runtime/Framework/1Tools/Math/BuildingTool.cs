@@ -13,34 +13,57 @@ namespace XiaoCao
         {
             if (transform == null) return;
 
-            // 获取所有子物体的渲染器边界
-            Bounds bounds = new Bounds(transform.position, Vector3.zero);
+            // 在"节点本地坐标系"里算包围盒: 节点被抬高(比如楼梯上面的房间)或旋转后, 碰撞盒依然贴着模型
+            Matrix4x4 worldToLocal = transform.worldToLocalMatrix;
+            Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
             bool hasBounds = false;
 
-            foreach (Transform child in transform)
+            foreach (Renderer childRenderer in transform.GetComponentsInChildren<Renderer>())
             {
-                Renderer childRenderer = child.GetComponent<Renderer>();
-                if (childRenderer != null)
+                if (!TryGetRendererLocalBounds(childRenderer, out Bounds rendererBounds))
                 {
+                    continue;
+                }
+
+                Matrix4x4 rendererToLocal = worldToLocal * childRenderer.transform.localToWorldMatrix;
+                Vector3 min = rendererBounds.min;
+                Vector3 max = rendererBounds.max;
+                Vector3[] corners =
+                {
+                    new Vector3(min.x, min.y, min.z),
+                    new Vector3(min.x, min.y, max.z),
+                    new Vector3(min.x, max.y, min.z),
+                    new Vector3(min.x, max.y, max.z),
+                    new Vector3(max.x, min.y, min.z),
+                    new Vector3(max.x, min.y, max.z),
+                    new Vector3(max.x, max.y, min.z),
+                    new Vector3(max.x, max.y, max.z),
+                };
+
+                foreach (Vector3 corner in corners)
+                {
+                    Vector3 point = rendererToLocal.MultiplyPoint3x4(corner);
                     if (!hasBounds)
                     {
-                        bounds = childRenderer.bounds;
+                        bounds = new Bounds(point, Vector3.zero);
                         hasBounds = true;
                     }
                     else
                     {
-                        bounds.Encapsulate(childRenderer.bounds);
+                        bounds.Encapsulate(point);
                     }
                 }
             }
 
             if (hasBounds)
             {
-                float minH = 8 * 0.7f;
+                // 太矮的(栏杆之类)补成从脚下往上 5.6(世界高)的一堵"墙"; 按节点缩放折成本地高度, 免得跟着缩放变矮
+                float minH = 8 * 0.7f / Mathf.Max(0.0001f, transform.lossyScale.y);
                 if (bounds.size.y < minH)
                 {
                     bounds.size = bounds.size.SetY(minH);
-                    bounds.center = bounds.center.SetY(minH / 2f);
+                    // 从节点原点(就是它被摆到地面/踏步上的那一点)往上长
+                    bounds.center = bounds.center.SetY(minH * 0.5f);
                 }
 
                 // 获取或添加BoxCollider组件
@@ -50,9 +73,9 @@ namespace XiaoCao
                     collider = transform.gameObject.AddComponent<BoxCollider>();
                 }
 
-                // 设置包围盒参数
-                collider.center = transform.InverseTransformPoint(bounds.center);
-                collider.size = transform.InverseTransformVector(bounds.size);
+                // bounds 已经是本地坐标, 直接写进去
+                collider.center = bounds.center;
+                collider.size = bounds.size;
             }
 
             if (!LayerMask.LayerToName(transform.gameObject.layer).StartsWith("Wall"))
@@ -60,6 +83,24 @@ namespace XiaoCao
                 transform.gameObject.layer = Layers.WALL;
                 Debug.Log($"-- set wall layer");
             }
+        }
+
+        private static bool TryGetRendererLocalBounds(Renderer renderer, out Bounds localBounds)
+        {
+            if (renderer is SkinnedMeshRenderer skinnedMeshRenderer)
+            {
+                localBounds = skinnedMeshRenderer.localBounds;
+                return true;
+            }
+
+            if (renderer.TryGetComponent(out MeshFilter meshFilter) && meshFilter.sharedMesh != null)
+            {
+                localBounds = meshFilter.sharedMesh.bounds;
+                return true;
+            }
+
+            localBounds = default;
+            return false;
         }
 
         public static GameObject EditorInstancePrefab(GameObject prefab, Transform parent = null)

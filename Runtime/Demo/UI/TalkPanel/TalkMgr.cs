@@ -6,7 +6,7 @@ using UnityEngine;
 using XiaoCao;
 
 //读取数据
-public class TalkMgr : Singleton<TalkMgr>, IMapMsgSender
+public class TalkMgr : Singleton<TalkMgr>
 {
     // 使用栈来保存对话状态，支持嵌套任务
     private Stack<ChapterTalkState> talkStateStack = new Stack<ChapterTalkState>();

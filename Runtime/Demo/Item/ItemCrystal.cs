@@ -48,6 +48,8 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
     public Color norColor;
     public Color lockColor;
 
+    public string GetSendMapMsg => deadMapMsg;
+
     private void Start()
     {
         Init();
@@ -181,6 +183,7 @@ public class ItemCrystal : ItemIdComponent, IMapMsgSender
 
     [XCHeader("爆炸设定")] [SerializeField] private float _explosionRadius = 5;
     [SerializeField] private float _explosionForce = 500;
+
 
     private void ExplodedPos(Vector3 centerPos)
     {

@@ -17,7 +17,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 
         [Header("优先使用buffPool")] public List<EBuff> simplePool = new List<EBuff>();
 
-        public bool forceShowUI;
+        [Tooltip("勾选后玩家触碰弹出选择界面; 不勾选则从候选中随机给一个")]
+        public bool canSelect;
 
 
         
@@ -59,10 +60,17 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
             }
 
             _isPicked = true;
-            //1个则直接获得
-            if (buffs.Count == 1 && !forceShowUI)
+
+            if (buffItems.Count == 0)
             {
-                EffectBuffAndHide(player, buffItems[0]);
+                Debuger.LogWarning("--- no buff item");
+                return;
+            }
+
+            //不弹选择界面时, 从候选中随机取一个
+            if (!canSelect)
+            {
+                EffectBuffAndHide(player, buffItems[Random.Range(0, buffItems.Count)]);
                 return;
             }
 
