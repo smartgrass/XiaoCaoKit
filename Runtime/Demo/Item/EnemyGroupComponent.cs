@@ -28,6 +28,9 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     //敌人组节点名前缀
     public const string GroupPrefix = "Group";
 
+    //子节点等级覆写配置的前缀, 完整格式 addLevel:1
+    private const string AddLevelPrefix = "addLevel:";
+
     //勾选后group完成时自动激活同级的下一个Group
     public bool activeNextGroup;
 
@@ -242,6 +245,12 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
         var group = LubanTables.GetCreateEnemyGroups(key);
         bool hasTaskLines = !string.IsNullOrEmpty(group.TaskLines);
 
+        //多行配置里留空的行会被跳过, 数量对不上说明填漏了, 会导致后面的等级错位到前面的子节点
+        if (group.AddEnemyInfos.Count > 0 && group.AddEnemyInfos.Count != creators.Count)
+        {
+            Debuger.LogWarning($"--- {key} addEnemyInfos 行数 {group.AddEnemyInfos.Count} 与子节点数 {creators.Count} 不一致");
+        }
+
         for (int i = 0; i < creators.Count; i++)
         {
             if (hasTaskLines)
@@ -259,6 +268,31 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
                 creators[i].enemyIdList = group.EnemyInfos[0].Enemys;
                 creators[i].genCount = group.EnemyInfos[0].Count;
             }
+
+            //按子节点顺序覆写等级偏移, 未配置或格式不符时保留场景上的 enemyAddLevel
+            if (i < group.AddEnemyInfos.Count)
+            {
+                int addLevel = ParseAddLevel(group.AddEnemyInfos[i]);
+                if (addLevel >= 0)
+                {
+                    creators[i].enemyAddLevel = addLevel;
+                }
+            }
         }
+    }
+
+    /// <summary>
+    /// 解析子节点等级覆写配置(addLevel:1), 格式不符返回 -1 表示不覆写
+    /// </summary>
+    private static int ParseAddLevel(string addEnemyInfo)
+    {
+        if (!addEnemyInfo.StartsWith(AddLevelPrefix))
+        {
+            return -1;
+        }
+
+        string value = addEnemyInfo.Substring(AddLevelPrefix.Length);
+
+        return int.TryParse(value, out int addLevel) ? addLevel : -1;
     }
 }

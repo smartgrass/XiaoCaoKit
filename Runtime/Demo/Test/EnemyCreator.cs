@@ -27,7 +27,7 @@ public class EnemyCreator : GameStartMono, IExecute
     [Dropdown(nameof(GetDirAllFileName))] [Label("")] [MiniBtn(nameof(SetEnemyValue), "选中")]
     public string enmeyBrowse;
 
-    public int enemyAddLevel = 0; //见关卡配置,一般+1等于+5
+    public int enemyAddLevel = 0; //见关卡配置,一般+1等于+5; 敌人池表的 addEnemyInfos 会按子节点顺序覆盖这里的值
 
     public int genCount = 1;
 

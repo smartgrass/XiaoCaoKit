@@ -18,6 +18,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
     {
         Key = _buf.ReadString();
         {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);EnemyInfos = new System.Collections.Generic.List<CreateEnemyInfo>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { CreateEnemyInfo _e0;  _e0 = CreateEnemyInfo.DeserializeCreateEnemyInfo(_buf); EnemyInfos.Add(_e0);}}
+        {int n0 = System.Math.Min(_buf.ReadSize(), _buf.Size);AddEnemyInfos = new System.Collections.Generic.List<string>(n0);for(var i0 = 0 ; i0 < n0 ; i0++) { string _e0;  _e0 = _buf.ReadString(); AddEnemyInfos.Add(_e0);}}
         ForceFollow = _buf.ReadInt();
         TaskLines = _buf.ReadString();
         ExInfos = _buf.ReadString();
@@ -33,9 +34,13 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
     /// </summary>
     public readonly string Key;
     /// <summary>
-    /// 敌人id, 数量
+    /// 每行一个子节点: 敌人id,数量
     /// </summary>
     public readonly System.Collections.Generic.List<CreateEnemyInfo> EnemyInfos;
+    /// <summary>
+    /// 示例:addLevel:1|addLevel:0
+    /// </summary>
+    public readonly System.Collections.Generic.List<string> AddEnemyInfos;
     /// <summary>
     /// 强制跟随(0,无视 1跟随,-1不跟随)
     /// </summary>
@@ -56,6 +61,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
         
         
         
+        
     }
 
     public override string ToString()
@@ -63,6 +69,7 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
         return "{ "
         + "key:" + Key + ","
         + "enemyInfos:" + Luban.StringUtil.CollectionToString(EnemyInfos) + ","
+        + "addEnemyInfos:" + Luban.StringUtil.CollectionToString(AddEnemyInfos) + ","
         + "forceFollow:" + ForceFollow + ","
         + "taskLines:" + TaskLines + ","
         + "exInfos:" + ExInfos + ","
