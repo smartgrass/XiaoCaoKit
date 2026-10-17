@@ -259,27 +259,66 @@ namespace XiaoCao
         public float speedDownTime;
         public float speedDownStep = 1;
 
+        /// <summary>
+        /// 减速倍率: 1 正常, 0 完全停住。
+        /// 只由 speedDownTime 驱动, 不再改写 maxAnimMoveSpeed。
+        /// 原先直接扣 maxAnimMoveSpeed, 攻击结束时会把这个"上限"永久压成 0,
+        /// 之后哪怕重新设置移动指令也救不回来, 表现为 Attack 后倒退 animMoveSpeed 一直是 0。
+        /// </summary>
+        private float speedDownRate = 1f;
+
+        /// <summary>
+        /// 倒退判定角度: 移动方向与"看向目标方向"的夹角超过该值即视为倒退,
+        /// animMoveSpeed 取负, 动画机混合树(-0.5 段为倒放走路)播放倒退动画。
+        /// </summary>
+        public float backMoveAngle = 90f;
+
+        /// <summary>
+        /// 倒退判定的退出迟滞, 避免角度在阈值附近抖动导致前进/倒退动画来回切。
+        /// </summary>
+        public float backAngleHysteresis = 30f;
+
+        //当前是否判定为倒退移动
+        private bool _isBackMove;
+
+        /// <summary>
+        /// 清除减速残留, 攻击/硬直结束时调用, 避免进入下一阶段后移速仍被压着。
+        /// </summary>
+        public void ResetSpeedDown()
+        {
+            speedDownTime = 0;
+            speedDownRate = 1f;
+        }
+
         //计算移动动画速度, 同时会影响移速倍率
         void ComputeMoveValue(bool isInput, bool lookMoveDir, Vector3 moveDir)
         {
             float inputTotal = isInput ? 1 : 0;
 
-            //减速处理
+            //减速处理: 只压倍率, 不动 maxAnimMoveSpeed
             if (speedDownTime > 0)
             {
                 speedDownTime -= Time.deltaTime;
-                maxAnimMoveSpeed -= speedDownStep * Time.deltaTime;
-                inputDir = inputDir.normalized * maxAnimMoveSpeed;
-                if (maxAnimMoveSpeed <= 0.1)
+                speedDownRate = Mathf.Max(0, speedDownRate - speedDownStep * Time.deltaTime);
+                if (speedDownTime < 0)
                 {
                     speedDownTime = 0;
-                    maxAnimMoveSpeed = 0;
-                    inputDir = Vector3.zero;
                 }
+            }
+            else if (speedDownRate < 1)
+            {
+                //没有减速需求了立刻恢复, 否则会一直卡在 0
+                speedDownRate = 1;
             }
 
             //限制最大移速动画
-            inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed);
+            inputTotal = Mathf.Clamp(inputTotal, 0, maxAnimMoveSpeed) * speedDownRate;
+
+            //减速时同步刹住位移
+            if (isInput && speedDownRate < 1 && !inputDir.IsZore())
+            {
+                inputDir = inputDir.normalized * (maxAnimMoveSpeed * speedDownRate);
+            }
 
             float moveSmooth = moveSetting.moveSmooth;
             if (XCTime.timeScale > 1)
@@ -296,25 +335,38 @@ namespace XiaoCao
                 Vector3 lookDir = tempLookAt.position - transform.position;
                 float angle = MathTool.GetDirectionSinAngle(lookDir, moveDir);
 
-                float angleCos = Mathf.Cos(angle * Mathf.Deg2Rad); //angleCos>0 前
-                if (!owner.IsPlayer)
+                //钝角即倒退, 带迟滞, 避免角度抖动时前进/倒退来回切
+                float absAngle = Mathf.Abs(angle);
+                if (_isBackMove)
                 {
-                    DebugGUI.Log("angle", angle.ToString("N2"), angleCos.ToString("N2"), moveDir);
-                }
-
-                //float angleSin = Mathf.Sin(angle); //左到右 1到-1
-                if (Mathf.Abs(angle) > 120)
-                {
-                    if (targetAnimMoveSpeed > 0)
+                    if (absAngle < backMoveAngle - backAngleHysteresis)
                     {
-                        targetAnimMoveSpeed = -targetAnimMoveSpeed;
+                        _isBackMove = false;
                     }
                 }
+                else if (absAngle > backMoveAngle)
+                {
+                    _isBackMove = true;
+                }
+
+                if (_isBackMove && targetAnimMoveSpeed > 0)
+                {
+                    targetAnimMoveSpeed = -targetAnimMoveSpeed;
+                }
+            }
+            else
+            {
+                _isBackMove = false;
             }
 
 
-            RoleState.animMoveSpeed = Mathf.SmoothDamp(RoleState.animMoveSpeed, targetAnimMoveSpeed,
-                ref _tempAnimMoveSmooth, moveSmooth);
+            //幅值做平滑, 符号直接跟随目标: 正负切换不经过 0。
+            //原先对带符号的值直接 SmoothDamp, 前进<->倒退切换时会长时间停在 0 附近,
+            //表现就是"倒退时 MoveSpeed 接近 0, 不播走路动画"。
+            float curMag = Mathf.Abs(RoleState.animMoveSpeed);
+            float targetMag = Mathf.Abs(targetAnimMoveSpeed);
+            float smoothMag = Mathf.SmoothDamp(curMag, targetMag, ref _tempAnimMoveSmooth, moveSmooth);
+            RoleState.animMoveSpeed = targetAnimMoveSpeed < 0 ? -smoothMag : smoothMag;
 
 
             if (!owner.IsPlayer)

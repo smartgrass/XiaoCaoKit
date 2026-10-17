@@ -10,18 +10,23 @@ namespace XiaoCao
     {
         public string des;
 
+        [Tooltip("基础躲避/游荡时长(秒), 非战斗以及战斗中未触发倒退时使用")]
         public float idleTime = 2f;
+
+        [Header("倒退移动时长(秒)")]
+        [Tooltip("仅当战斗中触发 isLookAtTargetOnHide(看向目标倒退)时生效, 在 x~y 之间随机; 其余情况仍用 idleTime")]
+        public Vector2 hideTimeRange = new Vector2(0.8f, 1.5f);
 
         public float sleepTime = 0.5f;
 
         public float moveSpeed = 3f;
         public float walkSR = 0.35f; //SR = SpeedRate
         public float walkAnimSR = 0.5f;
-        [XCLabel("攻击欲望")]
+        [Header("退出idle循环概率,相当于攻击欲望")]
         public float idleExitRate = 0.5f;
         [Header("战斗中 Idle 提前退出")]
-        [Tooltip("大于 0 时，如果单位在战斗中进入 Idle，停留超过该时长会直接退出 Idle。")]
-        public float exitIfOnFightTime = -1f;
+        [Tooltip("大于 0 时生效，MaxIdleTimeOnFight 在Fight状态最多能停留的idle时间")]
+        public float maxIdleTimeOnFight = -1f;
         [Header("开头直接进入Idle概率")]
         public float randomIdleStart = 0.5f;
 
@@ -36,7 +41,7 @@ namespace XiaoCao
     public enum LookAtTargetOnHideMode
     {
         Off = 0,
-        Half = 1,
+        Half = 1,//每两次执行一次
         On = 2,
     }
 }

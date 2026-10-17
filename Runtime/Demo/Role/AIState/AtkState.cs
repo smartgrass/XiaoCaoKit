@@ -46,6 +46,17 @@ namespace XiaoCao
             }
         }
 
+        public override void OnExit()
+        {
+            //清掉攻击期间的减速残留, 否则进入 Idle 的倒退阶段移速仍会被压着
+            if (control != null && control.Movement != null)
+            {
+                control.Movement.ResetSpeedDown();
+            }
+
+            base.OnExit();
+        }
+
         private void OnDamage(AtkInfo info, bool isBreak)
         {
             if (State == FSMState.Update)
@@ -114,6 +125,8 @@ namespace XiaoCao
                 }
                 else
                 {
+                    //后摇: 停在原地, 只让动画速度自然衰减到 0
+                    control.MoveStop();
                     control.MoveSpeedDown(0.1f);
                 }
             }

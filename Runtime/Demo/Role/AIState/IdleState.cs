@@ -20,7 +20,11 @@ namespace XiaoCao
 
         public bool getFromSetting = true;
         [Foldout("getFromSetting")]
+        [Tooltip("基础躲避/游荡时长(秒), 由 AISetting.idleTime 覆盖; 非战斗及未触发倒退时使用")]
         public float baseHideTime = 2.5f;
+        [Foldout("getFromSetting")]
+        [Tooltip("战斗中触发倒退时的躲避时长(秒), x~y 随机; 由 AISetting.hideTimeRange 覆盖")]
+        public Vector2 baseHideTimeRange = new Vector2(0.8f, 1.5f);
         [Foldout("getFromSetting")]
         public float baseSleepTime = 1.5f; //发呆时间
         [Foldout("getFromSetting")]
@@ -28,8 +32,8 @@ namespace XiaoCao
         public float idleExitRate = 0.3f;
         
         [Foldout("getFromSetting")]
-        //当exitIfOnFightTime>0时,则处于战斗中进入idle时,停留超过该时长会提前退出idle状态,且无视idleExitRate的概率直接退出
-        public float exitIfOnFightTime = -1;
+        //当maxIdleTimeOnFight>0时,则处于战斗中进入idle时,停留超过该时长会提前退出idle状态,且无视idleExitRate的概率直接退出
+        public float maxIdleTimeOnFight = -1;
 
         public float Timer { get; set; }
 
@@ -67,9 +71,10 @@ namespace XiaoCao
             if (getFromSetting)
             {
                 baseHideTime = Setting.idleTime;
+                baseHideTimeRange = Setting.hideTimeRange;
                 baseSleepTime = Setting.sleepTime;
                 idleExitRate = Setting.idleExitRate;
-                exitIfOnFightTime = Setting.exitIfOnFightTime;
+                maxIdleTimeOnFight = Setting.maxIdleTimeOnFight;
             }
             _forceExitThisLoop = false;
             _enterIdleOnFight = HasTarget;
@@ -92,17 +97,32 @@ namespace XiaoCao
 
             State = FSMState.Update;
             curSleepTime = RandomHelper.RangeFloat(baseSleepTime * (1 + timeRandom), baseSleepTime * (1 - timeRandom));
-            curHideTime = RandomHelper.RangeFloat(baseHideTime * (1 + timeRandom), baseHideTime * (1 - timeRandom));
+            curHideTime = GetHideTime();
             Timer = curHideTime;
             GetHideDir();
-
-            //为了使群体激活时,敌人各自状态不同,在第一次启动时,有随机延迟
-            // Timer = RandomHelper.RangeFloat(curSleepTime, curHideTime);
 
             //后续启动
             _tempTargetPos = control.idlePos + Random.insideUnitCircle.To3D();
             _idleDir = (_tempTargetPos - transform.position).ToY0();
-            Timer = curHideTime;
+        }
+
+        /// <summary>
+        /// 本轮躲避移动时长。
+        /// 战斗中且本轮触发了"看向目标倒退"时用 hideTimeRange;
+        /// 非战斗 / 未触发倒退时沿用 idleTime 的旧算法。
+        /// </summary>
+        private float GetHideTime()
+        {
+            if (HasTarget && _lookAtTargetOnHide)
+            {
+                float min = Mathf.Min(baseHideTimeRange.x, baseHideTimeRange.y);
+                float max = Mathf.Max(baseHideTimeRange.x, baseHideTimeRange.y);
+                if (max > 0f)
+                {
+                    return RandomHelper.RangeFloat(min, max);
+                }
+            }
+            return RandomHelper.RangeFloat(baseHideTime * (1 + timeRandom), baseHideTime * (1 - timeRandom));
         }
 
         public override void OnExit()
@@ -209,9 +229,9 @@ namespace XiaoCao
         /// </summary>
         private bool ShouldExitIdleOnFightTimeout()
         {
-            return exitIfOnFightTime > 0f &&
+            return maxIdleTimeOnFight > 0f &&
                    _enterIdleOnFight &&
-                   _idleElapsedTime > exitIfOnFightTime;
+                   _idleElapsedTime > maxIdleTimeOnFight;
         }
 
         public bool CheckLoopTimeEnd()

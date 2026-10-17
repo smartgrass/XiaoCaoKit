@@ -656,7 +656,10 @@ namespace XiaoCao
             return true;
         }
 
-        private static bool TrySummonSupportRole()
+        /// <summary>
+        /// 召唤支援角色; 不传坐标和朝向时落在玩家右前方, 面朝玩家正前方
+        /// </summary>
+        public static bool TrySummonSupportRole(Vector3? summonPos = null, Vector3? forward = null)
         {
             var player = GameDataCommon.LocalPlayer;
             if (player == null || player.IsDie)
@@ -673,10 +676,14 @@ namespace XiaoCao
                 return false;
             }
 
-            Vector3 summonPos = player.transform.position +
-                                player.transform.forward * SupportRoleForwardDistance +
-                                player.transform.right * SupportRoleSideDistance;
-            Enemy0 supportRole = CreateSupportRole(player, supportRoleKey, summonPos);
+            Transform playerTf = player.transform;
+            Vector3 defaultPos = playerTf.position +
+                                 playerTf.forward * SupportRoleForwardDistance +
+                                 playerTf.right * SupportRoleSideDistance;
+            Vector3 pos = summonPos ?? defaultPos;
+            Vector3 dir = forward ?? playerTf.forward;
+
+            Enemy0 supportRole = CreateSupportRole(player, supportRoleKey, pos, dir);
             if (supportRole == null)
             {
                 return false;
@@ -686,7 +693,7 @@ namespace XiaoCao
             return true;
         }
 
-        private static Enemy0 CreateSupportRole(Player0 player, string supportRoleKey, Vector3 summonPos)
+        private static Enemy0 CreateSupportRole(Player0 player, string supportRoleKey, Vector3 summonPos, Vector3 forward)
         {
             Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, player.Level, supportRoleKey);
             if (supportRole == null)
@@ -699,6 +706,7 @@ namespace XiaoCao
             var addData = supportRole.idRole.GetComponent<AddEnemyData>();
             // addData.
             supportRole.enemyData.movement.MoveToImmediate(summonPos);
+            supportRole.enemyData.movement.LookToDir(forward);
             supportRole.SetFriend(player);
             return supportRole;
         }

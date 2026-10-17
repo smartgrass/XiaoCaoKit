@@ -49,7 +49,7 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public override void OnGameStart()
     {
-        if (createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI)
+        if (createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI or EnemyCreateMode.LoadSleepNoAI)
         {
             XCTime.DelayRun(delayGen, Gen).ToObservable();
         }
@@ -77,7 +77,7 @@ public class EnemyCreator : GameStartMono, IExecute
     [Button("生成/激活已生成AI", enabledMode: EButtonEnableMode.Playmode)]
     public void Gen()
     {
-        if (createMode == EnemyCreateMode.LoadNoAI && curGenCount > 0)
+        if (createMode is EnemyCreateMode.LoadNoAI && curGenCount > 0)
         {
             ActiveEnemyAI();
         }
@@ -114,6 +114,10 @@ public class EnemyCreator : GameStartMono, IExecute
                 if (createMode == EnemyCreateMode.LoadNoAI)
                 {
                     enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
+                }
+                else if(createMode == EnemyCreateMode.LoadSleepNoAI)
+                {
+                    
                 }
 
                 if (IsPlayerTeam)
@@ -246,4 +250,5 @@ public enum EnemyCreateMode
     LoadNoAI,
     LoadAI,
     NoAI,
+    LoadSleepNoAI //受击不会激活
 }
