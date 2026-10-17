@@ -210,14 +210,20 @@ namespace FluxEditor
 			setupMs = GetElapsedMilliseconds( setupStartTimestamp );
 
 			long layerStartTimestamp = Stopwatch.GetTimestamp();
-			AnimatorControllerLayer layer = FindLayer( controller, track.LayerName );
+			int layerIndex = FindLayerIndex( controller, track.LayerName, track.LayerId );
 
-			if( layer == null )
+			if( layerIndex < 0 )
 			{
-				Debug.LogError($"-- layer null {layer.name}  track.LayerName{track.LayerName}");
-				controller.AddLayer( track.LayerName );
-				layer = FindLayer( controller, track.LayerName );
+				string missingLayerName = string.IsNullOrEmpty( track.LayerName ) ? "Flux Layer" : track.LayerName;
+				Debug.LogWarning( $"[Flux] 轨道 {track.name} 未找到动画图层 {missingLayerName}，已自动新建" );
+				controller.AddLayer( missingLayerName );
+				layerIndex = controller.layers.Length - 1;
 			}
+
+			AnimatorControllerLayer layer = controller.layers[layerIndex];
+
+			// 状态机建在哪个图层，播放就必须使用哪个索引，否则 Animator.Play 会找不到状态
+			SyncLayerData( track, layerIndex, layer.name );
 			layerMs = GetElapsedMilliseconds( layerStartTimestamp );
 
 			long stateMachineStartTimestamp = Stopwatch.GetTimestamp();
@@ -387,17 +393,15 @@ namespace FluxEditor
 
 			AnimatorState animState = null;
 
-			AnimatorControllerLayer layer = FindLayer( controller, ((FAnimationTrack)animEvt.Track).LayerName );
+			int layerIndex = FindLayerIndex( controller, animTrack.LayerName, animTrack.LayerId );
 
-			if( layer == null )
+			if( layerIndex < 0 )
 				return null;
 
-			if( layer.stateMachine.stateMachines.Length == 0 )
+			AnimatorStateMachine stateMachine = FindStateMachine( controller.layers[layerIndex].stateMachine, FLUX_STATE_MACHINE_NAME );
+
+			if( stateMachine == null )
 				return null;
-
-			ChildAnimatorStateMachine fluxSM = layer.stateMachine.stateMachines[0];
-
-			AnimatorStateMachine stateMachine = fluxSM.stateMachine;
 
 			for( int i = 0; i != stateMachine.states.Length; ++i )
 			{
@@ -478,17 +482,46 @@ namespace FluxEditor
 			return null;
 		}
 
-		private static AnimatorControllerLayer FindLayer( AnimatorController controller, string layerName )
+		/// <summary>
+		/// 查找轨道使用的图层索引：有名称时按名称匹配，名称为空时使用序列化保存的索引。
+		/// 找不到返回 -1。
+		/// </summary>
+		private static int FindLayerIndex( AnimatorController controller, string layerName, int layerId )
 		{
-			bool isNull = string.IsNullOrEmpty( layerName );
-			
-			foreach( AnimatorControllerLayer layer in controller.layers )
+			AnimatorControllerLayer[] layers = controller.layers;
+
+			if( !string.IsNullOrEmpty( layerName ) )
 			{
-				if( layer.name == layerName || isNull)
-					return layer;
+				for( int i = 0; i != layers.Length; ++i )
+				{
+					if( layers[i].name == layerName )
+						return i;
+				}
+
+				return -1;
 			}
 
-			return null;
+			if( layerId >= 0 && layerId < layers.Length )
+				return layerId;
+
+			return -1;
+		}
+
+		/// <summary>
+		/// 同步轨道保存的图层名称与索引，修正历史数据中名称和索引不一致的问题。
+		/// </summary>
+		private static void SyncLayerData( FAnimationTrack track, int layerIndex, string layerName )
+		{
+			SerializedObject serializedTrack = new SerializedObject( track );
+			SerializedProperty layerId = serializedTrack.FindProperty( "_layerId" );
+			SerializedProperty layerNameProperty = serializedTrack.FindProperty( "_layerName" );
+
+			if( layerId.intValue == layerIndex && layerNameProperty.stringValue == layerName )
+				return;
+
+			layerId.intValue = layerIndex;
+			layerNameProperty.stringValue = layerName;
+			serializedTrack.ApplyModifiedPropertiesWithoutUndo();
 		}
 
 		private static AnimatorStateMachine FindStateMachine( AnimatorStateMachine stateMachine, string stateMachineName )
