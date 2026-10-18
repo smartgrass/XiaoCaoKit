@@ -179,11 +179,6 @@ namespace XiaoCao
 
         public string GetTestEnmeyName(int index)
         {
-            if (index == 0)
-            {
-                return "P_0";
-            }
-
             return TestEnmeyList[index % TestEnmeyList.Count];
         }
 

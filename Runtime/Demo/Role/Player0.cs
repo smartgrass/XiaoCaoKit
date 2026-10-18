@@ -8,6 +8,7 @@ namespace XiaoCao
 {
     public class Player0 : PlayerBase, IMsgReceiver
     {
+        public const string PlayerIdRole = "P_0";
         public override void DataCreat()
         {
             playerData = new PlayerData0();
@@ -27,7 +28,8 @@ namespace XiaoCao
 
         public void Init(PlayerSaveData savaData, bool isMainPlayer = false)
         {
-            CreateIdRole(savaData.prefabId);
+            CreateIdRole(Player0.PlayerIdRole);
+
             if (isMainPlayer)
             {
                 int selectRole = ConfigMgr.Inst.LocalRoleSetting.selectRole;
@@ -36,6 +38,8 @@ namespace XiaoCao
                 {
                     selectRole = 0;
                 }
+
+
 
                 idRole.bodyName = selectRole == 0 ? ConfigMgr.Inst.GetSettingSkinName() : $"Role_{selectRole}";
                 AddTag(RoleTagCommon.MainPlayer);
@@ -429,7 +433,7 @@ namespace XiaoCao
             {
                 Debug.Log($"--- set player level {lv}");
             }
-            
+
             GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.addHp;
             GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.atkMult);
             GetAttribute(EAttr.Def).BaseValue = (int)(CharacterAttrCalc.GetBaseDEF(lv) * setting.defMult);

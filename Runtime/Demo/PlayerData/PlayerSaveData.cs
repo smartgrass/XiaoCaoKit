@@ -20,8 +20,6 @@ namespace XiaoCao
 
         public int raceId = 0;
 
-        public string prefabId;
-
         // 剧情进度记录
         public StoryProgress storyProgress = new StoryProgress();
 
@@ -127,11 +125,6 @@ namespace XiaoCao
             }
 
             CheckBlessingNull();
-
-            if (string.IsNullOrEmpty(prefabId))
-            {
-                prefabId = "P_0";
-            }
 
             // 确保剧情进度不为空
             if (storyProgress == null)
