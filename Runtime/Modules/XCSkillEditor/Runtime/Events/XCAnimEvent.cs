@@ -21,8 +21,8 @@ namespace XiaoCao
 
         public float speed = 1f;
 
-        //!hasExitTime 不等当前clip自动播完
-        public bool isBackToIdle;
+        //回到Idle的过渡时间(秒), 大于0时生效; <=0 则不切回Idle
+        public float backToIdleTime;
 
 
         public override void OnTrigger(float timeSinceTrigger)
@@ -68,9 +68,9 @@ namespace XiaoCao
 
         public override void OnFinish()
         {
-            if (isBackToIdle)
+            if (backToIdleTime > 0f)
             {
-                _animator?.CrossFade(AnimHash.Idle, 0.05f);
+                _animator?.CrossFadeInFixedTime(AnimHash.Idle, backToIdleTime);
             }
             base.OnFinish();
         }

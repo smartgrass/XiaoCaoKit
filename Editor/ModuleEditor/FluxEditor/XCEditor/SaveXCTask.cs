@@ -248,7 +248,7 @@ public class SaveXCTask
         {
             ReadAnimTrack(_track, taskData);
         }
-        else if (eventType == typeof(FPlayParticleEvent) || 
+        else if (eventType == typeof(FPlayParticleEvent) ||
             eventType == typeof(FSetActiveEvent))
         {
             Debug.Log($"--- {taskData.objectData.ObjectPath}");
@@ -403,7 +403,7 @@ public class SaveXCTask
         }
         objectData.transfromType = _track.transfromType;
         objectData.otherPointName = _track.otherPointName;
-        objectData.isPs = _track.Owner.GetComponentInChildren<ParticleSystem>(true)!=null;
+        objectData.isPs = _track.Owner.GetComponentInChildren<ParticleSystem>(true) != null;
         var range = _track.GetFrameRange();
         objectData.startFrame = range.Start;
         objectData.endFrame = range.End;
@@ -436,6 +436,10 @@ public class SaveXCTask
         {
             Debug.Log("Luban succ!");
             AssetDatabase.Refresh();
+            if (Application.isPlaying)
+            {
+                TestConfig();
+            }
         }
         else
         {

@@ -32,6 +32,9 @@ namespace Flux
 
         // @note, can't just check Animator.playbackTime >= 0 because unity prints a warning if it's not in playback :(
         private bool _inPlayback = false;
+
+		// 正在执行 BuildInternal 中（sequence.Init 会递归触发 CreateCache 重入）
+		private bool _isBuilding = false;
 		/// @brief Is the cache in playback?
     	public bool InPlayback { get { return _inPlayback; } }
 
@@ -50,6 +53,34 @@ namespace Flux
 
 		protected override bool BuildInternal()
 		{
+			// BuildCache 里会调用 sequence.Init()，而 Init 又会触发 CreateTrackCaches，
+			// 对同一个 cache 再走一次 CreateCache，形成重入：
+			// 外层还没 StartRecording，内层就已经在 Animator 上 Play/Update，
+			// Unity 便会报 "Can't playback from recorder, no recorded data found"
+			if( _isBuilding )
+			{
+				string ownerName = Track != null && Track.Owner != null ? Track.Owner.name : "null";
+				Debug.LogWarning( $"[Flux] FAnimationTrackCache 正在构建，忽略重入 owner={ownerName}" );
+				return false;
+			}
+
+			_isBuilding = true;
+			try
+			{
+				return BuildCache();
+			}
+			finally
+			{
+				_isBuilding = false;
+			}
+		}
+
+		private bool BuildCache()
+		{
+			// 录制前必须退出 playback 模式：上一次预览可能把 Animator 留在 playback 状态，
+			// 而 sequence.Init() 重入构建其它轨时会直接 Animator.Update，触发同样的报错
+			StopPlayback();
+
 			double recordMs = 0d;
 			List<FTrack> tracksToUpdate = GetTracksToUpdate( out _tracksCached );
 
@@ -76,7 +107,9 @@ namespace Flux
 			if( speed == 0 )
 				sequence.Speed = 1f;
 
-			Animator.speed = sequence.Speed;
+			// Animator.speed 为负只有在 recorder 启用时才合法，
+			// 录制前直接赋负值 Unity 会拒绝并报 "Animator.speed can only be negative..."
+			Animator.speed = Mathf.Abs( sequence.Speed );
 
             int currentFrame = sequence.CurrentFrame;
 			bool isPlaying = sequence.IsPlaying;
@@ -258,6 +291,9 @@ namespace Flux
 			Debug.Log ("Start Playback");
 #endif
 
+			if( Animator == null )
+				return;
+
 			// save transforms
 			Animator.enabled = true;
 			Animator.StartPlayback();
@@ -268,7 +304,12 @@ namespace Flux
 		/// @brief Stops playback
 		public void StopPlayback()
 		{
-			if( !InPlayback )
+			if( Animator == null )
+				return;
+
+			// _inPlayback 只是本地标记，重建 controller / 替换缓存后可能和引擎状态不一致，
+			// 用 recorderMode 兜底，避免遗留 playback 状态污染下一次录制
+			if( !_inPlayback && Animator.recorderMode != AnimatorRecorderMode.Playback )
 				return;
 #if FLUX_DEBUG
 			Debug.Log ("Stop Playback");

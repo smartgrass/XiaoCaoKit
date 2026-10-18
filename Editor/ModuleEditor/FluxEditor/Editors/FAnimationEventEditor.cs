@@ -31,6 +31,7 @@ namespace FluxEditor
 		private SerializedProperty _transitionExitTime;
         private SerializedProperty _transitionDuration;
         private SerializedProperty _transitionOffset;
+        private SerializedProperty _transitionHasFixedDuration;
 
         private static int _mouseDown = int.MinValue;
 
@@ -50,7 +51,7 @@ namespace FluxEditor
 			FAnimationEventInspector.CheckDeleteAnimation( AnimEvt );
 		}
 			
-		private void UpdateEventFromController()
+		private void SyncTransitionFromEvent()
 		{
 			bool isBlending = AnimEvt.IsBlending();
 
@@ -75,12 +76,14 @@ namespace FluxEditor
 						_transitionExitTime = _transitionSO.FindProperty( "m_ExitTime" );
 						_transitionDuration = _transitionSO.FindProperty( "m_TransitionDuration" );
 						_transitionOffset = _transitionSO.FindProperty( "m_TransitionOffset" );
+						_transitionHasFixedDuration = _transitionSO.FindProperty( "m_HasFixedDuration" );
 					}
 				}
 				else if( _transitionSO.targetObject == null )
 				{
 					_transitionExitTime = null;
 					_transitionDuration = null;
+					_transitionHasFixedDuration = null;
 					_transitionOffset = null;
 					_transitionSO = null;
 				}
@@ -94,6 +97,7 @@ namespace FluxEditor
 					_transitionExitTime = null;
 					_transitionOffset = null;
 					_transitionDuration = null;
+					_transitionHasFixedDuration = null;
 				}
 			}
 
@@ -101,39 +105,39 @@ namespace FluxEditor
 			{
 				_transitionSO.Update();
 				_animEvtSO.Update();
-				
+
 				FPlayAnimationEvent prevAnimEvt = (FPlayAnimationEvent)AnimTrack.Events[AnimEvt.GetId() - 1];
 
 				AnimationClip prevAnimEvtClip = prevAnimEvt._animationClip;
 				if( prevAnimEvtClip != null )
 				{
+					// transition 是 Flux 事件的衍生数据, 这里只做 事件 -> transition 的单向写入。
+					// 以前是反向回写(transition -> 事件): 状态机只有手动重建时才刷新, 控制器里的值一旦过期
+					// (常见就是 0), 每次重绘都会把刚编辑的 _startOffset / _blendLength 冲掉, 表现就是"一直被重置为 0"。
+					//
+					// hasFixedDuration 为 true 时 Unity 把 duration / exitTime 当秒解释, 而下面算的是归一化时间, 必须关掉。
+					if( _transitionHasFixedDuration != null && _transitionHasFixedDuration.boolValue )
+						_transitionHasFixedDuration.boolValue = false;
+
 					float exitTimeNormalized = (prevAnimEvt.Length + prevAnimEvt._startOffset) / (prevAnimEvtClip.frameRate * prevAnimEvtClip.length);
-										
+
 					if( !Mathf.Approximately( exitTimeNormalized, _transitionExitTime.floatValue ) )
 					{
 						_transitionExitTime.floatValue = exitTimeNormalized;
 					}
-					
+
 					float blendNormalized = (_blendLength.intValue / prevAnimEvtClip.frameRate) / prevAnimEvtClip.length;
-					
+
 					if( !Mathf.Approximately( blendNormalized, _transitionDuration.floatValue ) )
 					{
-						_blendLength.intValue = Mathf.Clamp( Mathf.RoundToInt( _transitionDuration.floatValue * prevAnimEvtClip.length * prevAnimEvtClip.frameRate ), 0, AnimEvt.Length);
-						
-						_transitionDuration.floatValue = (_blendLength.intValue / prevAnimEvtClip.frameRate) / prevAnimEvtClip.length;
-
-						_animEvtSO.ApplyModifiedProperties();
-						
+						_transitionDuration.floatValue = blendNormalized;
 					}
 
 					float startOffsetNorm = (_startOffset.intValue / AnimEvt._animationClip.frameRate) / AnimEvt._animationClip.length;
 
 					if( !Mathf.Approximately( startOffsetNorm, _transitionOffset.floatValue ) )
 					{
-						_startOffset.intValue = Mathf.RoundToInt( _transitionOffset.floatValue * AnimEvt._animationClip.length * AnimEvt._animationClip.frameRate );
-						_transitionOffset.floatValue = (_startOffset.intValue / AnimEvt._animationClip.frameRate) / AnimEvt._animationClip.length;
-
-						_animEvtSO.ApplyModifiedProperties();
+						_transitionOffset.floatValue = startOffsetNorm;
 					}
 				}
 
@@ -150,7 +154,7 @@ namespace FluxEditor
                 _startOffset = _animEvtSO.FindProperty( "_startOffset" );
             }
 
-			UpdateEventFromController();
+			SyncTransitionFromEvent();
 
 			_animEvtSO.Update();
 
@@ -234,7 +238,7 @@ namespace FluxEditor
 
                     _mouseDown = mouseDragPos;
 
-                    _startOffset.intValue = Mathf.Clamp( _startOffset.intValue + delta, 0, AnimEvt._animationClip.isLooping ? AnimEvt.Length : Mathf.RoundToInt( AnimEvt._animationClip.length * AnimEvt._animationClip.frameRate ) - AnimEvt.Length );
+                    _startOffset.intValue = Mathf.Clamp( _startOffset.intValue + delta, 0, AnimEvt.GetMaxStartOffset() );
 
 					if( _transitionOffset != null )
                    		_transitionOffset.floatValue = (_startOffset.intValue / AnimEvt._animationClip.frameRate) / AnimEvt._animationClip.length;

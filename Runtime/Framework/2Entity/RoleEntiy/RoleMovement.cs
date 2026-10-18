@@ -49,8 +49,17 @@ namespace XiaoCao
 
         public void Init()
         {
-            owner.Anim.SetFloat(AnimNames.IdleValue, moveSetting.idleValue);
+            ApplyIdleValue();
             curBaseMoveSpeed = moveSetting.baseMoveSpeed;
+        }
+
+        /// <summary>
+        /// 把 MoveSetting 的 idleValue 写入动画机;
+        /// 换 body 后 Animator 是新实例, 参数会回到默认值, 需要重新写入。
+        /// </summary>
+        public void ApplyIdleValue()
+        {
+            owner.Anim.SetFloat(AnimNames.IdleValue, moveSetting.idleValue);
         }
 
         public override void FixedUpdate()

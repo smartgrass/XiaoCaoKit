@@ -45,6 +45,9 @@ public sealed partial class CreateEnemyGroups : Luban.BeanBase
     /// 强制跟随(0,无视 1跟随,-1不跟随)
     /// </summary>
     public readonly int ForceFollow;
+    /// <summary>
+    /// Event:DoSkill,103
+    /// </summary>
     public readonly string TaskLines;
     /// <summary>
     /// 困难模式-需要修改时覆写

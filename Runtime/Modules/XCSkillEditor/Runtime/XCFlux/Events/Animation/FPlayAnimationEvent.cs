@@ -33,7 +33,8 @@ namespace Flux
 
 		private FAnimationTrack _animTrack = null;
 
-        public bool isBackToIdle;
+        [Tooltip("回到Idle的过渡时间(秒), 大于0时生效")]
+        public float backToIdleTime;
 
         protected override void OnTrigger( float timeSinceTrigger )
 		{
@@ -137,7 +138,13 @@ namespace Flux
 		{
 			if( _animationClip == null )
 				return 0;
-			return _animationClip.isLooping ? Length : Mathf.RoundToInt(_animationClip.length * _animationClip.frameRate) - Length;
+
+			if( _animationClip.isLooping )
+				return Length;
+
+			//clip 比事件还短时没有可偏移的空间; 返回负数会让 IntSlider 把 startOffset 拉成负值
+			int clipFrameCount = Mathf.RoundToInt( _animationClip.length * _animationClip.frameRate );
+			return Mathf.Max( 0, clipFrameCount - Length );
 		}
 
         public override XCEvent ToXCEvent()
@@ -147,7 +154,7 @@ namespace Flux
             xce.range = new XCRange(fe.Start, fe.End);
             xce.startOffset = fe._startOffset * XCSetting.FramePerSec;
             xce.blenderLength = fe._blendLength * XCSetting.FramePerSec;
-			xce.isBackToIdle = fe.isBackToIdle;
+			xce.backToIdleTime = fe.backToIdleTime;
 			xce.clipLen = fe._animationClip.length;
 			return xce;
         }

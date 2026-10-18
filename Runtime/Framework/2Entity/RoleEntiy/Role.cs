@@ -155,6 +155,8 @@ namespace XiaoCao
             GameObject.Destroy(body);
             Debug.Log($"--- ChangeBody bodyName");
             CreateRoleBody(bodyName);
+            //换 body 后 Animator 是新实例, 动画机参数会回到默认值, 需要重新写入 idleValue
+            data_R.movement.ApplyIdleValue();
         }
 
 

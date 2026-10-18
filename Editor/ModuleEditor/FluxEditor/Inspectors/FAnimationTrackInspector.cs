@@ -304,11 +304,18 @@ namespace FluxEditor
 
 						transition = lastStateTransitions.Length == 1 ? lastStateTransitions[0] : lastState.AddTransition( state );
 
+						//下面的 duration / exitTime 都是归一化时间, 必须关掉 Fixed Duration,
+						//否则 Unity 会把这些值当成秒, 混合时长和配置的帧数对不上
+						transition.hasFixedDuration = false;
+
 						transition.offset = (animEvent._startOffset / animEvent._animationClip.frameRate) / animEvent._animationClip.length;
 
 						FPlayAnimationEvent prevAnimEvent = (FPlayAnimationEvent)events[i-1];
 
-						animEvent._startOffset = Mathf.Clamp( Mathf.RoundToInt(transition.offset * animEvent._animationClip.length * animEvent._animationClip.frameRate), 0, animEvent._animationClip.isLooping ? animEvent.Length : Mathf.RoundToInt( animEvent._animationClip.length * animEvent._animationClip.frameRate ) - animEvent.Length );
+						int maxStartOffset = animEvent._animationClip.isLooping
+							? animEvent.Length
+							: Mathf.Max( 0, Mathf.RoundToInt( animEvent._animationClip.length * animEvent._animationClip.frameRate ) - animEvent.Length );
+						animEvent._startOffset = Mathf.Clamp( Mathf.RoundToInt( transition.offset * animEvent._animationClip.length * animEvent._animationClip.frameRate ), 0, maxStartOffset );
 						transition.offset = (animEvent._startOffset / animEvent._animationClip.frameRate) / animEvent._animationClip.length;
 						EditorUtility.SetDirty( animEvent );
 
