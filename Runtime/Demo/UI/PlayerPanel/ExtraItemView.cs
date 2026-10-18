@@ -33,6 +33,14 @@ namespace XiaoCao.UI
             UpdateUI();
         }
 
+        /// <summary>
+        /// 当前关卡是否有可用道具, 没有时 BagTab 隐藏道具页签
+        /// </summary>
+        public static bool HasAnyExtraItem()
+        {
+            return BattleData.Current != null && BattleData.Current.GetExtraItems().Count > 0;
+        }
+
         private void Update()
         {
             if (_selectedItem != null)

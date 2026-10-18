@@ -109,6 +109,9 @@ namespace XiaoCao
 
         public static string ObtainWay = "ObtainWay"; // 获取途径
 
+        public static string Owned = "Owned"; // 拥有数量
+        public static string BagEmpty = "BagEmpty"; // 背包中暂无消耗品
+
         public static string GetItemName(this Item item)
         {
             if (item.type == ItemType.Buff)
@@ -137,13 +140,21 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 物品描述文案: 额外道具读 ExtraItemDesc/[id], 其余物品读 ItemInfo 的本地化key加 _Desc
+        /// 物品描述文案: 额外道具读 ExtraItemDesc/[id], 矿石按品阶找 _Desc_[品阶] 再退回 _Desc, 其余物品读 ItemInfo 的本地化key加 _Desc
         /// </summary>
         public static string GetItemDesc(this Item item)
         {
-            string key = item.type == ItemType.ExtraItem
-                ? GetExtraItemDescKey(item.typeId)
-                : $"{GetItemLocalizeKey(item)}_Desc";
+            if (item.type == ItemType.ExtraItem)
+            {
+                return GetExtraItemDescKey(item.typeId).ToLocalizeStr();
+            }
+
+            if (item.type == ItemType.Consumable && item.typeId.StartsWith(nameof(EConsumableSubType.Crystal)))
+            {
+                return item.ToCrystalItem().LocalizeDesc;
+            }
+
+            string key = $"{GetItemLocalizeKey(item)}_Desc";
             return key.ToLocalizeStr();
         }
 

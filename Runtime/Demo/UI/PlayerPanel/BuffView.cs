@@ -29,12 +29,45 @@ namespace XiaoCao.UI
 
         public override void OnEnable()
         {
+            //战斗内取玩家的纹章数据, 家园场景没有玩家实体时用空的纹章占位
             var control = PlayerHelper.GetPlayerBuffControl();
-            playerBuffs = control != null ? playerBuffs : null;
+            playerBuffs = control != null ? control.playerBuffs : null;
             switchBtn.onClick.RemoveListener(OnSwitchBtn);
             switchBtn.onClick.AddListener(OnSwitchBtn);
             // 更新UI以显示buff
             UpdateUI();
+        }
+
+        /// <summary>
+        /// 是否有已装备的纹章(被动纹章或外置纹章), 没有时 BagTab 隐藏纹章页签
+        /// </summary>
+        public static bool HasEquippedBuff()
+        {
+            //家园场景或玩家实体未就绪时没有纹章数据
+            var control = GameDataCommon.LocalPlayer != null ? PlayerHelper.GetPlayerBuffControl() : null;
+            var buffs = control != null ? control.playerBuffs : null;
+            if (buffs == null)
+            {
+                return false;
+            }
+
+            if (buffs.norBuff != null && buffs.norBuff.IsEnable)
+            {
+                return true;
+            }
+
+            if (buffs.EquippedExBuffs != null)
+            {
+                foreach (var item in buffs.EquippedExBuffs)
+                {
+                    if (item != null && item.IsEnable)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public override void UpdateUI()

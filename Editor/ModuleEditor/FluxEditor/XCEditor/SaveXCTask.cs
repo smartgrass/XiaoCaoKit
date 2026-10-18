@@ -26,9 +26,6 @@ public class SaveXCTask
     public const string OpenWindowName = XCEditorTools.XiaoCaoFlux + "OpenWindow";
     public const string ReadSkillDataName = XCEditorTools.AssetCheck + "Log XCTaskData";
 
-    public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "生成数据";
-    public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "生成数据&代码";
-
     public const string SavaCurSeqName = XCEditorTools.XiaoCaoGameObject + "保存Sequence技能&代码";
     public const string RepalcePrefabName = XCEditorTools.XiaoCaoGameObject + "打开替换工具(skillEditor)";
 
@@ -409,43 +406,5 @@ public class SaveXCTask
         objectData.endFrame = range.End;
         return objectData;
     }
-
-
-    [MenuItem(LoadLubanExcelName)]
-    public static void LoadLubanExcel()
-    {
-        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_data.bat";
-        var msg = CommandHelper.ExecuteBatCommand(path);
-        if (msg.Contains("== succ =="))
-        {
-            Debug.Log("Luban succ!");
-            LubanTables.Inst.Reset();
-        }
-        else
-        {
-            Debug.LogError(msg);
-        }
-    }
-
-    [MenuItem(LoadLubanExcelCodeName)]
-    public static void LoadLubanExcelWithCode()
-    {
-        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
-        var msg = CommandHelper.ExecuteBatCommand(path);
-        if (msg.Contains("bye~"))
-        {
-            Debug.Log("Luban succ!");
-            AssetDatabase.Refresh();
-            if (Application.isPlaying)
-            {
-                TestConfig();
-            }
-        }
-        else
-        {
-            Debug.LogError(msg);
-        }
-    }
-
 
 }

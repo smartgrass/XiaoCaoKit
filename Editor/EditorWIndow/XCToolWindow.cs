@@ -295,7 +295,7 @@ namespace AssetEditor.Editor
         void GenConfig()
         {
             //XCToolBarMenu.OpenPath_Excel();
-            SaveXCTask.LoadLubanExcelWithCode();
+            LoadLubanExcelWithCode();
         }
 
         [Button("玩家存档面板", Line3)]
@@ -523,13 +523,69 @@ namespace AssetEditor.Editor
             return new Item(ItemType.HolyRelic, relicId, 1, quality);
         }
 
+        /// <summary>
+        /// 运行时重新加载配置: 重新读取 luban 数据, 并重建依赖配置的缓存。
+        /// 注意: 新增或修改表字段生成的代码, 需要重新进入运行模式编译后才生效。
+        /// </summary>
         [Button("ReLoadConfig ", Line99)]
-        void TestConfig()
+        static void ReLoadConfig()
         {
+            //运行时 Tables 不会自动失效, 必须主动重载才会读到新生成的 bytes
+            LubanTables.Inst.Reload();
+
+            //ClearCache 后重新走一次 Load, 否则会拿到字段为空的 ConfigMgr
             ConfigMgr.ClearCache();
-            var configMgr = ConfigMgr.Inst;
+            ConfigMgr.ClearStatic();
+            ConfigMgr.Inst.Load();
+
             Debug.Log($"-- ReLoadConfig");
         }
+
+
+    public const string LoadLubanExcelName = XCEditorTools.XiaoCaoLuban + "生成数据";
+    public const string LoadLubanExcelCodeName = XCEditorTools.XiaoCaoLuban + "生成数据&代码";
+
+    [MenuItem(LoadLubanExcelName)]
+    public static void LoadLubanExcel()
+    {
+        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_data.bat";
+        var msg = CommandHelper.ExecuteBatCommand(path);
+        if (msg.Contains("== succ =="))
+        {
+            Debug.Log("Luban succ!");
+            LubanTables.Inst.Reload();
+        }
+        else
+        {
+            Debug.LogError(msg);
+        }
+    }
+
+    [MenuItem(LoadLubanExcelCodeName)]
+    public static void LoadLubanExcelWithCode()
+    {
+        string path = $"{PathTool.GetUpperDir(Application.dataPath)}/Tools/gen_code_data.bat";
+        var msg = CommandHelper.ExecuteBatCommand(path);
+        if (msg.Contains("bye~"))
+        {
+            Debug.Log("Luban succ!");
+            AssetDatabase.Refresh();
+            if (Application.isPlaying)
+            {
+                //运行时不会触发域重载, 新生成的 cs 要退出运行模式后才生效, 这里只热重载数据
+                ReLoadConfig();
+                Debug.LogWarning("-- luban data reloaded, 新增/修改的字段需重新进入运行模式后生效");
+            }
+            else
+            {
+                LubanTables.Inst.Reload();
+            }
+        }
+        else
+        {
+            Debug.LogError(msg);
+        }
+    }
 
         private void SetFrameRate()
         {

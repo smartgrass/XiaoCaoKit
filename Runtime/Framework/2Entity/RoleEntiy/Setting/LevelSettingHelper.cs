@@ -200,6 +200,9 @@ namespace XiaoCao
                     GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
                     break;
                 case ItemType.HolyRelic:
+                    //圣器不可堆叠, 直接加入背包(是否装备由玩家在角色面板操作)
+                    PlayerSaveData.LocalSavaData.inventory.AddItem(item);
+                    GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
                     break;
                 case ItemType.Coin:
                     PlayerSaveData.LocalSavaData.Coin += item.num;

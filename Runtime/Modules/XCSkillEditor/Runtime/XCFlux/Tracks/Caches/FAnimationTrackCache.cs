@@ -321,6 +321,12 @@ namespace Flux
 
 		public override void GetPlaybackAt( float sequenceTime )
 		{
+#if UNITY_EDITOR
+			// 没有录制数据就不要再进 playback，否则 Unity 会报
+			// "Can't playback from recorder, no recorded data found"
+			if( Animator == null || Animator.recorderStopTime <= Animator.recorderStartTime )
+				return;
+#endif
 //			if( !InPlayback )
 				StartPlayback();
 			/// @TODO waiting for Unity crash bug to be fixed

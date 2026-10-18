@@ -248,8 +248,17 @@ namespace XiaoCao
                 AddSkill3ScaleModify(taskInfo);
             }
 
+            //技能2:空中额外剑气次数随技能等级变化
+            if (skillId == Skill2Id)
+            {
+                AddSkill2AirSlash(taskInfo);
+            }
+
             return taskInfo;
         }
+
+        /// <summary>技能2 的 id</summary>
+        private const string Skill2Id = "2";
 
         /// <summary>技能3 的 id</summary>
         private const string Skill3Id = "3";
@@ -282,6 +291,39 @@ namespace XiaoCao
                 num = num,
             };
         }
+
+        #region 技能2空中额外剑气
+
+        /// <summary>
+        /// 技能2(空中技能):按当前等级读取 SkillUpgradeSetting.CostomValues 得到额外剑气次数,
+        /// 以 ModifyTaskInfo(key = AirSlash) 的形式写入 TaskInfo,子技能(剑气)触发时读取并逐次消耗,
+        /// 触发方式与 Buff 的 ExtraSlash 同理(见 <see cref="TaskModifyRule.TryConsumeAirSlash"/>)
+        /// </summary>
+        private void AddSkill2AirSlash(TaskInfo taskInfo)
+        {
+            var setting = LubanTables.GetSkillUpgradeSetting(Skill2Id);
+            if (setting.CostomValues == null || setting.CostomValues.Count == 0)
+            {
+                Debug.LogError($"--- {Skill2Id} 技能的 CostomValues 未配置额外剑气次数");
+                return;
+            }
+
+            int level = PlayerSaveData.LocalSavaData.GetSkillLevel(Skill2Id);
+            //等级超出配置长度时取最后一条
+            int index = Mathf.Clamp(level - 1, 0, setting.CostomValues.Count - 1);
+            int count = (int)setting.CostomValues[index];
+            if (count <= 0)
+            {
+                return;
+            }
+
+            taskInfo.ModifyDic[TaskModifyRule.AirSlashKey] = new ModifyTaskInfo()
+            {
+                count = count,
+            };
+        }
+
+        #endregion
 
         private bool IsNorAtkId(string id)
         {

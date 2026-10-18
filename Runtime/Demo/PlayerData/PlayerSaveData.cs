@@ -505,6 +505,61 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 覆盖式设置章节通关进度(可前进也可回退), 供编辑器调试用; 正常游戏流程用 <see cref="SetPassState"/>
+        /// </summary>
+        public void SetPassProgress(int chapter, int index)
+        {
+            chapterPassDic[chapter] = index;
+        }
+
+        /// <summary>
+        /// 清空所有未通关关卡残留的星星记录(无死亡通关与最快耗时)
+        /// </summary>
+        /// <returns>被清理记录的关卡数量</returns>
+        public int ClearStarStatesOfUnpassLevels()
+        {
+            List<string> keys = new List<string>(otherStates.Keys);
+            int clearCount = 0;
+            foreach (string key in keys)
+            {
+                if (!TryParseLevelKey(key, out int chapter, out int index) ||
+                    GetPassState(chapter, index) == LevelPassState.Pass)
+                {
+                    continue;
+                }
+
+                LevelOtherState state = otherStates[key];
+                if (state.hasNoDeathPass || state.passTime > 0)
+                {
+                    state.hasNoDeathPass = false;
+                    state.passTime = 0;
+                    otherStates[key] = state;
+                    clearCount++;
+                }
+            }
+
+            return clearCount;
+        }
+
+        /// <summary>
+        /// 解析关卡存档键("章节_序号"), 解析失败返回 false
+        /// </summary>
+        private static bool TryParseLevelKey(string key, out int chapter, out int index)
+        {
+            chapter = 0;
+            index = 0;
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+
+            string[] parts = key.Split('_');
+            return parts.Length == 2 &&
+                   int.TryParse(parts[0], out chapter) &&
+                   int.TryParse(parts[1], out index);
+        }
+
         public bool HasGetFirstReward(int chapter, int index)
         {
             string key = GetLevelKey(chapter, index);

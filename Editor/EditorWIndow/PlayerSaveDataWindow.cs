@@ -27,7 +27,7 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         EditorGUILayout.LabelField("调试修改存档进度", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的最高已通关关卡推进到输入的关卡序号。", MessageType.Info);
+        EditorGUILayout.HelpBox("章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的通关进度直接设置为输入的关卡序号（可前进或回退），并清空所有未通关关卡的星星记录。", MessageType.Info);
 
         progressChapter = EditorGUILayout.IntField("章节序号", progressChapter);
         progressLevel = EditorGUILayout.IntField("关卡序号", progressLevel);
@@ -89,9 +89,12 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         }
 
         EnsurePlayerSaveDataLoaded();
-        playerSaveData.levelPassData.SetPassState(progressChapter, progressLevel);
+        //覆盖式设置进度, 允许回退
+        playerSaveData.levelPassData.SetPassProgress(progressChapter, progressLevel);
+        //清空未通关关卡残留的星星记录(无死亡通关/最快耗时)
+        int clearCount = playerSaveData.levelPassData.ClearStarStatesOfUnpassLevels();
         Save();
-        Debug.Log($"-- set progress to chapter={progressChapter} level={progressLevel}");
+        Debug.Log($"-- set progress to chapter={progressChapter} level={progressLevel}, cleared {clearCount} unpass star states");
     }
 
     private void EnsurePlayerSaveDataLoaded()

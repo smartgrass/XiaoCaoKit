@@ -1,5 +1,6 @@
 ﻿using NaughtyAttributes;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace XiaoCao.UI
@@ -14,6 +15,10 @@ namespace XiaoCao.UI
         public Image titleImage;
 
         public List<TabPanelGroup> groups = new List<TabPanelGroup>();
+
+        //方向键导航: 记录上一帧移动轴值, 用于检测按下瞬间
+        private float lastVerticalAxis;
+        private float lastHorizontalAxis;
 
         public override void Init()
         {
@@ -64,6 +69,46 @@ namespace XiaoCao.UI
             base.SwitchPanel(subPanelName);
             var group = groups.Find((a) => a.panelName == subPanelName);
             titleImage.sprite = group.iconSprite;
+        }
+
+        private void Update()
+        {
+            if (Application.isMobilePlatform)
+            {
+                return;
+            }
+            HandleArrowKeyNavigation();
+        }
+
+        /// <summary>
+        /// 方向键导航: 上下键(玩家移动键的上下, W/S 同效)切换主页签,
+        /// 左右键(A/D 同效)切换当前子界面的页签
+        /// </summary>
+        private void HandleArrowKeyNavigation()
+        {
+            //使用移动轴检测, 与玩家移动键绑定保持一致
+            float vertical = Input.GetAxisRaw("Vertical");
+            float horizontal = Input.GetAxisRaw("Horizontal");
+
+            if (lastVerticalAxis <= 0 && vertical > 0)
+            {
+                SwitchTab(1);
+            }
+            else if (lastVerticalAxis >= 0 && vertical < 0)
+            {
+                SwitchTab(-1);
+            }
+            lastVerticalAxis = vertical;
+
+            if (lastHorizontalAxis <= 0 && horizontal > 0)
+            {
+                curPanel?.gameObject.GetComponent<TabView>()?.SwitchTab(1);
+            }
+            else if (lastHorizontalAxis >= 0 && horizontal < 0)
+            {
+                curPanel?.gameObject.GetComponent<TabView>()?.SwitchTab(-1);
+            }
+            lastHorizontalAxis = horizontal;
         }
     }
 

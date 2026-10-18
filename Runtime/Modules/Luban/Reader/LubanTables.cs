@@ -232,9 +232,21 @@ namespace cfg
             }
         }
 
+        /// <summary>
+        /// 标记缓存失效, 下次访问 <see cref="Tables"/> 时重新加载。
+        /// </summary>
         public void Reset()
         {
             _init = false;
+        }
+
+        /// <summary>
+        /// 立即重新加载配置(运行时热重载): 丢弃已缓存的 Tables, 重新读取 bytes。
+        /// </summary>
+        public void Reload()
+        {
+            _init = false;
+            Load();
         }
 
         /// <summary>

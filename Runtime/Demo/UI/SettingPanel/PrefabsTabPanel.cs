@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCao.UI;
+using XiaoCaoKit;
 
 namespace XiaoCao.UI
 {
@@ -23,16 +24,33 @@ namespace XiaoCao.UI
                 FindSubPanel(subPanel, findPanel);
             }
 
-            
+
             subPanel.Prefabs = prefabs;
             subPanel.subPanelName = panelName;
 
-            GameObject tabBtnGo = Instantiate(prefabs.tabBtn, TABS);
-            var tabBtn = tabBtnGo.GetComponentInChildren<Button>();
+            int panelIndex = list.Count;
+
+            var tabBtnTf = TABS.GetChild(panelIndex);
+            if (tabBtnTf == null && panelIndex != 0)
+            {
+                if (panelIndex != 0)
+                {
+
+                    UITool.SetCellListCount(TABS, panelIndex + 1);
+                    tabBtnTf = TABS.GetChild(panelIndex);
+                }
+                else
+                {
+                    Debug.LogError("no tab btn");
+                }
+
+            }
+
+            var tabBtn = tabBtnTf.GetComponentInChildren<Button>();
             subPanel.TabBtn = tabBtn;
             tabBtn.onClick.AddListener(() => { SwitchPanel(panelName); });
-            tabBtnGo.GetComponentInChildren<Button>().Select();
-            tabBtnGo.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
+            tabBtnTf.GetComponentInChildren<Button>().Select();
+            //tabBtnTf.GetComponentInChildren<TextMeshProUGUI>().BindLocalizer(panelName);
 
             subPanel.Init();
             list.Add(subPanel);

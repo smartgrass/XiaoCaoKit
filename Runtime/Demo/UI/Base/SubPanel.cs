@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using XiaoCao.UI;
+using XiaoCaoKit;
 using XiaoCaoKit.UI;
 using Object = UnityEngine.Object;
 using Slider = UnityEngine.UI.Slider;
@@ -17,7 +18,7 @@ public abstract class SubPanel
     public GameObject gameObject;
 
     public UIPrefabs Prefabs;
-    
+
     public Transform transform => gameObject.transform;
 
     public Button TabBtn { get; set; }
@@ -131,23 +132,26 @@ public abstract class SubPanel
         string title3 = null, UnityAction oncClick3 = null)
     {
         GameObject line = Object.Instantiate(Prefabs.btnLine, gameObject.transform);
-
+        //根据对应顺序赋值, 如果为null则隐藏btnGo
+        string[] titles = { title, tile2, title3 };
+        UnityAction[] actions = { onClick, onClick2, oncClick3 };
+        UITool.SetCellListCount(line.transform, 3);
         for (int i = 0; i < 3; i++)
         {
             var btnGo = line.transform.GetChild(i);
-            Button button = btnGo.GetComponentInChildren<Button>();
-            TextMeshProUGUI textMesh = btnGo.transform.GetComponentInChildren<TextMeshProUGUI>();
-
-            //根据对应顺序赋值, 如果为null则隐藏btnGo
-            string[] titles = { title, tile2, title3 };
-            UnityAction[] actions = { onClick, onClick2, oncClick3 };
-
             if (string.IsNullOrEmpty(titles[i]) || actions[i] == null)
             {
-                btnGo.gameObject.SetActive(false);
+                if (btnGo != null)
+                {
+                    btnGo.gameObject.SetActive(false);
+                }
+
             }
             else
             {
+                Button button = btnGo.GetComponentInChildren<Button>();
+                TextMeshProUGUI textMesh = btnGo.transform.GetComponentInChildren<TextMeshProUGUI>();
+
                 textMesh.gameObject.GetOrAddComponent<Localizer>().SetLocalize(titles[i]);
                 button.onClick.AddListener(actions[i]);
                 btnGo.gameObject.SetActive(true);

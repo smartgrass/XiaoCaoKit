@@ -112,6 +112,9 @@ namespace XiaoCaoKit
             {
                 PlayerSaveData.LocalSavaData.levelPassData.SetHasGetFirstReward(info.chapter, info.index);
             }
+
+            //结算奖励后立即存盘, 防止奖励只改了内存没写入存档
+            PlayerSaveData.SavaData();
         }
 
 

@@ -67,8 +67,8 @@ public class DemoPanel : SubPanel
         {
             GameDebugTool.UnlockAllLevel(GameAllData.playerSaveData);
             SaveMgr.SaveData(GameAllData.playerSaveData);
-        });
-        AddButton(LocalizeKey.KillEnemyDebug, () =>
+        },
+        LocalizeKey.KillEnemyDebug, () =>
         {
             foreach (var role in RoleMgr.Inst.roleDic.Values)
             {

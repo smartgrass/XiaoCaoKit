@@ -17,6 +17,9 @@ namespace XiaoCao
 
         /// <summary>按 key 解释的数值参数,如 Scale 时为缩放增量,最终倍数 = 1 + num</summary>
         public float num;
+
+        /// <summary>按 key 解释的整数计数,如 AirSlash 时为剩余可触发的额外剑气次数,触发一次扣一次</summary>
+        public int count;
     }
 
     /// <summary>
@@ -26,6 +29,31 @@ namespace XiaoCao
     {
         /// <summary>整体缩放:命中后目标子物体整体 scale 变为 (1 + num) 倍</summary>
         public const string ScaleKey = "Scale";
+
+        /// <summary>
+        /// 空中额外剑气:命中后该次技能内每次挥砍(剑气)额外发射一发,
+        /// count 为剩余次数,由 <see cref="TryConsumeAirSlash"/> 在子技能触发时逐次消耗,耗尽则不再触发
+        /// </summary>
+        public const string AirSlashKey = "AirSlash";
+
+        /// <summary>
+        /// 消耗一次空中额外剑气:命中 AirSlash 项且剩余次数 > 0 时返回 true 并扣减
+        /// </summary>
+        public static bool TryConsumeAirSlash(TaskInfo info)
+        {
+            if (info == null || info.ModifyDic.Count == 0)
+            {
+                return false;
+            }
+
+            if (!info.ModifyDic.TryGetValue(AirSlashKey, out ModifyTaskInfo modify) || modify.count <= 0)
+            {
+                return false;
+            }
+
+            modify.count--;
+            return true;
+        }
 
         /// <summary>
         /// 取子物体的整体缩放倍数:遍历 ModifyDic 中 key 为 Scale 的项,命中多条时相乘

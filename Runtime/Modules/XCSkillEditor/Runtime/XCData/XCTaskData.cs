@@ -10,6 +10,7 @@ using System.Text;
 using cfg;
 using TEngine;
 using cfg.Skill;
+using XiaoCao.Buff;
 
 namespace XiaoCao
 {
@@ -133,6 +134,13 @@ namespace XiaoCao
                 if (setting.Tags.Contains(TaskInfoTags.Slash))
                 {
                     GameEvent.Send<ObjectData>(EGameEvent.PlayerCreatNorAtk.ToInt(), this);
+
+                    //技能2: 空中额外剑气, 触发方式与 Buff 的 ExtraSlash 同理,
+                    //次数由 RoleControl 起手写入 TaskInfo(AirSlashKey), 每发一次消耗一次, 耗尽则不再触发
+                    if (TaskModifyRule.TryConsumeAirSlash(info))
+                    {
+                        ExtraSlashHelper.FireSlash(Tran, info.role as Player0);
+                    }
                 }
             }
         }
