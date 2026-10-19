@@ -21,7 +21,6 @@ MonoBehaviour:
     atkMult: 1
     defMult: 1
     hpMult: 1
-    offsetLevel: 10
     maxArmor: 4
     armorDef: 0.5
     recoverCdOnBreak: 4
@@ -38,7 +37,6 @@ MonoBehaviour:
     atkMult: 0.7
     defMult: 1
     hpMult: 1.5
-    offsetLevel: 10
     maxArmor: 8
     armorDef: 0.3
     recoverCdOnBreak: 4
@@ -54,8 +52,7 @@ MonoBehaviour:
     addHp: 100
     atkMult: 0.85
     defMult: 1
-    hpMult: 3
-    offsetLevel: 10
+    hpMult: 5
     maxArmor: 20
     armorDef: 0.9
     recoverCdOnBreak: 3

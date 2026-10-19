@@ -1,31 +1,24 @@
 ﻿using NaughtyAttributes;
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using XiaoCao;
 
 public class ItemDeadRewardExec : MonoExecute
 {
-    public bool usePool;
-
-    [HideIf(nameof(usePool))]
-    public Item item;
-    
-
-    [ShowIf(nameof(usePool))]
-    [Tooltip("奖池配置->RewardPoolSo")]
-    public string rewardPoolId = "0";
-
+    public MonoExecute rewardExecute;
     //[XCHeader("奖励等级: -1时为关卡配置,等级决定稀有率")]
     //public int rewardLevel = -1;
 
     //rewardAfterEffect
-    public bool noGetEffect;
+    //特效播完再获得奖励
+    public bool rewardAfterEffect;
 
     public Vector3 effectOffset = Vector3.zero;
 
     public override void Execute()
     {
-        if (!noGetEffect)
+        if (!rewardAfterEffect)
         {
             ShowEffectAndReward();
         }
@@ -41,12 +34,7 @@ public class ItemDeadRewardExec : MonoExecute
         if (transform.TryGetComponent<ItemIdComponent>(out ItemIdComponent itemCom))
         {
             int killerId = itemCom.deadInfo.killerId;
-
-            if (usePool)
-            {
-                item = RewardHelper.GetItemWithPool(rewardPoolId);
-            }
-            RewardHelper.RewardItem(item);
+            rewardExecute.Execute();
         }
     }
 

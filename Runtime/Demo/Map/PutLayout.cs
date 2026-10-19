@@ -13,12 +13,15 @@ public class PutLayout : MonoBehaviour
         Grid
     }
 
-    // 圆弧布局时，子物体面朝方向的控制方式。
-    public enum FacingMode
+    // 子物体面朝方向的控制方式。
+    public enum LookDir
     {
-        Keep,
-        TowardCenter,
-        AwayFromCenter
+        // 不处理旋转，保持子物体原有朝向。
+        None,
+        // 朝向布局中心。
+        LookCenter,
+        // 背离布局中心。
+        LookOut
     }
 
     [Serializable]
@@ -36,8 +39,6 @@ public class PutLayout : MonoBehaviour
         public Vector3 horizontalAxis = Vector3.right;
         // 圆所在平面的“纵向”轴。
         public Vector3 verticalAxis = Vector3.forward;
-        // 是否在布局后调整朝向。
-        public FacingMode facingMode = FacingMode.Keep;
     }
 
     [Serializable]
@@ -69,6 +70,8 @@ public class PutLayout : MonoBehaviour
     [SerializeField] private bool includeInactive = true;
     // 保留子物体在布局平面法线方向上的原始深度，避免全部压到同一平面。
     [SerializeField] private bool preservePlaneDepth = true;
+    // 布局后是否调整子物体朝向；两种布局模式共用。
+    [SerializeField] private LookDir lookDir = LookDir.None;
     [SerializeField] private ArcLayoutSettings arc = new ArcLayoutSettings();
     [SerializeField] private GridLayoutSettings grid = new GridLayoutSettings();
 
@@ -157,8 +160,8 @@ public class PutLayout : MonoBehaviour
             float depth = preservePlaneDepth ? Vector3.Dot(child.localPosition, normal) : 0f;
             child.localPosition = planarPosition + normal * depth;
 
-            // 让物体朝向圆心或背离圆心；Keep 模式下不改旋转。
-            ApplyFacing(child, center - planarPosition, normal, arc.facingMode);
+            // 让物体朝向圆心或背离圆心；None 模式下不改旋转。
+            ApplyFacing(child, center, normal, lookDir);
         }
     }
 
@@ -209,6 +212,9 @@ public class PutLayout : MonoBehaviour
             // 与圆弧布局一致，只调整平面内坐标，法线方向深度按需保留。
             float depth = preservePlaneDepth ? Vector3.Dot(child.localPosition, normal) : 0f;
             child.localPosition = planarPosition + normal * depth;
+
+            // 网格布局的中心取 originOffset，朝向仍以布局平面为基准。
+            ApplyFacing(child, grid.originOffset, normal, lookDir);
         }
     }
 
@@ -236,21 +242,22 @@ public class PutLayout : MonoBehaviour
         vertical = Vector3.Cross(normal, horizontal).normalized;
     }
 
-    private static void ApplyFacing(Transform child, Vector3 towardCenter, Vector3 up, FacingMode facingMode)
+    private static void ApplyFacing(Transform child, Vector3 center, Vector3 up, LookDir lookDir)
     {
-        if (facingMode == FacingMode.Keep)
+        if (lookDir == LookDir.None)
         {
             return;
         }
 
-        Vector3 forward = facingMode == FacingMode.TowardCenter ? towardCenter : -towardCenter;
         // 朝向只保留在布局平面内，避免因为法线分量导致物体抬头或低头。
-        forward = Vector3.ProjectOnPlane(forward, up);
-        if (forward.sqrMagnitude <= 0.0001f)
+        Vector3 toCenter = Vector3.ProjectOnPlane(center - child.localPosition, up);
+        if (toCenter.sqrMagnitude <= 0.0001f)
         {
+            // 子物体正好落在中心点上，没有可用的朝向参考。
             return;
         }
 
+        Vector3 forward = lookDir == LookDir.LookCenter ? toCenter : -toCenter;
         child.localRotation = Quaternion.LookRotation(forward.normalized, up);
     }
 }
