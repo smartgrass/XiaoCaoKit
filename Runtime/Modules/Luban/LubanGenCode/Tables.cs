@@ -24,6 +24,10 @@ public partial class Tables
     /// 圣器锻造配置
     /// </summary>
     public ForgeRelicSettingReader ForgeRelicSettingReader {get; }
+    /// <summary>
+    /// 任务配置
+    /// </summary>
+    public TaskSettingReader TaskSettingReader {get; }
 
     public Tables(System.Func<string, ByteBuf> loader)
     {
@@ -35,6 +39,7 @@ public partial class Tables
         ChallengeRewardSettingReader = new ChallengeRewardSettingReader(loader("challengerewardsettingreader"));
         ItemInfoReader = new ItemInfoReader(loader("iteminforeader"));
         ForgeRelicSettingReader = new ForgeRelicSettingReader(loader("forgerelicsettingreader"));
+        TaskSettingReader = new TaskSettingReader(loader("tasksettingreader"));
         ResolveRef();
     }
     
@@ -48,6 +53,7 @@ public partial class Tables
         ChallengeRewardSettingReader.ResolveRef(this);
         ItemInfoReader.ResolveRef(this);
         ForgeRelicSettingReader.ResolveRef(this);
+        TaskSettingReader.ResolveRef(this);
     }
 }
 

@@ -655,7 +655,9 @@ namespace XiaoCao
                 if (GameDataCommon.LocalPlayer != null)
                 {
                     var inputData = GameDataCommon.LocalPlayer.playerData.inputData;
-                    if (Input.GetKeyDown(KeyCode.J) || inputData.inputs[(int)InputKey.NorAck])
+                    //输入界面不可用时按键不生效, 只有真实攻击输入才触发
+                    if ((UIMgr.CanReadPlayerInput && Input.GetKeyDown(KeyCode.J)) ||
+                        inputData.inputs[(int)InputKey.NorAck])
                     {
                         TriggerUI();
                     }

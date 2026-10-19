@@ -13,6 +13,9 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     [SerializeField] private int progressChapter;
     [SerializeField] private int progressLevel = 1;
 
+    //任务调试: 指定要完成的任务id, 留空表示全部任务
+    [SerializeField] private string taskDebugId = "";
+
     public override bool IsDebugView => true;
 
     public override object DrawDebugTarget => playerSaveData;
@@ -42,6 +45,51 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.LabelField("任务调试", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("完成任务会把任务进度直接置为可领取状态(不自动领奖)。任务id留空时作用于全部任务; 清空记录会移除所有任务的进度与领取状态。", MessageType.Info);
+
+        taskDebugId = EditorGUILayout.TextField("任务id", taskDebugId);
+
+        if (GUILayout.Button("完成任务"))
+        {
+            CompleteTaskDebug();
+        }
+
+        if (GUILayout.Button("清空任务记录"))
+        {
+            EnsurePlayerSaveDataLoaded();
+            TaskMgr.DebugClearAll(playerSaveData);
+            Save();
+            Debug.Log("-- task records cleared");
+        }
+
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space();
+    }
+
+    /// <summary>
+    /// 调试: 完成指定任务(或全部任务), 完成后写存档并同步运行时数据
+    /// </summary>
+    private void CompleteTaskDebug()
+    {
+        EnsurePlayerSaveDataLoaded();
+        if (string.IsNullOrEmpty(taskDebugId))
+        {
+            TaskMgr.DebugCompleteAll(playerSaveData);
+            Debug.Log("-- all tasks completed");
+        }
+        else if (!TaskMgr.DebugCompleteTask(playerSaveData, taskDebugId))
+        {
+            Debug.LogError($"-- no task config {taskDebugId}");
+            return;
+        }
+        else
+        {
+            Debug.Log($"-- task completed {taskDebugId}");
+        }
+        Save();
     }
 
     [MenuItem(XCEditorTools.PlayerSaveDataWindow)]
@@ -68,7 +116,7 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     [Button("重置", Pos: 1)]
     private void ResetData()
     {
-        playerSaveData = new PlayerSaveData();
+        playerSaveData = PlayerSaveData.CreateAndCheckNull();
         Save();
     }
 

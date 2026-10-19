@@ -61,9 +61,30 @@ namespace XiaoCao
         public static string GuideOpenFightPanel = "Guide/OpenFightPanel";
         public static string GuideSelectSecondLevel = "Guide/SelectSecondLevel";
 
+        //主城引导: 学习第二个技能
+        public static string GuideOpenPlayerPanel = "Guide/OpenPlayerPanel"; // 点击这里打开角色界面
+        public static string GuideClickSkillTab = "Guide/ClickSkillTab"; // 点击「技能」页签
+        public static string GuideClickSkill = "Guide/ClickSkill"; // 点击「{0}」查看详情
+        public static string GuideClickUpgrade = "Guide/ClickUpgrade"; // 点击升级
+        public static string GuideSkillLearned = "Guide/SkillLearned"; // 技能已学会
+
 
         public static string UnlockAllLevel = "UnlockAllLevel";
         public static string KillEnemyDebug = "KillEnemyDebug";
+
+        #region Task 任务系统
+        public static string Task = "Task"; // 任务
+        public static string TaskClaim = "TaskClaim"; // 领取
+        public static string TaskClaimed = "TaskClaimed"; // 已领取
+        public static string TaskGoto = "TaskGoto"; // 前往
+        public static string TaskCat_Newbie = "TaskCat_Newbie"; // 新手任务
+        public static string TaskCat_Growth = "TaskCat_Growth"; // 成长任务
+        //描述模板按条件类型通用, key = TaskDesc_[条件类型], {0} 为填充参数
+        public static string TaskDesc_SkillUpgradeCount = "TaskDesc_SkillUpgradeCount"; // 累计升级{0}次技能
+        public static string TaskDesc_SkillUnlockCount = "TaskDesc_SkillUnlockCount"; // 累计解锁{0}个技能
+        public static string TaskDesc_PassLevel = "TaskDesc_PassLevel"; // 通关关卡 {0}
+        public static string TaskDesc_OwnRelic = "TaskDesc_OwnRelic"; // 拥有圣器:{0}
+        #endregion
 
         public static string GetLevelName(int chapter, int level)
         {

@@ -8,6 +8,7 @@ namespace XiaoCao.UI
         public const string SkillChange = "SkillLevelChange";
         public const string RoleLevelChange = "RoleLevelChange";
         public const string BlessingChange = "BlessingChange";
+        public const string TaskChange = "TaskChange";
         
   
 

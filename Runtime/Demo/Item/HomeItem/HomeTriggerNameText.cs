@@ -38,12 +38,8 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 
             if (!root)
             {
-                var find = owner.Find(RootName);
-                if (find)
-                {
-                    root = find.gameObject;
-                }
-                else
+                root = FindRoot();
+                if (!root)
                 {
                     var prefab = Resources.Load<GameObject>(RootName);
                     if (!prefab)
@@ -74,6 +70,32 @@ namespace XiaoCaoKit.Runtime.Demo.Item
         public void HideUI()
         {
             bgImage.enabled = false;
+        }
+
+        /// <summary>
+        /// 查找名字牌节点: 同名的 Canvas_Talk 可能被复制出多份, 优先取已激活的那份,
+        /// 否则文本会写到隐藏节点上, 显示中的那份仍是模板默认文案
+        /// </summary>
+        private GameObject FindRoot()
+        {
+            GameObject first = null;
+            for (int i = 0; i < owner.childCount; i++)
+            {
+                Transform child = owner.GetChild(i);
+                if (child.name != RootName)
+                {
+                    continue;
+                }
+
+                if (child.gameObject.activeSelf)
+                {
+                    return child.gameObject;
+                }
+
+                first ??= child.gameObject;
+            }
+
+            return first;
         }
     }
 }

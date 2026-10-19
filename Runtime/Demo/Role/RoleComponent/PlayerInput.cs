@@ -27,14 +27,15 @@ namespace XiaoCao
 
         private void CheckPcInputs()
         {
-            CheckInputXY();
-
-            // PC input check
-            if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
+            //角色输入与输入界面同步: MidCanvas(操作界面)不可用时清空输入, 不移动也不攻击
+            if (!UIMgr.CanReadPlayerInput)
             {
+                data.SetLocalXY(0f, 0f);
+                data.ResetKey();
                 return;
             }
 
+            CheckInputXY();
             CheckNorAtk();
 
             if (Input.GetKeyDown(KeyCode.LeftShift))

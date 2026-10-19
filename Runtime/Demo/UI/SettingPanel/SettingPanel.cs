@@ -14,6 +14,9 @@ public class SettingPanel : PrefabsTabPanel
     public DialogPanel dialogPanel;
     public override UIPanelType PanelType => UIPanelType.SettingPanel;
 
+    //启用方向键导航: 上下键切换主 tab
+    public override bool EnableArrowKeyNavigation => true;
+
     public override void Init()
     {
         if (IsInited)

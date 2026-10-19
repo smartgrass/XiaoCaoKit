@@ -37,7 +37,10 @@ namespace XiaoCao
         public SettingPanel settingPanel;
 
         public PlayerTabPanel playerPanel;
-        
+
+        //任务界面
+        public TaskPanel taskPanel;
+
 
         public KeyInputHud keyInputHud;
 
@@ -45,6 +48,55 @@ namespace XiaoCao
 
         //标记后 将不轻易解除Canvas
         public bool keepHideMidCanvas = false;
+
+        //---- 角色输入与输入界面(MidCanvas)同步 ----
+
+        /// <summary>
+        /// 特定状态: 输入界面隐藏时仍允许角色操作(剧情演出等特殊情况手动开启)
+        /// </summary>
+        public static bool ForceAllowPlayerInput;
+
+        /// <summary>
+        /// 输入界面(操作 HUD)是否可用。UIMgr 尚未创建时视为可用, 避免初始化阶段误拦截
+        /// </summary>
+        public static bool IsInputUIActive
+        {
+            get
+            {
+                UIMgr ui = _instance;
+                if (ui == null || ui.midCanvas == null)
+                {
+                    return true;
+                }
+
+                return ui.midCanvas.enabled && ui.midCanvas.gameObject.activeInHierarchy;
+            }
+        }
+
+        /// <summary>
+        /// 角色输入是否有效: 与输入界面同步, 同时受战斗可控状态约束
+        /// </summary>
+        public static bool CanReadPlayerInput
+        {
+            get
+            {
+                BattleData battle = BattleData.Current;
+                if (battle != null && (!battle.CanPlayerControl || battle.UIEnter))
+                {
+                    return false;
+                }
+
+                return ForceAllowPlayerInput || IsInputUIActive;
+            }
+        }
+
+        /// <summary>
+        /// 设置"输入界面隐藏时仍允许角色输入"的例外开关
+        /// </summary>
+        public static void SetForceAllowPlayerInput(bool isOn)
+        {
+            ForceAllowPlayerInput = isOn;
+        }
 
         public TalkPanel talkPanel;
 
@@ -70,6 +122,7 @@ namespace XiaoCao
             battleHud?.Init(worldCanvasChildUsing);
             settingPanel?.Init();
             playerPanel?.Init();
+            taskPanel?.Init();
             transform.SetParent(null);
             talkPanel.Init();
             buffSelectPanel.Init();
@@ -270,6 +323,8 @@ namespace XiaoCao
                     return levelSelectPanel;
                 case UIPanelType.ForgePanel:
                     return forgePanel;
+                case UIPanelType.TaskPanel:
+                    return taskPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

@@ -162,6 +162,11 @@ namespace XiaoCao
                 return;
             }
 
+            if (slotType == SlotType.Inputs)
+            {
+                //按键槽(翻滚等)的图标由预制体决定, 不按技能栏索引刷新
+                return;
+            }
 
             string id = PlayerData.GetBarSkillId(index);
             if (string.IsNullOrEmpty(id))
@@ -216,7 +221,8 @@ namespace XiaoCao
 
         public void CheckSlotUI(string skillId)
         {
-            string id = PlayerData.GetBarSkillId(index);
+            //技能栏槽位按 index 从技能栏取; 翻滚等按键槽没有栏位, 直接用传入的技能id
+            string id = slotType == SlotType.SkillIndex ? PlayerData.GetBarSkillId(index) : skillId;
             if (string.IsNullOrEmpty(id))
             {
                 RefreshRightTipUI();
@@ -226,7 +232,7 @@ namespace XiaoCao
 
             gameObject.SetActive(true);
 
-            float process = AtkTimer.GetWaitTimeProccess(skillId);
+            float process = AtkTimer.GetWaitTimeProccess(id);
             UpdateProcess(process);
         }
         

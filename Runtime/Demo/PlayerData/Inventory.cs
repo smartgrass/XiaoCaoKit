@@ -92,6 +92,12 @@ namespace XiaoCao
 
         public bool CheckEnoughItem(string itemName, int amount)
         {
+            //消耗为0(免费)时不需要持有该物品
+            if (amount <= 0)
+            {
+                return true;
+            }
+
             Item item = FindItemByName(itemName);
             return item != null && item.num >= amount;
         }
@@ -99,8 +105,19 @@ namespace XiaoCao
 
         public bool CheckEnoughItemList(List<Item> list, bool isConsumeItem)
         {
+            if (list == null)
+            {
+                return true;
+            }
+
             foreach (var item in list)
             {
+                if (item == null || item.num <= 0)
+                {
+                    //免费项不参与校验, 避免背包里没有该物品时被判定为材料不足
+                    continue;
+                }
+
                 if (!CheckEnoughItem(item.ItemKey, item.num))
                 {
                     return false;
@@ -111,6 +128,11 @@ namespace XiaoCao
             {
                 foreach (var item in list)
                 {
+                    if (item == null || item.num <= 0)
+                    {
+                        continue;
+                    }
+
                     ConsumeItem(item.ItemKey, item.num);
                 }
             }

@@ -23,9 +23,14 @@ MonoBehaviour:
     - 0.5
     JumpY: 2
     JumpNoGravityT: 0.35
-    skillIdList: []
-    defaultSkillList:
-    - 1
+    skillIdList:
     - 2
-    rollSkillId: 
+    - 1
+    - 
+    - 
+    - 
+    - 
+    defaultSkillList:
+    - 2
+    rollSkillId: Roll
     jumpSkillId: 

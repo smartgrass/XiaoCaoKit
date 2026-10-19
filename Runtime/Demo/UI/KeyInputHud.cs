@@ -731,8 +731,7 @@ namespace XiaoCao
             bool canUseExtraSkill = extraSkillBtn != null &&
                                     extraSkillBtn.isActiveAndEnabled &&
                                     extraSkillBtn.slotType == SlotType.ExtraItem &&
-                                    BattleData.Current.CanPlayerControl &&
-                                    !BattleData.Current.UIEnter;
+                                    UIMgr.CanReadPlayerInput;
             if (!canUseExtraSkill)
             {
                 ResetExtraSkillKeyState(true);

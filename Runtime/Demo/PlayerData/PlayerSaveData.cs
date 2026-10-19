@@ -8,6 +8,13 @@ namespace XiaoCao
     [Serializable]
     public class PlayerSaveData
     {
+        //当默认构建方法
+        public static PlayerSaveData CreateAndCheckNull()
+        {
+            var data = new PlayerSaveData();
+            data.CheckNull();
+            return data;
+        }
         public static PlayerSaveData LocalSavaData => GameAllData.playerSaveData;
 
         [NonSerialized] private int cachedInitPlayerAttrLv = -1;
@@ -41,6 +48,12 @@ namespace XiaoCao
 
         //ItemUI
         public Inventory inventory = new Inventory();
+
+        //任务进度记录
+        public TaskData taskData = new TaskData();
+
+        //新手引导进度记录
+        public GuideData guideData = new GuideData();
 
         public int Coin
         {
@@ -104,7 +117,7 @@ namespace XiaoCao
         public bool IsNewPlayer => !levelPassData.chapterPassDic.ContainsKey(0);
 
         //反序列化读取的数据, 可能会出现空的现象
-        internal void CheckNull()
+        public void CheckNull()
         {
             //角色等级最低 1 级, 修正旧存档中可能存在的 0 级
             lv = Mathf.Max(GameSetting.MinRoleLevel, lv);
@@ -124,6 +137,20 @@ namespace XiaoCao
                 skillUnlockDic = new Dictionary<string, int>();
             }
 
+            //确保任务进度不为空
+            if (taskData == null)
+            {
+                taskData = new TaskData();
+            }
+            taskData.CheckNull();
+
+            //确保引导进度不为空(旧存档没有该字段)
+            if (guideData == null)
+            {
+                guideData = new GuideData();
+            }
+            guideData.CheckNull();
+
             CheckBlessingNull();
 
             // 确保剧情进度不为空
@@ -138,9 +165,9 @@ namespace XiaoCao
             {
                 levelPassData = new LevelPassData();
             }
-            
+
             levelPassData.CheckNull();
-            
+
             if (skillBarSetting == null)
             {
                 skillBarSetting = new List<string>();
@@ -284,6 +311,9 @@ namespace XiaoCao
             {
                 skillUnlockDic[skillId] = skillUnlockDic[skillId] + 1;
             }
+
+            //累计技能升级次数, 驱动任务进度
+            TaskMgr.AddCondProgress(cfg.task.TaskCondType.SkillUpgradeCount, 1);
         }
 
         //PlayerHelper

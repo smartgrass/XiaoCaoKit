@@ -10,10 +10,73 @@ public abstract class TabStandardPanel : StandardPanel
 {
     [NonSerialized] public List<SubPanel> list = new List<SubPanel>();
     [NonSerialized] public SubPanel curPanel;
-    
+
     public Transform PANELS;
     public Transform TABS;
     public TextMeshProUGUI Title;
+
+    //方向键导航: 是否启用, 由子面板按需开启
+    public virtual bool EnableArrowKeyNavigation => false;
+
+    //方向键导航: 记录上一帧移动轴值, 用于检测按下瞬间
+    private float lastVerticalAxis;
+    private float lastHorizontalAxis;
+
+    protected virtual void Update()
+    {
+        if (Application.isMobilePlatform || !EnableArrowKeyNavigation)
+        {
+            return;
+        }
+
+        //新手引导遮罩期间不使用键盘导航
+        if (HomeGuideController.IsBlockingInput)
+        {
+            lastVerticalAxis = 0;
+            lastHorizontalAxis = 0;
+            return;
+        }
+
+        HandleArrowKeyNavigation();
+    }
+
+    /// <summary>
+    /// 方向键导航: 上下键(与玩家移动键同绑定, W/S 同效)切换主页签,
+    /// 左右键(A/D 同效)由子类处理, 默认无操作
+    /// </summary>
+    protected void HandleArrowKeyNavigation()
+    {
+        //使用移动轴检测, 与玩家移动键绑定保持一致
+        float vertical = Input.GetAxisRaw("Vertical");
+        float horizontal = Input.GetAxisRaw("Horizontal");
+
+        if (lastVerticalAxis <= 0 && vertical > 0)
+        {
+            SwitchTab(-1);
+        }
+        else if (lastVerticalAxis >= 0 && vertical < 0)
+        {
+            SwitchTab(1);
+        }
+        lastVerticalAxis = vertical;
+
+        if (lastHorizontalAxis <= 0 && horizontal > 0)
+        {
+            OnArrowHorizontal(1);
+        }
+        else if (lastHorizontalAxis >= 0 && horizontal < 0)
+        {
+            OnArrowHorizontal(-1);
+        }
+        lastHorizontalAxis = horizontal;
+    }
+
+    /// <summary>
+    /// 左右键响应, 子类按需重写(如切换子界面页签)
+    /// </summary>
+    protected virtual void OnArrowHorizontal(int dir)
+    {
+    }
 
 
     public override void Init()
