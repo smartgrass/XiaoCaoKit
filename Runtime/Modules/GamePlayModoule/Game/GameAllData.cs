@@ -695,7 +695,8 @@ namespace XiaoCao
 
         private static Enemy0 CreateSupportRole(Player0 player, string supportRoleKey, Vector3 summonPos, Vector3 forward)
         {
-            Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, player.Level, supportRoleKey);
+            //属性为无等级默认数据, 不随玩家等级成长 (支援角色设定.md)
+            Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, GameSetting.MinRoleLevel, supportRoleKey);
             if (supportRole == null)
             {
                 return null;
@@ -703,12 +704,31 @@ namespace XiaoCao
 
             supportRole.SetTeam(XCSetting.PlayerTeam);
             supportRole.IsAiOn = true;
+            ApplySupportRoleAttr(supportRole);
             var addData = supportRole.idRole.GetComponent<AddEnemyData>();
             // addData.
             supportRole.enemyData.movement.MoveToImmediate(summonPos);
             supportRole.enemyData.movement.LookToDir(forward);
             supportRole.SetFriend(player);
             return supportRole;
+        }
+
+        /// <summary>
+        /// 按支援角色设定覆盖属性: 攻击/血量 = 玩家无等级默认数据(无加成) * 继承比例, 满血出场
+        /// </summary>
+        private static void ApplySupportRoleAttr(Enemy0 supportRole)
+        {
+            //玩家用的是 attrSettingId 0, 与 Role.InitRoleData 的玩家分支保持一致
+            AttrSetting playerSetting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
+            int defaultLv = GameSetting.MinRoleLevel;
+            RoleAttr attr = supportRole.data_R.RoleAttr;
+
+            float baseAtk = CharacterAttrCalc.GetBaseATK(defaultLv) * playerSetting.atkMult;
+            float baseHp = CharacterAttrCalc.GetBaseHP(defaultLv) * playerSetting.hpMult + playerSetting.addHp;
+
+            attr.GetAttribute(EAttr.Atk).BaseValue = (int)(baseAtk * SupportRoleSetting.GetAtkRate());
+            attr.GetAttribute(EAttr.MaxHp).BaseValue = (int)(baseHp * SupportRoleSetting.GetHpRate());
+            supportRole.Hp = (int)supportRole.MaxHp;
         }
 
         public static string GetSupportRoleKey()

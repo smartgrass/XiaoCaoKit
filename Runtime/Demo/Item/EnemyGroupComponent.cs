@@ -192,13 +192,13 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     [Button]
     void OnTriggerAct()
     {
+        //统一走关卡队列, 间隔由 LevelActionChecker.enemyGenInterval / enemyGroupGenInterval 在初始化时注入
+        //传入 this 作为分组标记: 换到下个组时队列会额外等待 enemyGroupGenInterval
         foreach (var creator in creators)
         {
-            creator.TargetRole = TargetRole;
-            creator.Execute();
+            EnemySpawnQueue.Enqueue(creator, TargetRole, this);
         }
     }
-
 
     private void OnDrawGizmos()
     {
@@ -213,6 +213,13 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     {
         CheckChildGroup();
         var group = LubanTables.GetCreateEnemyGroups(key);
+
+        //配置缺失时保留场景上的默认设置, 不要抛异常中断地图上后续组的配置(查不到时LubanTables已打错误日志)
+        if (group == null)
+        {
+            return;
+        }
+
         bool hasTaskLines = !string.IsNullOrEmpty(group.TaskLines);
 
         //多行配置里留空的行会被跳过, 数量对不上说明填漏了, 会导致后面的等级错位到前面的子节点

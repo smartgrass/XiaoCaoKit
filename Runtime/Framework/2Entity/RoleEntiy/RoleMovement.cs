@@ -16,6 +16,30 @@ namespace XiaoCao
 
         protected float velocityY = 0;
 
+        #region 掉出地图保护
+
+        /// <summary>位置持续下降超过该时间(秒)即判定为意外坐标</summary>
+        public static float fallOutTime = 7f;
+
+        /// <summary>判定为意外坐标后最多回退次数, 超过则按阵亡处理</summary>
+        public static int maxFallOutRecover = 2;
+
+        //连续下落的累计时间
+        private float _fallTimer;
+
+        //已回退次数, 正常落地后清零
+        private int _fallOutRecoverCount;
+
+        //最近一次可站立的坐标(落地/出生/传送时记录), 掉出地图时回退到这里
+        private Vector3 _lastSafePos;
+        private bool _hasSafePos;
+
+        //上一帧的高度, 用于判断是否真的在下落
+        private float _lastPosY;
+        private bool _fallCheckInited;
+
+        #endregion
+
         public bool enableGravity = true;
 
         public float enableGravityTime;
@@ -64,6 +88,9 @@ namespace XiaoCao
 
         public override void FixedUpdate()
         {
+            //掉出地图保护放在最前面: 处于技能/受击等非自由状态时也要检测, 否则会一直往下掉
+            CheckFallOut();
+
             if (!owner.IsFree)
             {
                 return;
@@ -204,6 +231,125 @@ namespace XiaoCao
         {
             cc.transform.position = pos;
             isMovingThisFrame = false;
+
+            //出生/传送门/复活/掉出地图回退都走这里, 顺手记成安全点
+            MarkSafePos(pos);
+        }
+
+        /// <summary>
+        /// 记录一个可以站立的坐标, 掉出地图时回退到这里
+        /// </summary>
+        private void MarkSafePos(Vector3 pos)
+        {
+            _lastSafePos = pos;
+            _hasSafePos = true;
+            _lastPosY = pos.y;
+            _fallTimer = 0f;
+            _fallCheckInited = true;
+        }
+
+        /// <summary>
+        /// 掉出地图保护: 位置持续下降超过 fallOutTime 秒即判定为意外坐标。
+        /// 先回退到最近的安全坐标, 多次仍无法落地则按阵亡处理,
+        /// 避免敌人无限下落导致敌人组永远无法结算、关卡卡死。
+        /// </summary>
+        private void CheckFallOut()
+        {
+            Vector3 pos = transform.position;
+
+            if (!_fallCheckInited)
+            {
+                MarkSafePos(pos);
+            }
+
+            float deltaY = pos.y - _lastPosY;
+            _lastPosY = pos.y;
+
+            //配置为 0 表示关闭保护
+            if (fallOutTime <= 0f)
+            {
+                _fallTimer = 0f;
+                return;
+            }
+
+            if (owner.IsDie)
+            {
+                _fallTimer = 0f;
+                return;
+            }
+
+            //站住了: 清空下落计时和回退计数
+            if (isGrounded)
+            {
+                _fallTimer = 0f;
+                _fallOutRecoverCount = 0;
+                return;
+            }
+
+            //没有持续下降(上升/悬停/贴地被卡住)不算下落, 避免下坡、跳跃上升被误判
+            if (deltaY > -0.0001f)
+            {
+                _fallTimer = 0f;
+                return;
+            }
+
+            _fallTimer += XCTime.fixedDeltaTime;
+            if (_fallTimer < fallOutTime)
+            {
+                return;
+            }
+
+            RecoverFromFallOut(pos);
+        }
+
+        /// <summary>
+        /// 意外坐标处理: 回退到安全点, 超过重试次数则判定阵亡
+        /// </summary>
+        private void RecoverFromFallOut(Vector3 fallPos)
+        {
+            _fallTimer = 0f;
+            _fallOutRecoverCount++;
+
+            string roleName = owner.gameObject ? owner.gameObject.name : owner.id.ToString();
+
+            if (_fallOutRecoverCount > maxFallOutRecover)
+            {
+                Debuger.LogWarning($"--- {roleName} 连续下落超时 {_fallOutRecoverCount} 次, 判定为意外坐标, 按阵亡处理");
+                owner.OnDie(new AtkInfo());
+                return;
+            }
+
+            Vector3 target = _hasSafePos ? _lastSafePos : fallPos + Vector3.up * 2f;
+
+            //安全点下方没有地面时(平台已消失等), 至少落到找到的地面上, 找不到才保持原点
+            if (TryFindGround(target, out Vector3 groundPos))
+            {
+                target = groundPos;
+            }
+
+            Debuger.LogWarning($"--- {roleName} 下落超过 {fallOutTime}s, 判定为意外坐标, 回退到 {target} (第 {_fallOutRecoverCount} 次)");
+
+            velocityY = 0f;
+            MoveToImmediate(target);
+        }
+
+        /// <summary>
+        /// 从指定坐标向下找地面, 找不到返回 false
+        /// </summary>
+        private static bool TryFindGround(Vector3 from, out Vector3 groundPos)
+        {
+            const float maxDistance = 50f;
+            Vector3 origin = from + Vector3.up * 2f;
+
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDistance,
+                    Layers.GROUND_MASK | Layers.DEFAULT_MASK, QueryTriggerInteraction.Ignore))
+            {
+                groundPos = hit.point + Vector3.up * 0.1f;
+                return true;
+            }
+
+            groundPos = from;
+            return false;
         }
 
         void CheckBackToIdle(bool isInput)
@@ -438,6 +584,13 @@ namespace XiaoCao
 
             isGrounded = Physics.CheckSphere(spherePosition, GroundedRadius, Layers.GROUND_MASK | Layers.DEFAULT_MASK,
                 QueryTriggerInteraction.Ignore);
+
+            //落在地面上时更新安全点, 掉出地图后回退到这里
+            if (isGrounded)
+            {
+                _lastSafePos = transform.position;
+                _hasSafePos = true;
+            }
 
             // update animator if using character
             if (owner.Anim)

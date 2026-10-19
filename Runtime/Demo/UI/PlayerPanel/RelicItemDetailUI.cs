@@ -22,6 +22,22 @@ namespace XiaoCao
 
         private AttrNameNumGroupUI _attrNameNumGroupUI;
 
+        /// <summary>
+        /// 属性文本管理器。按需创建, 避免界面尚未 Awake 就被刷新时属性列表为空
+        /// </summary>
+        private AttrNameNumGroupUI AttrGroup
+        {
+            get
+            {
+                if (_attrNameNumGroupUI == null)
+                {
+                    _attrNameNumGroupUI = new AttrNameNumGroupUI(attrTextContainer, attrNumTextContainer);
+                }
+
+                return _attrNameNumGroupUI;
+            }
+        }
+
         private void Awake()
         {
             _attrNameNumGroupUI = new AttrNameNumGroupUI(attrTextContainer, attrNumTextContainer);
@@ -38,7 +54,7 @@ namespace XiaoCao
             qualityText.text = $"{"QualityName".ToLocalizeStr()}: {item.quality.ToLocalizedName()}";
 
             Dictionary<EAttr, float> valueDic = RelicValueCalc.GetRelicValue(item);
-            _attrNameNumGroupUI.ShowAttrUI(valueDic.Keys.ToList(), valueDic.Values.ToList());
+            AttrGroup.ShowAttrUI(valueDic.Keys.ToList(), valueDic.Values.ToList());
 
             itemCell.SetItem(item, UIItemTextType.NoNum);
             controlUISize.UpdateSize();

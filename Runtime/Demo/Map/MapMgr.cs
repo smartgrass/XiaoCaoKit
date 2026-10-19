@@ -74,6 +74,9 @@ namespace XiaoCao
                 yield break;
             }
 
+            //开始加载新关卡前清空上一关还没执行的敌人生成请求
+            EnemySpawnQueue.Clear();
+
             HideOtherLevel();
 
             Transform tf = transform.Find(CurLevelName);

@@ -137,6 +137,7 @@ namespace XiaoCao
 
         public static string Owned = "Owned"; // 拥有数量
         public static string BagEmpty = "BagEmpty"; // 背包中暂无消耗品
+        public static string ForgeSuccess = "ForgeSuccess"; // 锻造成功
 
         public static string GetItemName(this Item item)
         {

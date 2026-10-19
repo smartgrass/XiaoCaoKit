@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using EasyUI.Toast;
+using TEngine;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -83,8 +84,12 @@ namespace XiaoCao.UI
 
             backBtn.onClick.AddListener(OnClickBack);
             confirmForgeBtn.onClick.AddListener(OnClickConfirmForge);
-            _confirmForgeBtnStateChange = confirmForgeBtn.transform.parent.GetComponent<UIStateChange>();
-            _confirmForgeBtnRoot = confirmForgeBtn.transform.parent.gameObject;
+            //状态组件可能挂在按钮自身, 也可能挂在父节点上, 两处都找一遍
+            _confirmForgeBtnStateChange = confirmForgeBtn.GetComponent<UIStateChange>() ??
+                                         confirmForgeBtn.transform.parent.GetComponent<UIStateChange>();
+            _confirmForgeBtnRoot = _confirmForgeBtnStateChange != null
+                ? _confirmForgeBtnStateChange.gameObject
+                : confirmForgeBtn.transform.parent.gameObject;
             _isInitialized = true;
             ClearSelect();
         }
@@ -321,8 +326,10 @@ namespace XiaoCao.UI
             Inventory inventory = PlayerSaveData.LocalSavaData.inventory;
             bool isEnough = inventory.CheckEnoughItemList(materials, false);
 
-            _confirmForgeBtnStateChange.SetState(isEnough ? 0 : 1);
-            confirmForgeBtn.interactable = !isEnough;
+            //state 0 = 正常可点, state 1 = 灰显(材料不足)
+            //按钮本身保持可点: 材料不足时由点击后的 Toast 提示原因, 否则点了完全没反馈
+            _confirmForgeBtnStateChange?.SetState(isEnough ? 0 : 1);
+            confirmForgeBtn.interactable = true;
         }
 
         /// <summary>
@@ -358,9 +365,14 @@ namespace XiaoCao.UI
         /// </summary>
         private void TryForge(ForgeRelicSetting configRow)
         {
+            if (configRow == null)
+            {
+                return;
+            }
+
             Inventory inventory = PlayerSaveData.LocalSavaData.inventory;
 
-            var relicItem = configRow.GetRelicItem();
+            RelicItem relicItem = configRow.GetRelicItem();
             List<Item> materials = RelicForgeCostCalc.GetNeedItems(relicItem);
             if (!inventory.CheckEnoughItemList(materials, false))
             {
@@ -368,14 +380,35 @@ namespace XiaoCao.UI
                 return;
             }
 
+            int coinCost = 0;
+            foreach (Item material in materials)
+            {
+                if (material != null && material.type == ItemType.Coin)
+                {
+                    coinCost += material.num;
+                }
+            }
+
             inventory.CheckEnoughItemList(materials, true);
 
-            inventory.AddItem(relicItem.ToItem());
+            //材料里的金币是直接扣背包的, 需要手动补事件, 否则金币栏不会刷新
+            if (coinCost > 0)
+            {
+                GameEvent.Send<int>(EGameEvent.OnCoinChange.ToInt(), -coinCost);
+            }
+
+            Item forgedItem = relicItem.ToItem();
+            inventory.AddItem(forgedItem);
             PlayerSaveData.SavaData();
+            //道具获得提示由 ItemPopHud 监听该事件后弹出
+            GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), forgedItem);
+            Toast.Show(LocalizeKey.ForgeSuccess.ToLocalizeStr(), 1);
 
             //TODO 获取UI物品特效
 
             RefreshRows();
+            //锻造后材料数量与按钮可点状态都会变, 详情必须一起刷新
+            RefreshForgeDetail();
         }
 
 

@@ -51,7 +51,9 @@ public class EnemyCreator : GameStartMono, IExecute
     {
         if (createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI or EnemyCreateMode.LoadSleepNoAI)
         {
-            XCTime.DelayRun(delayGen, Gen).ToObservable();
+            //进场预生成统一走关卡队列, 间隔由 LevelActionChecker.enemyGenInterval / enemyGroupGenInterval 决定,
+            //避免所有预加载敌人都在同一个 delayGen 时间点一起创建导致卡顿
+            EnemySpawnQueue.Enqueue(this, TargetRole, GetComponentInParent<EnemyGroupComponent>(true), true, delayGen);
         }
     }
 

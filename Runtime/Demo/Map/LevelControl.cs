@@ -47,6 +47,13 @@ namespace XiaoCao
             }
         }
 
+        public override void OnDestroy()
+        {
+            //切关卡时丢弃还没执行的生成请求, 避免上一关的敌人刷到新关卡里
+            EnemySpawnQueue.Clear();
+            base.OnDestroy();
+        }
+
         private void OnEnemyGroupEndEvent(int count, string msg)
         {
             //获取配置
@@ -65,6 +72,21 @@ namespace XiaoCao
                 Debug.Log("---  no LevelAction");
             }
 
+            //生成间隔配置在 LevelActionChecker 上, 关卡初始化时自动下发给生成队列, 不需要每个 Group 手动配
+            LevelActionChecker checker = GetActionChecker();
+            if (checker)
+            {
+                EnemySpawnQueue.Configure(checker.enemyGenInterval, checker.enemyGroupGenInterval);
+
+                //掉出地图保护参数一并下发, 避免角色无限下落卡死关卡
+                RoleMovement.fallOutTime = checker.fallOutTime;
+                RoleMovement.maxFallOutRecover = checker.maxFallOutRecover;
+            }
+            else
+            {
+                EnemySpawnQueue.Configure(EnemySpawnQueue.DefaultInterval);
+            }
+
             SetEnemyRecursion(actionTf);
         }
 
@@ -77,6 +99,13 @@ namespace XiaoCao
             for (int i = 0; i < parent.childCount; i++)
             {
                 Transform child = parent.GetChild(i);
+
+                //未激活的LevelAction属于别的关卡, 它的Group名在当前关卡配置里查不到, 不能参与配置
+                if (child.name.StartsWith(MapMgr.LevelActionPrefix) && !child.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
                 if (child.name.StartsWith(EnemyGroupComponent.GroupPrefix))
                 {
                     var key = LevelData.GetLevelEnemyInfoKey(child.name);

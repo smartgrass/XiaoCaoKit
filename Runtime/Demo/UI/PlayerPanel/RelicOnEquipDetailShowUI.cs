@@ -31,6 +31,23 @@ namespace XiaoCao
         private Action _upgradeAction;
         private Action _closeAction;
 
+        /// <summary>
+        /// 属性文本管理器。窗口可能先被隐藏再显示, 首次刷新时 Awake 还没执行,
+        /// 这里按需创建, 避免第一次打开详情时属性列表不刷新
+        /// </summary>
+        private AttrNameNumGroupUI AttrGroup
+        {
+            get
+            {
+                if (_attrNameNumGroupUI == null)
+                {
+                    _attrNameNumGroupUI = new AttrNameNumGroupUI(attrTextContainer, attrNumTextContainer);
+                }
+
+                return _attrNameNumGroupUI;
+            }
+        }
+
         private void Awake()
         {
             _attrNameNumGroupUI = new AttrNameNumGroupUI(attrTextContainer, attrNumTextContainer);
@@ -81,7 +98,7 @@ namespace XiaoCao
             }
 
             Dictionary<EAttr, float> valueDic = RelicValueCalc.GetRelicValue(item);
-            _attrNameNumGroupUI?.ShowAttrUI(valueDic.Keys.ToList(), valueDic.Values.ToList());
+            AttrGroup.ShowAttrUI(valueDic.Keys.ToList(), valueDic.Values.ToList());
             RefreshItemCell(item);
         }
 

@@ -15,11 +15,17 @@ namespace XiaoCao.Battle
 
         public int team;
 
+        //吸力延迟启动时间,大于0时吸力效果延迟该秒数后才开始生效
+        public float delayEnable = 0;
+
         [CurveRange(0, 0, 1, 1)] public AnimationCurve forceCurve;
 
         private float lastTriggerTime = 0f;
 
         private List<Role> _list = new List<Role>();
+
+        //启用时刻,用于计算延迟
+        private float enableTime = 0f;
 
         private float ScaledRadius => radius * Mathf.Abs(transform.localScale.x);
 
@@ -27,6 +33,12 @@ namespace XiaoCao.Battle
         public void FixedUpdate()
         {
             if (BattleData.IsTimeStop)
+            {
+                return;
+            }
+
+            //延迟启动: delayEnable大于0时,在延迟时间内不产生吸力
+            if (Time.time - enableTime < delayEnable)
             {
                 return;
             }
@@ -57,6 +69,12 @@ namespace XiaoCao.Battle
                 // Apply
                 role.Movement.cc.Move(dir);
             }
+        }
+
+        private void OnEnable()
+        {
+            //每次启用时重新计时
+            enableTime = Time.time;
         }
 
         private void OnDrawGizmosSelected()

@@ -7,6 +7,7 @@ namespace XiaoCao
     /// <summary>
     /// 友方支援攻击状态。
     /// 复用 AtkState 的前摇、后摇和受击流程，但攻击技能会从玩家已学会技能中动态抽取。
+    /// 可用技能数由 <see cref="SupportRoleSetting"/> 的技巧养成等级决定, 默认只解锁 1 个。
     /// </summary>
     [CreateAssetMenu(fileName = "FriendAtkState", menuName = "SO/AI/FriendAtkState", order = 1)]
     public class FriendAtkState : AtkState
@@ -56,7 +57,8 @@ namespace XiaoCao
 
         /// <summary>
         /// 按当前玩家已学会技能刷新本轮可用技能池。
-        /// 如果配置了 maxSkillTime，则本轮最多只保留对应数量的技能。
+        /// 支援角色只解锁前 N 个技能(默认 1 个, 技巧养成提升解锁数, 上限 4 个),
+        /// 再叠加 maxSkillTime 的单轮上限。
         /// </summary>
         private void RebuildRuntimeSkillPool()
         {
@@ -67,9 +69,11 @@ namespace XiaoCao
                 return;
             }
 
-            int takeCount = maxSkillTime > 0
-                ? Mathf.Min(maxSkillTime, _allLearnedSkillIds.Count)
-                : _allLearnedSkillIds.Count;
+            int takeCount = Mathf.Min(SupportRoleSetting.GetUnlockSkillCount(), _allLearnedSkillIds.Count);
+            if (maxSkillTime > 0)
+            {
+                takeCount = Mathf.Min(takeCount, maxSkillTime);
+            }
 
             if (drawType == FSMPoolType.Random)
             {
