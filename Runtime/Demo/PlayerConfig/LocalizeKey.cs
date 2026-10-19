@@ -45,6 +45,8 @@ namespace XiaoCao
         public static string OnceDamage = "OnceDamage";
         public static string SkillDesc = "SkillDesc";
         public static string NeedLv = "NeedLv";
+        public static string NeedRoleLv = "NeedRoleLv"; // 角色等级不足(技能升级)
+        public static string SkillMaxLevel = "SkillMaxLevel"; // 技能已满级
         public static string LevelUp = "LevelUp";
         public static string BlessingFullLevel = "Blessing/FullLevel";
         public static string BlessingCostLine = "Blessing/CostLine";
@@ -66,6 +68,9 @@ namespace XiaoCao
         public static string GuideClickSkillTab = "Guide/ClickSkillTab"; // 点击「技能」页签
         public static string GuideClickSkill = "Guide/ClickSkill"; // 点击「{0}」查看详情
         public static string GuideClickUpgrade = "Guide/ClickUpgrade"; // 点击升级
+        public static string GuideClickBack = "Guide/ClickBack"; // 点击返回按钮回到主城
+        public static string GuideLearnSkillOpen = "Guide/LearnSkillOpen"; // 打开角色界面学习新技能(引导2)
+        public static string GuideLearnSkillClick = "Guide/LearnSkillClick"; // 点击技能学习(引导2)
         public static string GuideSkillLearned = "Guide/SkillLearned"; // 技能已学会
 
 

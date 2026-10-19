@@ -30,7 +30,7 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         EditorGUILayout.LabelField("调试修改存档进度", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的通关进度直接设置为输入的关卡序号（可前进或回退），并清空所有未通关关卡的星星记录。", MessageType.Info);
+        EditorGUILayout.HelpBox("章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的通关进度直接设置为输入的关卡序号（可前进或回退），并清空所有未通关关卡的星星记录。进度由低到高时会补发跨越关卡的首通奖励（已领过的不重复发放）。", MessageType.Info);
 
         progressChapter = EditorGUILayout.IntField("章节序号", progressChapter);
         progressLevel = EditorGUILayout.IntField("关卡序号", progressLevel);
@@ -137,12 +137,87 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         }
 
         EnsurePlayerSaveDataLoaded();
+        LevelPassData levelPassData = playerSaveData.levelPassData;
+        //修改前该章节已通关到的关卡, 用于判断进度是否由低到高
+        int oldLevel = levelPassData.GetPassedLevelIndex(progressChapter);
+
         //覆盖式设置进度, 允许回退
-        playerSaveData.levelPassData.SetPassProgress(progressChapter, progressLevel);
+        levelPassData.SetPassProgress(progressChapter, progressLevel);
         //清空未通关关卡残留的星星记录(无死亡通关/最快耗时)
-        int clearCount = playerSaveData.levelPassData.ClearStarStatesOfUnpassLevels();
+        int clearCount = levelPassData.ClearStarStatesOfUnpassLevels();
+
+        //进度前进时, 被跨越的关卡等同于已通关, 同步补发首通奖励
+        List<string> grantedLevels = progressLevel > oldLevel
+            ? GrantFirstRewards(levelPassData, progressChapter, oldLevel, progressLevel)
+            : new List<string>();
+
         Save();
         Debug.Log($"-- set progress to chapter={progressChapter} level={progressLevel}, cleared {clearCount} unpass star states");
+        if (grantedLevels.Count > 0)
+        {
+            Debug.Log($"---- first reward granted to {string.Join(", ", grantedLevels)}");
+        }
+    }
+
+    /// <summary>
+    /// 补发章节内被跨越关卡的首通奖励(只发未领过的关卡), 并标记为已领取
+    /// </summary>
+    /// <returns>实际补发了首通奖励的关卡名</returns>
+    private List<string> GrantFirstRewards(LevelPassData levelPassData, int chapter, int oldLevel, int newLevel)
+    {
+        List<string> grantedLevels = new List<string>();
+        for (int index = oldLevel + 1; index <= newLevel; index++)
+        {
+            string levelKey = LevelInfo.GetLevelKey(chapter, index);
+            //配置里没有该关卡说明关卡序号越界, 直接结束补发(关卡序号是连续的)
+            if (cfg.LubanTables.GetLevelSettingOrDefault(levelKey) == null)
+            {
+                Debug.LogWarning($"-- no level setting {levelKey}, stop granting first rewards");
+                break;
+            }
+
+            //已领过首通奖励的关卡不重复发放
+            if (levelPassData.HasGetFirstReward(chapter, index))
+            {
+                continue;
+            }
+
+            foreach (XiaoCao.Item item in LevelSettingHelper.GetFirstReward(levelKey))
+            {
+                GrantItemToSaveData(item);
+            }
+
+            //发放后立即标记, 避免重打该关卡时再领一次
+            levelPassData.SetHasGetFirstReward(chapter, index);
+            grantedLevels.Add(levelKey);
+        }
+
+        return grantedLevels;
+    }
+
+    /// <summary>
+    /// 把奖励物品直接结算到当前存档对象上: 编辑模式没有战斗与运行时单例, 不能走 Item.RewardItem
+    /// </summary>
+    private void GrantItemToSaveData(XiaoCao.Item item)
+    {
+        switch (item.type)
+        {
+            case XiaoCao.ItemType.Coin:
+                playerSaveData.Coin += item.num;
+                break;
+            case XiaoCao.ItemType.OtherValue:
+                //经验值等直接作用在角色身上, 不进入背包; 存盘由窗口统一处理
+                playerSaveData.AddExp(item.num, false);
+                break;
+            case XiaoCao.ItemType.Consumable:
+            case XiaoCao.ItemType.HolyRelic:
+                playerSaveData.inventory.AddItem(item);
+                break;
+            default:
+                //Buff / ExtraItem 属于战斗内临时道具, 没有战斗上下文时不发放
+                Debug.LogWarning($"-- first reward item skipped in editor: {item.type} {item.typeId} x{item.num}");
+                break;
+        }
     }
 
     private void EnsurePlayerSaveDataLoaded()

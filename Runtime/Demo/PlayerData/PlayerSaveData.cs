@@ -412,7 +412,9 @@ namespace XiaoCao
         /// <summary>
         /// 增加角色经验值: 经验值累计在角色身上, 不进入背包; 经验足够时自动结算升级
         /// </summary>
-        public void AddExp(int value)
+        /// <param name="value">增加的经验值</param>
+        /// <param name="saveData">是否在本方法内立即存盘; 编辑器调试批量加经验时传 false, 由调用方统一存盘</param>
+        public void AddExp(int value, bool saveData = true)
         {
             if (value <= 0)
             {
@@ -433,9 +435,12 @@ namespace XiaoCao
             if (lv > levelFrom)
             {
                 //有升级: 存盘并广播升级事件
-                SaveAndNotifyLevelUp(levelFrom);
+                if (saveData)
+                {
+                    SaveAndNotifyLevelUp(levelFrom);
+                }
             }
-            else
+            else if (saveData)
             {
                 SavaData();
             }
@@ -534,6 +539,14 @@ namespace XiaoCao
         public void SetPassProgress(int chapter, int index)
         {
             chapterPassDic[chapter] = index;
+        }
+
+        /// <summary>
+        /// 获取指定章节已通关到的关卡序号, 该章节无记录时返回 0
+        /// </summary>
+        public int GetPassedLevelIndex(int chapter)
+        {
+            return chapterPassDic.TryGetValue(chapter, out int index) ? index : 0;
         }
 
         /// <summary>

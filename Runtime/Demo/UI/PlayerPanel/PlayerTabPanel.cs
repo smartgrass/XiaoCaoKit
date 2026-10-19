@@ -17,6 +17,12 @@ namespace XiaoCao.UI
 
         public Image titleImage;
 
+        [Tooltip("金币条,只在指定的子界面显示")]
+        public GameObject coinBar;
+
+        [Tooltip("显示金币条的子界面名")]
+        public List<string> coinBarShowPanels = new List<string>() { "Skill", "RelicView" };
+
         public List<TabPanelGroup> groups = new List<TabPanelGroup>();
 
         public override void Init()
@@ -63,11 +69,15 @@ namespace XiaoCao.UI
             return subPanel;
         }
 
+        /// <summary>
+        /// 切换子界面:同步标题图标,并按配置控制金币条显隐
+        /// </summary>
         public override void SwitchPanel(string subPanelName)
         {
             base.SwitchPanel(subPanelName);
             var group = groups.Find((a) => a.panelName == subPanelName);
             titleImage.sprite = group.iconSprite;
+            coinBar.SetActive(coinBarShowPanels.Contains(subPanelName));
         }
 
         /// <summary>

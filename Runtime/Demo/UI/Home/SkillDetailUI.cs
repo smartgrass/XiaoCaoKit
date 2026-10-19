@@ -84,8 +84,25 @@ namespace XiaoCao.UI
 
         public void OnUpgradeBtnClicked()
         {
+            SkillUpgradeSetting setting = LubanTables.GetSkillUpgradeSetting(skillId);
+            int curLv = PlayerSaveData.GetSkillLevel(skillId);
+
+            //已满级: 面板只会隐藏消耗, 这里补上真正的拦截
+            if (curLv >= setting.MaxLevel)
+            {
+                Toast.Show(LocalizeKey.SkillMaxLevel.ToLocalizeStr(), 1.5f);
+                return;
+            }
+
+            //角色等级不足: 面板只显示了需求, 这里补上升级校验
+            if (PlayerSaveData.lv < setting.NeedLv)
+            {
+                Toast.Show(string.Format(LocalizeKey.NeedRoleLv.ToLocalizeStr(), setting.NeedLv), 1.5f);
+                return;
+            }
+
             //技能升级
-            int nextLv = PlayerSaveData.GetSkillLevel(skillId) + 1;
+            int nextLv = curLv + 1;
             //消耗材料
             List<Item> list = LubanTables.GetSkillUpgradeItems(skillId, nextLv);
 
