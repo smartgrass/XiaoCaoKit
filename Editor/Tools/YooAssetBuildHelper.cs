@@ -3,93 +3,114 @@ using System.Collections.Generic;
 using UnityEditor;
 using YooAsset.Editor;
 using YooAsset;
-using UnityEditor.Build.Reporting;
 using BuildResult = YooAsset.Editor.BuildResult;
 using UnityEngine;
-using OdinSerializer;
-using SerializationUtility = OdinSerializer.SerializationUtility;
 using XiaoCao;
-using UnityEngine.Rendering;
 
+/// <summary>
+/// YooAsset 资源包构建封装（v3 接口）
+/// 按构建管线类型组装参数并执行，供 BuildTool / BuildWindow 调用
+/// </summary>
 public static class YooAssetBuildHelper
 {
+    /// <summary>
+    /// 普通资源包使用的构建管线。v3 的 LegacyBuildPipeline 对应旧版 BuiltinBuildPipeline，
+    /// 想换可编程管线改成 EBuildPipeline.ScriptableBuildPipeline 即可。
+    /// </summary>
+    private const EBuildPipeline DefaultBuildPipeline = EBuildPipeline.LegacyBuildPipeline;
+
+    /// <summary>
+    /// 构建所有收集器中配置的资源包，返回每个包的构建结果
+    /// </summary>
     public static List<BuildResult> BuildYooAseets()
     {
         List<BuildResult> list = new List<BuildResult>();
-        foreach (var PackageName in GetYooAssetBuildPackageNames())
+        foreach (var packageName in GetYooAssetBuildPackageNames())
         {
-            EBuildPipeline BuildPipeline = AssetBundleBuilderSetting.GetPackageBuildPipeline(PackageName);
-            //防止编辑丢配置
-            if (BuildPipeline != EBuildPipeline.RawFileBuildPipeline && PackageName == "RawPackage")
-            {
-                BuildPipeline = EBuildPipeline.RawFileBuildPipeline;
-                AssetBundleBuilderSetting.SetPackageBuildPipeline(PackageName, BuildPipeline);
-                Debug.LogError($"-- re set RawPackage RawFileBuildPipeline!");
-            }
-            BuildParameters buildParameters = BuildPipeline == EBuildPipeline.BuiltinBuildPipeline ?
-                GetBuildPara(PackageName) : GetBuildParaRaw(PackageName);
+            EBuildPipeline buildPipeline = GetPackageBuildPipeline(packageName);
+            BuildParameters buildParameters = buildPipeline == EBuildPipeline.RawFileBuildPipeline
+                ? (BuildParameters)GetBuildParaRaw(packageName, buildPipeline)
+                : GetBuildPara(packageName, buildPipeline);
 
             LogParameters(buildParameters);
 
-            IBuildPipeline pipeline = buildParameters.BuildPipeline == EBuildPipeline.BuiltinBuildPipeline.ToString() ? new BuiltinBuildPipeline() : new RawFileBuildPipeline();
+            IBuildPipeline pipeline = CreatePipeline(buildPipeline);
             var buildResult = pipeline.Run(buildParameters, true);
             list.Add(buildResult);
         }
         return list;
     }
 
-    private static BuiltinBuildParameters GetBuildPara(string PackageName)
+    /// <summary>
+    /// RawPackage 固定走原生文件构建管线，其余包走默认管线
+    /// </summary>
+    private static EBuildPipeline GetPackageBuildPipeline(string packageName)
     {
-        BuildTarget BuildTarget = EditorUserBuildSettings.activeBuildTarget;
-        EBuildPipeline BuildPipeline = AssetBundleBuilderSetting.GetPackageBuildPipeline(PackageName);
-        BuiltinBuildParameters para = new BuiltinBuildParameters();
+        if (packageName == ResMgr.RawPackage)
+        {
+            return EBuildPipeline.RawFileBuildPipeline;
+        }
 
-        para.BuildOutputRoot = AssetBundleBuilderHelper.GetDefaultBuildOutputRoot();
-        para.BuildinFileRoot = AssetBundleBuilderHelper.GetStreamingAssetsRoot();
-        para.BuildPipeline = BuildPipeline.ToString();
-        para.BuildTarget = BuildTarget;
-        //AssetBundleBuilderSetting.GetPackageBuildMode(PackageName, BuildPipeline); ;
-        para.BuildMode = EBuildMode.ForceRebuild;
-        para.PackageName = PackageName;
-        para.PackageVersion = GetDefaultPackageVersion();
+        return DefaultBuildPipeline;
+    }
+
+    /// <summary>
+    /// 按管线类型创建构建管线实例
+    /// </summary>
+    private static IBuildPipeline CreatePipeline(EBuildPipeline buildPipeline)
+    {
+        switch (buildPipeline)
+        {
+            case EBuildPipeline.RawFileBuildPipeline:
+                return new RawFileBuildPipeline();
+            case EBuildPipeline.ScriptableBuildPipeline:
+                return new ScriptableBuildPipeline();
+            default:
+                return new LegacyBuildPipeline();
+        }
+    }
+
+    private static LegacyBuildParameters GetBuildPara(string packageName, EBuildPipeline buildPipeline)
+    {
+        LegacyBuildParameters para = new LegacyBuildParameters();
+        FillCommonParameters(para, packageName, buildPipeline);
+
+        para.BuildBundleType = (int)EBundleType.AssetBundle;
         para.EnableSharePackRule = true;
-        para.VerifyBuildingResult = true;
-        para.FileNameStyle = AssetBundleBuilderSetting.GetPackageFileNameStyle(PackageName, BuildPipeline); ;
-
-        //var buildinFileCopyOption = AssetBundleBuilderSetting.GetPackageBuildinFileCopyOption(PackageName, BuildPipeline);
-        para.BuildinFileCopyOption = EBuildinFileCopyOption.ClearAndCopyAll;
-        para.BuildinFileCopyParams = AssetBundleBuilderSetting.GetPackageBuildinFileCopyParams(PackageName, BuildPipeline);
-        para.EncryptionServices = null;
-        para.CompressOption = AssetBundleBuilderSetting.GetPackageCompressOption(PackageName, BuildPipeline);
+        para.CompressOption = BundleBuilderSetting.GetPackageCompressOption(packageName, buildPipeline.ToString());
         return para;
     }
 
-    private static RawFileBuildParameters GetBuildParaRaw(string PackageName)
+    private static RawFileBuildParameters GetBuildParaRaw(string packageName, EBuildPipeline buildPipeline)
     {
-        BuildTarget BuildTarget = EditorUserBuildSettings.activeBuildTarget;
-        EBuildPipeline BuildPipeline = AssetBundleBuilderSetting.GetPackageBuildPipeline(PackageName);
-        var buildMode = AssetBundleBuilderSetting.GetPackageBuildMode(PackageName, BuildPipeline);
-        Debug.Log($"--- buildMode {buildMode} ");
-        var fileNameStyle = AssetBundleBuilderSetting.GetPackageFileNameStyle(PackageName, BuildPipeline);
-        // var buildinFileCopyOption = AssetBundleBuilderSetting.GetPackageBuildinFileCopyOption(PackageName, BuildPipeline);
-        var buildinFileCopyParams = AssetBundleBuilderSetting.GetPackageBuildinFileCopyParams(PackageName, BuildPipeline);
-
         RawFileBuildParameters para = new RawFileBuildParameters();
-        para.BuildOutputRoot = AssetBundleBuilderHelper.GetDefaultBuildOutputRoot();
-        para.BuildinFileRoot = AssetBundleBuilderHelper.GetStreamingAssetsRoot();
-        para.BuildPipeline = BuildPipeline.ToString();
-        para.BuildTarget = BuildTarget;
-        para.BuildMode = EBuildMode.ForceRebuild;
-        para.PackageName = PackageName;
+        FillCommonParameters(para, packageName, buildPipeline);
+
+        para.BuildBundleType = (int)EBundleType.RawBundle;
+        return para;
+    }
+
+    /// <summary>
+    /// 填充两种管线共用的构建参数
+    /// </summary>
+    private static void FillCommonParameters(BuildParameters para, string packageName, EBuildPipeline buildPipeline)
+    {
+        string pipelineName = buildPipeline.ToString();
+
+        para.BuildOutputRoot = BundleBuilderHelper.GetDefaultBuildOutputRoot();
+        para.BundledFileRoot = BundleBuilderHelper.GetStreamingAssetsRoot();
+        para.BuildPipeline = pipelineName;
+        para.BuildTarget = EditorUserBuildSettings.activeBuildTarget;
+        para.PackageName = packageName;
         para.PackageVersion = GetDefaultPackageVersion();
         para.VerifyBuildingResult = true;
-        para.FileNameStyle = fileNameStyle;
-        para.BuildinFileCopyOption = EBuildinFileCopyOption.ClearAndCopyAll;
-        para.BuildinFileCopyParams = buildinFileCopyParams;
-        para.EncryptionServices = null;
-        return para;
+        para.FileNameStyle = BundleBuilderSetting.GetPackageFileNameStyle(packageName, pipelineName);
+        para.BundledCopyOption = EBundledCopyOption.ClearAndCopyAll;
+        para.BundledCopyParams = BundleBuilderSetting.GetPackageBundledCopyParams(packageName, pipelineName);
+        // v3 用 ClearBuildCacheFiles 替代旧的 EBuildMode.ForceRebuild
+        para.ClearBuildCacheFiles = true;
+        para.UseAssetDependencyDB = true;
     }
-
 
     public static bool IsAllSucced(List<BuildResult> list)
     {
@@ -107,17 +128,23 @@ public static class YooAssetBuildHelper
         return true;
     }
 
+    /// <summary>
+    /// 打印构建参数，便于排查构建配置问题
+    /// </summary>
     static void LogParameters(BuildParameters parameters)
     {
-        byte[] bytes = SerializationUtility.SerializeValue(parameters, DataFormat.JSON);
-        string str = System.Text.Encoding.UTF8.GetString(bytes);
-        str.LogStr($"BuiltinBuildParameters {parameters.PackageName}");
+        string str = $"--- Build {parameters.PackageName} version:{parameters.PackageVersion} " +
+                     $"pipeline:{parameters.BuildPipeline} bundleType:{parameters.BuildBundleType} " +
+                     $"target:{parameters.BuildTarget} output:{parameters.BuildOutputRoot} " +
+                     $"bundledRoot:{parameters.BundledFileRoot} fileNameStyle:{parameters.FileNameStyle} " +
+                     $"copyOption:{parameters.BundledCopyOption} clearCache:{parameters.ClearBuildCacheFiles}";
+        str.LogStr($"BuildParameters {parameters.PackageName}");
     }
 
     public static List<string> GetYooAssetBuildPackageNames()
     {
         List<string> result = new List<string>();
-        foreach (var package in AssetBundleCollectorSettingData.Setting.Packages)
+        foreach (var package in BundleCollectorSettingData.Setting.Packages)
         {
             result.Add(package.PackageName);
         }
@@ -129,6 +156,4 @@ public static class YooAssetBuildHelper
         int totalMinutes = DateTime.Now.Hour * 60 + DateTime.Now.Minute;
         return DateTime.Now.ToString("yyyy-MM-dd") + "-" + totalMinutes;
     }
-
 }
-

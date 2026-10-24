@@ -70,16 +70,25 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 读取当前资源运行模式。
+        /// 工具栏存的是模式索引(0=编辑器模拟, 1=单机)，而 v3 的 EPlayMode 在 0 位插入了 None，
+        /// 直接强转会错位（0 变成 None，导致初始化参数为空），这里按索引显式映射。
+        /// </summary>
         public static EPlayMode GetEPlayMode()
         {
-            EPlayMode playMode = EPlayMode.OfflinePlayMode;
 #if UNITY_EDITOR
-            playMode = (YooAsset.EPlayMode)UnityEditor.EditorPrefs.GetInt("EditorResourceMode");
+            int index = UnityEditor.EditorPrefs.GetInt("EditorResourceMode", 0);
+            switch (index)
+            {
+                case 0: return EPlayMode.EditorSimulateMode;
+                case 1: return EPlayMode.OfflinePlayMode;
+                case 2: return EPlayMode.HostPlayMode;
+                default: return EPlayMode.EditorSimulateMode;
+            }
 #else
-        playMode = EPlayMode.OfflinePlayMode;
+            return EPlayMode.OfflinePlayMode;
 #endif
-
-            return playMode;
         }
 
         public static GameVersionType GetGameVersionType => GameSetting.VersionType;

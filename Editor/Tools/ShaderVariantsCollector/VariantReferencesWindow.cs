@@ -522,11 +522,12 @@ namespace ShaderVariantsCollector
         {
             var allAssets = new HashSet<string>();
             var materialPaths = new List<string>();
-            var packages = AssetBundleCollectorSettingData.Setting.Packages;
+            var setting = BundleCollectorSettingData.Setting;
 
-            foreach (var package in packages)
+            foreach (var package in setting.Packages)
             {
-                CollectResult collectResult = AssetBundleCollectorSettingData.Setting.GetPackageAssets(EBuildMode.DryRunBuild, package.PackageName);
+                // simulateBuild=true 等价于 v2 的 EBuildMode.DryRunBuild，只收集不构建
+                CollectResult collectResult = setting.BeginCollect(package.PackageName, true, true, false);
                 foreach (var assetInfo in collectResult.CollectAssets)
                 {
                     string[] depends = AssetDatabase.GetDependencies(assetInfo.AssetInfo.AssetPath, true);

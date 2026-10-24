@@ -7,13 +7,21 @@ public class ShortKeyCache
     public string path;
     public ResourcePackage package;
 
+    /// <summary>
+    /// 按短键缓存加载预制体, 加载失败时返回 null 并打印失败原因
+    /// </summary>
     public GameObject LoadPrefab()
     {
         if (prefab == null)
         {
-            if (package.CheckLocationValid(path))
+            if (package.IsLocationValid(path))
             {
-                prefab = package.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
+                var handle = package.LoadAssetSync<GameObject>(path);
+                prefab = handle.AssetObject as GameObject;
+                if (prefab == null)
+                {
+                    Debug.LogError($"--- load failed {path} at {package.PackageName} status:{handle.Status} error:{handle.Error}");
+                }
             }
             else
             {

@@ -82,7 +82,7 @@ public static class SpriteResHelper
         string longPath = $"{dirPath}{longName}.png";
         string shortPath = $"{dirPath}{shortName}.png";
 
-        if (ResMgr.Loader.CheckLocationValid(longPath))
+        if (ResMgr.Loader.IsLocationValid(longPath))
         {
             return ResMgr.LoadAseet<Sprite>(longPath);
         }

@@ -177,7 +177,7 @@
 
 | 库 | 包名 / 仓库 | 版本 | 用途 |
 | --- | --- | --- | --- |
-| YooAsset | `com.tuyoogame.yooasset` | 2.2.4-preview | 资源加载与打包（`ResMgr`） |
+| YooAsset | `com.tuyoogame.yooasset` | 3.0.6 | 资源加载与打包（`ResMgr`） |
 | UniTask | `com.cysharp.unitask`（Cysharp/UniTask） | git 源，未锁 tag | 异步、计时器、TMP 扩展 |
 | Cinemachine | `com.unity.cinemachine` | 2.10.7 | 相机控制与镜头 |
 | TextMeshPro | `com.unity.ugui`（Unity 6 起合并） | 2.0.0 | 文本渲染 |

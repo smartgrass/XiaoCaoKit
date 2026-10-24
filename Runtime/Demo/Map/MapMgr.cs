@@ -101,7 +101,7 @@ namespace XiaoCao
             string path = $"{MapDir}/{mapName}.prefab";
             AssetHandle handle = ResMgr.LoadPrefabAsyncHandle(path);
             yield return handle;
-            GameObject obj = handle.InstantiateSync(transform);
+            GameObject obj = handle.InstantiateSync(new InstantiateOptions(true, transform, false));
             obj.name = CurLevelName;
             LevelControl = obj.GetOrAddComponent<LevelControl>();
 
@@ -128,7 +128,7 @@ namespace XiaoCao
 
             string path = $"{LevelActionDir}/{actionName}.prefab";
 
-            if (!ResMgr.Loader.CheckLocationValid(path))
+            if (!ResMgr.Loader.IsLocationValid(path))
             {
                 Debug.Log($"--- no LevelAction {path}, use map setting");
                 yield break;
@@ -144,7 +144,7 @@ namespace XiaoCao
 
             AssetHandle handle = ResMgr.LoadPrefabAsyncHandle(path);
             yield return handle;
-            GameObject actionObj = handle.InstantiateSync(actionTf);
+            GameObject actionObj = handle.InstantiateSync(new InstantiateOptions(true, actionTf, false));
             actionObj.name = actionName;
             Debug.Log($"--- load LevelAction {actionName}");
         }

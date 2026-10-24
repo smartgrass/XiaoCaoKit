@@ -50,12 +50,16 @@ public class ResMgr
         if (ResMgr.ShortKeyDic.ContainsKey(shortKey))
         {
             var prefab = ResMgr.ShortKeyDic[shortKey].LoadPrefab();
-            return GameObject.Instantiate(prefab);
+            if (prefab != null)
+            {
+                return GameObject.Instantiate(prefab);
+            }
+
+            // Mod 资源缺失时回退默认外观, 避免整局加载中断
+            Debug.LogWarning($"--- shortKey {shortKey} 加载失败, 回退默认外观 {failBackPath}");
         }
-        else
-        {
-            return ResMgr.LoadInstan(failBackPath, PackageType.DefaultPackage);
-        }
+
+        return ResMgr.LoadInstan(failBackPath, PackageType.DefaultPackage);
     }
 
 
@@ -65,7 +69,7 @@ public class ResMgr
         var task = Loader.LoadAssetSync<GameObject>(path);
         return task.AssetObject as GameObject;
 
-        //if (ExtraLoader.CheckLocationValid(path))
+        //if (ExtraLoader.IsLocationValid(path))
         //{
         //    Debug.Log($"--- ExtraLoader {path}");
         //    return ExtraLoader.LoadAssetSync<GameObject>(path).AssetObject as GameObject;
@@ -103,7 +107,7 @@ public class ResMgr
         }
 #endif
 
-        if (Loader.CheckLocationValid(path))
+        if (Loader.IsLocationValid(path))
         {
             var task = Loader.LoadAssetSync<T>(path);
             return task.AssetObject as T;
@@ -120,28 +124,20 @@ public class ResMgr
     /// </summary>
     public static T LoadSubAseet<T>(string path, string subAssetName) where T : Object
     {
-        if (!Loader.CheckLocationValid(path))
+        if (!Loader.IsLocationValid(path))
         {
             Debug.LogWarning($"--- no Asset {path}");
             return null;
         }
 
         var handle = Loader.LoadSubAssetsSync<T>(path);
-        foreach (var assetObject in handle.AllAssetObjects)
-        {
-            if (assetObject.name == subAssetName)
-            {
-                return assetObject as T;
-            }
-        }
-
-        return null;
+        return handle.GetSubAssetObject<T>(subAssetName);
     }
 
     //只加载, 没有实例化
     public static Object LoadAseet(string path)
     {
-        if (Loader.CheckLocationValid(path))
+        if (Loader.IsLocationValid(path))
         {
             var task = Loader.LoadAssetSync(path);
             return task.AssetObject;
@@ -156,14 +152,15 @@ public class ResMgr
     public static byte[] LoadRawByte(string path)
     {
         Debug.Log($"---  {path}");
-        if (!RawLoader.CheckLocationValid(path))
+        if (!RawLoader.IsLocationValid(path))
         {
             return null;
         }
 
-        var handle = RawLoader.LoadRawFileSync(path);
-        byte[] fileData = handle.GetRawFileData();
-        return fileData;
+        // v3: 原生文件以 RawFileObject 形式加载, 不再提供 GetRawFileData()
+        var handle = RawLoader.LoadAssetSync<RawFileObject>(path);
+        var rawFile = handle.AssetObject as RawFileObject;
+        return rawFile != null ? rawFile.GetBytes() : null;
     }
 
     #region Init
@@ -187,10 +184,8 @@ public class ResMgr
     {
         // 初始化资源系统
         YooAssets.Initialize();
-        // 创建默认的资源包
-        Loader = YooAssets.CreatePackage(DefaultPackage);
-        // 设置该资源包为默认的资源包，可以使用YooAssets相关加载接口加载该资源包内容。
-        YooAssets.SetDefaultPackage(Loader);
+        // 创建默认的资源包（v3 取消 SetDefaultPackage, 加载一律走 package 实例）
+        Loader = GetOrCreatPackage(DefaultPackage);
     }
 
     public static async UniTask InitDefaultPackage()
@@ -198,40 +193,32 @@ public class ResMgr
         string packageName = DefaultPackage;
         Debug.Log($"--- InitPackage {packageName}");
         ResourcePackage package = GetOrCreatPackage(packageName);
-        InitializationOperation initOperation = null;
+        InitializePackageOperation initOperation = null;
         EPlayMode playMode = DebugSetting.GetEPlayMode();
         Loader = package;
 
 #if UNITY_EDITOR
         //编辑器模式使用。
         Debuger.LogWarning($"编辑器模式使用:{playMode}");
-        // 编辑器下的模拟模式
+        // 编辑器下的模拟模式：v3 由 EditorSimulateBuildInvoker 生成模拟清单，产物根目录交给编辑器文件系统
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            var buildPipeline = EDefaultBuildPipeline.BuiltinBuildPipeline;
-            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, DefaultPackage);
-            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
-            var initParameters = new EditorSimulateModeParameters();
-            initParameters.EditorFileSystemParameters = editorFileSystem;
-            initOperation = package.InitializeAsync(initParameters);
+            var simulateBuildResult = EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualAssetBundle);
+            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult.PackageRootDirectory);
+            var options = new EditorSimulateModeOptions();
+            options.EditorFileSystemParameters = editorFileSystem;
+            initOperation = package.InitializePackageAsync(options);
             Debug.Log($"--- EditorSimulateMode");
         }
 #endif
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var buildinFileSystemParams = FileSystemParameters.CreateDefaultBuildinFileSystemParameters();
-            var initParameters = new OfflinePlayModeParameters();
-            initParameters.BuildinFileSystemParameters = buildinFileSystemParams;
-            initOperation = package.InitializeAsync(initParameters);
+            var options = new OfflinePlayModeOptions();
+            options.BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            initOperation = package.InitializePackageAsync(options);
         }
 
-        await initOperation;
-
-        // var operation1 = package.RequestPackageVersionAsync();
-        // await operation1;
-        // var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-        // await operation2;
         await UpdatePackage(package, initOperation);
     }
 
@@ -243,9 +230,8 @@ public class ResMgr
             if (section.SectionName.StartsWith("Mod"))
             {
                 var packageName = section.SectionName;
-                ResourcePackage package = YooAssets.CreatePackage(packageName);
+                ResourcePackage package = GetOrCreatPackage(packageName);
 
-                InitializationOperation initOperation = null;
                 string defaultHostServer = GetExtraPackageUrl(packageName, out bool hasManifest);
                 if (!hasManifest)
                 {
@@ -254,18 +240,26 @@ public class ResMgr
                 }
 
                 Debug.Log($"--- InitPackage {packageName} {defaultHostServer}");
-                string fallbackHostServer = defaultHostServer;
 
-                //ExtraPackage 无论单机还是模拟都使用远端, 区别在远端的地址
-                IRemoteServices remoteServices = new RemoteServices(defaultHostServer, fallbackHostServer);
-                var cacheFileSystem = FileSystemParameters.CreateDefaultCacheFileSystemParameters(remoteServices);
-                var initParameters = new HostPlayModeParameters();
-                initParameters.BuildinFileSystemParameters = cacheFileSystem;
-                initParameters.CacheFileSystemParameters = cacheFileSystem;
-
-                initOperation = package.InitializeAsync(initParameters);
+                // ExtraPackage 无论单机还是模拟都使用远端, 区别只在远端地址
+                IRemoteService remoteService = new RemoteServices(defaultHostServer, defaultHostServer);
+                var options = new HostPlayModeOptions();
+                // Mod 包只在远端(本地 file://)提供，不挂内置文件系统，否则会去 StreamingAssets 找 BuiltinCatalog
+                options.CacheFileSystemParameters = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remoteService);
+                InitializePackageOperation initOperation = package.InitializePackageAsync(options);
 
                 await UpdatePackage(package, initOperation);
+
+                // Mod 包是纯远端包(本地 file://)，而项目多数资源走同步加载，
+                // 同步加载不会触发下载，所以初始化后先把内容全部拉进沙箱缓存
+                var downloader = package.CreateResourceDownloader(new ResourceDownloaderOptions(8, 3));
+                downloader.StartDownload();
+                await downloader;
+                if (downloader.Status != EOperationStatus.Succeeded)
+                {
+                    Debug.LogError($"--- 下载 Mod 包失败 {packageName}: {downloader.Error}");
+                    continue;
+                }
 
                 foreach (var kv in section.Dic)
                 {
@@ -292,53 +286,60 @@ public class ResMgr
 
         RawLoader = package;
 
-        InitializationOperation initOperation = null;
+        InitializePackageOperation initOperation = null;
 
 #if UNITY_EDITOR
         if (playMode == EPlayMode.EditorSimulateMode)
         {
-            //注意：如果是原生文件系统选择EDefaultBuildPipeline.RawFileBuildPipeline
-            var buildPipeline = EDefaultBuildPipeline.RawFileBuildPipeline;
-            var simulateBuildResult = EditorSimulateModeHelper.SimulateBuild(buildPipeline, RawPackage);
-            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult);
-            var initParameters = new EditorSimulateModeParameters();
-            initParameters.EditorFileSystemParameters = editorFileSystem;
-            initOperation = package.InitializeAsync(initParameters);
+            // 模拟构建只接受 Virtual 类型，原生文件包对应 VirtualRawBundle
+            var simulateBuildResult = EditorSimulateBuildInvoker.Build(packageName, (int)EBundleType.VirtualRawBundle);
+            var editorFileSystem = FileSystemParameters.CreateDefaultEditorFileSystemParameters(simulateBuildResult.PackageRootDirectory);
+            var options = new EditorSimulateModeOptions();
+            options.EditorFileSystemParameters = editorFileSystem;
+            initOperation = package.InitializePackageAsync(options);
         }
 #endif
 
         // 单机运行模式
         if (playMode == EPlayMode.OfflinePlayMode)
         {
-            var buildinFileSystem = FileSystemParameters.CreateDefaultBuildinRawFileSystemParameters();
-            var initParameters = new OfflinePlayModeParameters();
-            initParameters.BuildinFileSystemParameters = buildinFileSystem;
-            initOperation = package.InitializeAsync(initParameters);
+            var options = new OfflinePlayModeOptions();
+            options.BuiltinFileSystemParameters = FileSystemParameters.CreateDefaultBuiltinFileSystemParameters();
+            initOperation = package.InitializePackageAsync(options);
         }
 
         await UpdatePackage(package, initOperation);
     }
 
-    private static async Task UpdatePackage(ResourcePackage package, InitializationOperation initOperation)
+    private static async Task UpdatePackage(ResourcePackage package, InitializePackageOperation initOperation)
     {
-        await initOperation.Task;
-        var operation1 = package.RequestPackageVersionAsync();
-        await operation1;
-        var operation2 = package.UpdatePackageManifestAsync(operation1.PackageVersion);
-        await operation2;
+        if (initOperation == null)
+        {
+            Debug.LogError($"--- InitPackage 失败: {package.PackageName} 未匹配到运行模式 {DebugSetting.GetEPlayMode()}");
+            return;
+        }
 
-        Debug.Log($"--- InitPackageEnd {package.PackageName} {operation1.PackageVersion}");
+        await initOperation;
+
+        var versionOperation = package.RequestPackageVersionAsync();
+        await versionOperation;
+        // 注意：v3 的 GetPackageVersion() 要求已激活 manifest，这里只能取操作返回的版本号
+        string packageVersion = versionOperation.PackageVersion;
+
+        var manifestOperation = package.LoadPackageManifestAsync(new LoadPackageManifestOptions(packageVersion, 60));
+        await manifestOperation;
+
+        Debug.Log($"--- InitPackageEnd {package.PackageName} {packageVersion}");
     }
 
     private static ResourcePackage GetOrCreatPackage(string packageName)
     {
-        var tempPack = YooAssets.TryGetPackage(packageName);
-        if (tempPack == null)
+        if (YooAssets.TryGetPackage(packageName, out ResourcePackage package))
         {
-            tempPack = YooAssets.CreatePackage(packageName);
+            return package;
         }
 
-        return tempPack;
+        return YooAssets.CreatePackage(packageName);
     }
 
     private static string GetExtraPackageUrl(string packName, out bool hasManifest)
@@ -347,12 +348,14 @@ public class ResMgr
 
         hasManifest = HasManifest(path, packName);
 
-        return $"file://{path}";
+        // file:// 地址必须用正斜杠，Windows 的绝对路径里带反斜杠会拼出非法 URL
+        return $"file://{path.Replace('\\', '/')}";
     }
 
     private static bool HasManifest(string dir, string packName)
     {
-        string fileName = $"PackageManifest_{packName}.version";
+        // v3 的版本文件名规则: {PackageName}.version（配置了 PackageFilePrefix 时带前缀）
+        string fileName = YooAssetConfiguration.GetPackageVersionFileName(packName);
         string filePath = System.IO.Path.Combine(dir, fileName);
 
         bool ret = FileTool.IsFileExist(filePath);
@@ -371,7 +374,7 @@ public class ResMgr
 /// <summary>
 /// 远端资源地址查询服务类
 /// </summary>
-public class RemoteServices : IRemoteServices
+public class RemoteServices : IRemoteService
 {
     private readonly string _defaultHostServer;
     private readonly string _fallbackHostServer;
@@ -382,14 +385,16 @@ public class RemoteServices : IRemoteServices
         _fallbackHostServer = fallbackHostServer;
     }
 
-    string IRemoteServices.GetRemoteMainURL(string fileName)
+    /// <summary>
+    /// 按优先级返回候选地址：主地址在前，备用地址在后
+    /// </summary>
+    public IReadOnlyList<string> GetRemoteUrls(string fileName)
     {
-        return $"{_defaultHostServer}/{fileName}";
-    }
-
-    string IRemoteServices.GetRemoteFallbackURL(string fileName)
-    {
-        return $"{_fallbackHostServer}/{fileName}";
+        return new List<string>
+        {
+            $"{_defaultHostServer}/{fileName}",
+            $"{_fallbackHostServer}/{fileName}",
+        };
     }
 }
 

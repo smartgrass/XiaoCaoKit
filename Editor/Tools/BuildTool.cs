@@ -24,7 +24,7 @@ namespace XiaoCaoEditor
 
         public static void CheckSaveScene()
         {
-            if (EditorTools.HasDirtyScenes())
+            if (EditorSceneUtility.HasDirtyScenes())
             {
                 Scene currentScene = SceneManager.GetActiveScene();
                 if (EditorUtility.DisplayDialog("Scene 未保存",

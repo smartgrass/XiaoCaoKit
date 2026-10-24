@@ -7,7 +7,7 @@ namespace XiaoCao
     /// </summary>
     public class XCCommondEvent : XCEvent
     {
-        public BaseMsg baseMsg;
+        public BaseMsg baseMsg; 
 
         public string[] otherMsgs;
 
