@@ -117,7 +117,7 @@
 
 - `UIMgr` + `UIPrefabs`：面板加载、层级、显隐与返回栈
 - `SubPanel` / `TabPanel` / `TabView`：页签与子面板基类
-- `XCCell` / `XCScrollView`：格子与列表（配合 FancyScrollView）
+- 格子与列表：Unity 原生 `ScrollRect` + 项目格子脚本（`ItemCell` / `BuffItemCell` 等）
 - Toast、Dialog、ButtonGroup、按钮事件封装
 - 本地化：`Localizer` + 中/英 ini（`ExtraRes/GameConfig/Localize`，项目外），key 集中在 `LocalizeKey`
 
@@ -166,6 +166,45 @@
 | `Tools/`                        | 表生成脚本、打包脚本、贴图与模型处理工具                       |
 | `ExtraRes/GameConfig/Luban/`    | 表数据产物                                      |
 | `ExtraRes/GameConfig/Localize/` | 中 / 英文案 ini                                |
+
+---
+
+## 依赖的库
+
+除 Flux 被内嵌改造过外，框架没有把第三方库改成私有实现。下面按引入方式分成三组。
+
+### UPM 包（Package Manager）
+
+| 库 | 包名 / 仓库 | 版本 | 用途 |
+| --- | --- | --- | --- |
+| YooAsset | `com.tuyoogame.yooasset` | 2.2.4-preview | 资源加载与打包（`ResMgr`） |
+| UniTask | `com.cysharp.unitask`（Cysharp/UniTask） | git 源，未锁 tag | 异步、计时器、TMP 扩展 |
+| Cinemachine | `com.unity.cinemachine` | 2.10.7 | 相机控制与镜头 |
+| TextMeshPro | `com.unity.ugui`（Unity 6 起合并） | 2.0.0 | 文本渲染 |
+| SharpZipLib | `com.unity.sharp-zip-lib` | 1.4.1 | `ZipHelper` 压缩解压 |
+| UniVRM | `com.vrmc.gltf` / `com.vrmc.univrm` / `com.vrmc.vrm` | 0.128.3 | VRM 模型与姿态调试 |
+| Newtonsoft.Json | `com.unity.nuget.newtonsoft-json` | 3.2.2 | 配置、日志的 JSON 序列化 |
+
+### 内置依赖（随本仓库提交，不走 UPM）
+
+| 库 | 来源 | 版本 | 用途 | 路径 |
+| --- | --- | --- | --- | --- |
+| NaughtyAttributes | dbrizov/NaughtyAttributes | 2.0.7 | Inspector 增强特性 | `Plugin/NaughtyAttributes` |
+| Odin Serializer | Sirenix Odin Serializer | 1.1.1.0 | 存档二进制序列化（`SaveMgr`） | `Plugin/Sirenix` |
+| Rotary Heart Physics | PhysicsDebugExtension（`PhysicsExtension` 程序集） | 未标注 | 物理调试扩展 | `Plugin/Rotary Heart` |
+| GG.Extensions | Greener-Games/Unity_Extensions | 未标注 | Unity 类型扩展（AspectRatio / Color / Await 等） | `Runtime/Framework/1Tools/Unity_Extensions` |
+| Flux | noio/Flux 的改造版 | 未标注 | 技能时间轴（`XCFlux`，动画与序列部分有改动） | `Runtime/Modules/XCSkillEditor/Runtime/XCFlux` |
+
+### 项目外依赖
+
+只剩一个：DOTween（Demigiant，Asset Store 版，版本未标注），放在项目外的 `Assets/Plugins/Demigiant`，
+用于补间动画；其 UI 模块已关闭（`DOTweenModuleUI` 顶部 `#if false`），UI 动画走项目自己的扩展。
+
+几点说明：
+
+- 版本以项目外的 `Packages/manifest.json` 为准；内置插件看各自目录里的 `package.json` / `Version.txt`，查不到的就写「未标注」。
+- 事件系统 `GameEvent` / `EventMgr` 的源码取自 TEngine，直接内嵌并保留 `TEngine` 命名空间，不算包依赖。
+- URP 是宿主工程的渲染管线，框架代码不引用 `UnityEngine.Rendering.Universal`。
 
 ---
 
