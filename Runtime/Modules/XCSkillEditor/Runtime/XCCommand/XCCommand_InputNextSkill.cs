@@ -13,8 +13,8 @@
         /// <summary>触发后要释放的技能 id</summary>
         private string targetSkill;
 
-        /// <summary>来源技能为 1 时,触发下一段前按方向键输入立刻转向</summary>
-        private const string RefaceByInputSkillId = "1";
+        /// <summary>来源技能为2技能(贯穿)时,触发下一段前按方向键输入立刻转向</summary>
+        private const string RefaceByInputSkillId = "2";
 
         private Player0 player0;
 
@@ -90,7 +90,7 @@
 
             task.SetNoBusy();
 
-            //技能 1 接下一段时:先按方向键输入改角色朝向,再启动技能(技能的 castEuler 取的就是角色朝向)
+            //技能1(凌空连击)接下一段时:先按方向键输入改角色朝向,再启动技能(技能的 castEuler 取的就是角色朝向)
             if (task.Info.skillId == RefaceByInputSkillId)
             {
                 RefaceByInput();

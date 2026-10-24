@@ -137,18 +137,26 @@ namespace XiaoCao
         {
             if (state == ESkillState.Idle)
             {
-                SetAnimSpeed(1);
+                //动画速度跟随 timeScale: timeStop 加速期间保持 2 倍;
+                //敌人被 timeStop 冻结(速度0)时保持冻结
+                bool enemyFrozen = owner.IsEnemyIdentity && BattleData.IsTimeStop;
+                SetAnimSpeed(enemyFrozen ? 0 : XCTime.timeScale);
             }
         }
 
         private void SetAnimSpeed(float speed)
         {
+            if (owner.IsPlayer)
+            {
+                Debuger.Log($"SetAnimSpeed {owner.Anim.speed}->{speed}");
+            }
             if (owner.Anim.speed != 0)
             {
                 _lastAnimSpeed = owner.Anim.speed;
             }
 
             owner.Anim.speed = speed;
+
         }
 
 
@@ -167,7 +175,8 @@ namespace XiaoCao
             }
 
             cts = new CancellationTokenSource();
-            animSpeedTask = XCTime.DelayRun(stopTime, () => { SetAnimSpeed(1); }, cts);
+            //顿帧恢复时也跟随 timeScale, 避免恢复到 1 而 timeStop 期间帧推进是 2 倍导致动画滞后
+            animSpeedTask = XCTime.DelayRun(stopTime, () => { SetAnimSpeed(XCTime.timeScale); }, cts);
         }
 
         //基本技能条件
@@ -237,6 +246,9 @@ namespace XiaoCao
 
             taskInfo.callCount = callCount;
 
+            //写入本次释放使用的技能等级(玩家读存档, 支援角色固定1级/技巧满级2级)
+            taskInfo.skillLevel = GetCastSkillLevel(skillId);
+
             if (IsNorAtkId(skillId))
             {
                 taskInfo.speedMult = 1 + owner.RoleAttr.GetValue(EAttr.NorAtkSpeedAdd);
@@ -248,23 +260,39 @@ namespace XiaoCao
                 AddSkill3ScaleModify(taskInfo);
             }
 
-            //技能2:空中额外剑气次数随技能等级变化
-            if (skillId == Skill2Id)
+            //技能1:空中额外剑气次数随技能等级变化
+            if (skillId == Skill1Id)
             {
-                AddSkill2AirSlash(taskInfo);
+                AddSkill1AirSlash(taskInfo);
             }
 
             return taskInfo;
         }
 
-        /// <summary>技能2 的 id</summary>
-        private const string Skill2Id = "2";
+        /// <summary>技能1 的 id (凌空连击)</summary>
+        private const string Skill1Id = "1";
 
         /// <summary>技能3 的 id</summary>
         private const string Skill3Id = "3";
 
         /// <summary>技能3 随等级缩放的子物体名</summary>
         private const string Skill3ScaleTarget = "s3_ring_2";
+
+        /// <summary>
+        /// 当前角色释放技能时使用的技能等级:
+        /// 支援角色借用玩家技能时不继承玩家的技能等级, 固定按 1 级生效;
+        /// 技巧养成满级后提升为 2 级 (支援角色设定.md)
+        /// </summary>
+        private int GetCastSkillLevel(string skillId)
+        {
+            if (owner != null && BattleData.Current != null && owner.id == BattleData.Current.supportRoleId)
+            {
+                return 1 + SupportRoleSetting.GetSkillLevelAdd();
+            }
+
+            PlayerSaveData saveData = PlayerSaveData.LocalSavaData;
+            return saveData == null ? 0 : saveData.GetSkillLevel(skillId);
+        }
 
         /// <summary>
         /// 技能3:按当前等级读取 SkillUpgradeSetting.CostomValues 里的缩放加成,
@@ -279,7 +307,7 @@ namespace XiaoCao
                 return;
             }
 
-            int level = PlayerSaveData.LocalSavaData.GetSkillLevel(Skill3Id);
+            int level = taskInfo.skillLevel;
             //等级超出配置长度时取最后一条
             int index = Mathf.Clamp(level - 1, 0, setting.CostomValues.Count - 1);
             //表里配的是加成比例,如 0.05 表示整体放大 1.05 倍
@@ -292,23 +320,23 @@ namespace XiaoCao
             };
         }
 
-        #region 技能2空中额外剑气
+        #region 技能1空中额外剑气
 
         /// <summary>
-        /// 技能2(空中技能):按当前等级读取 SkillUpgradeSetting.CostomValues 得到额外剑气次数,
+        /// 技能1(凌空连击):按当前等级读取 SkillUpgradeSetting.CostomValues 得到额外剑气次数,
         /// 以 ModifyTaskInfo(key = AirSlash) 的形式写入 TaskInfo,子技能(剑气)触发时读取并逐次消耗,
         /// 触发方式与 Buff 的 ExtraSlash 同理(见 <see cref="TaskModifyRule.TryConsumeAirSlash"/>)
         /// </summary>
-        private void AddSkill2AirSlash(TaskInfo taskInfo)
+        private void AddSkill1AirSlash(TaskInfo taskInfo)
         {
-            var setting = LubanTables.GetSkillUpgradeSetting(Skill2Id);
+            var setting = LubanTables.GetSkillUpgradeSetting(Skill1Id);
             if (setting.CostomValues == null || setting.CostomValues.Count == 0)
             {
-                Debug.LogError($"--- {Skill2Id} 技能的 CostomValues 未配置额外剑气次数");
+                Debug.LogError($"--- {Skill1Id} 技能的 CostomValues 未配置额外剑气次数");
                 return;
             }
 
-            int level = PlayerSaveData.LocalSavaData.GetSkillLevel(Skill2Id);
+            int level = taskInfo.skillLevel;
             //等级超出配置长度时取最后一条
             int index = Mathf.Clamp(level - 1, 0, setting.CostomValues.Count - 1);
             int count = (int)setting.CostomValues[index];
@@ -375,23 +403,36 @@ namespace XiaoCao
 
         private float _lastAnimSpeed = 1;
 
+        /// <summary>
+        /// timeStop 切换时的速度同步:
+        /// - 敌人: 动画冻结(0)/恢复, 技能任务停止/恢复
+        /// - 非敌人(玩家等): 技能帧推进用 XCTime.deltaTime(含 timeScale), 动画速度只在
+        ///   <see cref="XCAnimEvent"/> 触发那一刻写入; 若 timeStop 在技能播放中途开启/关闭,
+        ///   动画速度会停留在旧值导致动画与帧不同步, 这里按 timeScale 增量修正(顿帧中的 0 保持不动)
+        /// </summary>
         public void StopTimeSpeed(bool isOn)
         {
-            if (isOn)
+            if (owner.IsEnemyIdentity)
             {
-                SetAnimSpeed(0);
-                foreach (var item in runnerList)
-                {
-                    item.StopTimeSpeed(isOn);
-                }
+                SetAnimSpeed(isOn ? 0 : _lastAnimSpeed);
             }
             else
             {
-                SetAnimSpeed(_lastAnimSpeed);
-                foreach (var item in runnerList)
+                float timeScale = XCTime.timeScale;
+                if (owner.Anim.speed != 0)
                 {
-                    item.StopTimeSpeed(isOn);
+                    owner.Anim.speed = isOn
+                        ? owner.Anim.speed * timeScale
+                        : owner.Anim.speed / timeScale;
+                    Debuger.Log($"XCTimeScale isOn {isOn} {timeScale}");
                 }
+                //非敌人不停止技能任务: timeStop 期间技能帧以 timeScale 倍速继续推进
+                return;
+            }
+
+            foreach (var item in runnerList)
+            {
+                item.StopTimeSpeed(isOn);
             }
         }
 

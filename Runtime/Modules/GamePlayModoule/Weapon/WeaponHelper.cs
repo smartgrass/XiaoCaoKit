@@ -23,7 +23,7 @@ namespace XiaoCao
             if (rightHandBone == null)
             {
                 Debug.LogError("Animator组件不存在或不是Humanoid类型");
-                return FindHand(animator.GetComponent<SkinnedMeshRenderer>());
+                return null;
             }
             return rightHandBone;
         }

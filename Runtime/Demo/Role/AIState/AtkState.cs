@@ -151,7 +151,7 @@ namespace XiaoCao
         /// <summary>
         /// 获取本次攻击要发送的消息内容。
         /// </summary>
-        protected virtual string GetAtkMsg()
+        public virtual string GetAtkMsg()
         {
             return atkMsg;
         }

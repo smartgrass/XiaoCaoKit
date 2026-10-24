@@ -238,7 +238,8 @@ namespace XiaoCao
 
             IsFinish = true;
 
-            var uiMgr = UIMgr.Inst;
+            //进入关卡,播放关卡标题
+            UIMgr.Inst.battleHud.ShowLevelTitle();
         }
 
         public async UniTask DelayRun()

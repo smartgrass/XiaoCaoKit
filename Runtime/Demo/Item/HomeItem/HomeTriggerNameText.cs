@@ -15,8 +15,11 @@ namespace XiaoCaoKit.Runtime.Demo.Item
         private Image bgImage;
         public string uiKey;
 
+        const float ShowAlpha = 170 / 255f;
+        const float HideAlpha = 45 / 255f;
+
         /// <summary>创建名字牌管理器。</summary>
-        public HomeTriggerNameText(Transform owner,string uiKey)
+        public HomeTriggerNameText(Transform owner, string uiKey)
         {
             this.owner = owner;
             this.uiKey = uiKey;
@@ -64,12 +67,12 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 
         public void ShowUI()
         {
-            bgImage.enabled = true;
+            bgImage.color = bgImage.color.SetAlpha(ShowAlpha);
         }
 
         public void HideUI()
         {
-            bgImage.enabled = false;
+            bgImage.color = bgImage.color.SetAlpha(HideAlpha);
         }
 
         /// <summary>

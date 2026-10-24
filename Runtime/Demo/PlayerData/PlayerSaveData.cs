@@ -46,6 +46,11 @@ namespace XiaoCao
         // 祝福等级存档
         public Dictionary<EBlessing, int> blessingLevelDic = new Dictionary<EBlessing, int>();
 
+        // 支援角色三项养成等级(1~SupportRoleSetting.MaxGrowLevel), 规则见 支援角色设定.md
+        public int supportAtkLv = SupportRoleSetting.DefaultGrowLevel;
+        public int supportHpLv = SupportRoleSetting.DefaultGrowLevel;
+        public int supportSkillLv = SupportRoleSetting.DefaultGrowLevel;
+
         //ItemUI
         public Inventory inventory = new Inventory();
 
@@ -299,6 +304,36 @@ namespace XiaoCao
             ReLoadPlayerAttr();
             SavaData();
             return true;
+        }
+
+        /// <summary>
+        /// 获取支援角色指定养成项的当前等级(1~SupportRoleSetting.MaxGrowLevel)。
+        /// </summary>
+        public int GetSupportGrowLevel(SupportRoleSetting.SupportGrowType kind)
+        {
+            int level;
+            switch (kind)
+            {
+                case SupportRoleSetting.SupportGrowType.Atk: level = supportAtkLv; break;
+                case SupportRoleSetting.SupportGrowType.Hp: level = supportHpLv; break;
+                default: level = supportSkillLv; break;
+            }
+            return Mathf.Clamp(level, 1, SupportRoleSetting.MaxGrowLevel);
+        }
+
+        /// <summary>
+        /// 设置支援角色指定养成项的等级(供养成界面或调试使用), 越界会被钳制。
+        /// </summary>
+        public void SetSupportGrowLevel(SupportRoleSetting.SupportGrowType kind, int level)
+        {
+            level = Mathf.Clamp(level, 1, SupportRoleSetting.MaxGrowLevel);
+            switch (kind)
+            {
+                case SupportRoleSetting.SupportGrowType.Atk: supportAtkLv = level; break;
+                case SupportRoleSetting.SupportGrowType.Hp: supportHpLv = level; break;
+                default: supportSkillLv = level; break;
+            }
+            SavaData();
         }
 
         public void AddSkillLevel(string skillId)

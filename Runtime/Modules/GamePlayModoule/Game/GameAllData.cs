@@ -695,8 +695,9 @@ namespace XiaoCao
 
         private static Enemy0 CreateSupportRole(Player0 player, string supportRoleKey, Vector3 summonPos, Vector3 forward)
         {
-            //属性为无等级默认数据, 不随玩家等级成长 (支援角色设定.md)
-            Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, GameSetting.MinRoleLevel, supportRoleKey);
+            //等级与玩家保持一致, 属性按该等级的基础值再乘继承比例
+            int level = player.Level;
+            Enemy0 supportRole = EnemyMaker.Inst.CreatEnemy(SupportRoleEnemyId, level, supportRoleKey);
             if (supportRole == null)
             {
                 return null;
@@ -704,7 +705,7 @@ namespace XiaoCao
 
             supportRole.SetTeam(XCSetting.PlayerTeam);
             supportRole.IsAiOn = true;
-            ApplySupportRoleAttr(supportRole);
+            ApplySupportRoleAttr(supportRole, level);
             var addData = supportRole.idRole.GetComponent<AddEnemyData>();
             // addData.
             supportRole.enemyData.movement.MoveToImmediate(summonPos);
@@ -714,17 +715,16 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 按支援角色设定覆盖属性: 攻击/血量 = 玩家无等级默认数据(无加成) * 继承比例, 满血出场
+        /// 按支援角色设定覆盖属性: 攻击/血量 = 玩家同等级基础数据(不含祝福/纹章加成) * 继承比例, 满血出场
         /// </summary>
-        private static void ApplySupportRoleAttr(Enemy0 supportRole)
+        private static void ApplySupportRoleAttr(Enemy0 supportRole, int level)
         {
             //玩家用的是 attrSettingId 0, 与 Role.InitRoleData 的玩家分支保持一致
             AttrSetting playerSetting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
-            int defaultLv = GameSetting.MinRoleLevel;
             RoleAttr attr = supportRole.data_R.RoleAttr;
 
-            float baseAtk = CharacterAttrCalc.GetBaseATK(defaultLv) * playerSetting.atkMult;
-            float baseHp = CharacterAttrCalc.GetBaseHP(defaultLv) * playerSetting.hpMult + playerSetting.addHp;
+            float baseAtk = CharacterAttrCalc.GetBaseATK(level) * playerSetting.atkMult;
+            float baseHp = CharacterAttrCalc.GetBaseHP(level) * playerSetting.hpMult + playerSetting.addHp;
 
             attr.GetAttribute(EAttr.Atk).BaseValue = (int)(baseAtk * SupportRoleSetting.GetAtkRate());
             attr.GetAttribute(EAttr.MaxHp).BaseValue = (int)(baseHp * SupportRoleSetting.GetHpRate());
@@ -869,6 +869,22 @@ namespace XiaoCao
             {
                 LevelInfo levelInfo = LevelInfo.ParseString(levelSetting.Id);
                 playerSaveData.levelPassData.SetPassState(levelInfo.chapter, levelInfo.index);
+            }
+        }
+
+        /// <summary>
+        /// 解锁玩家全部技能: 未解锁的设为 1 级, 已有等级的保持不变。
+        /// 技能表取自 PlayerSkillSo.player0AllSkill, 与技能界面显示的列表一致。
+        /// </summary>
+        public static void UnlockAllSkill(PlayerSaveData playerSaveData)
+        {
+            PlayerSkillSo skillSo = Resources.Load<PlayerSkillSo>("PlayerSkillSo");
+            foreach (string skillId in skillSo.player0AllSkill)
+            {
+                if (!playerSaveData.skillUnlockDic.ContainsKey(skillId))
+                {
+                    playerSaveData.skillUnlockDic[skillId] = 1;
+                }
             }
         }
     }

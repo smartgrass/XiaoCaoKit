@@ -27,6 +27,7 @@ namespace XiaoCao.UI
 
             subPanel.Prefabs = prefabs;
             subPanel.subPanelName = panelName;
+            subPanel.gameObject.name = panelName;
 
             int panelIndex = list.Count;
 
@@ -62,6 +63,7 @@ namespace XiaoCao.UI
         {
             GameObject panelGo = Instantiate(prefabs.subPanel, PANELS);
             subPanel.gameObject = panelGo;
+            
         }
 
         protected void FindSubPanel(SubPanel subPanel, string findPanel)

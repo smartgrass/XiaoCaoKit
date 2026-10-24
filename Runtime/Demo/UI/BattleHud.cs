@@ -41,6 +41,9 @@ namespace XiaoCao
 
         public GameObject gameWinTip;
 
+        //关卡标题浮动动画
+        public LevelTitleFloat levelTitleFloat;
+
         // public RectTransform tipRect;
         private RectTransform _canRect;
 
@@ -80,6 +83,7 @@ namespace XiaoCao
             exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
             exitLevelBtn.transform.gameObject.SetActive(false);
             gameWinTip.gameObject.SetActive(false);
+            levelTitleFloat.gameObject.SetActive(false);
             _canRect = transform.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
             // _tipText = tipRect.GetComponentInChildren<TMP_Text>(true);
             InitPopTip();
@@ -94,6 +98,34 @@ namespace XiaoCao
                 gameWinTip.SetActive(true);
             }
         }
+
+        #region LevelTitle
+
+        /// <summary>
+        /// 进入关卡时播放关卡标题: 配置为空显示默认关卡名, 配置为 Empty 不显示, 其他显示对应的本地化文本。
+        /// </summary>
+        public void ShowLevelTitle()
+        {
+            cfg.LevelSetting setting = cfg.LubanTables.GetLevelSettingOrDefault(MapMgr.CurLevelName);
+            if (setting == null)
+            {
+                //主城等非关卡场景没有关卡配置, 不显示标题
+                return;
+            }
+
+            string titleConfig = setting.LevelTitleFloat;
+            if (titleConfig == LevelTitleFloat.HideKeyword)
+            {
+                return;
+            }
+
+            string title = string.IsNullOrEmpty(titleConfig)
+                ? LevelInfo.ParseString(setting.Id).GetLevelName()
+                : titleConfig.ToLocalizeStr();
+            levelTitleFloat.Play(title);
+        }
+
+        #endregion
 
         private void OnDestroy()
         {

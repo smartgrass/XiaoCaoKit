@@ -43,7 +43,7 @@ namespace XiaoCao
         BodyPhantom = 17,
         [InspectorName("隐身(float time)")]
         HideRender = 18,
-        [InspectorName("动画速度(float speed)")]
+        [InspectorName("动画速度(float speed,undo 敌人不完备)")]
         AnimSpeed = 19,
         [InspectorName("无敌(string maskId)")]
         NoDamage = 20,

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerSkillSo
   m_EditorClassIdentifier: 
   player0AllSkill:
-  - 2
   - 1
+  - 2
   - 3
   - 4

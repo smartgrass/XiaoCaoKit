@@ -24,11 +24,11 @@ namespace XiaoCao
             BattleData.IsTimeStop = true;
             //1.敌人停止动画
             //2.修改runner的speed [每个敌人都执行]
-
+            XCTime.timeScale = 2;
             GameEvent.Send<bool>(EGameEvent.TimeSpeedStop.ToInt(), true);
             coroutine = StartCoroutine(IEWaitRecover());
             CamEffectMgr.Inst.SetOpenEffect(CamEffectMgr.CameraEffect.TimeStop);
-            XCTime.timeScale = 2;
+
         }
 
         public void RecoverTimeSpeed()

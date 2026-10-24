@@ -31,6 +31,6 @@ MonoBehaviour:
     - 
     - 
     defaultSkillList:
-    - 2
+    - 1
     rollSkillId: Roll
     jumpSkillId: 

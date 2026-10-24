@@ -6,13 +6,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using XiaoCao;
+using XiaoCaoKit.Runtime.Demo.Item;
 
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// 主城新手引导: 按顺序引导玩家学会第2、第3个技能。
-    /// 引导1(第2个技能): 遮罩 + 高亮 + 点击代理逐步教学, 升级后自动收起详情页并引导点返回;
-    /// 引导2(第3个技能): 只用发光提示, 不强制点击, 玩家点开该技能详情即结束;
+    /// 主城新手引导: 按顺序引导玩家学会撞击(技能2)、凌空连击(技能1)。
+    /// 引导1(技能2 撞击): 遮罩 + 高亮 + 点击代理逐步教学, 升级后自动收起详情页并引导点返回,
+    /// 玩家关闭角色界面后用 PopToast 提示学习完成并立即结束引导(无需再点按钮);
+    /// 引导2(技能1 凌空连击): 只用发光提示, 不强制点击, 玩家点开该技能详情即结束;
     /// 引导2需先通关第2关且已完成引导1。
     /// </summary>
     [DisallowMultipleComponent]
@@ -20,10 +22,10 @@ namespace XiaoCao.UI
     {
         public const string GuidePrefabPath = "Assets/_Res/UI/HomeUI/HomeGuideRoot.prefab";
 
-        //引导1: 第2个技能(技能id=1, 贯穿), 新号默认只解锁技能1
-        public const string Guide1SkillId = "1";
+        //引导1: 第1个上手技能(技能id=2, 撞击)
+        public const string Guide1SkillId = "2";
 
-        //引导2: 第3个技能(技能id=3, 旋风斩)
+        //引导2: 第2个技能(技能id=1, 凌空连击)
         public const string Guide2SkillId = "3";
 
         //引导2触发条件: 通关第2关(章节0, 序号2)
@@ -39,6 +41,7 @@ namespace XiaoCao.UI
         public const int StepUpgrade = 3;
         //升级完成后: 已学习成功, 等玩家关闭技能详情页, 引导点返回按钮
         public const int StepBack = 4;
+        //学习完成: 只弹 PopToast 提示, 当帧即结束引导, 不再等玩家点击
         public const int StepFinish = 5;
         public const int StepDone = 99;
 
@@ -46,7 +49,8 @@ namespace XiaoCao.UI
         private const float TipGap = 16f;
         //返回按钮在窗口右上角, 气泡用右上角锚点贴在按钮下方
         private const float TipGapBack = 48f;
-        private const float FinishDelay = 2f;
+        //完成提示(PopToast)的停留时长
+        private const float FinishToastTime = 2.5f;
 
         private static readonly int HoleEnabledId = Shader.PropertyToID("_HoleEnabled");
         private static readonly int HoleCenterId = Shader.PropertyToID("_HoleCenter");
@@ -67,6 +71,9 @@ namespace XiaoCao.UI
 
         [Header("引导节点(留空按名称自动查找)")]
         public RectTransform highlight;
+
+        [Header("引导1完成后的导航路线(Assets/_Res/UI/HomeUI/GuideNavRoute.prefab)")]
+        public GuideNavRoute navRoutePrefab;
 
         public Button proxyButton;
 
@@ -96,7 +103,6 @@ namespace XiaoCao.UI
         private int _step = StepOpenPanel;
         private bool overlayVisible;
         private Action proxyAction;
-        private float finishTimer;
         private float missingTimer;
         private float findBtnTimer = 999f;
         private bool refreshTried;
@@ -232,7 +238,7 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 引导顺序: 先第2个技能, 再第3个技能
+        /// 引导顺序: 先技能2(撞击), 再技能1(凌空连击)
         /// </summary>
         private static List<GuideTask> BuildTasks(GuideData guide)
         {
@@ -270,7 +276,7 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 引导2: 通关第2关后才提示学习第3个技能
+        /// 引导2: 通关第2关后才提示学习技能1(凌空连击)
         /// </summary>
         private static bool IsGuide2Unlocked()
         {
@@ -396,7 +402,6 @@ namespace XiaoCao.UI
             _task = next;
             _targetSkillId = next.skillId;
             _step = Mathf.Clamp(next.getStep(), StepOpenPanel, StepFinish);
-            finishTimer = 0f;
             missingTimer = 0f;
             refreshTried = false;
             Debug.Log($"[Guide] prepare skill={_targetSkillId} step={_step}");
@@ -580,37 +585,13 @@ namespace XiaoCao.UI
             }
         }
 
+        /// <summary>
+        /// step5: 学习完成提示改用 PopToast 弹出, 玩家不需要再点一次按钮, 弹出后立即结束引导
+        /// </summary>
         private void TickFinish()
         {
-            ShowOverlay();
-            SetHole(Vector2.zero, Vector2.zero, false);
-            if (highlight != null)
-            {
-                highlight.gameObject.SetActive(false);
-            }
-
-            //完成后全屏可点, 点任意位置结束
-            if (proxyButton != null)
-            {
-                RectTransform rt = proxyButton.transform as RectTransform;
-                rt.anchoredPosition = Vector2.zero;
-                rt.sizeDelta = _root.rect.size;
-            }
-            if (tip != null)
-            {
-                //上一步(返回按钮)把气泡改成了右上角锚点, 完成提示要回到屏幕中间
-                SetTipAnchorCenter();
-                tip.gameObject.SetActive(true);
-                tip.anchoredPosition = Vector2.zero;
-            }
-            SetTip(LocalizeKey.GuideSkillLearned.ToLocalizeStr());
-            proxyAction = FinishGuide;
-
-            finishTimer += Time.unscaledDeltaTime;
-            if (finishTimer >= FinishDelay)
-            {
-                FinishGuide();
-            }
+            UIMgr.PopToastKey(LocalizeKey.GuideSkillLearned, FinishToastTime);
+            FinishGuide();
         }
 
         #region 引导2: 发光提示
@@ -684,7 +665,7 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 引导2 step2: 第3个技能格发光, 点开详情即完成引导
+        /// 引导2 step2: 凌空连击技能格发光, 点开详情即完成引导
         /// </summary>
         private void TickHintSkillCell()
         {
@@ -879,7 +860,6 @@ namespace XiaoCao.UI
         private void GoToStep(int step)
         {
             _step = step;
-            finishTimer = 0f;
             missingTimer = 0f;
             refreshTried = false;
             lastTip = null;
@@ -1224,6 +1204,9 @@ namespace XiaoCao.UI
         /// </summary>
         public void FinishGuide()
         {
+            //记录刚完成的是哪条引导, 供完成后的后续表现使用
+            string finishedSkillId = _task != null ? _task.skillId : null;
+
             if (_task != null)
             {
                 _task.setStep(StepDone);
@@ -1238,6 +1221,16 @@ namespace XiaoCao.UI
             _task = null;
             ClearHintGlow();
             Debug.Log("[Guide] finished");
+
+            //引导1(撞击)完成: 显示从角色脚下指向关卡入口的地面箭头导航, 玩家到达后自动消失
+            if (finishedSkillId == Guide1SkillId)
+            {
+                LevelEnterTrigger enter = FindFirstObjectByType<LevelEnterTrigger>();
+                if (enter != null && navRoutePrefab != null)
+                {
+                    GuideNavRoute.Show(enter.transform, navRoutePrefab);
+                }
+            }
 
             //还有下一条引导(引导2): 立刻从它的第一步接着触发
             _guide = GameAllData.playerSaveData != null ? GameAllData.playerSaveData.guideData : null;
@@ -1264,7 +1257,6 @@ namespace XiaoCao.UI
             _task = null;
             _targetSkillId = Guide1SkillId;
             _step = StepOpenPanel;
-            finishTimer = 0f;
             missingTimer = 0f;
             lastTip = null;
             overlayVisible = false;

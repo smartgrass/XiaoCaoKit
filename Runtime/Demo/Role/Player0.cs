@@ -112,7 +112,7 @@ namespace XiaoCao
 
             if (Anim.speed > 1)
             {
-                DebugGUI.Log("Anim", Anim.speed);
+                DebugGUI.Log("AnimSpeed", Anim.speed);
             }
         }
 

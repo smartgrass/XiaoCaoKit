@@ -16,6 +16,11 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     //任务调试: 指定要完成的任务id, 留空表示全部任务
     [SerializeField] private string taskDebugId = "";
 
+    //支援角色三项养成等级(1~5)
+    [SerializeField] private int supportAtkLv = 1;
+    [SerializeField] private int supportHpLv = 1;
+    [SerializeField] private int supportSkillLv = 1;
+
     public override bool IsDebugView => true;
 
     public override object DrawDebugTarget => playerSaveData;
@@ -23,7 +28,20 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     public override void OnEnable()
     {
         EnsurePlayerSaveDataLoaded();
+        SyncSupportGrowFields();
         base.OnEnable();
+    }
+
+    /// <summary>把存档中当前的支援角色养成等级同步到窗口输入框</summary>
+    private void SyncSupportGrowFields()
+    {
+        if (playerSaveData == null)
+        {
+            return;
+        }
+        supportAtkLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk);
+        supportHpLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp);
+        supportSkillLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill);
     }
 
     public override void DrawHead()
@@ -67,6 +85,35 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.LabelField("支援角色养成", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("设置支援角色三项养成等级(1~5)。攻击/生存决定继承玩家属性的百分比，技巧决定可解锁技能数(每级1个,上限4个)，技巧满级后支援技能等级由1提升至2。下次召唤支援角色时生效。", MessageType.Info);
+
+        supportAtkLv = EditorGUILayout.IntSlider("攻击等级", supportAtkLv, 1, 5);
+        supportHpLv = EditorGUILayout.IntSlider("生存等级", supportHpLv, 1, 5);
+        supportSkillLv = EditorGUILayout.IntSlider("技巧等级", supportSkillLv, 1, 5);
+
+        if (GUILayout.Button("应用养成等级"))
+        {
+            ApplySupportGrowLevels();
+        }
+
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space();
+    }
+
+    /// <summary>
+    /// 调试: 把窗口里填的三项支援角色养成等级写入存档
+    /// </summary>
+    private void ApplySupportGrowLevels()
+    {
+        EnsurePlayerSaveDataLoaded();
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk, supportAtkLv);
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp, supportHpLv);
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill, supportSkillLv);
+        Save();
+        Debug.Log($"-- support grow levels set: atk={supportAtkLv} hp={supportHpLv} skill={supportSkillLv}");
     }
 
     /// <summary>

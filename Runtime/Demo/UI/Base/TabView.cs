@@ -147,6 +147,7 @@ namespace XiaoCao.UI
             var subPanel = new SimpleSubPanel();
             subPanel.gameObject = group.panel;
             subPanel.subPanelName = group.panelName;
+            subPanel.gameObject.name = group.panelName;
             subPanel.TabBtn = group.tabBtn;
             var tabBtn = group.tabBtn;
             tabBtn.onClick.AddListener(() => { SwitchPanel(group.panelName); });

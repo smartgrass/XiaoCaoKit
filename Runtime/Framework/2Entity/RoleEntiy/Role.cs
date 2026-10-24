@@ -142,6 +142,55 @@ namespace XiaoCao
             body.transform.localPosition = Vector3.zero;
             tempRender = null;
             BaseInit();
+            CheckReplaceWeapon();
+        }
+
+        /// <summary>需要替换的武器子物体名</summary>
+        public const string ReplaceWeaponName = "Sword_2";
+        /// <summary>替换用的武器预制体路径</summary>
+        public const string ReplaceWeaponPrefabPath = "Assets/_Res/Item/Weapon/Sword_2.prefab";
+
+        /// <summary>
+        /// 身体创建后检查武器节点(WeaponPoint), 若其子物体名为 Sword_2,
+        /// 则替换为 Sword_2.prefab, 并保持原位置/旋转/缩放
+        /// </summary>
+        public void CheckReplaceWeapon()
+        {
+            if (Anim == null)
+            {
+                return;
+            }
+            if(RoleIdentityType == RoleIdentityType.Enemy)
+            {
+                return;
+            }
+
+            Transform weaponPoint = WeaponHelper.FindWeapon(Anim);
+            if (weaponPoint == null)
+            {
+                return;
+            }
+            Transform old = weaponPoint.Find(ReplaceWeaponName);
+            if (old == null)
+            {
+                return;
+            }
+            GameObject prefab = ResMgr.LoadPrefab(ReplaceWeaponPrefabPath);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"--- CheckReplaceWeapon no asset {ReplaceWeaponPrefabPath}");
+                return;
+            }
+            // 记录旧武器本地变换后销毁, 用同名新实例顶替
+            Vector3 localPos = old.localPosition;
+            Quaternion localRot = old.localRotation;
+            Vector3 localScale = old.localScale;
+            GameObject.Destroy(old.gameObject);
+            GameObject inst = GameObject.Instantiate(prefab, weaponPoint);
+            inst.name = ReplaceWeaponName;
+            inst.transform.localPosition = localPos;
+            inst.transform.localRotation = localRot;
+            inst.transform.localScale = localScale;
         }
 
         public static GameObject LoadModelByKey(string shortKey)
@@ -482,13 +531,8 @@ namespace XiaoCao
 
         private void StopTimeSpeed(bool isOn)
         {
-            if (!IsEnemyIdentity)
-            {
-                return;
-            }
-
-            //处理击飞
-            if (!isOn)
+            //击飞/受击/死亡表现只处理敌人; 动画速度同步所有角色都需要(RoleControl 内部分流)
+            if (IsEnemyIdentity && !isOn)
             {
                 if (data_R.breakData.HasHit)
                 {
@@ -644,7 +688,8 @@ namespace XiaoCao
             }
             else
             {
-                //TODO 完善
+                //TODO 完善 
+                //目前敌人不兼容, 范围应该只在clip之内
                 Anim.speed = XCTime.timeScale;
             }
         }

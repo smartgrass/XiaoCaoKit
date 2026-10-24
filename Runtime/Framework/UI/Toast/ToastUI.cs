@@ -1,7 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using TMPro;
+using XiaoCao;
 
 namespace EasyUI.Helpers
 {
@@ -13,6 +14,8 @@ namespace EasyUI.Helpers
         [SerializeField] private VerticalLayoutGroup uiContentVerticalLayoutGroup;
 
         [SerializeField] private TMP_Text uiText;
+
+        [SerializeField] private ControlUISizeByTextWidth uiContentSizeByTextWidth;
 
         [Header("Toast Fade In/Out Duration :")] [Range(.1f, .8f)] [SerializeField]
         private float fadeDuration = .3f;
@@ -42,6 +45,8 @@ namespace EasyUI.Helpers
         private IEnumerator FadeInOut(float toastDuration, float fadeDuration)
         {
             yield return null;
+            //等 TMP 完成本次文本排版后再按内容刷新底框宽度，否则拿到的是上一句的宽度
+            uiContentSizeByTextWidth.Refresh();
             uiContentVerticalLayoutGroup.CalculateLayoutInputHorizontal();
             uiContentVerticalLayoutGroup.CalculateLayoutInputVertical();
             uiContentVerticalLayoutGroup.SetLayoutHorizontal();

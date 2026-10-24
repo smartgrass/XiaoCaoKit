@@ -51,6 +51,7 @@ namespace XiaoCao
         private Role _friend;
 
         public Role targetRole;
+        private bool HasAddEnemyDeadEvent;
         public float tempActDis = 1.5f;
         public float tempTargetDis;
         public Vector3 idlePos;
@@ -95,6 +96,12 @@ namespace XiaoCao
             if (HasAddAction && owner != null)
             {
                 owner.OnDamageAct -= OnDamageAct;
+            }
+
+            if (HasAddEnemyDeadEvent)
+            {
+                HasAddEnemyDeadEvent = false;
+                GameEvent.RemoveEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
             }
         }
 
@@ -250,11 +257,50 @@ namespace XiaoCao
 
             if (findRole == null)
             {
-                //如果没找到, 则保持原来
-                findRole = last;
+                //如果没找到, 则保持原来(已死亡的目标不再保留)
+                findRole = last != null && !last.IsDie ? last : null;
             }
 
             targetRole = findRole;
+        }
+
+        #endregion
+
+        #region 目标死亡监听
+
+        /// <summary>
+        /// 敌人死亡事件: 死亡的正是当前目标时立即重新索敌
+        /// </summary>
+        private void OnEnemyDeadEvent(int deadId)
+        {
+            if (targetRole == null || targetRole.id != deadId)
+            {
+                return;
+            }
+
+            ReSearchTarget();
+        }
+
+        /// <summary>
+        /// 立即重新索敌: 先清空已死亡的目标, 再按当前身份重新搜索一次
+        /// </summary>
+        private void ReSearchTarget()
+        {
+            targetRole = null;
+            searchTimer = 0;
+
+            //友军优先接着打玩家长时间攻击的那个敌人
+            Role last = null;
+            if (IsFriendRole && _friend != null)
+            {
+                Role lastEnemy = _friend.data_R.lastEnemy;
+                if (lastEnemy != null && !lastEnemy.IsDie)
+                {
+                    last = lastEnemy;
+                }
+            }
+
+            OnSearchTarget(last);
         }
 
         #endregion
@@ -413,9 +459,11 @@ namespace XiaoCao
                     TargetStopDistance = 2f;
                 }
 
-                if (_friend.data_R.lastEnemy != null)
+                //只接管还活着的目标, 已死亡的交给死亡回调去重新索敌
+                Role lastEnemy = _friend.data_R.lastEnemy;
+                if (lastEnemy != null && !lastEnemy.IsDie)
                 {
-                    targetRole = _friend.data_R.lastEnemy;
+                    targetRole = lastEnemy;
                 }
             }
         }
@@ -428,6 +476,13 @@ namespace XiaoCao
             _friendState = FriendState.Follow;
             owner.RoleIdentityType = RoleIdentityType.PlayerFriend;
             localPlayer.playerData.AddFriend(owner);
+            //友军只在转身份时订阅一次敌人死亡事件, 之后换目标无需重绑
+            if (!HasAddEnemyDeadEvent)
+            {
+                HasAddEnemyDeadEvent = true;
+                GameEvent.AddEventListener<int>(EGameEvent.EnemyDeadEvent.ToInt(), OnEnemyDeadEvent);
+            }
+
             GameEvent.Send<int>(EGameEvent.AddFriend.ToInt(), owner.id);
         }
     }

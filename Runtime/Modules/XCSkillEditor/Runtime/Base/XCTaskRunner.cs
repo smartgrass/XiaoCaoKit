@@ -212,6 +212,9 @@ namespace XiaoCao
         public int entityId;
         public string skillId;  //如100
 
+        //释放技能时使用的技能等级(由调用方在构建 TaskInfo 时写入, 默认 1 级)
+        public int skillLevel = 1;
+
         //从第几帧开始执行(0 = 从头开始)
         public float startFrame;
 

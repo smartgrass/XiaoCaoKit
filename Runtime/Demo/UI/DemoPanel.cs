@@ -3,6 +3,7 @@
 using cfg;
 using TMPro;
 using XiaoCao;
+using XiaoCao.UI;
 using Debug = UnityEngine.Debug;
 using Toggle = UnityEngine.UI.Toggle;
 
@@ -21,7 +22,7 @@ public class DemoPanel : SubPanel
             AddMobileInput();
         }
 
-        AddUnlockAllLevelBtn();
+        AddDebugBtns();
     }
 
 
@@ -61,23 +62,41 @@ public class DemoPanel : SubPanel
         skinDrop.SetValueWithoutNotify(0);
     }
 
-    private void AddUnlockAllLevelBtn()
+    /// <summary>
+    /// 调试按钮一行: 解锁全部关卡 / 击杀敌人 / 解锁全部技能。
+    /// </summary>
+    private void AddDebugBtns()
     {
-        AddButton(LocalizeKey.UnlockAllLevel, () =>
+        AddButton(LocalizeKey.UnlockAllLevel, OnUnlockAllLevel,
+            LocalizeKey.KillEnemyDebug, OnKillAllEnemy,
+            LocalizeKey.UnlockAllSkill, OnUnlockAllSkill);
+    }
+
+    private void OnUnlockAllLevel()
+    {
+        GameDebugTool.UnlockAllLevel(GameAllData.playerSaveData);
+        SaveMgr.SaveData(GameAllData.playerSaveData);
+    }
+
+    private void OnKillAllEnemy()
+    {
+        foreach (var role in RoleMgr.Inst.roleDic.Values)
         {
-            GameDebugTool.UnlockAllLevel(GameAllData.playerSaveData);
-            SaveMgr.SaveData(GameAllData.playerSaveData);
-        },
-        LocalizeKey.KillEnemyDebug, () =>
-        {
-            foreach (var role in RoleMgr.Inst.roleDic.Values)
+            if (!role.IsPlayer && role.Enable && !role.IsDie && role.IsAiOn)
             {
-                if (!role.IsPlayer && role.Enable && !role.IsDie && role.IsAiOn)
-                {
-                    role.OnDie(new AtkInfo());
-                }
+                role.OnDie(new AtkInfo());
             }
-        });
+        }
+    }
+
+    /// <summary>
+    /// 解锁全部技能并写入存档, 再通知技能界面刷新格子状态。
+    /// </summary>
+    private void OnUnlockAllSkill()
+    {
+        GameDebugTool.UnlockAllSkill(GameAllData.playerSaveData);
+        SaveMgr.SaveData(GameAllData.playerSaveData);
+        UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SkillChange);
     }
 
 

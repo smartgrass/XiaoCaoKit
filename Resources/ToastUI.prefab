@@ -120,6 +120,7 @@ MonoBehaviour:
   uiCanvasGroup: {fileID: 225432418422502172}
   uiContentVerticalLayoutGroup: {fileID: 114027073042206576}
   uiText: {fileID: 2571014015276236681}
+  uiContentSizeByTextWidth: {fileID: 6008853797764859281}
   fadeDuration: 0.15
   textColors:
   - {r: 1, g: 0.9843137, b: 0.53333336, a: 1}
@@ -233,6 +234,7 @@ GameObject:
   - component: {fileID: 492541114014195476}
   - component: {fileID: 1486445829314442335}
   - component: {fileID: 1910757732513440691}
+  - component: {fileID: 6008853797764859281}
   m_Layer: 0
   m_Name: bg
   m_TagString: Untagged
@@ -258,7 +260,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 458.51257, y: 60.3972}
+  m_SizeDelta: {x: 420, y: 60.3972}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1486445829314442335
 CanvasRenderer:
@@ -298,6 +300,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6008853797764859281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1604142740367263727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277e025fca23c674fa86f865d5876bde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: XiaoCao::XiaoCao.ControlUISizeByTextWidth
+  isUpdateUI: 0
+  text: {fileID: 2571014015276236681}
+  target: {fileID: 492541114014195476}
+  extraWidth: 120
+  minWidth: 420
+  maxWidth: 800
 --- !u!1 &3541970972496247109
 GameObject:
   m_ObjectHideFlags: 0
@@ -363,10 +383,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Tip:123456789
+  m_text: Tip:12345678911
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ec8d34b4df396ed439906a89885bedd7, type: 2}
-  m_sharedMaterial: {fileID: -2414000189803972738, guid: ec8d34b4df396ed439906a89885bedd7, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 35c3a0d6d954a0e4b92efdc5fab4a242, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

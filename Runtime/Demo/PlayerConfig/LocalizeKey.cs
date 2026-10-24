@@ -75,6 +75,7 @@ namespace XiaoCao
 
 
         public static string UnlockAllLevel = "UnlockAllLevel";
+        public static string UnlockAllSkill = "UnlockAllSkill"; //解锁全部技能
         public static string KillEnemyDebug = "KillEnemyDebug";
 
         #region Task 任务系统
