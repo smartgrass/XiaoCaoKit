@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Test_Shadow_Body : MonoBehaviour
 {
+    #if UNITY_EDITOR
     Transform tempTransfrom;
     // 玩家预制体的引用
     public GameObject playerPrefab;
@@ -81,4 +82,5 @@ public class Test_Shadow_Body : MonoBehaviour
             }
         }
     }
+    #endif
 }
