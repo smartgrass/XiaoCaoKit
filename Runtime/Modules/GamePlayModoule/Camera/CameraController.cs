@@ -78,7 +78,8 @@ namespace XiaoCao
 
         public bool IsRunning => GameDataCommon.Current.gameState == GameState.Running;
 
-        [OnValueChanged(nameof(TurnMode))] [SerializeField]
+        [OnValueChanged(nameof(TurnMode))]
+        [SerializeField]
         private CameraMode _mode;
 
         private bool isInited = false;
@@ -137,8 +138,8 @@ namespace XiaoCao
         /// </summary>
         private float GetSettingCamDistance()
         {
-            float offset = Mathf.Clamp(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.CameraDistance, 0f), -1f, 1f);
-            return Mathf.Lerp(setting_topDown.minCamDistance, setting_topDown.maxCamDistance, (offset + 1f) * 0.5f);
+            float offset = ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.CameraDistance, 0f);
+            return MathTool.ValueMapping(offset, -1, 1.5f, setting_topDown.minCamDistance, setting_topDown.maxCamDistance);
         }
 
         public void OnUpdate()
@@ -175,7 +176,7 @@ namespace XiaoCao
         private RaycastHit[] _raycastHits = new RaycastHit[8];
 
         private List<Material> _materialList = new List<Material>();
-        
+
         private void TransparentObjects()
         {
             if (!CheckHasPlayer())
@@ -222,7 +223,7 @@ namespace XiaoCao
                 player0 = GameDataCommon.LocalPlayer;
             }
 
-            return player0!=null;
+            return player0 != null;
         }
 
         public void OnFixedUpdate()
@@ -237,7 +238,7 @@ namespace XiaoCao
                 {
                     TopDownFixedUpdate();
                 }
-                            
+
                 if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
                 {
                     TransparentObjects();
@@ -285,7 +286,7 @@ namespace XiaoCao
         public void CheckPlayerLockEnemy()
         {
             bool isAutoLockEnmey = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
-            
+
             player0 = GameDataCommon.LocalPlayer;
 
             //暂时夺取控制
@@ -520,7 +521,7 @@ namespace XiaoCao
         public float farAddAngleX = 15;
         public float camDistance = 7.5f;
         public float minCamDistance = 2.3f;
-        public float maxCamDistance = 12f;
+        public float maxCamDistance = 11f;
         public float aimLerp = 0.1f;
         public float smoothTime = 0.5f;
         [XCLabel("安全角度范围")] public float aimSafeAngle = 5;

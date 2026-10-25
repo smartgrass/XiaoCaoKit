@@ -49,7 +49,7 @@ namespace XiaoCaoEditor
         public const string XCFindWindow = "XiaoCao/查询面板";
         public const string XCAnimModifyWindow ="XiaoCao/XCAnimModifyWindow";
         public const string XCAnimSpeedBakeWindow ="XiaoCao/动画速度曲线烘焙";
-        public const string XCAnimPoseBreatheWindow ="XiaoCao/给姿势加呼吸";
+        public const string XCAnimBlendWindow ="XiaoCao/动画混合";
 
         public const string ObjectsWindow = "XiaoCao/对象收藏夹";
         public const string CheckPackage = "XiaoCao/检查Package"; //XCToolBarMenu.CheckAndInstallPackage
