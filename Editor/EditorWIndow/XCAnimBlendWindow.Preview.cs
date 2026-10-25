@@ -216,7 +216,8 @@ namespace AssetEditor.Editor
                 _previewClip = null;
             }
 
-            if (clipA == null || clipB == null || clipA == clipB)
+            //只给 A 时是"只叠加"模式,照样能预览
+            if (clipA == null || (clipB != null && clipA == clipB))
             {
                 return;
             }
@@ -253,6 +254,18 @@ namespace AssetEditor.Editor
                 hash = hash * 31 + targetLength.GetHashCode();
                 hash = hash * 31 + sampleRate.GetHashCode();
                 hash = hash * 31 + (loopTime ? 1 : 0);
+                //叠加列表:条数与每条的部位/角度都要算进去,否则改列表预览不会刷新
+                hash = hash * 31 + (offsets != null ? offsets.Count : 0);
+                if (offsets != null)
+                {
+                    for (int i = 0; i < offsets.Count; i++)
+                    {
+                        OffsetItem item = offsets[i];
+                        hash = hash * 31 + (item != null ? (int)item.parts : 0);
+                        hash = hash * 31 + (item != null ? item.angles.GetHashCode() : 0);
+                    }
+                }
+
                 return hash;
             }
         }
@@ -333,9 +346,12 @@ namespace AssetEditor.Editor
                 return;
             }
 
+            //先采起始帧拿到根位移原点,再采当前帧并减掉它:
+            //这样模型不会越走越远,同时又能看出根节点/胯(RootT)混合或叠加出来的位移变化
+            _previewClip.SampleAnimation(_previewInstance, 0f);
+            Vector3 rootOrigin = _previewInstance.transform.position;
             _previewClip.SampleAnimation(_previewInstance, Mathf.Clamp(_previewTime, 0f, _previewClip.length));
-            //采样会带出根位移,预览时把模型钉回原点,避免越走越远
-            _previewInstance.transform.position = Vector3.zero;
+            _previewInstance.transform.position -= rootOrigin;
         }
 
         /// <summary>按当前角度/距离摆相机</summary>

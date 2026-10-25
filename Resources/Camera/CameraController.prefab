@@ -150,17 +150,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vcam_topDown: {fileID: 7326691596880390076}
-  data3Rd:
+  dataCommon:
     TopClamp: 45
     BottomClamp: -15
+    screenXY: {x: 0.5, y: 0.7}
   dataHome:
     defaultAngle: {x: 15, y: 0}
+    screenXY: {x: 0.5, y: 0.78}
   setting_topDown:
     defaultAngle: {x: 16, y: 0}
     stopAngleX: 10
     farAddAngleX: 15
     camDistance: 6.5
-    minCamDistance: 2.3
+    minCamDistance: 1.5
+    maxCamDistance: 10
     aimLerp: 0.7
     smoothTime: 0.5
     aimSafeAngle: 15
