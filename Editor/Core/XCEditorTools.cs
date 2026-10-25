@@ -57,6 +57,7 @@ namespace XiaoCaoEditor
         public const string AddAnimParamWindow = "XiaoCao/AddAnimParamWindow";
         public const string PlayerSaveDataWindow = "XiaoCao/玩家存档面板";
         public const string TestValueEditorWindow = "XiaoCao/数值测试面板";
+        public const string UIAnchorAdapter = "XiaoCao/UI/锚点适配工具";
         
 
         //其他

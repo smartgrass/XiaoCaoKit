@@ -160,7 +160,9 @@ namespace XiaoCao
             {
                 return;
             }
-            if(RoleIdentityType == RoleIdentityType.Enemy)
+            //这里按 RoleType 判断: 玩家身体是在 Init 里创建的, 那时 RoleIdentityType 还没赋值(默认 Enemy),
+            //用它判断会导致玩家首次创建身体时直接 return, 换武器永远不生效
+            if (RoleType == RoleType.Enemy)
             {
                 return;
             }

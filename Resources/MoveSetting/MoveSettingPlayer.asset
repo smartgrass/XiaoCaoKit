@@ -18,11 +18,10 @@ MonoBehaviour:
   backMoveSpeedMult: 0.5
   moveSmooth: 0.04
   rotationLerp: 0.4
-  angleSpeed: 10
   g: -73.04
   GOnGroundMult: 0.8
   MaxGOnGroundMult: 4
-  idleValue: 0.85
+  idleValue: 0.75
   fightIdleValue: 0
   weight: 1
   CamFollewOffset: {x: 0, y: 0.83, z: 0}

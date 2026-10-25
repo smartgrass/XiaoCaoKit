@@ -20,6 +20,12 @@ namespace XiaoCao
     ///<see cref="LocalizeMgr"/>
     public class ConfigMgr : Singleton<ConfigMgr>, IClearCache
     {
+        /// <summary>默认包在 main.ini 里的段名，随包资源(默认皮肤等)登记在这里</summary>
+        public const string DefaultPackageSection = "DefaultPackage";
+
+        /// <summary>默认皮肤键，GetSkinName(0) 固定返回它</summary>
+        public const string DefaultSkinKey = "Role_0";
+
         #region public
 
         //在配置加载前加载 需要static
@@ -128,22 +134,47 @@ namespace XiaoCao
         private void GetSkinList()
         {
             List<string> list = new List<string>();
-            list.Add("Body_Skin_0");
+            // 首个位置放默认皮肤，GetSkinName(0) 固定返回它
+            list.Add(DefaultSkinKey);
+
+            // [DefaultPackage] 段是随包资源，它的第一个键(Role_0)就是默认皮肤，跳过避免重复
+            AddIniSkinKeys(list, DefaultPackageSection, true);
             foreach (IniSection section in MainCfg.SectionList)
             {
                 if (section.SectionName.StartsWith("Mod"))
                 {
-                    foreach (var key in section.Dic.Keys)
-                    {
-                        if (key.StartsWith("Role") || key.StartsWith("E_"))
-                        {
-                            list.Add(key);
-                        }
-                    }
+                    AddIniSkinKeys(list, section.SectionName, false);
                 }
             }
 
             SkinList = list;
+        }
+
+        /// <summary>
+        /// 收集 ini 段里的 角色/敌人 键，skipDefault 时跳过默认皮肤（避免与 GetSkinName(0) 重复）
+        /// </summary>
+        private void AddIniSkinKeys(List<string> list, string sectionName, bool skipDefault)
+        {
+            var section = MainCfg.GetSection(sectionName);
+            if (section == null)
+            {
+                return;
+            }
+
+            foreach (var key in section.Dic.Keys)
+            {
+                if (!key.StartsWith("Role") && !key.StartsWith("E_"))
+                {
+                    continue;
+                }
+
+                if (skipDefault && key == DefaultSkinKey)
+                {
+                    continue;
+                }
+
+                list.Add(key);
+            }
         }
 
         private void GetTestEnemyList()
@@ -171,7 +202,7 @@ namespace XiaoCao
         {
             if (index == 0)
             {
-                return "Role_0";
+                return DefaultSkinKey;
             }
 
             return SkinList[index % SkinList.Count];

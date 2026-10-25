@@ -30,7 +30,18 @@ public class BasicSettingPanel : SubPanel
         var anglePowerSlider = AddSlider(LocalizeKey.AnglePower, OnSliderAnglePower, new Vector2(0, 1f));
         anglePowerSlider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.AnglePower, 0.5f));
 
+        //相机距离: -1最近, 0默认, 1最远, 由 CameraController.TurnMode 映射到实际距离
+        var camDistanceSlider = AddSlider(LocalizeKey.CameraDistance, OnSliderCamDistance, new Vector2(-1f, 1f));
+        camDistanceSlider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.CameraDistance, 0f));
+
         //toggle3 = AddToggle(LocalizeKey.MouseView, OnToggleMouseView); 
+    }
+
+    private void OnSliderCamDistance(float num)
+    {
+        ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.CameraDistance, num);
+        //调节过程中同步改相机距离, 场景里没有相机时内部自动跳过
+        CameraMgr.ApplySettingCamDistance();
     }
 
     private void OnSliderAnglePower(float num)

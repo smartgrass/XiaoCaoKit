@@ -31,6 +31,7 @@ namespace XiaoCao
         public static string BuildTime = "BuildTime";
         public static string SwapCameraSpeed = "SwapCameraSpeed";
         public static string AnglePower = "AnglePower";
+        public static string CameraDistance = "CameraDistance"; //相机距离(-1~1, 0为默认)
         public static string IsExitLevel = "IsExitLevel";
         public static string IsBackLauncher = "IsBackLauncher";
         public static string LevelFinish = "LevelFinish";//Map完成使用

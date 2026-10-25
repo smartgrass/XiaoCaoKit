@@ -167,17 +167,36 @@ public class ResMgr
 
     public static async UniTask InitYooAssetAll()
     {
+        var swAll = Stopwatch.StartNew();
         ResMgr.InitYooAsset();
         ShortKeyDic.Clear();
-        var task1 = ResMgr.InitDefaultPackage();
-        var task2 = ResMgr.InitRawPackage();
-        var task3 = ResMgr.InitExtraPackage();
+        var task1 = TimeTask(nameof(InitDefaultPackage), ResMgr.InitDefaultPackage());
+        var task2 = TimeTask(nameof(InitRawPackage), ResMgr.InitRawPackage());
+        var task3 = TimeTask(nameof(InitExtraPackage), ResMgr.InitExtraPackage());
         //使用并行任务,相比同步快个300ms
         //task3大概需要4s
         await UniTask.WhenAll(task1, task2);
         IsLoadBaseFinish = true;
         await UniTask.WhenAll(task3);
         IsLoadFinish = true;
+        Debug.Log($"--- time InitYooAssetAll total {swAll.ElapsedMilliseconds}ms");
+    }
+
+    /// <summary>
+    /// 记录单个初始化任务的耗时, 用于定位资源初始化瓶颈
+    /// </summary>
+    private static async UniTask TimeTask(string name, UniTask task)
+    {
+        var sw = Stopwatch.StartNew();
+        await task;
+        Debug.Log($"--- time {name} {sw.ElapsedMilliseconds}ms");
+    }
+
+    private static async UniTask TimeTask(string name, Task task)
+    {
+        var sw = Stopwatch.StartNew();
+        await task;
+        Debug.Log($"--- time {name} {sw.ElapsedMilliseconds}ms");
     }
 
     public static void InitYooAsset()
@@ -220,6 +239,9 @@ public class ResMgr
         }
 
         await UpdatePackage(package, initOperation);
+
+        // 默认皮肤直接放在默认包里，用 main.ini 的 [DefaultPackage] 段登记短键
+        RegisterShortKeys(package, ConfigMgr.DefaultPackageSection);
     }
 
 
@@ -248,27 +270,22 @@ public class ResMgr
                 options.CacheFileSystemParameters = FileSystemParameters.CreateDefaultSandboxFileSystemParameters(remoteService);
                 InitializePackageOperation initOperation = package.InitializePackageAsync(options);
 
-                await UpdatePackage(package, initOperation);
+                await TimeTask($"{packageName} init", UpdatePackage(package, initOperation));
 
                 // Mod 包是纯远端包(本地 file://)，而项目多数资源走同步加载，
                 // 同步加载不会触发下载，所以初始化后先把内容全部拉进沙箱缓存
                 var downloader = package.CreateResourceDownloader(new ResourceDownloaderOptions(8, 3));
+                var swDownload = Stopwatch.StartNew();
                 downloader.StartDownload();
                 await downloader;
+                Debug.Log($"--- time {packageName} download {swDownload.ElapsedMilliseconds}ms ({downloader.TotalDownloadCount} files)");
                 if (downloader.Status != EOperationStatus.Succeeded)
                 {
                     Debug.LogError($"--- 下载 Mod 包失败 {packageName}: {downloader.Error}");
                     continue;
                 }
 
-                foreach (var kv in section.Dic)
-                {
-                    ShortKeyDic[kv.Key] = new ShortKeyCache()
-                    {
-                        package = package,
-                        path = kv.Value
-                    };
-                }
+                RegisterShortKeys(package, packageName);
             }
         }
     }
@@ -330,6 +347,28 @@ public class ResMgr
         await manifestOperation;
 
         Debug.Log($"--- InitPackageEnd {package.PackageName} {packageVersion}");
+    }
+
+    /// <summary>
+    /// 把 main.ini 指定段里的 键=资源路径 登记为短键，供 TryShorKeyInst 使用
+    /// 默认包用 [DefaultPackage] 段，Mod 包用各自的 [Mod_xxx] 段
+    /// </summary>
+    private static void RegisterShortKeys(ResourcePackage package, string sectionName)
+    {
+        IniSection section = ConfigMgr.Inst.MainCfg.GetSection(sectionName);
+        if (section == null)
+        {
+            return;
+        }
+
+        foreach (var kv in section.Dic)
+        {
+            ShortKeyDic[kv.Key] = new ShortKeyCache()
+            {
+                package = package,
+                path = kv.Value
+            };
+        }
     }
 
     private static ResourcePackage GetOrCreatPackage(string packageName)

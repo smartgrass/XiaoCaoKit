@@ -7,6 +7,11 @@ namespace XiaoCao
         public static Transform FindWeapon(Animator animator)
         {
             var hand = WeaponHelper.FindHand(animator);
+            //非 Humanoid 的 Mod 模型取不到手部骨骼, 这里不判空会直接空引用, 打断角色初始化
+            if (hand == null)
+            {
+                return null;
+            }
             var weapon = hand.Find(Role.WeaponPointName);
             return weapon;
         }

@@ -101,6 +101,9 @@ namespace XiaoCao
             TurnMode();
         }
 
+        /// <summary>
+        /// 切换视角模式, 同时按本地设置里的相机距离偏移刷新相机距离
+        /// </summary>
         void TurnMode()
         {
             if (_mode == CameraMode.ThirdPerson)
@@ -118,7 +121,24 @@ namespace XiaoCao
                 CFT.m_ScreenY = dataCommon.screenXY.y;
             }
 
-            CFT.m_CameraDistance = setting_topDown.camDistance;
+            ApplySettingCamDistance();
+        }
+
+        /// <summary>
+        /// 按本地设置里的相机距离偏移刷新相机距离, 供设置面板调节时实时调用
+        /// </summary>
+        public void ApplySettingCamDistance()
+        {
+            CFT.m_CameraDistance = GetSettingCamDistance();
+        }
+
+        /// <summary>
+        /// 取本地设置里的相机距离偏移(-1~1), 线性映射到 minCamDistance~maxCamDistance
+        /// </summary>
+        private float GetSettingCamDistance()
+        {
+            float offset = Mathf.Clamp(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.CameraDistance, 0f), -1f, 1f);
+            return Mathf.Lerp(setting_topDown.minCamDistance, setting_topDown.maxCamDistance, (offset + 1f) * 0.5f);
         }
 
         public void OnUpdate()
@@ -142,7 +162,7 @@ namespace XiaoCao
                     if (!Input.mouseScrollDelta.IsZore())
                     {
                         var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
-                            setting_topDown.minCamDistance, setting_topDown.camDistance + 6);
+                            setting_topDown.minCamDistance, setting_topDown.maxCamDistance);
                         CFT.m_CameraDistance = distance;
                     }
                 }
@@ -499,7 +519,8 @@ namespace XiaoCao
         public float stopAngleX = 5;
         public float farAddAngleX = 15;
         public float camDistance = 7.5f;
-        public float minCamDistance = 1;
+        public float minCamDistance = 2.3f;
+        public float maxCamDistance = 12f;
         public float aimLerp = 0.1f;
         public float smoothTime = 0.5f;
         [XCLabel("安全角度范围")] public float aimSafeAngle = 5;

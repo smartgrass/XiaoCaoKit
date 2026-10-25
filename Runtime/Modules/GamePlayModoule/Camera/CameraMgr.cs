@@ -70,6 +70,20 @@ namespace XiaoCao
             _main = Camera.main;
         }
 
+        /// <summary>
+        /// 按本地设置里的相机距离刷新当前相机, 场景中没有相机实例时直接跳过
+        /// </summary>
+        public static void ApplySettingCamDistance()
+        {
+            CameraMgr mgr = _instance;
+            if (mgr == null || mgr.controller == null)
+            {
+                return;
+            }
+
+            mgr.controller.ApplySettingCamDistance();
+        }
+
         private CinemachineVirtualCamera GetCurVirtualCamera()
         {
             CinemachineBrain cb = CinemachineCore.Instance.GetActiveBrain(0);
@@ -144,6 +158,9 @@ namespace XiaoCao
         public void OnFixedUpdate();
 
         void ShakeCamera(float shakeTime);
+
+        /// <summary>按本地设置里的相机距离刷新相机距离</summary>
+        void ApplySettingCamDistance();
 
     }
 
