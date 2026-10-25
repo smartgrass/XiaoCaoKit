@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace XiaoCaoKit.UI
 {
     /// <summary>
     /// 面板横向适配: 屏幕比设计尺寸更宽时保持设计宽度并水平居中不拉伸;
     /// 屏幕更"窄高"时整体缩小 scale, 让面板宽度正好铺满屏幕。
-    /// 挂在面板根节点上, 由它改写自身的 RectTransform 与 localScale。
+    /// 挂在面板根节点上, 由它改写自身的 RectTransform 与 localScale;
+    /// fitRects 里列出的节点会同步套用同一套结果。
     /// </summary>
     public class UIPanelAspectFit : MonoBehaviour
     {
@@ -16,6 +18,11 @@ namespace XiaoCaoKit.UI
         [Header("宽度不足时")]
         [Tooltip("勾选: 缩小后把高度补满屏幕; 不勾: 高度等比缩小, 上下留空")]
         public bool fillHeight = false;
+
+        [Header("同步适配的节点")]
+        [Tooltip("跟着面板套用同一套适配结果的 RectTransform(宽高/居中/缩放都和面板一致)。" +
+                 "填同级节点, 不要填面板自己的子节点, 否则缩放会叠加两次")]
+        public List<RectTransform> fitRects = new List<RectTransform>();
 
         private RectTransform _rect;
         private Vector2 _lastParentSize;
@@ -91,15 +98,32 @@ namespace XiaoCaoKit.UI
                 }
             }
 
-            //统一用"中心锚点 + 固定尺寸", 宽屏时宽度就是设计宽度并居中, 高度始终贴满
-            _rect.anchorMin = new Vector2(0.5f, 0.5f);
-            _rect.anchorMax = new Vector2(0.5f, 0.5f);
-            _rect.pivot = new Vector2(0.5f, 0.5f);
-            _rect.anchoredPosition = Vector2.zero;
-            _rect.sizeDelta = new Vector2(designSize.x, height);
-            _rect.localScale = new Vector3(scale, scale, 1f);
+            //面板自身先套用适配结果, 再把同一套结果同步给列表里的节点
+            ApplyFit(_rect, height, scale);
+
+            for (int i = 0; i < fitRects.Count; i++)
+            {
+                RectTransform target = fitRects[i];
+                if (target)
+                {
+                    ApplyFit(target, height, scale);
+                }
+            }
 
             _lastParentSize = parentSize;
+        }
+
+        /// <summary>
+        /// 把算好的适配结果写到指定节点: 统一用"中心锚点 + 固定尺寸", 宽屏时宽度就是设计宽度并居中, 高度始终贴满。
+        /// </summary>
+        private void ApplyFit(RectTransform rect, float height, float scale)
+        {
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(designSize.x, height);
+            rect.localScale = new Vector3(scale, scale, 1f);
         }
     }
 }

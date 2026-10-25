@@ -29,8 +29,6 @@ namespace XiaoCao.UI
             set => curIndex = value;
         }
 
-        [SerializeField] private BtnScaleTween scaleTween;
-
         private void Awake()
         {
             btn.onClick.AddListener(() => { onClick?.Invoke(); });
@@ -38,8 +36,6 @@ namespace XiaoCao.UI
 
         private void OnEnable()
         {
-            EnsureScaleTween();
-            scaleTween?.SyncInteractableState();
             CacheStarImages();
         }
 
@@ -62,7 +58,6 @@ namespace XiaoCao.UI
             UpdateOutlineState(passState);
             UpdatePassTimeText(passState);
             UpdateStarState(passState);
-            scaleTween?.SyncInteractableState();
         }
 
         private LevelPassState GetPassState(int chapter, int index)
@@ -197,15 +192,6 @@ namespace XiaoCao.UI
             }
 
             return latestUnlockedLevel == index;
-        }
-
-        private void EnsureScaleTween()
-        {
-            scaleTween ??= GetComponent<BtnScaleTween>();
-            if (scaleTween == null)
-            {
-                scaleTween = gameObject.AddComponent<BtnScaleTween>();
-            }
         }
     }
 }

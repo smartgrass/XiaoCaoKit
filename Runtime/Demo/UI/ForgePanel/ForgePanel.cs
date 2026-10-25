@@ -41,6 +41,12 @@ namespace XiaoCao.UI
 
         private void Awake()
         {
+            //UIMgr 还没初始化完成时(本面板挂在 UIMgr 预制体上)不初始化, 首次 Show 会补上
+            if (!UIMgr.IsInited)
+            {
+                return;
+            }
+
             Init();
         }
 

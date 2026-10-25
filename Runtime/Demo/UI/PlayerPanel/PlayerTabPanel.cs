@@ -33,6 +33,7 @@ namespace XiaoCao.UI
             }
 
             base.Init();
+            gameObject.SetActive(false);
 
 
             for (var index = 0; index < groups.Count; index++)
@@ -42,10 +43,6 @@ namespace XiaoCao.UI
                 subPanel.gameObject.SetActive(index == 0);
             }
             SwitchPanel(groups[0].panelName);
-            if (GameDataCommon.Current.isFighting)
-            {
-                gameObject.SetActive(false);
-            }
         }
 
         [Button]

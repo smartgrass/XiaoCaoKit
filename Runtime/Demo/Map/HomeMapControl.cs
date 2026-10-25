@@ -4,7 +4,11 @@ using XiaoCao.UI;
 
 namespace XiaoCao
 {
-    public class HomeMapControl : MonoBehaviour
+    /// <summary>
+    /// 主城地图控制: 继承 <see cref="GameStartMono"/>, 等游戏状态进入 Running 后再挂载新手引导。
+    /// 不能直接写在 Start 里, 否则会抢在启动流程(加载地图/创建玩家/初始化 UIMgr)之前执行。
+    /// </summary>
+    public class HomeMapControl : GameStartMono
     {
         public Transform startPoint;
 
@@ -16,27 +20,41 @@ namespace XiaoCao
         private const float CreateRetryInterval = 0.5f;
         private const int CreateRetryCount = 6;
 
-        private void Start()
+        public override void OnGameStart()
         {
+            //Pause -> Running 会再次触发, 只跑一次
+            if (isGameStarted)
+            {
+                return;
+            }
+
+            base.OnGameStart();
+
             //主城加载后挂载新手引导, 引导根节点随场景一起销毁
             StartCoroutine(CreateGuideWhenReady());
         }
 
         private IEnumerator CreateGuideWhenReady()
         {
-            //等一帧, 避免在场景 Awake 阶段提前创建 UIMgr
+            //等一帧, 让启动流程把 UIMgr 等基础对象拉起来
             yield return null;
 
-            //1.存档与 UIMgr 就绪
+            //1.存档与 UIMgr 就绪: UIMgr.Inst 会自动创建实例, 这里只能判断"是否已存在"
             float time = 0f;
             while (time < DataReadyTimeout)
             {
-                if (GameAllData.playerSaveData != null && UIMgr.Inst != null && UIMgr.Inst.topCanvas != null)
+                if (GameAllData.playerSaveData != null && UIMgr.HasInst && UIMgr.Inst.topCanvas != null)
                 {
                     break;
                 }
                 time += Time.unscaledDeltaTime;
                 yield return null;
+            }
+
+            if (GameAllData.playerSaveData == null || !UIMgr.HasInst || UIMgr.Inst.topCanvas == null)
+            {
+                Debuger.LogError("[Guide] 等待存档/UIMgr 就绪超时, 引导未创建");
+                yield break;
             }
 
             //2.资源包(YooAsset)初始化完成: manifest 未激活时 CheckLocationValid 会抛异常

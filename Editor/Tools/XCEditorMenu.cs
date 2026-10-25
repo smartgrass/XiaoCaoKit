@@ -216,69 +216,40 @@ namespace XiaoCaoEditor
         private static void AutoBind(MenuCommand menuCommand)
         {
             Component component = menuCommand.context as Component;
-            var type = component.GetType();
-            //mono类
-            var monoType = typeof(MonoBehaviour);
-            //ui类
-            var uiType = typeof(MaskableGraphic);
-            //按钮类/交互类
-            var selectType = typeof(Selectable);
-            //实体对象类
-            var ObjectType = typeof(Object);
+            var fields = GetFields(component.GetType());
 
-            var fields = GetFields(type);
-
+            Undo.RecordObject(component, "AutoBind");
 
             foreach (var field in fields)
             {
                 Type fieldType = field.FieldType;
 
-                bool isFound = false;
-
-                if (fieldType.IsSubclassOf(uiType) || fieldType.IsSubclassOf(selectType) || fieldType.IsSubclassOf(ObjectType))
+                //只处理 UnityEngine.Object 派生类型(GameObject / 组件 / 资源)
+                if (!typeof(Object).IsAssignableFrom(fieldType))
                 {
-                    //ui 更具名字查找      
-                    Object value = field.GetValue(component) as Object;
-                    if (value == null)
-                    {
-                        Transform tf = component.transform.FindChildEx(field.Name);
-
-                        if (tf)
-                        {
-                            if (field.FieldType == typeof(GameObject))
-                            {
-                                field.SetValue(component, tf.gameObject);
-                            }
-                            else
-                            {
-                                var findComponent = tf.GetComponentInChildren(field.FieldType, true);
-                                field.SetValue(component, findComponent);
-                            }
-                            isFound = true;
-                        }
-                    }
-                    Debug.Log($"--- {field.FieldType} {field.Name}");
+                    continue;
                 }
 
-                // 属于 Mono 查找和赋值
-                if (!isFound && fieldType.IsSubclassOf(monoType))
+                //已经绑过的不覆盖
+                if (field.GetValue(component) as Object)
                 {
-                    object value = field.GetValue(component);
-                    if (value == null)
-                    {
-                        var findComponent = component.transform.GetComponentInChildren(field.FieldType, true);
-
-                        field.SetValue(component, findComponent);
-
-                        Debug.Log($"--- {field.Name} {findComponent}");
-                        isFound = true;
-                    }
+                    continue;
                 }
 
+                Object value = FindValue(component.transform, fieldType, field.Name);
+                if (!value)
+                {
+                    //找不到就保持为空, 不再静默写 null(否则会误以为绑上了)
+                    Debug.LogWarning($"--- AutoBind 未找到 {fieldType.Name} {field.Name}", component);
+                    continue;
+                }
 
+                field.SetValue(component, value);
+                Debug.Log($"--- AutoBind {field.Name} = {value}", component);
             }
 
             EditorUtility.SetDirty(component);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(component);
 
             static List<FieldInfo> GetFields(Type type)
             {
@@ -290,6 +261,40 @@ namespace XiaoCaoEditor
                     type = type.BaseType;
                 }
                 return fields;
+            }
+
+            /// <summary>
+            /// 按"同名字节点 → 自身节点 → 任意子节点"的顺序找引用, 找不到返回 null。
+            /// 自身节点这一档是必需的: CanvasGroup / Image / TMP 这类引用通常就挂在组件所在节点上。
+            /// </summary>
+            static Object FindValue(Transform self, Type fieldType, string fieldName)
+            {
+                Transform named = self.FindChildEx(fieldName);
+
+                if (fieldType == typeof(GameObject))
+                {
+                    return named ? named.gameObject : self.gameObject;
+                }
+
+                //1. 字段名命中的子节点(保留原来的按名字匹配逻辑)
+                if (named)
+                {
+                    Component onNamed = named.GetComponentInChildren(fieldType, true);
+                    if (onNamed)
+                    {
+                        return onNamed;
+                    }
+                }
+
+                //2. 自身节点
+                Component onSelf = self.GetComponent(fieldType);
+                if (onSelf)
+                {
+                    return onSelf;
+                }
+
+                //3. 兜底: 任意子节点
+                return self.GetComponentInChildren(fieldType, true);
             }
         }
 

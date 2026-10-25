@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using XiaoCao;
-
+//调节伤害倍率
 public class Test_BattleDataCmd : GameStartMono
 {
     [SerializeField]

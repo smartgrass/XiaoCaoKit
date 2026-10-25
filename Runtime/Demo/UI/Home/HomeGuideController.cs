@@ -318,7 +318,7 @@ namespace XiaoCao.UI
                 return true;
             }
 
-            if (UIMgr.Inst == null || UIMgr.Inst.topCanvas == null)
+            if (!UIMgr.HasInst || UIMgr.Inst.topCanvas == null)
             {
                 Debuger.LogError("[Guide] UIMgr 未就绪, 引导未创建");
                 return false;
@@ -413,7 +413,7 @@ namespace XiaoCao.UI
 
         private void TickOpenPanel()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null)
             {
                 return;
@@ -439,7 +439,7 @@ namespace XiaoCao.UI
 
         private void TickSkillTab()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null || !panel.IsShowing)
             {
                 //中途退出界面: 收起遮罩, 等玩家重新打开
@@ -472,7 +472,7 @@ namespace XiaoCao.UI
 
         private void TickSkillCell()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null || !panel.IsShowing)
             {
                 HideOverlay();
@@ -517,7 +517,7 @@ namespace XiaoCao.UI
 
         private void TickUpgrade()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null || !panel.IsShowing)
             {
                 HideOverlay();
@@ -550,7 +550,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void TickBack()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null)
             {
                 return;
@@ -601,7 +601,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void TickHintOpenPanel()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null)
             {
                 return;
@@ -630,7 +630,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void TickHintSkillTab()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null)
             {
                 return;
@@ -669,7 +669,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void TickHintSkillCell()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             if (panel == null)
             {
                 return;
@@ -816,7 +816,7 @@ namespace XiaoCao.UI
         /// </summary>
         private void OnUpgradeClick()
         {
-            PlayerTabPanel panel = UIMgr.Inst != null ? UIMgr.Inst.playerPanel : null;
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
             ActiveSkillView view = GetActiveSkillView(panel);
             SkillDetailUI detail = view != null ? view.GetSkillDetailUI() : null;
             if (detail == null || detail.skillId != _targetSkillId)

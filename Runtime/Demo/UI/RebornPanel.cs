@@ -42,7 +42,7 @@ namespace XiaoCao.UI
             gameObject.SetActive(true);
             UIMgr.Inst.PopUIEnable(true, name);
             RefreshRebornBtnState();
-            costText.text = $"<sprite=0>{GameMgr.Inst.GetCurrentRebornCost()}";
+            costText.text = $"<size=46>{"Reborn".ToLocalizeStr()}</size>\n<sprite=0>{GameMgr.Inst.GetCurrentRebornCost()}";
             hasCoinText.text = $"<sprite=0>{PlayerSaveData.LocalSavaData.Coin}";
         }
 
@@ -59,7 +59,7 @@ namespace XiaoCao.UI
 
         private void RefreshRebornBtnState()
         {
-            if (rebornBtn == null || GameMgr.Inst == null)
+            if (rebornBtn == null || !GameMgr.IsOn)
             {
                 return;
             }

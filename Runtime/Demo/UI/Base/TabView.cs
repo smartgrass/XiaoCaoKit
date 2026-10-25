@@ -87,6 +87,13 @@ namespace XiaoCao.UI
 
         public virtual void OnEnable()
         {
+            //UIMgr 还没初始化完成时(本节点挂在 UIMgr 预制体上, 实例化阶段就会被激活)不做初始化,
+            //等 UIMgr.Init 之后再次激活(打开面板)时再初始化
+            if (!UIMgr.IsInited)
+            {
+                return;
+            }
+
             Init();
             if (IsInited)
             {

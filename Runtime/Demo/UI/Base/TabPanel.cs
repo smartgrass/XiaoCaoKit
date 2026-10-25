@@ -92,6 +92,13 @@ public abstract class TabStandardPanel : StandardPanel
 
     public virtual void OnEnable()
     {
+        //UIMgr 还没初始化完成时(本面板挂在 UIMgr 预制体上, 实例化阶段就会被激活)不做初始化,
+        //等 UIMgr.Init 显式调用或面板真正 Show 时再补
+        if (!UIMgr.IsInited)
+        {
+            return;
+        }
+
         Init();
         if (IsInited)
         {

@@ -41,7 +41,12 @@ public class DemoPanel : SubPanel
     {
         UserInputType userInput = isOn ? UserInputType.Touch : UserInputType.Mouse;
         GameSetting.UserInputType = userInput;
-        UIMgr.Inst.OnChangeInputType(userInput);
+        //UIMgr 还在构建(本面板的 OnEnable 就发生在 UIMgr 预制体实例化过程中)时不能反向调用它,
+        //否则会打断创建流程; 这里只记设置, UIMgr.Init 末尾会按 GameSetting.UserInputType 同步一次
+        if (UIMgr.HasInst)
+        {
+            UIMgr.Inst.OnChangeInputType(userInput);
+        }
 #if UNITY_EDITOR
         UnityEditor.EditorPrefs.SetBool(LocalizeKey.MobileInput, isOn);
         Debug.Log($"--- GameSetting.UserInputType {GameSetting.UserInputType}");

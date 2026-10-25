@@ -25,6 +25,7 @@ public class SettingPanel : PrefabsTabPanel
         }
 
         base.Init();
+        gameObject.SetActive(false);
 
         SubPanel mainPanel = AddPanel<BasicSettingPanel>("BasicSetting");
         SubPanel soundPanel = AddPanel<SoundPanel>("Sound");
