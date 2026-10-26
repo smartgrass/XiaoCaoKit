@@ -94,6 +94,10 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         supportHpLv = EditorGUILayout.IntSlider("生存等级", supportHpLv, 1, 5);
         supportSkillLv = EditorGUILayout.IntSlider("技巧等级", supportSkillLv, 1, 5);
 
+        //羁绊等级由三项子等级换算, 玩家侧只看得到这个值
+        int bondLevel = SupportRoleSetting.GetBondLevel(supportAtkLv, supportHpLv, supportSkillLv);
+        EditorGUILayout.LabelField("羁绊等级", $"Lv{bondLevel}");
+
         if (GUILayout.Button("应用养成等级"))
         {
             ApplySupportGrowLevels();

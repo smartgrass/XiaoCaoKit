@@ -27,8 +27,8 @@ namespace XiaoCao
         public string des;
         public float time;
 
-        [NaughtyAttributes.Dropdown(nameof(GetModNameOptions))]
-        public string modName = "Mod_001";
+        [Tooltip("保存 prefab 的输出目录: 从 Project 窗口把文件夹拖进来")]
+        public DefaultAsset outputFolder;
 
         public GameObject model;
         public AnimationClip clip;
@@ -148,10 +148,10 @@ namespace XiaoCao
         }
 
 
-        [NaughtyAttributes.Button("4.保存prefab到Mod文件夹", Line2)]
+        [NaughtyAttributes.Button("4.保存prefab到输出目录", Line2)]
         void SavaPrefabToModeDir()
         {
-            //将model保存到modName目录下,作为Prefab,名字保持不变
+            //将model保存到 outputFolder 目录下,作为Prefab,名字保持不变
             //复制时,如果已存在则先删除旧的prefab
             if (model == null)
             {
@@ -165,13 +165,13 @@ namespace XiaoCao
                 return;
             }
 
-            string modDir = GetModDirPath();
-            if (string.IsNullOrEmpty(modDir))
+            string outputDir = GetOutputDirPath();
+            if (string.IsNullOrEmpty(outputDir))
             {
                 return;
             }
 
-            string prefabPath = $"{modDir}/{model.name}.prefab";
+            string prefabPath = $"{outputDir}/{model.name}.prefab";
             bool isSceneObject = model.scene.IsValid();
             string selfPath = isSceneObject
                 ? PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(model)
@@ -225,47 +225,23 @@ namespace XiaoCao
         }
 
 
-        //modName 支持 "Mod_001" 或 "Assets/Mod_001" 的写法; 找不到时按名字匹配已有目录, 仍然没有则新建
-        private string GetModDirPath()
+        //输出目录由 Inspector 上的 outputFolder 决定(从 Project 窗口拖文件夹进来)
+        private string GetOutputDirPath()
         {
-            string name = modName == null ? string.Empty : modName.Trim().Replace('\\', '/').TrimEnd('/');
-            if (name.Length == 0)
+            if (outputFolder == null)
             {
-                Debug.LogError("--- modName 为空, 无法保存 prefab");
+                Debug.LogError("--- outputFolder 未设置, 请把目标文件夹拖进来");
                 return null;
             }
 
-            string modDir = name.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase) ? name : $"Assets/{name}";
-            if (AssetDatabase.IsValidFolder(modDir))
+            string dir = AssetDatabase.GetAssetPath(outputFolder);
+            if (string.IsNullOrEmpty(dir) || !AssetDatabase.IsValidFolder(dir))
             {
-                return modDir;
-            }
-
-            //容错: Mod001 / mod_001 等写法也能匹配到已有目录
-            string existDir = FindExistModDir(name);
-            if (existDir != null)
-            {
-                Debug.Log($"--- modName {modName} 匹配到已有目录 {existDir}");
-                return existDir;
-            }
-
-            string parentDir = Path.GetDirectoryName(modDir).Replace('\\', '/');
-            if (!AssetDatabase.IsValidFolder(parentDir))
-            {
-                Debug.LogError($"--- 找不到 mod 目录 {modDir}, 父目录 {parentDir} 不存在");
+                Debug.LogError($"--- outputFolder [{dir}] 不是有效目录, 请拖入 Project 窗口里的文件夹");
                 return null;
             }
 
-            AssetDatabase.CreateFolder(parentDir, Path.GetFileName(modDir));
-            AssetDatabase.Refresh();
-            if (!AssetDatabase.IsValidFolder(modDir))
-            {
-                Debug.LogError($"--- 创建 mod 目录失败 {modDir}");
-                return null;
-            }
-
-            Debug.Log($"--- 创建 mod 目录 {modDir}");
-            return modDir;
+            return dir;
         }
 
         private static bool DeleteOldPrefab(string prefabPath)
@@ -285,57 +261,6 @@ namespace XiaoCao
             return false;
         }
 
-        //只匹配 Assets 下的第一层目录, 忽略下划线/横线和大小写差异
-        private static string FindExistModDir(string modName)
-        {
-            string key = NormalizeModName(modName);
-            foreach (string dir in Directory.GetDirectories(Application.dataPath))
-            {
-                string name = Path.GetFileName(dir);
-                if (NormalizeModName(name) == key)
-                {
-                    return $"Assets/{name}";
-                }
-            }
-
-            return null;
-        }
-
-        private static string NormalizeModName(string name)
-        {
-            return name.Replace("_", string.Empty).Replace("-", string.Empty).Trim().ToLowerInvariant();
-        }
-
-        //Inspector 下拉框, 直接选择 Assets 下已有的 Mod 目录
-        private NaughtyAttributes.DropdownList<string> GetModNameOptions()
-        {
-            var list = new NaughtyAttributes.DropdownList<string>();
-            string current = modName == null ? string.Empty : modName.Trim();
-            bool hasCurrent = false;
-
-            foreach (string dir in Directory.GetDirectories(Application.dataPath))
-            {
-                string name = Path.GetFileName(dir);
-                if (!name.StartsWith("Mod", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (string.Equals(name, current, StringComparison.OrdinalIgnoreCase))
-                {
-                    hasCurrent = true;
-                }
-
-                list.Add(name, name);
-            }
-
-            if (current.Length > 0 && !hasCurrent)
-            {
-                list.Add($"{current} (没有该目录)", current);
-            }
-
-            return list;
-        }
 
         [NaughtyAttributes.Button("选中武器节点", Line2)]
         void FindHand()

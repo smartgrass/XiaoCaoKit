@@ -16,12 +16,24 @@ namespace XiaoCao.UI
         public GameObject unFightUI;
         public Transform roleList;
 
+        [Tooltip("羁绊等级文本, 只显示换算后的羁绊等级")]
+        public TMP_Text bondsLevelText;
+
+        [Tooltip("羁绊详情按钮, 位于羁绊等级文本下")]
+        public Button bondsShowBtn;
+
+        [Tooltip("羁绊详情界面, 与 UnFight 位置重叠")]
+        public BondsView bondsView;
+
         private PlayerSaveData PlayerSaveData => GameAllData.playerSaveData;
 
         private void Awake()
         {
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.RoleLevelChange, OnRoleLevelChange);
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.BlessingChange, OnRoleLevelChange);
+
+            bondsShowBtn.onClick.AddListener(ShowBondsView);
+            bondsView.CloseAct += HideBondsView;
         }
 
         private void OnDestroy()
@@ -33,6 +45,8 @@ namespace XiaoCao.UI
         public override void OnEnable()
         {
             base.OnEnable();
+            //每次打开角色页都回到主控角色列表视图
+            bondsView.gameObject.SetActive(false);
             UpdateUI();
         }
 
@@ -94,6 +108,7 @@ namespace XiaoCao.UI
             }
 
             ShowPlayerAttr();
+            ShowBondLevel();
 
             //UnFight 属于 Home 场景的内容, 关卡内隐藏主控角色列表
             if (GameDataCommon.Current.gameStage == EGameStage.Home)
@@ -132,6 +147,42 @@ namespace XiaoCao.UI
             ConfigMgr.Inst.LocalRoleSetting.selectRole = roleIndex;
             LocalRoleSetting.Save();
             RefreshRoleList();
+        }
+
+        /// <summary>
+        /// 刷新羁绊等级文本: 只展示换算后的羁绊等级, 三项子等级对玩家不可见。
+        /// </summary>
+        private void ShowBondLevel()
+        {
+            int bondLevel = SupportRoleSetting.GetBondLevel();
+            bondsLevelText.text = LocalizeKey.FormatWithArgs(LocalizeKey.BondsLevelShow, bondLevel);
+        }
+
+        /// <summary>
+        /// 打开羁绊详情: 界面与 UnFight 位置重叠, 打开时隐藏主控角色列表。
+        /// </summary>
+        private void ShowBondsView()
+        {
+            unFightUI.SetActive(false);
+            bondsView.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 关闭羁绊详情并恢复主控角色列表(关卡内本来就不显示该区域)。
+        /// </summary>
+        private void HideBondsView()
+        {
+            bondsView.gameObject.SetActive(false);
+            unFightUI.SetActive(GameDataCommon.Current.gameStage == EGameStage.Home);
+        }
+
+        /// <summary>
+        /// 切换子页签时收起羁绊详情, 避免盖在其它页面上。
+        /// </summary>
+        public override void SwitchPanel(string subPanelName)
+        {
+            base.SwitchPanel(subPanelName);
+            HideBondsView();
         }
 
         private void ShowPlayerAttr()

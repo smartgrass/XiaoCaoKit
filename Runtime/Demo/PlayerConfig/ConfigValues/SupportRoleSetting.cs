@@ -10,7 +10,8 @@ namespace XiaoCao
     /// - 生存: 50% -> 100% (线性)
     /// - 技巧: 每级解锁 1 个技能(上限 4 个), 满级后支援使用的技能等级由 1 提升至 2
     /// 三项养成等级存于 <see cref="PlayerSaveData"/>(supportAtkLv/supportHpLv/supportSkillLv),
-    /// 升级方式和浏览界面目前暂未实装, 可通过 PlayerSaveDataWindow 调试修改
+    /// 玩家可见的只有换算后的羁绊等级(见 <see cref="GetBondLevel()"/>), 子等级仅作为计算过程;
+    /// 升级方式暂未实装, 可通过 PlayerSaveDataWindow 调试修改
     /// </summary>
     public static class SupportRoleSetting
     {
@@ -35,6 +36,33 @@ namespace XiaoCao
 
         // 技巧最多解锁的技能数
         public const int MaxUnlockSkillCount = 4;
+
+        /// <summary>羁绊等级上限: 三项养成各到 Lv4(即存档的满级)时为羁绊 Lv9</summary>
+        public const int MaxBondLevel = 9;
+
+        /// <summary>
+        /// 当前羁绊等级: 玩家只能看到这一层数值, 三项子等级只作为换算过程, 不对外展示
+        /// </summary>
+        public static int GetBondLevel()
+        {
+            return GetBondLevel(GetAtkGrowLevel(), GetHpGrowLevel(), GetSkillGrowLevel());
+        }
+
+        /// <summary>
+        /// 羁绊等级换算: 取三项子等级的公共层数, 技巧高出一层时再 +1。
+        /// 即 Lv1=(0,0,0) / Lv2=(0,0,1) / Lv3=(1,1,1) ... Lv9=(4,4,4)
+        /// </summary>
+        public static int GetBondLevel(int atkGrowLevel, int hpGrowLevel, int skillGrowLevel)
+        {
+            // 存档里的养成等级从 1 起算, 先还原成设计文档的 Lv0~Lv4
+            int atk = ClampLevel(atkGrowLevel) - 1;
+            int hp = ClampLevel(hpGrowLevel) - 1;
+            int skill = ClampLevel(skillGrowLevel) - 1;
+
+            int baseLevel = Mathf.Min(Mathf.Min(atk, hp), skill);
+            int bondLevel = 1 + 2 * baseLevel + (skill > baseLevel ? 1 : 0);
+            return Mathf.Clamp(bondLevel, 1, MaxBondLevel);
+        }
 
         /// <summary>攻击养成等级, 读存档; 无存档上下文(编辑器等)时为初始值</summary>
         public static int GetAtkGrowLevel()

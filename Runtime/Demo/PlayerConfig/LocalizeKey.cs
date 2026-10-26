@@ -79,6 +79,17 @@ namespace XiaoCao
         public static string UnlockAllSkill = "UnlockAllSkill"; //解锁全部技能
         public static string KillEnemyDebug = "KillEnemyDebug";
 
+        #region 羁绊(支援角色)
+
+        public static string BondsLevelShow = "BondsLevelShow"; // 羁绊等级: Lv{0}
+        public static string BondsTitleLevel = "BondsTitleLevel"; // 羁绊 Lv{0}
+        public static string BondsEffectAtk = "BondsEffectAtk"; // 获得角色等级的攻击力{0}
+        public static string BondsEffectHp = "BondsEffectHp"; // 获得角色等级的最大生命值{0}
+        public static string BondsEffectSkill = "BondsEffectSkill"; // 解锁{0}个技能
+        public static string BondsEffectSkillLevelUp = "BondsEffectSkillLevelUp"; // 解锁{0}个技能, 技能等级+{1}
+
+        #endregion
+
         #region Task 任务系统
         public static string Task = "Task"; // 任务
         public static string TaskClaim = "TaskClaim"; // 领取
