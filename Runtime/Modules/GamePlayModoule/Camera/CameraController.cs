@@ -281,59 +281,117 @@ namespace XiaoCao
         private float tempSpeed;
         private Player0 player0;
 
+        //AimToDirTarget 抢占用的目标与剩余时间
+        private Transform _aimTarget;
+        private float _aimTimer;
+
+        /// <summary>
+        /// 抢占镜头: 在 aimTime 秒内强制把视角转向 target, 期间 <see cref="CheckPlayerLockEnemy"/> 的索敌与自动回正全部让位,
+        /// 时间到或目标失效后自动恢复原逻辑
+        /// </summary>
+        /// <param name="target">要瞄准的目标</param>
+        /// <param name="aimTime">持续时间(秒), 小于等于 0 表示立即失效</param>
+        public void AimToDirTarget(Transform target, float aimTime)
+        {
+            _aimTarget = target;
+            _aimTimer = aimTime;
+
+            //清掉滑动后的等待, 否则刚设上就被"暂时夺取控制"挡掉
+            autoLookForwardWait = 0;
+        }
+
+        /// <summary>
+        /// 处理 <see cref="AimToDirTarget"/> 的抢占: 有效期内把视角转向目标并返回 true, 让原本的索敌/回正整段跳过
+        /// </summary>
+        private bool TryAimToDirTarget()
+        {
+            if (_aimTarget == null)
+            {
+                return false;
+            }
+
+            _aimTimer -= XCTime.fixedDeltaTime;
+            if (_aimTimer <= 0f || !_aimTarget.gameObject.activeInHierarchy)
+            {
+                _aimTarget = null;
+                return false;
+            }
+
+            AimToDIr(_aimTarget.position - player0.transform.position);
+            return true;
+        }
 
         //相机索敌
         public void CheckPlayerLockEnemy()
         {
-            bool isAutoLockEnmey = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy);
-
             player0 = GameDataCommon.LocalPlayer;
 
             //暂时夺取控制
             autoLookForwardWait -= XCTime.fixedDeltaTime;
 
-            if (player0 != null && !player0.data_R.IsBusy)
+            if (player0 == null || player0.data_R.IsBusy)
             {
-                if (!isAutoLockEnmey)
-                {
-                    AutoDirect();
-                    return;
-                }
-
-                bool hasEnmey = false;
-
-                if (findEnmeyTime + remindEnmeyTime < Time.time)
-                {
-                    player0.data_R.lastEnemy = null;
-                }
-
-                Role findRole = player0.data_R.lastEnemy;
-                if (findRole == null || findRole.IsDie)
-                {
-                    if (player0.FindEnemy(out findRole, setting_topDown.seeR, setting_topDown.seeAngle))
-                    {
-                        player0.data_R.lastEnemy = findRole;
-                        findEnmeyTime = Time.time;
-                        hasEnmey = true;
-                    }
-                }
-                else
-                {
-                    hasEnmey = true;
-                }
-
-                //TODO 减少频率
-                if (hasEnmey && !findRole.IsDie)
-                {
-                    //规则 偏角不能超过15度
-                    Vector3 dir = (findRole.transform.position - player0.transform.position);
-                    AimToDIr(dir);
-                }
-                else
-                {
-                    AutoDirect();
-                }
+                return;
             }
+
+            //瞄准指定目标期间, 索敌和回正都不许插手
+            if (TryAimToDirTarget())
+            {
+                return;
+            }
+
+            //关掉自动索敌就一直回正
+            if (!ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy))
+            {
+                AutoDirect();
+                return;
+            }
+
+            if (TryGetLockEnemy(player0, out Transform enemyTf))
+            {
+                //规则 偏角不能超过15度
+                AimToDIr(enemyTf.position - player0.transform.position);
+            }
+            else
+            {
+                AutoDirect();
+            }
+        }
+
+        /// <summary>
+        /// 取当前要锁定的敌人: 优先沿用 lastEnemy, 超时或已死亡时重新搜索一次
+        /// </summary>
+        /// <param name="role">发起索敌的玩家</param>
+        /// <param name="enemyTf">锁定目标的 Transform, 没有目标时为 null</param>
+        private bool TryGetLockEnemy(Role role, out Transform enemyTf)
+        {
+            enemyTf = null;
+
+            //超过提醒间隔就丢掉上一个目标, 让它重新找
+            if (findEnmeyTime + remindEnmeyTime < Time.time)
+            {
+                role.data_R.lastEnemy = null;
+            }
+
+            Role findRole = role.data_R.lastEnemy;
+            if (findRole == null || findRole.IsDie)
+            {
+                if (!role.FindEnemy(out findRole, setting_topDown.seeR, setting_topDown.seeAngle))
+                {
+                    return false;
+                }
+
+                role.data_R.lastEnemy = findRole;
+                findEnmeyTime = Time.time;
+            }
+
+            if (findRole == null || findRole.IsDie)
+            {
+                return false;
+            }
+
+            enemyTf = findRole.transform;
+            return true;
         }
 
         //自动回正

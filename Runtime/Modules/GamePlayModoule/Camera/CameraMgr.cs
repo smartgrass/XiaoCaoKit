@@ -44,7 +44,7 @@ namespace XiaoCao
 
             var tempAimerGo = new GameObject("CamerAimer");
             aimer = tempAimerGo.AddComponent<CamerAimer>();
-            tempAimerGo.transform.SetParent(transform,true);
+            tempAimerGo.transform.SetParent(transform, true);
             tempLookAt.transform.SetParent(transform, true);
         }
 
@@ -54,7 +54,7 @@ namespace XiaoCao
             {
                 controller = setCam;
             }
-            
+
             if (controller == null)
             {
                 GameObject camPrefab = Resources.Load(camPath) as GameObject;
@@ -129,9 +129,14 @@ namespace XiaoCao
             }
         }
 
-        private void LookAtTarget(Transform tf)
+        public void LookAtTarget(Transform tf)
         {
-            //controller.SetTarget(role.idRole.GetFollow, role.idRole.GetLookAt);
+            Role role = GameDataCommon.LocalPlayer;
+            if (role != null && role.isBodyCreated && controller is CameraController cc)
+            {
+                float aimTime = 1;
+                cc.AimToDirTarget(tf,aimTime);
+            }
         }
     }
 
@@ -158,6 +163,9 @@ namespace XiaoCao
         public void OnFixedUpdate();
 
         void ShakeCamera(float shakeTime);
+
+        /// <summary>在 aimTime 秒内抢占镜头, 强制把视角转向 target, 期间自动索敌/回正失效</summary>
+        void AimToDirTarget(Transform target, float aimTime);
 
         /// <summary>按本地设置里的相机距离刷新相机距离</summary>
         void ApplySettingCamDistance();

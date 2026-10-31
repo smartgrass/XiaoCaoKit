@@ -20,8 +20,8 @@ namespace XiaoCao
         [Tooltip("固定高度: 相机最终高度 = 目标高度 + 该值, 正值表示在目标上方")]
         public float fixedHeight = 5f;
 
-        [Tooltip("是否把视角对到目标的朝向上: 勾选后相机站在目标正前方, 始终拍到目标正面; 取消则沿用当前主相机的视角方向(推近)")]
-        public bool faceTarget = true;
+        [Tooltip("是否将玩家视角朝向目标: 对焦开始时把玩家相机(CameraController)的注视点设为目标, 结束后不还原")]
+        public bool facePlayerCamera = true;
 
         [Tooltip("切到对焦相机与切回游戏相机的过渡时间(秒)")]
         public float transitionTime = 0.5f;
@@ -156,6 +156,9 @@ namespace XiaoCao
                 vcam.gameObject.SetActive(true);
                 PlaceCamera(vcam);
 
+                //切镜头之前先把玩家相机的注视点转向目标, 切回去时画面才接得上
+                AimPlayerCameraToTarget();
+
                 //混合时间要在切换优先级之前写好, Brain 是切换那一刻取值的
                 ApplyBlend(transitionTime);
                 vcam.Priority = FocusPriority;
@@ -254,6 +257,27 @@ namespace XiaoCao
                 : Vector3.up;
 
             camT.rotation = Quaternion.LookRotation(lookDir, up);
+        }
+
+        /// <summary>
+        /// 把玩家相机的注视点指向目标: 跟随点仍然是玩家, 只换 LookAt(CamerAimer.list[0]), 相机还是绕着玩家转,
+        /// 但看的方向变成目标(含目标朝向)。按约定结束后不还原, 后续由外部逻辑接管。
+        /// </summary>
+        private void AimPlayerCameraToTarget()
+        {
+            if (!facePlayerCamera)
+            {
+                return;
+            }
+
+
+            ICameraController controller = CameraMgr.Inst.controller;
+            if (controller == null)
+            {
+                return;
+            }
+
+            CameraMgr.Inst.LookAtTarget(target);
         }
 
         /// <summary>
