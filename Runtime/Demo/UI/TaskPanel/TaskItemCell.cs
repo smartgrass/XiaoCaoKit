@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCaoKit;
 
 namespace XiaoCao.UI
 {
     /// <summary>
     /// 任务条目: 左侧图标 + 任务描述, 下方为进度条(<see cref="ExpBar"/>, 含进度数值文本),
-    /// 右侧为领取/前往按钮
+    /// 右侧为奖励物品(<see cref="ItemCell"/>)与领取/前往按钮
     /// 领取与前往按钮互斥: 完成后显示领取(已领取则都不显示), 未完成且配置了 jumpType 时显示前往
     /// 已领取时整条显示 <see cref="reward"/> 覆盖层(半透明遮罩 + 已领取对勾)
     /// </summary>
@@ -17,6 +19,9 @@ namespace XiaoCao.UI
 
         //已领取覆盖层: 整条遮罩 + 对勾, 仅在已领取时显示
         public GameObject reward;
+
+        //奖励容器(GridLayoutGroup): 首个子节点是 ItemCell 模板, 按奖励数量克隆
+        public Transform rewardsContainer;
 
         //进度条(0~1): 复用经验条控件, 填充与进度数值文本都由 ExpBar 负责
         public ExpBar progressBar;
@@ -53,6 +58,8 @@ namespace XiaoCao.UI
             string progressStr = claimed ? LocalizeKey.TaskClaimed.ToLocalizeStr() : $"{progress}/{setting.TargetNum}";
             progressBar.SetProgress(setting.TargetNum > 0 ? (float)progress / setting.TargetNum : 0f, progressStr);
 
+            RefreshRewards();
+
             //已领取后整条打上覆盖层(遮罩 + 对勾)
             reward.SetActive(claimed);
 
@@ -67,6 +74,33 @@ namespace XiaoCao.UI
                 SetBtnVisible(claimBtn, false);
                 //未完成时才引导前往: 未配置 jumpType 的任务没有可跳转的目标
                 SetBtnVisible(gotoBtn, !string.IsNullOrEmpty(setting.JumpType));
+            }
+        }
+
+        /// <summary>
+        /// 刷新奖励物品: 按配置数量克隆 ItemCell 并填充图标/数量
+        /// </summary>
+        private void RefreshRewards()
+        {
+            if (rewardsContainer == null)
+            {
+                return;
+            }
+
+            List<Item> rewards = setting.Reward;
+            //配置里没填奖励时列一份都没有, 直接收掉全部格子
+            int count = rewards == null ? 0 : rewards.Count;
+            UITool.SetCellListCount(rewardsContainer, count);
+            if (count == 0)
+            {
+                return;
+            }
+
+            //SetCellListCount 已按 count 显隐子节点, 这里只取激活的那几个
+            ItemCell[] cells = rewardsContainer.GetComponentsInChildren<ItemCell>(false);
+            for (int i = 0; i < count && i < cells.Length; i++)
+            {
+                cells[i].SetItem(rewards[i]);
             }
         }
 

@@ -50,7 +50,7 @@ MonoBehaviour:
     settingTag: 0
     maxLevel: 50
     addHp: 100
-    atkMult: 0.85
+    atkMult: 0.8
     defMult: 1
     hpMult: 5
     maxArmor: 20

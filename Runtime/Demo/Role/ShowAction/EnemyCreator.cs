@@ -42,14 +42,27 @@ public class EnemyCreator : GameStartMono, IExecute
 
     private int curGenCount;
     private int deadCount;
+
+    //预生成还没轮到就被触发过: 生成出来时直接带AI, 不用等下次激活
+    private bool _activateAiOnGen;
     private List<int> _enemyList = new List<int>();
     public Action<EnemyCreator> enemyAllDead;
 
     public Role TargetRole { get; set; }
 
+    /// <summary>
+    /// 进场时就要预生成的模式: 敌人在 OnGameStart 阶段由队列生成好(LoadNoAI / LoadSleepNoAI 生成时关闭AI)
+    /// </summary>
+    public bool IsPreLoadMode => createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI or EnemyCreateMode.LoadSleepNoAI;
+
+    /// <summary>
+    /// 是否已经生成过敌人; 预生成模式下为 true 表示不能再生成第二次
+    /// </summary>
+    public bool HasGenerated => curGenCount > 0;
+
     public override void OnGameStart()
     {
-        if (createMode is EnemyCreateMode.LoadAI or EnemyCreateMode.LoadNoAI or EnemyCreateMode.LoadSleepNoAI)
+        if (IsPreLoadMode)
         {
             //进场预生成统一走关卡队列, 间隔由 LevelActionChecker.enemyGenInterval / enemyGroupGenInterval 决定,
             //避免所有预加载敌人都在同一个 delayGen 时间点一起创建导致卡顿
@@ -72,21 +85,50 @@ public class EnemyCreator : GameStartMono, IExecute
 
     public void Execute()
     {
-        Gen();
+        //队列驱动的生成: 谁先到谁生成, 已经生成过的那一份只做"激活AI"
+        if (curGenCount <= 0)
+        {
+            GenEnemy();
+            return;
+        }
+
+        if (IsPreLoadMode && createMode == EnemyCreateMode.LoadNoAI)
+        {
+            ActiveEnemyAI();
+        }
     }
 
     //需要一个生成敌人预制体
     [Button("生成/激活已生成AI", enabledMode: EButtonEnableMode.Playmode)]
     public void Gen()
     {
-        if (createMode is EnemyCreateMode.LoadNoAI && curGenCount > 0)
+        if (!IsPreLoadMode)
+        {
+            //AI / NoAI: 走近触发时才真正生成
+            if (curGenCount <= 0)
+            {
+                GenEnemy();
+            }
+
+            return;
+        }
+
+        if (curGenCount <= 0)
+        {
+            //预生成队列还没轮到它(玩家跑得比生成快): 补一次生成请求, 走队列保持间隔
+            //标记一下, 生成出来时要直接带AI(触发已经发生过了)
+            _activateAiOnGen = createMode == EnemyCreateMode.LoadNoAI;
+            EnemySpawnQueue.Enqueue(this, TargetRole, GetComponentInParent<EnemyGroupComponent>(true));
+            return;
+        }
+
+        //以下都是"已经生成过"的情况, 一律不能再生成第二份
+        if (createMode == EnemyCreateMode.LoadNoAI)
         {
             ActiveEnemyAI();
         }
-        else
-        {
-            GenEnemy();
-        }
+
+        //LoadAI: 生成时就是带AI的, 无需处理; LoadSleepNoAI: 被打才激活, 这里也不动
     }
 
 
@@ -116,6 +158,12 @@ public class EnemyCreator : GameStartMono, IExecute
                 if (createMode == EnemyCreateMode.LoadNoAI)
                 {
                     enemy.AddTag(RoleTagCommon.EnableAiIfHurt);
+
+                    //触发早于预生成: 生成出来就直接是激活状态
+                    if (_activateAiOnGen)
+                    {
+                        enemy.IsAiOn = true;
+                    }
                 }
                 else if(createMode == EnemyCreateMode.LoadSleepNoAI)
                 {
@@ -163,6 +211,12 @@ public class EnemyCreator : GameStartMono, IExecute
         {
             if (EntityMgr.Inst.FindEntity<Enemy0>(enemyId, out Enemy0 enemy))
             {
+                //预生成的敌人创建时场上可能还没有玩家, 激活时补上目标, AI激活当帧就能追
+                if (TargetRole != null)
+                {
+                    enemy.AiControl.targetRole = TargetRole;
+                }
+
                 enemy.IsAiOn = true;
             }
         }

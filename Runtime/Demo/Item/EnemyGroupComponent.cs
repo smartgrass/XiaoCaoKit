@@ -192,10 +192,20 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
     [Button]
     void OnTriggerAct()
     {
-        //统一走关卡队列, 间隔由 LevelActionChecker.enemyGenInterval / enemyGroupGenInterval 在初始化时注入
-        //传入 this 作为分组标记: 换到下个组时队列会额外等待 enemyGroupGenInterval
         foreach (var creator in creators)
         {
+            //预生成模式(LoadAI / LoadNoAI / LoadSleepNoAI): 敌人进场时已经生成好了,
+            //这里只能激活AI, 不能再生成一遍, 也不需要排队 —— AI要立即生效
+            if (creator.IsPreLoadMode && creator.HasGenerated)
+            {
+                //补上玩家目标: 预生成时场上可能还没有玩家, 否则AI激活了也不知道追谁
+                creator.TargetRole = TargetRole;
+                creator.Gen();
+                continue;
+            }
+
+            //统一走关卡队列, 间隔由 LevelActionChecker.enemyGenInterval / enemyGroupGenInterval 在初始化时注入
+            //传入 this 作为分组标记: 换到下个组时队列会额外等待 enemyGroupGenInterval
             EnemySpawnQueue.Enqueue(creator, TargetRole, this);
         }
     }

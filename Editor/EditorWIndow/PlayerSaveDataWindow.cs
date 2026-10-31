@@ -16,10 +16,17 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     //任务调试: 指定要完成的任务id, 留空表示全部任务
     [SerializeField] private string taskDebugId = "";
 
-    //支援角色三项养成等级(1~5)
-    [SerializeField] private int supportAtkLv = 1;
-    [SerializeField] private int supportHpLv = 1;
-    [SerializeField] private int supportSkillLv = 1;
+    //支援角色羁绊等级(1~9): 三项细分养成等级由它反算, 玩家侧也只暴露这一层数值
+    [SerializeField] private int supportBondLv = 1;
+
+    //矿石调试: 选中的矿石类型
+    [SerializeField] private ECrystalType oreType = ECrystalType.B;
+
+    //每个品阶发放的矿石数量
+    private const int OreCountPerQuality = 30;
+
+    //矿石品阶上限: 图标与本地化只做到史诗(3), 再高的品阶没有资源
+    private const int OreMaxQuality = (int)EQuality.Purple;
 
     public override bool IsDebugView => true;
 
@@ -28,20 +35,21 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     public override void OnEnable()
     {
         EnsurePlayerSaveDataLoaded();
-        SyncSupportGrowFields();
+        SyncSupportBondFields();
         base.OnEnable();
     }
 
-    /// <summary>把存档中当前的支援角色养成等级同步到窗口输入框</summary>
-    private void SyncSupportGrowFields()
+    /// <summary>把存档中当前换算出的羁绊等级同步到窗口输入框</summary>
+    private void SyncSupportBondFields()
     {
         if (playerSaveData == null)
         {
             return;
         }
-        supportAtkLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk);
-        supportHpLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp);
-        supportSkillLv = playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill);
+        supportBondLv = SupportRoleSetting.GetBondLevel(
+            playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk),
+            playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp),
+            playerSaveData.GetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill));
     }
 
     public override void DrawHead()
@@ -88,23 +96,21 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
         EditorGUILayout.LabelField("支援角色养成", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("设置支援角色三项养成等级(1~5)。攻击/生存决定继承玩家属性的百分比，技巧决定可解锁技能数(每级1个,上限4个)，技巧满级后支援技能等级由1提升至2。下次召唤支援角色时生效。", MessageType.Info);
+        EditorGUILayout.HelpBox("玩家可见的只有羁绊等级(1~9)，三项细分等级(攻击/生存/技巧)由羁绊等级反算后写入存档，不再单独调试。羁绊经验每通关一次 +1，满经验自动升级；直接设置等级会把当前经验清零。下次召唤支援角色时生效。", MessageType.Info);
 
-        supportAtkLv = EditorGUILayout.IntSlider("攻击等级", supportAtkLv, 1, 5);
-        supportHpLv = EditorGUILayout.IntSlider("生存等级", supportHpLv, 1, 5);
-        supportSkillLv = EditorGUILayout.IntSlider("技巧等级", supportSkillLv, 1, 5);
+        supportBondLv = EditorGUILayout.IntSlider("羁绊等级", supportBondLv, 1, SupportRoleSetting.MaxBondLevel);
 
-        //羁绊等级由三项子等级换算, 玩家侧只看得到这个值
-        int bondLevel = SupportRoleSetting.GetBondLevel(supportAtkLv, supportHpLv, supportSkillLv);
-        EditorGUILayout.LabelField("羁绊等级", $"Lv{bondLevel}");
+        //细分等级是反算出来的内部数据, 这里只做显示, 方便核对升级换算
+        SupportRoleSetting.GetGrowLevels(supportBondLv, out int atkLv, out int hpLv, out int skillLv);
+        EditorGUILayout.LabelField("细分等级", $"攻击 Lv{atkLv} / 生存 Lv{hpLv} / 技巧 Lv{skillLv}");
 
         //羁绊经验: 通关一次 +1, 满经验自动升羁绊等级
-        int bondNeed = SupportRoleSetting.GetNextLevelExp(bondLevel);
+        int bondNeed = SupportRoleSetting.GetNextLevelExp(supportBondLv);
         EditorGUILayout.LabelField("羁绊经验", bondNeed > 0 ? $"{playerSaveData.bondExp}/{bondNeed}" : "已满级");
 
-        if (GUILayout.Button("应用养成等级"))
+        if (GUILayout.Button("应用羁绊等级"))
         {
-            ApplySupportGrowLevels();
+            ApplySupportBondLevel();
         }
 
         if (GUILayout.Button("获得 10 点羁绊经验"))
@@ -114,19 +120,37 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space();
+
+        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+        EditorGUILayout.LabelField("矿石调试", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox($"按选中类型发放矿石，品阶 0~{OreMaxQuality} 各 {OreCountPerQuality} 个（0 普通 / 1 精良 / 2 稀有 / 3 史诗），直接进背包。", MessageType.Info);
+
+        oreType = (ECrystalType)EditorGUILayout.EnumPopup("矿石类型", oreType);
+
+        if (GUILayout.Button("增加矿石"))
+        {
+            AddOreDebug();
+        }
+
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space();
     }
 
     /// <summary>
-    /// 调试: 把窗口里填的三项支援角色养成等级写入存档
+    /// 调试: 按窗口里填的羁绊等级反算三项细分等级并写入存档
     /// </summary>
-    private void ApplySupportGrowLevels()
+    private void ApplySupportBondLevel()
     {
         EnsurePlayerSaveDataLoaded();
-        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk, supportAtkLv);
-        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp, supportHpLv);
-        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill, supportSkillLv);
+        SupportRoleSetting.GetGrowLevels(supportBondLv, out int atkLv, out int hpLv, out int skillLv);
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Atk, atkLv);
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Hp, hpLv);
+        playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill, skillLv);
+        //直接设定等级时经验归零, 否则带着上一级攒下的经验会立刻再升一级
+        playerSaveData.bondExp = 0;
+        playerSaveData.ReLoadPlayerAttr();
         Save();
-        Debug.Log($"-- support grow levels set: atk={supportAtkLv} hp={supportHpLv} skill={supportSkillLv}");
+        Debug.Log($"-- support bond level set: bondLv={supportBondLv}, atk={atkLv} hp={hpLv} skill={skillLv}");
     }
 
     /// <summary>
@@ -139,8 +163,24 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         playerSaveData.ReLoadPlayerAttr();
         Save();
         //升级会同步改写三项子等级, 这里回填输入框避免显示过期
-        SyncSupportGrowFields();
+        SyncSupportBondFields();
         Debug.Log($"-- bond exp +{value}, levelUp={levelUp}, bondLv={SupportRoleSetting.GetBondLevel()}");
+    }
+
+    /// <summary>
+    /// 调试: 按选中类型发放矿石, 每个品阶各 <see cref="OreCountPerQuality"/> 个
+    /// </summary>
+    private void AddOreDebug()
+    {
+        EnsurePlayerSaveDataLoaded();
+        for (int quality = 0; quality <= OreMaxQuality; quality++)
+        {
+            //矿石id形如 Crystal_B_1, 末位是品阶(CrystalItem.Create 内部按 '_' 拆解)
+            string itemId = $"Crystal_{oreType}_{quality}";
+            playerSaveData.inventory.AddItem(new Item(ItemType.Consumable, itemId, OreCountPerQuality, (EQuality)quality));
+        }
+        Save();
+        Debug.Log($"-- ore added: Crystal_{oreType} x{OreCountPerQuality}, quality 0~{OreMaxQuality}");
     }
 
     /// <summary>

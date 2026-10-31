@@ -44,6 +44,9 @@ namespace XiaoCao
 
         public EItemClickMode clickMode;
 
+        [Tooltip("弹出物品详情时, 详情界面是否与格子保持同一高度(普通物品详情垂直对齐到该格子)")]
+        public bool detailKeepSameHeight;
+
         public Action<ItemCell> clickAction;
 
         /// <summary>
