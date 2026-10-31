@@ -6,19 +6,20 @@ using UnityEngine.UI;
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// 任务条目: 描述 + 进度条 + 奖励文本, 右侧领取/前往按钮
-    /// 领取按钮仅在可领取时显示; 前往按钮仅在任务配置了 jumpType 且未完成时显示
+    /// 任务条目: 左侧图标 + 任务描述, 下方为进度条(<see cref="ExpBar"/>, 含进度数值文本),
+    /// 右侧为领取/前往按钮
+    /// 领取与前往按钮互斥: 完成后显示领取(已领取则都不显示), 未完成且配置了 jumpType 时显示前往
+    /// 已领取时整条显示 <see cref="reward"/> 覆盖层(半透明遮罩 + 已领取对勾)
     /// </summary>
     public class TaskItemCell : MonoBehaviour
     {
         public TMP_Text descText;
 
-        public TMP_Text progressText;
+        //已领取覆盖层: 整条遮罩 + 对勾, 仅在已领取时显示
+        public GameObject reward;
 
-        public TMP_Text rewardText;
-
-        //进度条(0~1)
-        public Slider progressBar;
+        //进度条(0~1): 复用经验条控件, 填充与进度数值文本都由 ExpBar 负责
+        public ExpBar progressBar;
 
         //领取按钮(子节点文本为 TaskClaim)
         public Button claimBtn;
@@ -48,45 +49,46 @@ namespace XiaoCao.UI
             bool completed = progress >= setting.TargetNum;
             bool claimed = TaskMgr.IsClaimed(setting);
 
-            //已领取时进度文本直接显示状态, 否则显示 进度/目标
-            progressText.text = claimed
-                ? LocalizeKey.TaskClaimed.ToLocalizeStr()
-                : $"{progress}/{setting.TargetNum}";
-            progressBar.value = setting.TargetNum > 0 ? (float)progress / setting.TargetNum : 0;
+            //已领取时数值区显示状态文本, 否则显示 进度/目标
+            string progressStr = claimed ? LocalizeKey.TaskClaimed.ToLocalizeStr() : $"{progress}/{setting.TargetNum}";
+            progressBar.SetProgress(setting.TargetNum > 0 ? (float)progress / setting.TargetNum : 0f, progressStr);
 
-            RefreshRewardText();
+            //已领取后整条打上覆盖层(遮罩 + 对勾)
+            reward.SetActive(claimed);
 
-            //领取按钮: 可领取时显示; 已领取由进度文本区展示状态
-            claimBtn.gameObject.SetActive(!claimed && completed);
-
-            //前往按钮: 需要配置跳转类型, 且任务未完成
-            bool hasJump = !string.IsNullOrEmpty(setting.JumpType);
-            gotoBtn.gameObject.SetActive(hasJump && !completed);
+            //两个按钮互斥: 任务完成后只显示领取按钮(已领取则都不显示), 否则只显示前往按钮
+            if (completed)
+            {
+                SetBtnVisible(claimBtn, !claimed);
+                SetBtnVisible(gotoBtn, false);
+            }
+            else
+            {
+                SetBtnVisible(claimBtn, false);
+                //未完成时才引导前往: 未配置 jumpType 的任务没有可跳转的目标
+                SetBtnVisible(gotoBtn, !string.IsNullOrEmpty(setting.JumpType));
+            }
         }
 
         /// <summary>
-        /// 奖励文本: 物品名 x 数量, 多个奖励用空格分隔
+        /// 按钮显隐: 按钮预制体(YellowBtn/BlueBtn)把视觉放在根节点, Button 挂在内层 Btn 子节点,
+        /// 只关 Button 自身会留下底图和文字, 所以这里取该按钮在条目下的整棵节点再显隐
         /// </summary>
-        private void RefreshRewardText()
+        private void SetBtnVisible(Button btn, bool visible)
         {
-            if (setting.Reward == null || setting.Reward.Count == 0)
+            Transform node = btn.transform;
+            while (node.parent != null && node.parent != transform)
             {
-                rewardText.text = string.Empty;
-                return;
+                node = node.parent;
             }
-
-            var parts = new System.Collections.Generic.List<string>();
-            foreach (Item item in setting.Reward)
-            {
-                parts.Add($"{item.GetItemName()}x{item.num}");
-            }
-            rewardText.text = string.Join("  ", parts);
+            node.gameObject.SetActive(visible);
         }
 
         private void OnClaimClick()
         {
+            //领取后任务会沉底, 条目次序会变, 所以交给 TaskChange 事件统一刷新列表,
+            //不要在这里再 Refresh 自身(这个条目可能已经被换成别的任务了)
             TaskMgr.Claim(setting);
-            Refresh(setting);
         }
 
         private void OnGotoClick()

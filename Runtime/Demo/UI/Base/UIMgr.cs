@@ -109,6 +109,14 @@ namespace XiaoCao
 
         public GameObject levelUpTip;
 
+        /// <summary>处于关卡结算时, 升级提示延后播放的时长(秒)</summary>
+        private const float LevelUpTipDelayInResult = 0.4f;
+
+        //延迟播放中的升级提示, 延迟期间连续升级按"起始取小、目标取大"合并成一条
+        private Tween _levelUpTipTween;
+        private int _levelUpTipFrom;
+        private int _levelUpTipTo;
+
         [ReadOnly] public PanelBase lastpanel;
 
         public Canvas Canvas => topCanvas;
@@ -149,6 +157,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
+            CancelLevelUpTipDelay();
             GameEvent.RemoveEventListener<int, int>(EGameEvent.RoleLevelUp.ToInt(), OnRoleLevelUp);
             UICanvasMgr.Inst.EventSystem.ClearAllEvents();
         }
@@ -388,11 +397,56 @@ namespace XiaoCao
 
         public void PopLevelUpTip(int levelFrom , int levelTo)
         {
+            //关卡结算时先让经验条动画跑一段, 提示晚点再弹, 避免和结算动画糊在一起
+            if (!IsInLevelResult())
+            {
+                CancelLevelUpTipDelay();
+                ShowLevelUpTip(levelFrom, levelTo);
+                return;
+            }
+            //延迟期间又升级(多次发经验)时不重复排队, 直接把区间合并到这一条提示上
+            if (_levelUpTipTween != null && _levelUpTipTween.IsActive())
+            {
+                _levelUpTipFrom = Mathf.Min(_levelUpTipFrom, levelFrom);
+                _levelUpTipTo = Mathf.Max(_levelUpTipTo, levelTo);
+                return;
+            }
+
+            _levelUpTipFrom = levelFrom;
+            _levelUpTipTo = levelTo;
+            _levelUpTipTween = DOVirtual.DelayedCall(LevelUpTipDelayInResult, () =>
+            {
+                _levelUpTipTween = null;
+                ShowLevelUpTip(_levelUpTipFrom, _levelUpTipTo);
+            }).SetTarget(this);
+        }
+
+        /// <summary>
+        /// 关卡结算面板是否正在显示。用 activeSelf 而不是 IsShowing,
+        /// 因为结算面板的父级 Canvas 可能被 MidCanvasEnable 关掉。
+        /// </summary>
+        private bool IsInLevelResult()
+        {
+            return levelResultPanel != null && levelResultPanel.gameObject.activeSelf;
+        }
+
+        private void ShowLevelUpTip(int levelFrom, int levelTo)
+        {
             levelUpTip.SetActive(false);
             var levelText = levelUpTip.transform.Find("Image/LevelText").GetComponent<TMP_Text>();
             levelText.text = $"Lv{levelFrom}        Lv{levelTo}";
             levelUpTip.SetActive(true);
-            
+        }
+
+        private void CancelLevelUpTipDelay()
+        {
+            if (_levelUpTipTween == null)
+            {
+                return;
+            }
+
+            _levelUpTipTween.Kill();
+            _levelUpTipTween = null;
         }
 
         /// <summary>

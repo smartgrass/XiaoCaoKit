@@ -87,9 +87,9 @@ namespace XiaoCao.UI
 
         public virtual void OnEnable()
         {
-            //UIMgr 还没初始化完成时(本节点挂在 UIMgr 预制体上, 实例化阶段就会被激活)不做初始化,
-            //等 UIMgr.Init 之后再次激活(打开面板)时再初始化
-            if (!UIMgr.IsInited)
+            //UIMgr 实例还没创建时(本节点挂在 UIMgr 预制体上)不做初始化。
+            //判 HasInst 而不是 IsInited: 面板可能在 UIMgr.Init 期间就被 Show 出来, 那时 IsInited 仍是 false。
+            if (!UIMgr.HasInst)
             {
                 return;
             }

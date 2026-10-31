@@ -51,6 +51,9 @@ namespace XiaoCao
         public int supportHpLv = SupportRoleSetting.DefaultGrowLevel;
         public int supportSkillLv = SupportRoleSetting.DefaultGrowLevel;
 
+        // 当前羁绊等级内已累计的经验, 满级后清零且不再累计
+        public int bondExp;
+
         //ItemUI
         public Inventory inventory = new Inventory();
 
@@ -126,6 +129,14 @@ namespace XiaoCao
         {
             //角色等级最低 1 级, 修正旧存档中可能存在的 0 级
             lv = Mathf.Max(GameSetting.MinRoleLevel, lv);
+
+            //羁绊经验不会为负; 已满羁绊的存档不再累计经验(旧存档没有该字段, 默认 0)
+            bondExp = Mathf.Max(0, bondExp);
+            if (SupportRoleSetting.GetBondLevel(supportAtkLv, supportHpLv, supportSkillLv) >=
+                SupportRoleSetting.MaxBondLevel)
+            {
+                bondExp = 0;
+            }
 
             // ConfigMgr.LocalSetting.GetBoolValue 暂时不用
 
@@ -336,18 +347,66 @@ namespace XiaoCao
             SavaData();
         }
 
-        public void AddSkillLevel(string skillId)
+        /// <summary>
+        /// 增加羁绊经验: 经验满自动提升羁绊等级, 并把等级换算回三项养成等级; 满级后不再累计。
+        /// </summary>
+        /// <param name="value">增加的经验值</param>
+        /// <param name="saveData">是否在本方法内立即存盘</param>
+        /// <returns>是否发生了羁绊升级</returns>
+        public bool AddBondExp(int value, bool saveData = true)
         {
-            if (!skillUnlockDic.ContainsKey(skillId))
+            if (value <= 0)
             {
-                skillUnlockDic[skillId] = 1;
-            }
-            else
-            {
-                skillUnlockDic[skillId] = skillUnlockDic[skillId] + 1;
+                return false;
             }
 
-            //累计技能升级次数, 驱动任务进度
+            int bondLevel = SupportRoleSetting.GetBondLevel(supportAtkLv, supportHpLv, supportSkillLv);
+            if (bondLevel >= SupportRoleSetting.MaxBondLevel)
+            {
+                bondExp = 0;
+                return false;
+            }
+
+            int levelFrom = bondLevel;
+            bondExp += value;
+
+            //连续结算升级, 直到经验不够下一级或到达羁绊上限
+            while (bondLevel < SupportRoleSetting.MaxBondLevel &&
+                   bondExp >= SupportRoleSetting.GetNextLevelExp(bondLevel))
+            {
+                bondExp -= SupportRoleSetting.GetNextLevelExp(bondLevel);
+                bondLevel++;
+                SupportRoleSetting.GetGrowLevels(bondLevel, out supportAtkLv, out supportHpLv, out supportSkillLv);
+            }
+
+            //满级后经验条不再累计, 避免显示成还能继续升
+            if (bondLevel >= SupportRoleSetting.MaxBondLevel)
+            {
+                bondExp = 0;
+            }
+
+            if (saveData)
+            {
+                SavaData();
+            }
+
+            return bondLevel > levelFrom;
+        }
+
+        public void AddSkillLevel(string skillId)
+        {
+            skillUnlockDic.TryGetValue(skillId, out int level);
+
+            if (level <= 0)
+            {
+                //0 级升到 1 级是学习(解锁), 不算升级, 也不推进累计升级任务
+                skillUnlockDic[skillId] = 1;
+                return;
+            }
+
+            skillUnlockDic[skillId] = level + 1;
+
+            //累计技能升级次数, 驱动任务进度: 只有已学会的技能继续升级才计入
             TaskMgr.AddCondProgress(cfg.task.TaskCondType.SkillUpgradeCount, 1);
         }
 

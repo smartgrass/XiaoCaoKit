@@ -98,9 +98,18 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         int bondLevel = SupportRoleSetting.GetBondLevel(supportAtkLv, supportHpLv, supportSkillLv);
         EditorGUILayout.LabelField("羁绊等级", $"Lv{bondLevel}");
 
+        //羁绊经验: 通关一次 +1, 满经验自动升羁绊等级
+        int bondNeed = SupportRoleSetting.GetNextLevelExp(bondLevel);
+        EditorGUILayout.LabelField("羁绊经验", bondNeed > 0 ? $"{playerSaveData.bondExp}/{bondNeed}" : "已满级");
+
         if (GUILayout.Button("应用养成等级"))
         {
             ApplySupportGrowLevels();
+        }
+
+        if (GUILayout.Button("获得 10 点羁绊经验"))
+        {
+            AddBondExpDebug(10);
         }
 
         EditorGUILayout.EndVertical();
@@ -118,6 +127,20 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
         playerSaveData.SetSupportGrowLevel(SupportRoleSetting.SupportGrowType.Skill, supportSkillLv);
         Save();
         Debug.Log($"-- support grow levels set: atk={supportAtkLv} hp={supportHpLv} skill={supportSkillLv}");
+    }
+
+    /// <summary>
+    /// 调试: 直接发放羁绊经验, 用于验证升级换算与经验条表现
+    /// </summary>
+    private void AddBondExpDebug(int value)
+    {
+        EnsurePlayerSaveDataLoaded();
+        bool levelUp = playerSaveData.AddBondExp(value, false);
+        playerSaveData.ReLoadPlayerAttr();
+        Save();
+        //升级会同步改写三项子等级, 这里回填输入框避免显示过期
+        SyncSupportGrowFields();
+        Debug.Log($"-- bond exp +{value}, levelUp={levelUp}, bondLv={SupportRoleSetting.GetBondLevel()}");
     }
 
     /// <summary>

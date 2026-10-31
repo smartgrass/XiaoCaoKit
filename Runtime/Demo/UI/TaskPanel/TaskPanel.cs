@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XiaoCaoKit;
+using XiaoCaoKit.UI;
 
 namespace XiaoCao.UI
 {
@@ -13,7 +14,15 @@ namespace XiaoCao.UI
     /// </summary>
     public class TaskPanel : StandardPanel
     {
+        //UIStateChangeColor 约定: 0 选中, 1 未选中
+        private const int SelectState = 0;
+        private const int UnSelectState = 1;
+
         public override UIPanelType PanelType => UIPanelType.TaskPanel;
+
+        [Header("右侧标题栏")]
+        //右侧列表顶部标题文本(如"任务类型")
+        public TMP_Text titleText;
 
         [Header("左侧分类")]
         //分类按钮容器, 子节点第一个为模板
@@ -29,6 +38,12 @@ namespace XiaoCao.UI
         //分类列表, 按配置出现顺序
         private readonly List<string> categories = new List<string>();
 
+        //分类按钮上的选中态组件, 下标与 categories 一一对应
+        private readonly List<UIStateChangeColor> categoryStates = new List<UIStateChangeColor>();
+
+        //分类按钮上的红点节点(BtnRedDot), 下标与 categories 一一对应
+        private readonly List<GameObject> categoryRedDots = new List<GameObject>();
+
         public override void Init()
         {
             if (IsInited)
@@ -37,6 +52,7 @@ namespace XiaoCao.UI
             }
 
             base.Init();
+            titleText.text = "TaskPanelTitle".ToLocalizeStr();
             RefreshCategories();
             IsInited = true;
             gameObject.SetActive(false);
@@ -70,13 +86,18 @@ namespace XiaoCao.UI
         private void RefreshCategories()
         {
             categories.Clear();
+            categoryStates.Clear();
+            categoryRedDots.Clear();
             categories.AddRange(TaskMgr.GetCategories());
             UITool.SetCellListCount(categoryParent, categories.Count);
 
             for (int i = 0; i < categories.Count; i++)
             {
                 string category = categories[i];
-                Button btn = categoryParent.GetChild(i).GetComponent<Button>();
+                Transform cell = categoryParent.GetChild(i);
+                Button btn = cell.GetComponent<Button>();
+                categoryStates.Add(cell.GetComponent<UIStateChangeColor>());
+                categoryRedDots.Add(cell.Find("BtnRedDot").gameObject);
                 btn.GetComponentInChildren<TMP_Text>(true).text =
                     $"TaskCat_{category}".ToLocalizeStr();
                 btn.onClick.RemoveAllListeners();
@@ -95,18 +116,24 @@ namespace XiaoCao.UI
         public void SelectCategory(string category)
         {
             curCategory = category;
-            for (int i = 0; i < categoryParent.childCount; i++)
+            int selectedIndex = categories.IndexOf(category);
+            for (int i = 0; i < categoryStates.Count; i++)
             {
-                var child = categoryParent.GetChild(i);
-                bool selected = categories.IndexOf(category) == i;
-                //选中态用颜色区分, 未选中置灰
-                var graphic = child.GetComponent<Image>();
-                if (graphic != null)
-                {
-                    graphic.color = selected ? Color.white : new Color(0.7f, 0.7f, 0.7f, 1f);
-                }
+                //选中态的高亮底图与文本颜色都由 UIStateChangeColor 配置
+                categoryStates[i].SetState(i == selectedIndex ? SelectState : UnSelectState);
             }
             RefreshList();
+        }
+
+        /// <summary>
+        /// 刷新左侧分类按钮红点: 该分类下存在可领取任务时显示
+        /// </summary>
+        private void RefreshCategoryRedDots()
+        {
+            for (int i = 0; i < categoryRedDots.Count; i++)
+            {
+                categoryRedDots[i].SetActive(TaskMgr.HasClaimable(categories[i]));
+            }
         }
 
         /// <summary>
@@ -114,6 +141,8 @@ namespace XiaoCao.UI
         /// </summary>
         public void RefreshList()
         {
+            RefreshCategoryRedDots();
+
             List<cfg.TaskSetting> tasks = TaskMgr.GetTasksByCategory(curCategory);
             UITool.SetCellListCount(taskParent, tasks.Count);
 

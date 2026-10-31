@@ -42,6 +42,8 @@ namespace XiaoCao
         public static string EnemyLevel = "EnemyLevel";
         public static string Lv = "Lv";
         public static string Exp = "Exp"; // 经验值
+        public static string PlayerLevelShow = "PlayerLevelShow"; // 玩家等级 Lv{0}
+        public static string MaxLevel = "MaxLevel"; // 已满级
         public static string LevelDamageFactor = "LevelDamageFactor";
         public static string OnceDamage = "OnceDamage";
         public static string SkillDesc = "SkillDesc";

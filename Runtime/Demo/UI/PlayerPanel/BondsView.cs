@@ -7,9 +7,9 @@ using UnityEngine.UI;
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// 羁绊详情界面: 与主控角色区(UnFight)位置重叠, 打开时只展示当前羁绊等级带来的总效果。
-    /// 三项子等级(攻击/生存/技巧)只作为换算过程, 玩家只能看到羁绊等级。
-    /// 升级功能暂未实装, 预制体上的"提升"按钮保持关闭。
+    /// 羁绊详情界面: 与主控角色区(UnFight)位置重叠, 打开时展示当前羁绊等级、经验进度与总效果。
+    /// 三项子等级(攻击/生存/技巧)只作为换算过程, 玩家只能看到羁绊等级;
+    /// 羁绊经验靠通关关卡积累, 界面内不提供主动升级, 预制体上的"提升"按钮保持关闭。
     /// </summary>
     public class BondsView : EnableShowUI
     {
@@ -18,6 +18,9 @@ namespace XiaoCao.UI
 
         /// <summary>总效果文本, 依次列出攻击继承 / 生命继承 / 技能解锁</summary>
         public TMP_Text effectText;
+
+        /// <summary>羁绊经验条</summary>
+        public ExpBar expBar;
 
         /// <summary>返回按钮</summary>
         public Button closeBtn;
@@ -31,13 +34,16 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 按当前羁绊等级刷新标题与总效果。
+        /// 按当前羁绊等级刷新标题、经验条与总效果。
         /// </summary>
         public override void UpdateUI()
         {
             int bondLevel = SupportRoleSetting.GetBondLevel();
             bondsTitleText.text = LocalizeKey.FormatWithArgs(LocalizeKey.BondsTitleLevel, bondLevel);
             effectText.text = GetEffectText();
+
+            PlayerSaveData saveData = PlayerSaveData.LocalSavaData;
+            expBar.SetExp(saveData.bondExp, SupportRoleSetting.GetNextLevelExp(bondLevel));
         }
 
         /// <summary>

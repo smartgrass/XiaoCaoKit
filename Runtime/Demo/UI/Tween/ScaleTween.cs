@@ -31,6 +31,10 @@ namespace XiaoCao
         [Label("目标缩放")]
         public Vector3 endScale = Vector3.one;
 
+        [Label("启始等待")]
+        [Tooltip("播放前的等待时间(秒), 等待期间保持起始缩放不动")]
+        public float startDelay = 0f;
+
         [Label("时长")]
         [Tooltip("单程动画时长(秒)")]
         public float duration = 0.25f;
@@ -74,6 +78,12 @@ namespace XiaoCao
             _tweener = transform.DOScale(endScale, duration)
                 .SetEase(ease)
                 .SetLink(gameObject);
+
+            //启始等待:延迟期间补间还没开始插值, localScale 就停在起始缩放不动
+            if (startDelay > 0f)
+            {
+                _tweener.SetDelay(startDelay);
+            }
 
             switch (loopMode)
             {

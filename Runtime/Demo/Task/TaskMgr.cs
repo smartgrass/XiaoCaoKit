@@ -30,11 +30,29 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 获取指定分类下的任务, 保持配置表顺序
+        /// 获取指定分类下的任务: 未领取的按配置表顺序排在前面, 已领取的统一沉到底部
         /// </summary>
         public static List<cfg.TaskSetting> GetTasksByCategory(string category)
         {
-            return AllTasks.FindAll(t => t.Category == category);
+            List<cfg.TaskSetting> tasks = AllTasks.FindAll(t => t.Category == category);
+            List<cfg.TaskSetting> result = new List<cfg.TaskSetting>(tasks.Count);
+
+            //分两趟添加, 保证同组内部仍是配置表顺序
+            foreach (var setting in tasks)
+            {
+                if (!IsClaimed(setting))
+                {
+                    result.Add(setting);
+                }
+            }
+            foreach (var setting in tasks)
+            {
+                if (IsClaimed(setting))
+                {
+                    result.Add(setting);
+                }
+            }
+            return result;
         }
 
         public static cfg.TaskSetting GetTask(string taskId)
@@ -74,6 +92,36 @@ namespace XiaoCao
         public static bool CanClaim(cfg.TaskSetting setting)
         {
             return IsCompleted(setting) && !IsClaimed(setting);
+        }
+
+        /// <summary>
+        /// 指定分类下是否存在可领取(已完成且未领取)的任务, 供分类按钮红点显示
+        /// </summary>
+        public static bool HasClaimable(string category)
+        {
+            foreach (var setting in AllTasks)
+            {
+                if (setting.Category == category && CanClaim(setting))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 是否存在任意可领取(已完成且未领取)的任务, 供家园任务入口(TaskTrigger)的红点显示
+        /// </summary>
+        public static bool HasAnyClaimable()
+        {
+            foreach (var setting in AllTasks)
+            {
+                if (CanClaim(setting))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -146,7 +194,7 @@ namespace XiaoCao
         {
             try
             {
-                return RelicItem.Create(relicId).GetBaseName();
+                return RelicItem.Create(relicId).LocalizeName;
             }
             catch (System.Exception e)
             {

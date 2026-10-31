@@ -11,7 +11,7 @@ namespace XiaoCao
     /// - 技巧: 每级解锁 1 个技能(上限 4 个), 满级后支援使用的技能等级由 1 提升至 2
     /// 三项养成等级存于 <see cref="PlayerSaveData"/>(supportAtkLv/supportHpLv/supportSkillLv),
     /// 玩家可见的只有换算后的羁绊等级(见 <see cref="GetBondLevel()"/>), 子等级仅作为计算过程;
-    /// 升级方式暂未实装, 可通过 PlayerSaveDataWindow 调试修改
+    /// 羁绊经验由通关关卡获得(每通一次 +1), 满经验自动升羁绊等级并同步三项子等级
     /// </summary>
     public static class SupportRoleSetting
     {
@@ -39,6 +39,39 @@ namespace XiaoCao
 
         /// <summary>羁绊等级上限: 三项养成各到 Lv4(即存档的满级)时为羁绊 Lv9</summary>
         public const int MaxBondLevel = 9;
+
+        /// <summary>羁绊每级递增的经验基数: 升到 Lv2 需 10 点, 升到 Lv3 需 20 点, 之后每级再 +10</summary>
+        public const int BondExpStep = 10;
+
+        /// <summary>关卡模式通关一次获得的羁绊经验</summary>
+        public const int BondExpPerLevelClear = 1;
+
+        /// <summary>
+        /// 指定羁绊等级升到下一级所需经验; 已满级返回 0(不再累计经验)。
+        /// </summary>
+        public static int GetNextLevelExp(int bondLevel)
+        {
+            if (bondLevel >= MaxBondLevel)
+            {
+                return 0;
+            }
+
+            return BondExpStep * Mathf.Clamp(bondLevel, 1, MaxBondLevel - 1);
+        }
+
+        /// <summary>
+        /// 由羁绊等级反算三项养成等级(存档用的 1~5), 与 <see cref="GetBondLevel(int, int, int)"/> 互逆:
+        /// 奇数级三项齐平, 偶数级技巧高一层。
+        /// </summary>
+        public static void GetGrowLevels(int bondLevel, out int atkGrowLevel, out int hpGrowLevel, out int skillGrowLevel)
+        {
+            int index = Mathf.Clamp(bondLevel, 1, MaxBondLevel) - 1;
+            int baseLevel = index / 2;
+
+            atkGrowLevel = baseLevel + 1;
+            hpGrowLevel = baseLevel + 1;
+            skillGrowLevel = baseLevel + index % 2 + 1;
+        }
 
         /// <summary>
         /// 当前羁绊等级: 玩家只能看到这一层数值, 三项子等级只作为换算过程, 不对外展示

@@ -40,7 +40,6 @@ namespace XiaoCao.UI
         public override void Show(IUIData data = null)
         {
             gameObject.SetActive(true);
-            UIMgr.Inst.PopUIEnable(true, name);
             RefreshRebornBtnState();
             costText.text = $"<size=46>{"Reborn".ToLocalizeStr()}</size>\n<sprite=0>{GameMgr.Inst.GetCurrentRebornCost()}";
             hasCoinText.text = $"<sprite=0>{PlayerSaveData.LocalSavaData.Coin}";
@@ -48,7 +47,6 @@ namespace XiaoCao.UI
 
         public override void Hide()
         {
-            UIMgr.Inst.PopUIEnable(false, name);
             gameObject.SetActive(false);
         }
 

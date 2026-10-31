@@ -10,6 +10,7 @@ using TEngine;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using XiaoCaoKit;
 
 namespace XiaoCao
 {
@@ -33,6 +34,31 @@ namespace XiaoCao
         private Transform _targetTf;
         private Vector3 _offset;
 
+
+        private void Awake()
+        {
+            //血条用"宽度"表达进度(和 ExpBar 一致): Filled 类型的 fillAmount 会再乘一次, 统一置满
+            PrepareFillImage(fillImage);
+            PrepareFillImage(fillImage2);
+        }
+
+        /// <summary>
+        /// 宽度填充的前置处理:
+        /// 1. Filled 类型会按 fillAmount 再裁一次, 统一置满;
+        /// 2. 有九宫格边框的图切成 Sliced, 宽度收缩时两侧圆角不会变形(Filled/Simple 是整张拉伸);
+        /// 3. 把 Fill 归成左锚点 + 水平零偏移。
+        /// </summary>
+        private static void PrepareFillImage(Image img)
+        {
+            img.fillAmount = 1f;
+
+            if (img.type != Image.Type.Sliced && img.sprite != null && img.sprite.border != Vector4.zero)
+            {
+                img.type = Image.Type.Sliced;
+            }
+
+            UITool.NormalizeFillRect(img);
+        }
 
         public void InitColor(Role role)
         {
@@ -97,19 +123,16 @@ namespace XiaoCao
 
         public void UpdateHealthBar(float healthPercentage)
         {
-            if (healthPercentage <= 0)
-            {
-                fillImage.fillAmount = 0;
-                return;
-            }
+            float ratio = Mathf.Clamp01(healthPercentage);
 
-            fillImage.fillAmount = healthPercentage;
+            //按宽度填充, 图本身保持画满
+            UITool.SetFillWidth(fillImage, ratio);
 
-            if (healthPercentage > 2f / 3f)
+            if (ratio > 2f / 3f)
             {
                 fillImage.color = barColors[0];
             }
-            else if (healthPercentage > 1 / 3f)
+            else if (ratio > 1f / 3f)
             {
                 fillImage.color = barColors[1];
             }
@@ -121,7 +144,8 @@ namespace XiaoCao
 
         public void UpdateArmorBar(float percentage)
         {
-            fillImage2.fillAmount = percentage;
+            //护甲条同样按宽度填充, 与主血条保持一致
+            UITool.SetFillWidth(fillImage2, percentage);
         }
 
 
