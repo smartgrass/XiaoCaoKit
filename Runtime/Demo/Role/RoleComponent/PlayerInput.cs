@@ -32,6 +32,7 @@ namespace XiaoCao
             {
                 data.SetLocalXY(0f, 0f);
                 data.ResetKey();
+                data.norAckHold = false;
                 return;
             }
 
@@ -72,6 +73,7 @@ namespace XiaoCao
 
         private void CheckNorAtk()
         {
+            bool keyHold = Input.GetKey(KeyCode.J);
             if (Input.GetKeyDown(KeyCode.J))
             {
                 data.inputs[(int)InputKey.NorAck] = true;
@@ -79,13 +81,19 @@ namespace XiaoCao
 
             if (GameSetting.UserInputType == UserInputType.Touch)
             {
+                //Touch 模式: norAckHold 由普攻按钮的按压事件维护(KeyInputHud), 这里不覆盖
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.Mouse0) && !IsPointerOverBlockingUI())
+            //按住鼠标左键且指针不在遮挡UI上; GetKey 在按下那一帧同样为 true, 与 GetKeyDown 共用一次判定
+            bool mouseHold = Input.GetKey(KeyCode.Mouse0) && !IsPointerOverBlockingUI();
+            if (mouseHold && Input.GetKeyDown(KeyCode.Mouse0))
             {
                 data.inputs[(int)InputKey.NorAck] = true;
             }
+
+            //长按普攻键/鼠标左键: 炮台自动连发(受攻击冷缩限制)
+            data.norAckHold = keyHold || mouseHold;
         }
 
         private static bool IsPointerOverBlockingUI()

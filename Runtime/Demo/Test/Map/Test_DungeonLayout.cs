@@ -31,7 +31,16 @@ public class DungeonPiece
     public float rows = 3;
     public bool isCorridor;
     [Label("楼梯方向")] public StairDir stair = StairDir.None;
+
+    [InfoBox("层级: -1 = 按原来的配置(顺着楼梯自动推算高度); 0 = 地面; 1 = 强制升高一层, 一层的高度 = 1 格楼梯的抬升(跟着上面的「楼梯每格抬升」走)。只动这一间, 不带动旁边的房间/通道")]
+    [Label("层级(-1=自动)")] public int level = -1;
+
     [Label("哪几面有墙")] public Test_RoomLayout.RoomFace wallFaces = Test_RoomLayout.RoomFace.AllFaces;
+    [Label("支撑柱(四个角)")] public Test_RoomLayout.SupportCorner supportCorners = Test_RoomLayout.SupportCorner.None;
+    [Label("支撑柱宽度(0=等比)")] public float supportWidth;
+
+    [InfoBox("支撑柱向外偏移: 0 = 柱子外侧面贴住房间边界; 值为柱子凸出房间边界的长度, 等于柱宽的一半时柱子中心正好压在房间角上")]
+    [Label("支撑柱向外偏移")] public float supportOffset;
     [Label("边缘格围墙(面 + 格号)")] public List<Test_RoomLayout.EdgeCellBlock> edgeBlocks = new List<Test_RoomLayout.EdgeCellBlock>();
     [Label("边缘格柱子(面 + 格号)")] public List<Test_RoomLayout.EdgeCellPillar> edgePillars = new List<Test_RoomLayout.EdgeCellPillar>();
     [Label("凹面/挖洞(本房间格坐标)")] public List<Test_RoomLayout.RoomRecess> recesses = new List<Test_RoomLayout.RoomRecess>();
@@ -46,6 +55,7 @@ public class Test_DungeonLayout : MonoBehaviour
 {
     [Label("预制体配置")] public RoomBlockSo prefabs;
 
+    [InfoBox("开口(门洞)两侧补的柱子类型。贴墙的面不受这里影响: 那一面是墙时, 门口两侧一律用普通柱子")]
     [Label("开口两侧的柱子")] public Test_RoomLayout.OpeningPillarKind openingPillars = Test_RoomLayout.OpeningPillarKind.OpeningPillar;
     [Label("栏杆缩放")] public float railingScale = 0.7f;
     [Min(1f)] [Label("柱子间隔(格)")] public float pillarInterval = 2f;
@@ -56,6 +66,11 @@ public class Test_DungeonLayout : MonoBehaviour
     [ReadOnly] [Label("上次生成")] public string lastResult;
 
 #if UNITY_EDITOR
+    /// <summary>
+    /// 一层的高度 = 1 格楼梯的抬升, 直接跟着「楼梯每格抬升」走(楼梯预制体本身也是这么高), 不用单独填参数。
+    /// </summary>
+    public float FloorHeight => stairRise;
+
     /// <summary>拼装网格以"半格"当最小单位: 0.5 格 = 1, 这样尺寸/位置都能落在半格上</summary>
     public static int ToHalf(float cells)
     {
@@ -250,6 +265,171 @@ public class Test_DungeonLayout : MonoBehaviour
 
             GenStair(piece, node.transform, cellX, cellZ, index, occupied);
         }
+
+        // 支撑柱放在最后: 高度要量"已经生成完"的整个房间底面(含楼梯)
+        GenSupportPillars(piece, node.transform, cellX, cellZ);
+    }
+
+    /// <summary>支撑柱的最小高度: 低于这个值说明房间已经贴地, 不用撑</summary>
+    private const float MinSupportHeight = 0.15f;
+
+    /// <summary>支撑柱挂在这个子节点下, 量"建筑底面"时要跳过它</summary>
+    private const string SupportNodeName = "Support";
+
+    /// <summary>四个角的标记, 与 <see cref="Test_RoomLayout.SupportCorner"/> 一一对应</summary>
+    private static readonly Test_RoomLayout.SupportCorner[] SupportCornerFlags =
+    {
+        Test_RoomLayout.SupportCorner.XMinZMin,
+        Test_RoomLayout.SupportCorner.XMaxZMin,
+        Test_RoomLayout.SupportCorner.XMinZMax,
+        Test_RoomLayout.SupportCorner.XMaxZMax,
+    };
+
+    /// <summary>每个角在 X 方向贴的是哪条边: -1 = XMin 边(柱子往 +X 长), +1 = XMax 边(往 -X 长)</summary>
+    private static readonly int[] SupportCornerXSign = { -1, 1, -1, 1 };
+
+    /// <summary>每个角在 Z 方向贴的是哪条边: -1 = ZMin 边(柱子往 +Z 长), +1 = ZMax 边(往 -Z 长)</summary>
+    private static readonly int[] SupportCornerZSign = { -1, -1, 1, 1 };
+
+    /// <summary>
+    /// 支撑柱: 配了哪几个角就在哪几个角摆一根, 从地面(拼装根节点的高度)竖直顶到建筑底面,
+    /// 所以抬高的房间/通道下面会自动补上整根柱子, 贴地的房间会被跳过(高度约为 0).
+    /// </summary>
+    private void GenSupportPillars(DungeonPiece piece, Transform roomNode, float cellX, float cellZ)
+    {
+        if (piece.supportCorners == Test_RoomLayout.SupportCorner.None)
+        {
+            return;
+        }
+
+        GameObject prefab = prefabs.supportPillarPrefab != null ? prefabs.supportPillarPrefab : prefabs.pillarPrefab;
+        if (prefab == null)
+        {
+            Debug.LogError("[DungeonLayout] 有房间配了支撑柱, 但预制体配置里既没有 支撑柱 也没有 柱子");
+            return;
+        }
+
+        // 地面 = 拼装根节点的高度: 高度计算已经把最低的那块平移到 0 (见 CalcElevations)
+        float groundY = transform.position.y;
+        // 建筑底面 = 房间节点下所有渲染物的最低点
+        float bottomY = GetBottomY(roomNode);
+        float height = bottomY - groundY;
+        if (height <= MinSupportHeight)
+        {
+            return;
+        }
+
+        Bounds box = Test_RoomLayout.GetLayoutBox(prefab);
+        if (box.size.y < 0.0001f)
+        {
+            Debug.LogError($"[DungeonLayout] 支撑柱 {prefab.name} 量不出高度");
+            return;
+        }
+
+        // 按高度拉伸: 拉伸后网格底边对齐地面, 顶边正好顶住建筑底面
+        float scaleY = height / box.size.y;
+        float meshBottom = box.center.y - box.size.y * 0.5f;   // 网格底边相对预制体原点
+        float y = groundY - meshBottom * scaleY;
+
+        // 横截面: 0 表示等比放大(和高度用同一个缩放), 否则直接用配置值当 localScale 的 xz
+        float scaleXZ = piece.supportWidth > 0f ? piece.supportWidth : scaleY;
+
+        float xMin = roomNode.position.x;
+        float xMax = xMin + piece.cols * cellX;
+        float zMax = roomNode.position.z;                        // 画布上方
+        float zMin = zMax - piece.rows * cellZ;                  // 画布下方
+
+        // 横截面缩放后的实际半宽, 以及网格中心相对预制体原点的偏移(原点不一定在网格中心)
+        float halfX = box.size.x * scaleXZ * 0.5f;
+        float halfZ = box.size.z * scaleXZ * 0.5f;
+        float centerOffsetX = box.center.x * scaleXZ;
+        float centerOffsetZ = box.center.z * scaleXZ;
+
+        // 四个角在 XZ 平面上的世界位置: 和 SupportCornerFlags / SupportCornerXSign 一一对应
+        Vector2[] corners =
+        {
+            new Vector2(xMin, zMin),      // 左下
+            new Vector2(xMax, zMin),      // 右下
+            new Vector2(xMin, zMax),      // 左上
+            new Vector2(xMax, zMax),      // 右上
+        };
+
+        // 支撑柱统一挂在一个子节点下: 层级清楚, 量"建筑底面"时也能整棵跳过
+        Transform supportNode = roomNode.Find(SupportNodeName);
+        if (supportNode == null)
+        {
+            GameObject supportGo = new GameObject(SupportNodeName);
+            supportGo.transform.SetParent(roomNode, false);
+            supportNode = supportGo.transform;
+        }
+        else
+        {
+            // 重复生成时先清掉旧的
+            supportNode.DestroyChildren();
+        }
+
+        // 向外偏移: 0 = 柱子的外侧面贴住房间边界(整根柱子都在房间里);
+        // 值 = 柱子凸出房间边界的长度, 等于半宽时柱子中心正好压在房间角上
+        float outward = Mathf.Max(0f, piece.supportOffset);
+        float insetX = halfX - outward;
+        float insetZ = halfZ - outward;
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            if ((piece.supportCorners & SupportCornerFlags[i]) == 0)
+            {
+                continue;
+            }
+
+            GameObject go = BuildingTool.EditorInstancePrefab(prefab, supportNode);
+            go.name = Test_RoomLayout.IndexedName("SupportPillar", i);
+            go.transform.localScale = new Vector3(scaleXZ, scaleY, scaleXZ);
+
+            // 角对角: 默认外侧面贴住房间边界(不是中心点压在角上), 整根柱子都落在房间范围内; 配了向外偏移就往外推
+            float cornerX = corners[i].x;
+            float cornerZ = corners[i].y;        // Vector2 的 y 存的是 Z
+            float centerX = SupportCornerXSign[i] < 0 ? cornerX + insetX : cornerX - insetX;
+            float centerZ = SupportCornerZSign[i] < 0 ? cornerZ + insetZ : cornerZ - insetZ;
+            go.transform.position = new Vector3(centerX - centerOffsetX, y, centerZ - centerOffsetZ);
+        }
+    }
+
+    /// <summary>
+    /// 节点下所有渲染物的最低点(世界 y), 一个都没有时返回 0.
+    /// 跳过名为 Support 的子树: 支撑柱自己的底边就在地面上, 算进去会把高度量成 0.
+    /// </summary>
+    private static float GetBottomY(Transform node)
+    {
+        bool hasBounds = false;
+        float bottom = 0f;
+        foreach (Renderer renderer in node.GetComponentsInChildren<Renderer>(true))
+        {
+            if (IsUnderSupport(renderer.transform, node))
+            {
+                continue;
+            }
+
+            bottom = hasBounds ? Mathf.Min(bottom, renderer.bounds.min.y) : renderer.bounds.min.y;
+            hasBounds = true;
+        }
+
+        return bottom;
+    }
+
+    /// <summary>这个渲染物是不是挂在支撑柱子树里</summary>
+    private static bool IsUnderSupport(Transform tf, Transform roomNode)
+    {
+        while (tf != null && tf != roomNode)
+        {
+            if (tf.name == SupportNodeName)
+            {
+                return true;
+            }
+
+            tf = tf.parent;
+        }
+
+        return false;
     }
 
     /// <summary>是不是楼梯通道</summary>
@@ -590,7 +770,10 @@ public class Test_DungeonLayout : MonoBehaviour
         public float rise;
     }
 
-    /// <summary>算每个块的高度: 从第一个块(地面)出发, 穿过楼梯时按上坡方向抬升</summary>
+    /// <summary>
+    /// 算每个块的高度: 从第一个块(地面)出发, 穿过楼梯时按上坡方向抬升。
+    /// 配了「层级」的块最后再单独覆盖掉, 直接摆到 层级 × 每层高度 上(只动它自己, 不带动旁边的块)。
+    /// </summary>
     private float[] CalcElevations(Dictionary<Vector2Int, int> occupied)
     {
         float[] levels = new float[pieces.Count];
@@ -632,6 +815,15 @@ public class Test_DungeonLayout : MonoBehaviour
         for (int i = 0; i < levels.Length; i++)
         {
             levels[i] -= lowest;
+        }
+
+        // 配了层级的块: 强制摆到 层级 × 一层的高度, 一层 = 1 格楼梯的抬升(见 FloorHeight), 不再看楼梯推出来多少
+        for (int i = 0; i < levels.Length; i++)
+        {
+            if (pieces[i].level >= 0)
+            {
+                levels[i] = pieces[i].level * FloorHeight;
+            }
         }
 
         return levels;

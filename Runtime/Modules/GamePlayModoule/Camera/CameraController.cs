@@ -228,22 +228,33 @@ namespace XiaoCao
 
         public void OnFixedUpdate()
         {
-            if (IsRunning)
+            if (!IsRunning)
             {
-                if (Mode == CameraMode.ThirdPerson)
-                {
-                    On3rdCamFixedUpdate();
-                }
-                else
-                {
-                    TopDownFixedUpdate();
-                }
+                return;
+            }
 
-                if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
-                {
-                    TransparentObjects();
-                    lastTransparentUpdate = Time.time;
-                }
+            //炮台第一人称期间画面由炮台的虚拟相机提供, 这里只保留血条等 UI 跟随;
+            //同时清掉累积的拖动量, 免得退出炮台时主相机一下甩过去
+            if (TurretAimCamera.IsActive)
+            {
+                UIMgr.Inst.battleHud.AnimTargetFixUpdate();
+                _inputLook = Vector2.zero;
+                return;
+            }
+
+            if (Mode == CameraMode.ThirdPerson)
+            {
+                On3rdCamFixedUpdate();
+            }
+            else
+            {
+                TopDownFixedUpdate();
+            }
+
+            if (Time.time - lastTransparentUpdate >= transparentUpdateInterval)
+            {
+                TransparentObjects();
+                lastTransparentUpdate = Time.time;
             }
         }
 

@@ -49,6 +49,7 @@ namespace XiaoCao
         RebornPanel = 12,      // 添加复活面板类型
         ForgePanel = 13, //锻造台
         TaskPanel = 14, //任务界面
+        TurretPanel = 15, //炮台交互界面
         DebugPanel = 99,
     }
 }

@@ -41,6 +41,12 @@ namespace XiaoCao
         //任务界面
         public TaskPanel taskPanel;
 
+        //炮台交互界面
+        public TurretInteractionPanel turretPanel;
+
+        //炮台瞄准准星
+        public TurretCrosshair turretCrosshair;
+
 
         public KeyInputHud keyInputHud;
 
@@ -171,6 +177,12 @@ namespace XiaoCao
         public void ShowView(UIPanelType type, IUIData data = null)
         {
             PanelBase panel = GetPanel(type);
+            if (panel == null)
+            {
+                Debug.LogError($"-- no panel {type}, 检查 UIMgr 预制体上的绑定");
+                return;
+            }
+
             if (panel.NeedUIData && data == null)
             {
                 Debug.LogError($"-- need uiData");
@@ -334,6 +346,8 @@ namespace XiaoCao
                     return forgePanel;
                 case UIPanelType.TaskPanel:
                     return taskPanel;
+                case UIPanelType.TurretPanel:
+                    return turretPanel;
                 default:
                     Debuger.LogError($"--- no panel {type}");
                     return null;

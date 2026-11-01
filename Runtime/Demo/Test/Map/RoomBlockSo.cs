@@ -19,7 +19,10 @@ public class RoomBlockSo : ScriptableObject
     [InfoBox("开口(门洞)两侧补的柱子用它, 一般比普通柱子小一号")]
     [Label("开口门柱")] public GameObject openingPillarPrefab;
 
-    [InfoBox("勾选后: 四个边缘角仍然是普通柱子, 每条边中间的柱子换成开口门柱")]
+    [InfoBox("支撑柱: 房间/通道抬高后从地面顶到底面的柱子; 留空则用上面的「柱子」按高度拉伸")]
+    [Label("支撑柱")] public GameObject supportPillarPrefab;
+
+    [InfoBox("勾选后: 四个边缘角仍然是普通柱子, 每条边中间的柱子换成开口门柱。贴墙的面例外, 那一面仍然是普通柱子")]
     [Label("是否使用开口门柱")] public bool edgeMiddleUseOpeningPillar;
 
     [InfoBox("楼梯预制体踏步面相对它自身原点的高度(Step_A 是 0.3), 栏杆/墙的底部会抬这么多, 正好贴在踏步面上")]

@@ -39,6 +39,9 @@ namespace XiaoCao
 
         public Button exitLevelBtn;
 
+        [Tooltip("炮台操控时显示的退出按钮(TopBar 下的 CloseBtn), 点击与 Esc 等价")]
+        public Button turretExitBtn;
+
         public GameObject gameWinTip;
 
         //关卡标题浮动动画
@@ -82,11 +85,19 @@ namespace XiaoCao
             playerBar.SetBarColors(false);
             exitLevelBtn.onClick.AddListener(OnExitLevelBtn);
             exitLevelBtn.transform.gameObject.SetActive(false);
+            turretExitBtn.onClick.AddListener(TurretSystem.ExitPlayerControl);
+            turretExitBtn.gameObject.SetActive(false);
             gameWinTip.gameObject.SetActive(false);
             levelTitleFloat.gameObject.SetActive(false);
             _canRect = transform.GetComponentInParent<Canvas>().GetComponent<RectTransform>();
             // _tipText = tipRect.GetComponentInChildren<TMP_Text>(true);
             InitPopTip();
+        }
+
+        /// <summary>炮台操控时显示顶部的退出按钮, 退出操控后收起</summary>
+        public void SetTurretControlMode(bool isOn)
+        {
+            turretExitBtn.gameObject.SetActive(isOn);
         }
 
         //ELevelResult

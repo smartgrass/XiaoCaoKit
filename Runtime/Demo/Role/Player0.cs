@@ -339,6 +339,12 @@ namespace XiaoCao
 
         public static Vector2 LocalSwipeDirection; // 滑动方向
 
+        /// <summary>
+        /// 普攻("按住"而非"按下")状态: PC 为鼠标左键/J, 移动端为普攻按钮持续按压;
+        /// 与 <see cref="inputs"/> 的按下瞬间语义不同, 不参与 ResetKey, 目前供炮台长按连发使用
+        /// </summary>
+        public bool norAckHold;
+
         //InputKey
         public bool[] inputs = new bool[8];
         public int skillInput = -1; //-1无效值

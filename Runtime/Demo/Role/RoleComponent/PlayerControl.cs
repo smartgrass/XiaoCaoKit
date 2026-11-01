@@ -35,6 +35,14 @@ namespace XiaoCao
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+
+            //炮台: 操控中接管全部输入(转向/发射/离开), 靠近炮台时攻击键改为打开交互界面
+            if (TurretSystem.TryConsumePlayerInput(owner))
+            {
+                Data_P.norAckCache = false;
+                return;
+            }
+
             if (InputData.inputs[(int)InputKey.LeftShift])
             {
                 TryRoll();

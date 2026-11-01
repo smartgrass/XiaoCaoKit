@@ -100,6 +100,18 @@ public class Test_RoomLayout : MonoBehaviour
         [InspectorName("空")] Empty = 2,
     }
 
+    /// <summary>支撑柱放在哪几个角(画布方向: 左/右 = x 最小/最大, 下/上 = z 最小/最大)</summary>
+    [System.Flags]
+    public enum SupportCorner
+    {
+        [InspectorName("无")] None = 0,
+        [InspectorName("左下")] XMinZMin = 1,
+        [InspectorName("右下")] XMaxZMin = 2,
+        [InspectorName("左上")] XMinZMax = 4,
+        [InspectorName("右上")] XMaxZMax = 8,
+        [InspectorName("四角")] All = XMinZMin | XMaxZMin | XMinZMax | XMaxZMax,
+    }
+
     /// <summary>单独指定某一个边缘格的柱子: 面 + 面内格号</summary>
     [System.Serializable]
     public class EdgeCellPillar
@@ -109,7 +121,7 @@ public class Test_RoomLayout : MonoBehaviour
         [Label("类型")] public EdgePillarKind kind = EdgePillarKind.Pillar;
     }
 
-    [InfoBox("按 面 + 格号 挑出某一个边缘格: 先把这一格原有的柱子清掉, 再按类型补一根(柱子/开口柱子/空 = 不摆)")]
+    [InfoBox("按 面 + 格号 挑出某一个边缘格: 先把这一格原有的柱子清掉, 再按类型补一根(柱子/开口柱子/空 = 不摆); 面选\"四面\"时直接代表四个角落, 格号不用管")]
     [Label("边缘格柱子(面 + 格号)")] public List<EdgeCellPillar> edgePillars = new List<EdgeCellPillar>();
 
     /// <summary>挖掉一块地板的区域(格坐标): 贴到房间边的按"凹面"处理, 不贴边的就是地上的洞</summary>
@@ -647,8 +659,11 @@ public class Test_RoomLayout : MonoBehaviour
                     float startY = (climbAlongFace ? span.x : info.cellCount - span.x - span.y) * stairRise + prefabs.stairRailBase;
 
                     // 起点沿坡内缩(只收低端这一头: 起点往里挪、总长相应缩短, 所以高端端头位置不变)
+                    // "往里"要沿上坡方向: 上坡和面的排开方向相反时(比如从右往左爬), 方向不取反会把起点推到房间外面
+                    // —— 表现就是栏杆整体偏出去、另一端和楼梯之间留一大段空.
                     float inset = Mathf.Max(0f, prefabs.stairRailStartInset);
-                    Vector3 stairPos = info.startPos + info.runDir * (startCell * info.cellLength + inset * cos) + info.inwardDir * railingInset;
+                    Vector3 travelDir = climbAlongFace ? info.runDir : -info.runDir;
+                    Vector3 stairPos = info.startPos + info.runDir * (startCell * info.cellLength) + travelDir * (inset * cos) + info.inwardDir * railingInset;
                     stairPos.y += startY + inset * sin;
 
                     float slopeLength = Mathf.Max(0.1f, span.y * info.cellLength / cos - inset);
@@ -854,7 +869,8 @@ public class Test_RoomLayout : MonoBehaviour
 
     /// <summary>
     /// 沿四条边摆柱子: 四个角落只摆一次.
-    /// 配置里勾了"是否使用开口门柱"时, 四个角落用普通柱子, 每条边中间的柱子换成开口门柱.
+    /// 配置里勾了"是否使用开口门柱"时, 四个角落用普通柱子, 每条边中间的柱子换成开口门柱
+    /// (贴墙的那一面例外: 墙面上摆开口门柱不搭, 仍然用普通柱子, 见 GetEdgePillarPrefab).
     /// </summary>
     private void GenPillars(Bounds area, float cols, float rows, Bounds pillarBox, Bounds openingPillarBox)
     {
@@ -901,23 +917,49 @@ public class Test_RoomLayout : MonoBehaviour
         GenPillarRun(new Vector3(area.min.x, y, zMax), single, Vector3.zero, PillarPrefab, pillarBox, index++);
         GenPillarRun(new Vector3(area.max.x, y, zMax), single, Vector3.zero, PillarPrefab, pillarBox, index++);
 
-        // 沿x的两条边: 去掉两端角落, 中间几根换成开口门柱
+        // 沿x的两条边: 去掉两端角落, 中间几根换成开口门柱(贴墙的面仍然用普通柱子)
         if (countX > 2)
         {
             Vector3Int genX = new Vector3Int(countX - 2, 1, 1);
-            Vector3 spacingX = new Vector3(stepX - openingPillarBox.size.x, 0f, 0f);
-            GenPillarRun(new Vector3(area.min.x + stepX, y, zMin), genX, spacingX, OpeningPillarPrefab, openingPillarBox, index++);
-            GenPillarRun(new Vector3(area.min.x + stepX, y, zMax), genX, spacingX, OpeningPillarPrefab, openingPillarBox, index++);
+
+            Bounds boxZMin;
+            GameObject prefabZMin = GetEdgePillarPrefab(RoomFace.ZMin, pillarBox, openingPillarBox, out boxZMin);
+            GenPillarRun(new Vector3(area.min.x + stepX, y, zMin), genX, new Vector3(stepX - boxZMin.size.x, 0f, 0f), prefabZMin, boxZMin, index++);
+
+            Bounds boxZMax;
+            GameObject prefabZMax = GetEdgePillarPrefab(RoomFace.ZMax, pillarBox, openingPillarBox, out boxZMax);
+            GenPillarRun(new Vector3(area.min.x + stepX, y, zMax), genX, new Vector3(stepX - boxZMax.size.x, 0f, 0f), prefabZMax, boxZMax, index++);
         }
 
-        // 沿z的两条边本来就不含角落, 整条换成开口门柱
+        // 沿z的两条边本来就不含角落, 整条换成开口门柱(贴墙的面仍然用普通柱子)
         if (countZ > 2)
         {
             Vector3Int genZ = new Vector3Int(1, 1, countZ - 2);
-            Vector3 spacingZ = new Vector3(0f, 0f, stepZ - openingPillarBox.size.z);
-            GenPillarRun(new Vector3(xMinSide, y, area.min.z + stepZ), genZ, spacingZ, OpeningPillarPrefab, openingPillarBox, index++);
-            GenPillarRun(new Vector3(xMaxSide, y, area.min.z + stepZ), genZ, spacingZ, OpeningPillarPrefab, openingPillarBox, index++);
+
+            Bounds boxXMin;
+            GameObject prefabXMin = GetEdgePillarPrefab(RoomFace.XMin, pillarBox, openingPillarBox, out boxXMin);
+            GenPillarRun(new Vector3(xMinSide, y, area.min.z + stepZ), genZ, new Vector3(0f, 0f, stepZ - boxXMin.size.z), prefabXMin, boxXMin, index++);
+
+            Bounds boxXMax;
+            GameObject prefabXMax = GetEdgePillarPrefab(RoomFace.XMax, pillarBox, openingPillarBox, out boxXMax);
+            GenPillarRun(new Vector3(xMaxSide, y, area.min.z + stepZ), genZ, new Vector3(0f, 0f, stepZ - boxXMax.size.z), prefabXMax, boxXMax, index++);
         }
+    }
+
+    /// <summary>
+    /// 一条边中间那几根柱子用哪个: 贴墙的面一律用普通柱子(墙面上摆小一号的开口门柱不搭), 其它的用开口门柱.
+    /// box 跟着返回的预制体走, 间距要用对应预制体的尺寸算.
+    /// </summary>
+    private GameObject GetEdgePillarPrefab(RoomFace face, Bounds pillarBox, Bounds openingPillarBox, out Bounds box)
+    {
+        if (HasWallFace(face))
+        {
+            box = pillarBox;
+            return PillarPrefab;
+        }
+
+        box = openingPillarBox;
+        return OpeningPillarPrefab;
     }
 
     /// <summary>
@@ -946,7 +988,7 @@ public class Test_RoomLayout : MonoBehaviour
     }
 
     /// <summary>
-    /// 边缘格柱子覆盖: 按 面 + 格号 把这一格的柱子换成指定类型.
+    /// 边缘格柱子覆盖: 按 面 + 格号 把这一格的柱子换成指定类型; 面选"四面"时不用再挑格号, 直接当"四角"用.
     /// 这一格原本有柱子就"原地换一根"(位置保持不动); 本来没有才补一根, 补在这一格的格线上(格子起点, 不是格子中间); 空 = 只清不加.
     /// </summary>
     private void ApplyEdgePillars(Bounds area, float cols, float rows, Bounds pillarBox, Bounds openingPillarBox)
@@ -968,62 +1010,155 @@ public class Test_RoomLayout : MonoBehaviour
         }
 
         int index = 0;
-        foreach (FaceInfo info in GetFaceInfos(area, cols, rows))
+        FaceInfo[] faces = GetFaceInfos(area, cols, rows);
+
+        // 按列表顺序逐条处理, 后加的条目覆盖前面的:
+        // 四面 = 四角(四个角落一次配齐, 格号对它没有意义); 单面 = 挑那一面上的某一格
+        foreach (EdgeCellPillar edge in edgePillars)
         {
-            foreach (EdgeCellPillar edge in edgePillars)
+            if (edge.face == RoomFace.AllFaces)
             {
-                if (edge.face != info.face)
+                ApplyCornerPillars(area, edge, y, pillarRuns, pillarBox, openingPillarBox, ref index);
+                continue;
+            }
+
+            foreach (FaceInfo info in faces)
+            {
+                if (info.face != edge.face)
                 {
                     continue;
                 }
 
-                float cellStart = Mathf.Min(edge.index * info.cellLength, info.faceLength);
-                float cellEnd = Mathf.Min(cellStart + info.cellLength, info.faceLength);
-
-                bool openingKind = edge.kind == EdgePillarKind.OpeningPillar;
-                GameObject prefab = openingKind ? OpeningPillarPrefab : PillarPrefab;
-                Bounds box = openingKind ? openingPillarBox : pillarBox;
-
-                // 这一格原来有几根就处理几根: 空 -> 清掉; 换成柱子 -> 原地换一根(位置不动)
-                bool found = false;
-                foreach (Transform run in pillarRuns)
-                {
-                    for (int k = run.childCount - 1; k >= 0; k--)
-                    {
-                        Vector3 pos = run.localPosition + run.GetChild(k).localPosition;
-                        if (!IsInEdgeCell(pos, info, cellStart, cellEnd))
-                        {
-                            continue;
-                        }
-
-                        found = true;
-                        DestroyImmediate(run.GetChild(k).gameObject);
-                        if (edge.kind != EdgePillarKind.Empty)
-                        {
-                            Vector3 keep = pos;
-                            keep.y = y;
-                            GenPillarRun(keep, Vector3Int.one, Vector3.zero, prefab, box, index++);
-                        }
-                    }
-                }
-
-                if (found || edge.kind == EdgePillarKind.Empty)
-                {
-                    continue;       // 这一格原来就有柱子(已原地换完), 或者要的就是空
-                }
-
-                // 这一格本来没有柱子: 补一根在格线上(格子起点那一侧), 不放格子中间
-                Vector3 target = info.startPos + info.runDir * cellStart + info.inwardDir * pillarInset;
-                target.y = y;
-                if (!HasPillarAt(target))
-                {
-                    GenPillarRun(target, Vector3Int.one, Vector3.zero, prefab, box, index++);
-                }
+                ApplyEdgeCellPillar(edge, info, y, pillarRuns, pillarBox, openingPillarBox, ref index);
             }
         }
     }
 
-    /// <summary>开口处理: 清掉落在开口里的柱子, 再按每个开口指定的类型在两侧补柱子(开口柱子/柱子/空)</summary>
+    /// <summary>单面: 把这一面某一格上的柱子换成指定类型</summary>
+    private void ApplyEdgeCellPillar(EdgeCellPillar edge, FaceInfo info, float y, List<Transform> pillarRuns,
+                                     Bounds pillarBox, Bounds openingPillarBox, ref int index)
+    {
+        float cellStart = Mathf.Min(edge.index * info.cellLength, info.faceLength);
+        float cellEnd = Mathf.Min(cellStart + info.cellLength, info.faceLength);
+
+        bool openingKind = edge.kind == EdgePillarKind.OpeningPillar;
+        GameObject prefab = openingKind ? OpeningPillarPrefab : PillarPrefab;
+        Bounds box = openingKind ? openingPillarBox : pillarBox;
+
+        // 这一格原来有几根就处理几根: 空 -> 清掉; 换成柱子 -> 原地换一根(位置不动)
+        bool found = false;
+        foreach (Transform run in pillarRuns)
+        {
+            for (int k = run.childCount - 1; k >= 0; k--)
+            {
+                Vector3 pos = run.localPosition + run.GetChild(k).localPosition;
+                if (!IsInEdgeCell(pos, info, cellStart, cellEnd))
+                {
+                    continue;
+                }
+
+                found = true;
+                DestroyImmediate(run.GetChild(k).gameObject);
+                if (edge.kind != EdgePillarKind.Empty)
+                {
+                    Vector3 keep = pos;
+                    keep.y = y;
+                    GenPillarRun(keep, Vector3Int.one, Vector3.zero, prefab, box, index++);
+                }
+            }
+        }
+
+        if (found || edge.kind == EdgePillarKind.Empty)
+        {
+            return;     // 这一格原来就有柱子(已原地换完), 或者要的就是空
+        }
+
+        // 这一格本来没有柱子: 补一根在格线上(格子起点那一侧), 不放格子中间
+        Vector3 target = info.startPos + info.runDir * cellStart + info.inwardDir * pillarInset;
+        target.y = y;
+        if (!HasPillarAt(target))
+        {
+            GenPillarRun(target, Vector3Int.one, Vector3.zero, prefab, box, index++);
+        }
+    }
+
+
+    /// <summary>
+    /// 四面(AllFaces) 当成"四角": 房间的四个角落各处理一次, 角上原来有柱子就原地换一根, 没有就补在角上, 空 = 只清不加.
+    /// 角落位置和 GenPillars 里摆角落柱子时一致(沿 z 方向内缩 pillarInset).
+    /// </summary>
+    private void ApplyCornerPillars(Bounds area, EdgeCellPillar edge, float y, List<Transform> pillarRuns,
+                                    Bounds pillarBox, Bounds openingPillarBox, ref int index)
+    {
+        bool openingKind = edge.kind == EdgePillarKind.OpeningPillar;
+        GameObject prefab = openingKind ? OpeningPillarPrefab : PillarPrefab;
+        Bounds box = openingKind ? openingPillarBox : pillarBox;
+
+        float zMin = area.min.z + pillarInset;
+        float zMax = area.max.z - pillarInset;
+
+        ReplacePillarNear(new Vector3(area.min.x, y, zMin), edge.kind, prefab, box, pillarRuns, ref index);
+        ReplacePillarNear(new Vector3(area.max.x, y, zMin), edge.kind, prefab, box, pillarRuns, ref index);
+        ReplacePillarNear(new Vector3(area.min.x, y, zMax), edge.kind, prefab, box, pillarRuns, ref index);
+        ReplacePillarNear(new Vector3(area.max.x, y, zMax), edge.kind, prefab, box, pillarRuns, ref index);
+    }
+
+    /// <summary>
+    /// 把一个角上的柱子换成指定类型: 角附近最近的一根"原地换一根"(位置保持不动), 没有才补一根在角上; 空 = 只清不加.
+    /// 只比水平距离(柱子都在同一个 y 上), 半径 1 米: 角到相邻柱子至少隔一格, 不会误伤旁边那根.
+    /// </summary>
+    private void ReplacePillarNear(Vector3 corner, EdgePillarKind kind, GameObject prefab, Bounds box,
+                                   List<Transform> pillarRuns, ref int index)
+    {
+        const float radius = 1f;
+
+        Transform nearestRun = null;
+        int nearestChild = -1;
+        float nearestSqr = radius * radius;
+        foreach (Transform run in pillarRuns)
+        {
+            for (int k = 0; k < run.childCount; k++)
+            {
+                Vector3 pos = run.localPosition + run.GetChild(k).localPosition;
+                pos.y = corner.y;
+                float sqr = (pos - corner).sqrMagnitude;
+                if (sqr < nearestSqr)
+                {
+                    nearestSqr = sqr;
+                    nearestRun = run;
+                    nearestChild = k;
+                }
+            }
+        }
+
+        if (nearestRun != null)
+        {
+            // 原地换一根: 位置沿用原来那根(不动), 只换预制体
+            Vector3 keep = nearestRun.localPosition + nearestRun.GetChild(nearestChild).localPosition;
+            DestroyImmediate(nearestRun.GetChild(nearestChild).gameObject);
+            if (kind == EdgePillarKind.Empty)
+            {
+                return;
+            }
+
+            keep.y = corner.y;
+            GenPillarRun(keep, Vector3Int.one, Vector3.zero, prefab, box, index++);
+            return;
+        }
+
+        if (kind == EdgePillarKind.Empty || HasPillarAt(corner))
+        {
+            return;     // 要的就是空, 或者这个角落本来就有柱子
+        }
+
+        GenPillarRun(corner, Vector3Int.one, Vector3.zero, prefab, box, index++);
+    }
+
+    /// <summary>
+    /// 开口处理: 清掉落在开口里的柱子, 再按每个开口指定的类型在两侧补柱子(开口柱子/柱子/空).
+    /// 相连的开口会先并成一段: 两块直接相接时, 相接面上连成一片的那几格中间不立柱子(边缘/连片区两端除外),
+    /// 不然相接面上会顺着一格格排出一整排柱子。
+    /// </summary>
     private void FixPillarsForOpenings(Bounds area, float cols, float rows, Bounds pillarBox, Bounds openingPillarBox)
     {
         if (openings.Count == 0)
@@ -1045,35 +1180,50 @@ public class Test_RoomLayout : MonoBehaviour
         int index = 0;
         foreach (FaceInfo info in GetFaceInfos(area, cols, rows))
         {
-            foreach (int cellIndex in GetOpeningCells(info.face))
+            List<int> cells = GetOpeningCells(info.face);
+            if (cells.Count == 0)
             {
-                float from = cellIndex * info.cellLength;
-                float to = from + info.cellLength;
+                continue;
+            }
 
-                // 开口范围内原本的柱子要去掉, 不然门口杵着一根柱子
+            // 把连着的格并成一段: 相接面上连成一片的这几格是通的, 中间不立柱子, 只在整段的两端立
+            for (int start = 0; start < cells.Count; start++)
+            {
+                int end = start;
+                while (end + 1 < cells.Count && cells[end + 1] <= cells[end] + 1)
+                {
+                    end++;
+                }
+
+                float runFrom = Mathf.Min(cells[start] * info.cellLength, info.faceLength);
+                float runTo = Mathf.Min((cells[end] + 1) * info.cellLength, info.faceLength);
+
+                // 这一段里原有的柱子全去掉(含格线上那几根); 段的两端留着, 下面按类型补的时候 HasPillarAt 会跳过
                 foreach (Transform run in pillarRuns)
                 {
                     for (int k = run.childCount - 1; k >= 0; k--)
                     {
                         Vector3 pos = run.localPosition + run.GetChild(k).localPosition;
-                        if (IsOnFace(pos, info, from, to))
+                        if (IsOnFace(pos, info, runFrom, runTo))
                         {
                             DestroyImmediate(run.GetChild(k).gameObject);
                         }
                     }
                 }
 
-                OpeningPillarKind kind = openings.Find(x => x.face == info.face && x.index == cellIndex).pillar;
-                if (kind == OpeningPillarKind.Empty)
+                OpeningPillarKind kind = openings.Find(x => x.face == info.face && x.index == cells[start]).pillar;
+                if (kind != OpeningPillarKind.Empty)
                 {
-                    continue;
+                    // 贴墙的面: 门口两侧也用普通柱子(墙面上摆小一号的开口门柱不搭)
+                    bool openingPillar = kind == OpeningPillarKind.OpeningPillar && !HasWallFace(info.face);
+                    GameObject prefab = openingPillar ? OpeningPillarPrefab : PillarPrefab;
+                    Bounds box = openingPillar ? openingPillarBox : pillarBox;
+
+                    GenOpeningPillar(info, runFrom, y, ref index, prefab, box);
+                    GenOpeningPillar(info, runTo, y, ref index, prefab, box);
                 }
 
-                bool openingPillar = kind == OpeningPillarKind.OpeningPillar;
-                GenOpeningPillar(info, from, y, ref index, openingPillar ? OpeningPillarPrefab : PillarPrefab,
-                    openingPillar ? openingPillarBox : pillarBox);
-                GenOpeningPillar(info, to, y, ref index, openingPillar ? OpeningPillarPrefab : PillarPrefab,
-                    openingPillar ? openingPillarBox : pillarBox);
+                start = end;
             }
         }
     }
@@ -1142,7 +1292,8 @@ public class Test_RoomLayout : MonoBehaviour
     {
         Vector3 pos = info.startPos + info.runDir * along;
         pos.y = y;
-        if (HasPillarAt(pos))
+        // 段的端头要是正好落在房间角上, 角上那根柱子是内缩 pillarInset 摆的, 容差要把它算进来, 免得重复立一根
+        if (HasPillarAt(pos, Mathf.Abs(pillarInset) + 0.3f))
         {
             return;
         }
@@ -1161,8 +1312,9 @@ public class Test_RoomLayout : MonoBehaviour
     }
 
     /// <summary>这个位置是不是已经有柱子了(和已生成的柱子比位置)</summary>
-    private bool HasPillarAt(Vector3 localPos)
+    private bool HasPillarAt(Vector3 localPos, float radius = 0.3f)
     {
+        float sqrRadius = radius * radius;
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform child = transform.GetChild(i);
@@ -1173,7 +1325,7 @@ public class Test_RoomLayout : MonoBehaviour
 
             foreach (Transform pillar in child)
             {
-                if ((child.localPosition + pillar.localPosition - localPos).sqrMagnitude < 0.09f)
+                if ((child.localPosition + pillar.localPosition - localPos).sqrMagnitude < sqrRadius)
                 {
                     return true;
                 }

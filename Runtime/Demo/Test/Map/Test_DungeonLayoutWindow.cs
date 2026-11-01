@@ -41,6 +41,7 @@ public class Test_DungeonLayoutWindow : EditorWindow
     private DrawTool tool = DrawTool.Select;
     private float cellPx = 26f;
     private Vector2 scroll;
+    private Vector2 paramScroll;
     private bool autoGen = true;
     private int selected = -1;
     private bool dragging;
@@ -56,6 +57,25 @@ public class Test_DungeonLayoutWindow : EditorWindow
     private Vector2Int moveDelta;
     private Vector2 mouseWindowPos;
     private GUIStyle pieceLabelStyle;
+
+    // 左右分栏: 参数面板占的宽度比例, 默认 1/3.5 即 网格:参数 = 2.5:1
+    private float paramRatio = 1f / (CanvasParamRatio + 1f);
+    private bool draggingSplitter;
+
+    /// <summary>网格画布与参数面板的默认宽度比</summary>
+    private const float CanvasParamRatio = 2.5f;
+
+    /// <summary>中间那条可拖动分隔条的宽度</summary>
+    private const float SplitterWidth = 5f;
+
+    /// <summary>参数面板最小宽度(再窄那些"标签+下拉+输入框"的行就挤成两行了)</summary>
+    private const float MinParamWidth = 250f;
+
+    /// <summary>网格最小宽度</summary>
+    private const float MinCanvasWidth = 380f;
+
+    private static readonly Color SplitterColor = new Color(0.16f, 0.16f, 0.16f, 1f);
+    private static readonly Color SplitterActiveColor = new Color(0.35f, 0.55f, 0.78f, 1f);
 
     // 底部面板各模块的折叠状态
     private bool showPieceBasic = true;
@@ -91,7 +111,8 @@ public class Test_DungeonLayoutWindow : EditorWindow
     public static void Open(Test_DungeonLayout layout)
     {
         Test_DungeonLayoutWindow window = GetWindow<Test_DungeonLayoutWindow>("房间拼装");
-        window.minSize = new Vector2(760f, 560f);
+        //左右分栏后参数面板要固定占一列, 窗口太窄那排"标签+下拉+输入"会挤成两行
+        window.minSize = new Vector2(980f, 620f);
         if (layout != null)
         {
             window.target = layout;
@@ -144,8 +165,72 @@ public class Test_DungeonLayoutWindow : EditorWindow
         }
 
         DrawToolbar();
+        DrawBody();
+    }
+
+    /// <summary>
+    /// 主体: 左边网格画布, 右边参数面板, 默认宽度 2.5:1, 中间的分隔条可以拖动改比例
+    /// </summary>
+    private void DrawBody()
+    {
+        float total = Mathf.Max(MinParamWidth + MinCanvasWidth, position.width - SplitterWidth - 2f);
+        float paramWidth = Mathf.Clamp(total * paramRatio, MinParamWidth, total - MinCanvasWidth);
+        float canvasWidth = total - paramWidth;
+
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.BeginVertical(GUILayout.Width(canvasWidth));
         DrawCanvas();
+        EditorGUILayout.EndVertical();
+
+        DrawSplitter(total);
+
+        EditorGUILayout.BeginVertical(GUILayout.Width(paramWidth));
+        //参数多的时候自己滚, 不要被窗口高度裁掉
+        paramScroll = EditorGUILayout.BeginScrollView(paramScroll);
         DrawFooter();
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>竖分隔条: 拖它调整 网格/参数 的宽度比例</summary>
+    private void DrawSplitter(float total)
+    {
+        Rect rect = GUILayoutUtility.GetRect(SplitterWidth, SplitterWidth, GUILayout.Width(SplitterWidth),
+            GUILayout.ExpandHeight(true));
+        EditorGUI.DrawRect(rect, draggingSplitter ? SplitterActiveColor : SplitterColor);
+        EditorGUIUtility.AddCursorRect(rect, MouseCursor.ResizeHorizontal);
+
+        Event current = Event.current;
+        if (current.type == EventType.MouseDown && current.button == 0 && rect.Contains(current.mousePosition))
+        {
+            draggingSplitter = true;
+            current.Use();
+            return;
+        }
+
+        if (!draggingSplitter)
+        {
+            return;
+        }
+
+        if (current.type == EventType.MouseDrag)
+        {
+            //鼠标位置就是新的分界, 夹在两侧最小宽度之间
+            float paramWidth = Mathf.Clamp(position.width - current.mousePosition.x - SplitterWidth,
+                MinParamWidth, total - MinCanvasWidth);
+            paramRatio = paramWidth / total;
+            Repaint();
+            current.Use();
+        }
+        else if (current.type == EventType.MouseUp)
+        {
+            draggingSplitter = false;
+            Repaint();
+            current.Use();
+        }
     }
 
     /// <summary>Del 键删除选中的房间/通道(正在输入框里打字时不响应)</summary>
@@ -262,7 +347,7 @@ public class Test_DungeonLayoutWindow : EditorWindow
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.LabelField("「选择」点一个房间/通道可改尺寸/位置/墙面/楼梯方向, 按住左键拖就能搬动(按 A 全选后拖=整体平移); 画房间/画通道时点在已有的块上会改为选中; 选中后按 Del 删除; 边贴边会自动开口当门并补柱子; 房间还能加「凹面/挖洞」(把一块地板挖掉, 贴边的围一圈); 网格按半格, 尺寸/位置可以画到 0.5 格(楼梯/门洞仍按整格); 某一格想单独改围墙(墙/栏杆/空)或柱子(柱子/开口柱子/空)就在下面加一条。",
+        EditorGUILayout.LabelField("「选择」点一个房间/通道可改尺寸/位置/墙面/楼梯方向, 按住左键拖就能搬动(按 A 全选后拖=整体平移); 画房间/画通道时点在已有的块上会改为选中; 选中后按 Del 删除; 边贴边会自动开口当门并补柱子; 房间还能加「凹面/挖洞」(把一块地板挖掉, 贴边的围一圈); 网格按半格, 尺寸/位置可以画到 0.5 格(楼梯/门洞仍按整格); 某一格想单独改围墙(墙/栏杆/空)或柱子(柱子/开口柱子/空)就在下面加一条; 房间的「层级」留 -1 就顺着楼梯自动算高度, 填 0/1/2 则强制摆到第 0/1/2 层(一层 = 1 格楼梯的抬升)。",
             EditorStyles.miniLabel);
     }
 
@@ -396,6 +481,12 @@ public class Test_DungeonLayoutWindow : EditorWindow
             DrawRecessMarks(piece, rect);
             DrawEdgeBlockMarks(piece, rect);
             DrawEdgePillarMarks(piece, rect);
+
+            // 配了层级的块在左上角标一下, 一眼能看出这间是被强制放到第几层
+            if (piece.level >= 0)
+            {
+                GUI.Label(new Rect(rect.x + 2f, rect.y, 40f, 18f), $"L{piece.level}", pieceLabelStyle);
+            }
 
             if (i != movingPiece && !movingAll)
             {
@@ -798,13 +889,16 @@ public class Test_DungeonLayoutWindow : EditorWindow
             showPieceBasic = DrawModuleHeader(piece.isCorridor ? "选中:通道" : "选中:房间", 0, showPieceBasic, false, out _);
             if (showPieceBasic)
             {
-                // 一行放完, 每项都按"1个字 + 3个数字"的紧凑宽度, 不铺满整行
+                // 列/行 一行, 宽/高 另一行: 参数列只有两百多像素, 四项加按钮挤一行会溢出
                 EditorGUILayout.BeginHorizontal();
                 piece.col = CompactHalfField("列", piece.col);
                 piece.row = CompactHalfField("行", piece.row);
+                piece.isCorridor = EditorGUILayout.ToggleLeft("通道", piece.isCorridor, GUILayout.Width(52f));
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginHorizontal();
                 piece.cols = Mathf.Max(0.5f, CompactHalfField("宽", piece.cols));
                 piece.rows = Mathf.Max(0.5f, CompactHalfField("高", piece.rows));
-                piece.isCorridor = EditorGUILayout.ToggleLeft("通道", piece.isCorridor, GUILayout.Width(52f));
 
                 if (GUILayout.Button("删除", GUILayout.Width(48f)))
                 {
@@ -816,11 +910,42 @@ public class Test_DungeonLayoutWindow : EditorWindow
 
                 EditorGUILayout.EndHorizontal();
 
+                // 层级: -1 = 按楼梯自动推算高度; 0 = 地面; N = 强制升高 N 层(一层 = 1 格楼梯的抬升)
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("层级", GUILayout.Width(34f));
+                piece.level = Mathf.Max(-1, EditorGUILayout.DelayedIntField(piece.level, GUILayout.Width(60f)));
+                GUILayout.Label(piece.level >= 0 ? $"抬高 {piece.level * target.FloorHeight:0.##}" : "-1=自动",
+                    GUILayout.Width(76f));
+                EditorGUILayout.EndHorizontal();
+
                 // 哪几面有墙: 下拉多选(没勾的面自动围栏杆; 和邻居贴边的面会再自动开口当门)
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Label("墙面", GUILayout.Width(34f));
                 piece.wallFaces = (Test_RoomLayout.RoomFace)EditorGUILayout.EnumFlagsField(piece.wallFaces, GUILayout.Width(168f));
                 EditorGUILayout.EndHorizontal();
+
+                // 支撑柱: 勾了哪个角就在那个角从地面竖一根顶到房间底面(贴地的房间会被自动跳过)
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("支撑柱", GUILayout.Width(34f));
+                piece.supportCorners = (Test_RoomLayout.SupportCorner)EditorGUILayout.EnumFlagsField(piece.supportCorners, GUILayout.Width(168f));
+                EditorGUILayout.EndHorizontal();
+
+                if (piece.supportCorners != Test_RoomLayout.SupportCorner.None)
+                {
+                    // 柱宽: 0 = 等比放大(横截面跟高度一起长), 其他值 = 直接当 localScale 的 xz 用
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Label("柱宽", GUILayout.Width(34f));
+                    piece.supportWidth = Mathf.Max(0f, EditorGUILayout.DelayedFloatField(piece.supportWidth, GUILayout.Width(60f)));
+                    GUILayout.Label("0=等比", GUILayout.Width(56f));
+                    EditorGUILayout.EndHorizontal();
+
+                    // 向外偏移: 柱子凸出房间边界的长度; 0 = 外侧面贴住边界(柱子全在房间里)
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Label("向外偏移", GUILayout.Width(52f));
+                    piece.supportOffset = Mathf.Max(0f, EditorGUILayout.DelayedFloatField(piece.supportOffset, GUILayout.Width(60f)));
+                    GUILayout.Label("0=贴边", GUILayout.Width(56f));
+                    EditorGUILayout.EndHorizontal();
+                }
 
                 if (piece.isCorridor)
                 {
@@ -889,7 +1014,17 @@ public class Test_DungeonLayoutWindow : EditorWindow
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.Label("柱子", GUILayout.Width(34f));
                     edge.face = (Test_RoomLayout.RoomFace)EditorGUILayout.EnumPopup(edge.face, GUILayout.Width(58f));
-                    edge.index = CompactIntField("格", edge.index);
+
+                    // 四面 = 四角: 格号没有意义, 用文字占位
+                    if (edge.face == Test_RoomLayout.RoomFace.AllFaces)
+                    {
+                        GUILayout.Label("四角", GUILayout.Width(52f));
+                    }
+                    else
+                    {
+                        edge.index = CompactIntField("格", edge.index);
+                    }
+
                     edge.kind = (Test_RoomLayout.EdgePillarKind)EditorGUILayout.EnumPopup(edge.kind, GUILayout.Width(72f));
                     if (GUILayout.Button("×", GUILayout.Width(22f)))
                     {
@@ -919,16 +1054,16 @@ public class Test_DungeonLayoutWindow : EditorWindow
 
             if (showRecesses)
             {
-                // 每项一行(列/行/宽/高): 贴房间边的按凹面围一圈, 不贴边的就只是地上的洞
+                // 每项两行: 贴房间边的按凹面围一圈, 不贴边的就只是地上的洞
                 for (int i = 0; i < piece.recesses.Count; i++)
                 {
                     Test_RoomLayout.RoomRecess recess = piece.recesses[i];
+
+                    // 列/行 一行, 宽/高 另一行: 和上面房间那块一样, 四项挤一行会超出参数列
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.Label("凹面", GUILayout.Width(34f));
                     recess.col = CompactIntField("列", recess.col);
                     recess.row = CompactIntField("行", recess.row);
-                    recess.cols = CompactIntField("宽", Mathf.Max(1, recess.cols));
-                    recess.rows = CompactIntField("高", Mathf.Max(1, recess.rows));
                     if (GUILayout.Button("×", GUILayout.Width(22f)))
                     {
                         Undo.RecordObject(target, "删除凹面");
@@ -940,6 +1075,12 @@ public class Test_DungeonLayoutWindow : EditorWindow
                         return;
                     }
 
+                    EditorGUILayout.EndHorizontal();
+
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(34f);
+                    recess.cols = CompactIntField("宽", Mathf.Max(1, recess.cols));
+                    recess.rows = CompactIntField("高", Mathf.Max(1, recess.rows));
                     EditorGUILayout.EndHorizontal();
                 }
             }
@@ -969,6 +1110,10 @@ public class Test_DungeonLayoutWindow : EditorWindow
         }
 
         EditorGUILayout.EndHorizontal();
+
+        // 一层的高度 = 1 格楼梯的抬升, 自动跟着「楼梯每格抬升」走, 这里只做提示
+        EditorGUILayout.LabelField($"一层高度 = 1 格楼梯的抬升 = {target.FloorHeight:0.##}(随「楼梯每格抬升」自动变)", EditorStyles.miniLabel);
+
         EditorGUILayout.EndVertical();
     }
 

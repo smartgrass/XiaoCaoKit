@@ -703,6 +703,10 @@ namespace XiaoCao
                 return null;
             }
 
+            //支援角色的皮肤是 Role_x, 但 IdRole.bodyName 还是 Support 预制体的默认值,
+            //界面/存档按 bodyName 找头像和名字会拿错, 这里同步成 Role_x(与玩家角色一致)
+            supportRole.idRole.bodyName = supportRoleKey;
+
             supportRole.SetTeam(XCSetting.PlayerTeam);
             supportRole.IsAiOn = true;
             ApplySupportRoleAttr(supportRole, level);

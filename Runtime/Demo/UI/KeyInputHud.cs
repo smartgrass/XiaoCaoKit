@@ -121,6 +121,7 @@ namespace XiaoCao
             }
 
             norAtkBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.NorAck] = true; });
+            AddHoldListener(norAtkBtn);
             jumpBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.Space] = true; });
 
             SetupExtraSkillButton();
@@ -129,6 +130,41 @@ namespace XiaoCao
 
             UICanvasMgr.Inst.EventSystem.AddEventListener(UIEventNames.SkillChange, CheckBarImg);
             RefreshInputTypeUI();
+        }
+
+        /// <summary>
+        /// 给按钮补"按住"事件: Button.onClick 只在抬起时触发, 炮台长按连发需要按下/抬起两个时机
+        /// </summary>
+        private void AddHoldListener(Button btn)
+        {
+            if (btn == null)
+            {
+                return;
+            }
+
+            EventTrigger trigger = btn.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null)
+            {
+                trigger = btn.gameObject.AddComponent<EventTrigger>();
+            }
+
+            AddHoldEntry(trigger, EventTriggerType.PointerDown, true);
+            AddHoldEntry(trigger, EventTriggerType.PointerUp, false);
+            AddHoldEntry(trigger, EventTriggerType.PointerExit, false);
+        }
+
+        private void AddHoldEntry(EventTrigger trigger, EventTriggerType eventType, bool hold)
+        {
+            EventTrigger.Entry entry = new EventTrigger.Entry { eventID = eventType };
+            entry.callback.AddListener(_ =>
+            {
+                PlayerInputData data = PlayerInput;
+                if (data != null)
+                {
+                    data.norAckHold = hold;
+                }
+            });
+            trigger.triggers.Add(entry);
         }
 
         public override void OnDestroy()
@@ -405,6 +441,80 @@ namespace XiaoCao
         }
         #endregion
 
+        #region 炮台操控模式
+
+        //炮台操控期间被隐藏的按钮, 值与隐藏前的激活状态对应
+        private readonly Dictionary<GameObject, bool> turretHideCache = new Dictionary<GameObject, bool>();
+        private bool isTurretMode;
+
+        /// <summary>
+        /// 炮台操控模式: 隐藏技能栏/翻滚/跳跃(空格)/额外道具, 只保留普通攻击键(发射);
+        /// 退出炮台改走顶部的 CloseBtn 或 Esc。退出操控时按隐藏前的状态恢复
+        /// </summary>
+        public void SetTurretControlMode(bool isOn)
+        {
+            if (isTurretMode == isOn)
+            {
+                return;
+            }
+
+            isTurretMode = isOn;
+
+            if (isOn)
+            {
+                turretHideCache.Clear();
+
+                //技能栏整块隐藏, PC 模式下槽位上带的按键提示也一起收掉
+                HideForTurret(slotParent.gameObject);
+                HideForTurret(jumpBtn.gameObject);
+
+                if (HasIndependentRollBtn)
+                {
+                    HideForTurret(rollBtn.gameObject);
+                }
+
+                if (extraSkillBtn != null)
+                {
+                    HideForTurret(extraSkillBtn.gameObject);
+                }
+
+                //布局配置可能把槽位挪到 leftDown 下, 逐个再兜一遍
+                if (slots != null)
+                {
+                    for (int i = 0; i < slots.Count; i++)
+                    {
+                        HideForTurret(slots[i].gameObject);
+                    }
+                }
+
+                return;
+            }
+
+            foreach (var item in turretHideCache)
+            {
+                if (item.Key != null)
+                {
+                    item.Key.SetActive(item.Value);
+                }
+            }
+
+            turretHideCache.Clear();
+            RefreshExtraSkillBtnState(true);
+        }
+
+        private void HideForTurret(GameObject go)
+        {
+            if (go == null || turretHideCache.ContainsKey(go))
+            {
+                return;
+            }
+
+            turretHideCache[go] = go.activeSelf;
+            go.SetActive(false);
+        }
+
+        #endregion
+
         #region ExtraSkill
         private void SetupExtraSkillButton()
         {
@@ -448,6 +558,13 @@ namespace XiaoCao
         {
             if (extraSkillBtn == null)
             {
+                return;
+            }
+
+            //炮台操控期间额外道具按钮保持隐藏, 不参与刷新
+            if (isTurretMode)
+            {
+                HideExtraSkillWheel();
                 return;
             }
 
