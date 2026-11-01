@@ -58,6 +58,7 @@ namespace AssetEditor.Editor
         public int playerCoin = 0;
 
         [OnValueChanged(nameof(OnLevelChange))]
+        [Label("开启隐身")]
         public bool isHiding;
 
         [HorLayout(false)] [Range(0, 10)] [OnValueChanged(nameof(OnTimeScale))]

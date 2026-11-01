@@ -29,8 +29,8 @@ namespace XiaoCao
         void CheckLevelFinish()
         {
             //检查LevelAction中的所有Group中是否有MapMsg为LevelFinish的,没有则输出Error
-            if (levelAction.GetComponentsInChildren<EnemyGroupComponent>(true)
-                .Any(x => x.MapMsg == LocalizeKey.LevelFinish))
+            if (levelAction.GetComponentsInChildren<IMapMsgSender>(true)
+                .Any(x => x.GetSendMapMsg == LocalizeKey.LevelFinish))
             {
                 Debug.Log("mapMsg == LevelFinish 关卡通关已存在");
             }

@@ -17,6 +17,9 @@ namespace XiaoCao
             IsBegin = isBegin;
         }
 
+        /// <summary>true 打开一个水平行, false 关闭</summary>
+        public XCDrawStage Stage => IsBegin ? XCDrawStage.BeginRow : XCDrawStage.EndRow;
+
 
 
         public void OnDraw(UnityEngine.Object targetObject, Action action)
@@ -59,8 +62,14 @@ namespace XiaoCao
 
         public void OnDraw(Object targetObject, Action action)
         {
-            GUILayout.BeginHorizontal();
-            action?.Invoke();
+            // 带 action 时自己开一行(单独使用); Inspector 统一调度时传 null, 行已由外层打开, 这里只画按钮
+            bool ownRow = action != null;
+            if (ownRow)
+            {
+                GUILayout.BeginHorizontal();
+                action?.Invoke();
+            }
+
             var getMethod = ReflectionUtil.GetMethod(targetObject, funName);
             if (getMethod != null)
             {
@@ -69,7 +78,11 @@ namespace XiaoCao
                     getMethod.Invoke(targetObject, null);
                 }
             }
-            GUILayout.EndHorizontal();
+
+            if (ownRow)
+            {
+                GUILayout.EndHorizontal();
+            }
         }
 
         bool IsButtonDown()
@@ -104,6 +117,9 @@ namespace XiaoCao
         public XCHeaderAttribute(string header = "") { this.Header = header; }
 
         public string Header;
+
+        /// <summary>标题必须独占整行, 在水平行打开之前绘制</summary>
+        public XCDrawStage Stage => XCDrawStage.Before;
 
         public void OnDraw(Object targetObject, Action action)
         {

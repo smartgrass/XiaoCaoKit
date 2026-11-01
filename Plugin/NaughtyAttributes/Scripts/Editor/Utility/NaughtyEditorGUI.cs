@@ -71,6 +71,18 @@ namespace NaughtyAttributes.Editor
 
         private static void DrawPropertyField_Layout(Rect rect, SerializedProperty property, GUIContent label, bool includeChildren)
         {
+            // [Header]/[Space] 是 Unity 内建装饰器, 由 EditorGUILayout.PropertyField 内部绘制并要求独占整行;
+            // 塞进下面手写的水平行里会和标签/输入框互相挤占宽度, 表现为标题错位、输入框被挤到下一行
+            if (HasBuiltinDecorators(property))
+            {
+                float oldLabelWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = Mathf.Min(EditorStyles.label.CalcSize(label).x, EditorGUIUtility.currentViewWidth * 0.4f);
+                EditorGUILayout.PropertyField(property, label, includeChildren);
+                EditorGUIUtility.labelWidth = oldLabelWidth;
+                GUILayout.Space(LABEL_SPACE);
+                return;
+            }
+
             if (property.hasVisibleChildren)
             {
                 EditorGUILayout.PropertyField(property, label, includeChildren);
@@ -83,6 +95,40 @@ namespace NaughtyAttributes.Editor
             GUILayout.Space(LABEL_SPACE);
             GUILayout.EndHorizontal();
             GUILayout.Space(LABEL_SPACE);
+        }
+
+        // 内建装饰器判定缓存: 特性在运行期不会变化, 避免每次重绘都做反射
+        private static readonly Dictionary<(Type, string), bool> DecoratorCache = new Dictionary<(Type, string), bool>();
+
+        /// <summary>
+        /// 字段是否带 Unity 内建装饰器([Header]/[Space])。
+        /// 这类装饰器必须由 EditorGUILayout.PropertyField 独占整行绘制, 不能放进手写的水平行。
+        /// </summary>
+        public static bool HasBuiltinDecorators(SerializedProperty property)
+        {
+            object targetObject = PropertyUtility.GetTargetObjectWithProperty(property);
+            (Type, string) key = (targetObject.GetType(), property.name);
+            if (DecoratorCache.TryGetValue(key, out bool cached))
+            {
+                return cached;
+            }
+
+            bool hasDecorator = false;
+            FieldInfo fieldInfo = ReflectionUtility.GetField(targetObject, property.name);
+            if (fieldInfo != null)
+            {
+                foreach (object attribute in fieldInfo.GetCustomAttributes(typeof(PropertyAttribute), true))
+                {
+                    if (attribute is HeaderAttribute || attribute is SpaceAttribute)
+                    {
+                        hasDecorator = true;
+                        break;
+                    }
+                }
+            }
+
+            DecoratorCache[key] = hasDecorator;
+            return hasDecorator;
         }
 
         private static void PropertyField_Implementation(Rect rect, SerializedProperty property, bool includeChildren, PropertyFieldFunction propertyFieldFunction)

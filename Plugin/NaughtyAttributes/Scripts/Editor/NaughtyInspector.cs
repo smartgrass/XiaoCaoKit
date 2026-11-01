@@ -21,11 +21,15 @@ namespace NaughtyAttributes.Editor
 
         //private IEnumerable<MethodInfo> _methods;
         private Dictionary<int, List<MethodInfo>> _methodDic;
-        private Dictionary<string, IXCDrawAttribute> _layoutDic;
         private List<int> methPosSortList;
 
         private Dictionary<string, SavedBool> _foldouts = new Dictionary<string, SavedBool>();
         private Dictionary<Object, SerializedObject> SoDic = new Dictionary<Object, SerializedObject>();
+
+        // 当前是否处在 [HorLayout(true)] 打开的水平行里, 以及打开该行的字段名(用于失衡告警)
+        private bool _rowOpen;
+        private string _rowOpener;
+        private bool _rowWarned;
 
         protected virtual void OnEnable()
         {
@@ -35,19 +39,7 @@ namespace NaughtyAttributes.Editor
             _nativeProperties = ReflectionUtility.GetAllProperties(
                 target, p => p.GetCustomAttributes(typeof(ShowNativePropertyAttribute), true).Length > 0);
 
-            CacheLayoutDic();
-
             GetSortMethods();
-        }
-
-        private void CacheLayoutDic()
-        {
-            var fields = ReflectionUtility.GetAllFields(
-                target, f => f.GetCustomAttributes(typeof(IXCDrawAttribute), true).Length > 0);
-            foreach (var field in fields)
-            {
-                //layoutDic.Add(field.GetValue )
-            }
         }
 
         private void GetSortMethods()
@@ -216,105 +208,173 @@ namespace NaughtyAttributes.Editor
         protected void DrawSerializedProperties()
         {
             serializedObject.Update();
+
+            DrawLayoutProperties();
+            DrawFoldoutProperties();
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// 逐个字段按 IXCDrawAttribute 声明的阶段绘制。
+        /// [HorLayout(true)] 打开的水平行会跨字段存在, 一直延续到后面出现 [HorLayout(false)] 的字段;
+        /// 用 try/finally 兜底, 避免字段绘制抛异常时漏掉 EndHorizontal 导致整个面板布局错乱。
+        /// </summary>
+        private void DrawLayoutProperties()
+        {
+            _rowOpen = false;
+            _rowOpener = null;
             int i = 1;
-            // Draw non-grouped serialized properties
-            foreach (var property in GetProperties(_serializedProperties))
+            try
             {
-                if (DrawScriptHander(property))
+                foreach (var property in _serializedProperties)
                 {
-                    continue;
-                }
-
-                IXCDrawAttribute[] xcLayouts = PropertyUtility.GetAttributes<IXCDrawAttribute>(property);
-                if (xcLayouts.Length == 0)
-                {
-                    NaughtyEditorGUI.PropertyField_Layout(property, true);
-                }
-                else
-                {
-                    int length = xcLayouts.Length;
-                    bool hasHor = false;
-                    for (int j = 0; j < length; j++)
+                    if (DrawScriptHander(property))
                     {
-                        var xcLayout = xcLayouts[j];
-                        if (length == 1)
-                        {
-                            xcLayout.OnDraw(serializedObject.targetObject,
-                                () => { NaughtyEditorGUI.PropertyField_Layout(property, true); });
-                            continue;
-                        }
+                        continue;
+                    }
 
+                    DrawPropertyWithLayout(property);
 
-                        bool isLast = j == length - 1;
-                        bool isFrist = j == 0;
-                        if (isFrist)
-                        {
-                            xcLayout.OnDraw(serializedObject.targetObject, () =>
-                            {
-                                GUILayout.BeginHorizontal();
-                                hasHor = true;
-                                NaughtyEditorGUI.PropertyField_Layout(property, true);
-                            });
-                        }
+                    // 按钮: [Button(pos = -i)] 挂在该字段下方
+                    if (_methodDic.TryGetValue(-i, out var methods))
+                    {
+                        NaughtyEditorGUI.ButtonList(serializedObject.targetObject, methods);
+                    }
 
-                        if (hasHor && xcLayout.GetType() == typeof(XCHeaderAttribute))
-                        {
-                            GUILayout.EndHorizontal();
-                            hasHor = false;
-                        }
+                    i++;
+                }
+            }
+            finally
+            {
+                if (_rowOpen)
+                {
+                    WarnUnbalancedRow();
+                    CloseRow();
+                }
+            }
+        }
 
-                        if (isLast)
-                        {
-                            xcLayout.OnDraw(serializedObject.targetObject, () =>
-                            {
-                                if (hasHor)
-                                {
-                                    GUILayout.EndHorizontal();
-                                }
-                            });
-                        }
+        /// <summary>打开水平行, 已在行内时不再嵌套</summary>
+        private void OpenRow(SerializedProperty property)
+        {
+            if (_rowOpen)
+            {
+                return;
+            }
 
+            GUILayout.BeginHorizontal();
+            _rowOpen = true;
+            _rowOpener = property.name;
+        }
 
-                        if (!isFrist && !isLast)
-                        {
-                            xcLayout.OnDraw(serializedObject.targetObject, null);
-                        }
+        /// <summary>关闭水平行, 没有打开过则忽略</summary>
+        private void CloseRow()
+        {
+            if (!_rowOpen)
+            {
+                return;
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.Space(5);
+            _rowOpen = false;
+            _rowOpener = null;
+        }
+
+        /// <summary>[HorLayout(true)] 没有配套的 [HorLayout(false)] 时告警, 每个 Inspector 只报一次, 避免刷屏</summary>
+        private void WarnUnbalancedRow()
+        {
+            if (_rowWarned)
+            {
+                return;
+            }
+
+            _rowWarned = true;
+            Debug.LogWarning($"[{target.GetType().Name}] 字段 {_rowOpener} 上的 [HorLayout(true)] 没有配套的 [HorLayout(false)], 已强制收尾");
+        }
+
+        /// <summary>
+        /// 按阶段绘制单个字段: 整行前置(标题) -> 行边界 -> 字段本体 -> 行内控件(按钮)
+        /// </summary>
+        private void DrawPropertyWithLayout(SerializedProperty property)
+        {
+            IXCDrawAttribute[] xcLayouts = PropertyUtility.GetAttributes<IXCDrawAttribute>(property);
+
+            // 0. [Foldout] 之类声明了 Skip 的字段交给分组流程绘制
+            foreach (var xcLayout in xcLayouts)
+            {
+                if (xcLayout.Stage == XCDrawStage.Skip)
+                {
+                    return;
+                }
+            }
+
+            // 1. 标题类特性必须画在水平行之外, 画进行内会和标签/输入框互相挤占宽度
+            foreach (var xcLayout in xcLayouts)
+            {
+                if (xcLayout.Stage == XCDrawStage.Before)
+                {
+                    xcLayout.OnDraw(serializedObject.targetObject, null);
+                }
+            }
+
+            bool beginRow = false;
+            bool endRow = false;
+            bool hasInline = false;
+            foreach (var xcLayout in xcLayouts)
+            {
+                switch (xcLayout.Stage)
+                {
+                    case XCDrawStage.BeginRow:
+                        beginRow = true;
+                        break;
+                    case XCDrawStage.EndRow:
+                        endRow = true;
+                        break;
+                    case XCDrawStage.Inline:
+                        hasInline = true;
+                        break;
+                }
+            }
+
+            // 2. 带 [Header]/[Space] 的字段由 Unity 自己画标题, 必须独占整行, 不参与水平行
+            bool standalone = NaughtyEditorGUI.HasBuiltinDecorators(property);
+            bool openedHere = false;
+            if (!standalone && (beginRow || hasInline))
+            {
+                openedHere = !_rowOpen;
+                OpenRow(property);
+            }
+
+            // 3. 字段本体
+            NaughtyEditorGUI.PropertyField_Layout(property, true);
+
+            // 4. 行内控件(如 [MiniBtn] 按钮), 紧跟在字段后面
+            if (!standalone)
+            {
+                foreach (var xcLayout in xcLayouts)
+                {
+                    if (xcLayout.Stage == XCDrawStage.Inline)
+                    {
+                        xcLayout.OnDraw(serializedObject.targetObject, null);
                     }
                 }
-
-
-                //按钮
-                if (_methodDic.ContainsKey(-i))
-                {
-                    NaughtyEditorGUI.ButtonList(serializedObject.targetObject, _methodDic[-i]);
-                }
-
-                i++;
             }
-            ///<see cref="FoldoutAttribute"/>
-            //Obsolete BoxGroupAttribute 
-            // Draw grouped serialized properties
 
-            /*
-            foreach (var group in GetGroupedProperties(_serializedProperties))
+            // 5. 关行:
+            //    声明了 EndRow 的字段负责收尾;
+            //    只有 [MiniBtn] 这类没有 BeginRow 的行内字段是自开自行(本字段画完就关);
+            //    [HorLayout(true)] 打开的行留给后续字段, 由后面带 [HorLayout(false)] 的字段关闭
+            if (endRow || (openedHere && hasInline && !beginRow))
             {
-                IEnumerable<SerializedProperty> visibleProperties = group.Where(p => PropertyUtility.IsVisible(p));
-                if (!visibleProperties.Any())
-                {
-                    continue;
-                }
-
-                NaughtyEditorGUI.BeginBoxGroup_Layout(group.Key);
-                foreach (var property in visibleProperties)
-                {
-                    NaughtyEditorGUI.PropertyField_Layout(property, true);
-                }
-
-                NaughtyEditorGUI.EndBoxGroup_Layout();
+                CloseRow();
             }
-            */
+        }
 
-            // Draw foldout serialized properties
+        /// <summary>绘制 [Foldout] 分组的字段</summary>
+        private void DrawFoldoutProperties()
+        {
             foreach (var group in GetFoldoutProperties(_serializedProperties))
             {
                 IEnumerable<SerializedProperty> visibleProperties = group.Where(p => PropertyUtility.IsVisible(p));
@@ -325,7 +385,7 @@ namespace NaughtyAttributes.Editor
 
                 if (!_foldouts.ContainsKey(group.Key))
                 {
-                    _foldouts[group.Key] = new SavedBool($"{target.GetInstanceID()}.{group.Key}", false);
+                    _foldouts[group.Key] = new SavedBool($"{target.GetEntityId()}.{group.Key}", false);
                 }
 
                 _foldouts[group.Key].Value = EditorGUILayout.Foldout(_foldouts[group.Key].Value, group.Key);
@@ -337,9 +397,6 @@ namespace NaughtyAttributes.Editor
                     }
                 }
             }
-
-
-            serializedObject.ApplyModifiedProperties();
         }
 
         private bool DrawScriptHander(SerializedProperty property)
