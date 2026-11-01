@@ -5,7 +5,7 @@ namespace XiaoCao
 {
     /// <summary>
     /// 炮台飞行物基类: 复用 <see cref="Atker"/> 的碰撞命中判定,
-    /// 命中一次(或超时)后回收进对象池; 具体飞行方式由子类实现。
+    /// 命中角色/场景, 或者飞满 lifeTime 后回收进对象池; 具体飞行方式由子类实现。
     /// 预制体要求: 与脚本同一个 GameObject 上挂一个 isTrigger 的碰撞体。
     /// </summary>
     public abstract class TurretProjectile : Atker
@@ -17,13 +17,9 @@ namespace XiaoCao
         [Tooltip("打在墙/地面上时播放的击中特效名(Assets/_Res/SkillPrefab/Hit 下); 留空则用 skillId 对应 SkillSetting 的 HitEffect")]
         public string sceneHitEffect = "";
 
-        [Header("发射音效")]
-        [Tooltip("发射音效 id(Assets/_Res/Audio 下, 不带后缀); 留空则用炮台攻击配置里的 fireSfx 兜底")]
-        public string launchSfx = "";
-
-        [Range(0f, 1f)]
-        [Tooltip("发射音效音量")]
-        public float launchSfxVolume = 1f;
+        [Tooltip("飞行途中检测的场景层; 勾 WallBlock(实体墙)、Ground(地面)、Default(未分层楼板)。" +
+                 "Wall 是空气墙, 不挡子弹, 所以不要勾")]
+        public LayerMask sceneCollisionMask = Layers.WALL_BLOCK_MASK | Layers.GROUND_MASK | Layers.DEFAULT_MASK;
 
         protected Turret turret;
         protected Role ownerRole;
@@ -37,21 +33,30 @@ namespace XiaoCao
 
         protected float timer;
 
-        /// <summary>出生位置, 用来判断是否飞到了准星落点</summary>
+        /// <summary>出生位置, 用来忽略"炮口卡在墙里"的刚出发命中</summary>
         private Vector3 spawnPos;
 
-        /// <summary>从炮口到准星落点的距离, 飞到这里就算打在落点上</summary>
-        private float travelLimit;
-
-        /// <summary>这次射击的落点是否真的打在场景上(没打中任何东西时只是射程尽头, 不播特效)</summary>
-        private bool hitScene;
-
-        /// <summary>已经命中过角色, 不要再做落点判定</summary>
+        /// <summary>已经命中过角色, 不要重复结算</summary>
         private bool consumed;
+
+        /// <summary>命中场景时播的音效(发射时从炮台攻击配置取, 不在飞行物上重复配置)</summary>
+        private AudioClip hitSfx;
+
+        /// <summary>命中音效音量</summary>
+        private float hitSfxVolume = 1f;
+
+        /// <summary>已经回收过, 避免回收后继续做碰撞/落点判定</summary>
+        private bool recycled;
+
+        /// <summary>场景碰撞检测的复用缓冲, 避免每帧分配</summary>
+        private static readonly RaycastHit[] sceneHits = new RaycastHit[8];
+
+        /// <summary>离出生点这么近(米)的场景命中视为"起点被包住"(炮口卡在空气墙里), 忽略掉</summary>
+        private const float SceneHitIgnoreNear = 0.3f;
 
         /// <summary>由炮台在发射时调用: 初始化伤害信息、归位到炮口并开始飞行</summary>
         public virtual void Launch(Turret turret, Role ownerRole, string skillId, float range,
-            Vector3 aimPoint, Vector3 fireDir, AssetPool pool, Role target, bool hitScene = false)
+            Vector3 aimPoint, Vector3 fireDir, AssetPool pool, Role target)
         {
             this.turret = turret;
             this.ownerRole = ownerRole;
@@ -73,27 +78,14 @@ namespace XiaoCao
             transform.SetPositionAndRotation(turret.muzzle.position, Quaternion.LookRotation(fireDir, Vector3.up));
 
             spawnPos = transform.position;
-            travelLimit = Vector3.Distance(spawnPos, aimPoint);
-            this.hitScene = hitScene;
             consumed = false;
+            recycled = false;
 
-            PlayLaunchSfx();
+            //音效统一配在炮台的攻击配置上, 这里只取击中音效(发射音效由炮台在 Launch 前播)
+            hitSfx = turret.attackConfig.hitSfx;
+            hitSfxVolume = turret.attackConfig.hitSfxVolume;
 
             OnLaunched(range);
-        }
-
-        /// <summary>
-        /// 发射瞬间播一次音效。留在飞行物上而不是炮台上, 是为了让不同弹道各配各的声音;
-        /// 没配时由炮台用攻击配置的 fireSfx 兜底(见 Turret.LaunchProjectile)
-        /// </summary>
-        protected virtual void PlayLaunchSfx()
-        {
-            if (string.IsNullOrEmpty(launchSfx))
-            {
-                return;
-            }
-
-            SoundMgr.Inst.PlayClip(launchSfx, launchSfxVolume);
         }
 
         protected abstract void OnLaunched(float range);
@@ -107,31 +99,79 @@ namespace XiaoCao
                 return;
             }
 
+            Vector3 prevPos = transform.position;
             OnMove(XCTime.deltaTime);
 
-            //飞满到准星落点的距离还没撞到角色: 说明打在墙/地面上, 在这里炸开
-            CheckAimPointReached();
+            if (recycled)
+            {
+                return;
+            }
+
+            //撞到墙/地面就收尾; 没撞到任何东西就一路飞, 由 lifeTime 兜底回收
+            CheckSceneHit(prevPos);
         }
 
-        /// <summary>飞到准星落点就收尾: 命中场景时播击中特效, 打空则直接消失</summary>
-        private void CheckAimPointReached()
+        /// <summary>
+        /// 沿这一帧的位移做扫掠检测, 撞到墙/地面就播击中特效+音效并回收。
+        /// 准星射线不检测地面(否则准星会被台阶/楼板挡住), 所以地面命中只能靠这里补
+        /// </summary>
+        private bool CheckSceneHit(Vector3 fromPos)
         {
-            if (consumed || travelLimit <= 0.01f)
+            if (consumed || sceneCollisionMask.value == 0)
             {
-                return;
+                return false;
             }
 
-            if ((transform.position - spawnPos).sqrMagnitude < travelLimit * travelLimit)
+            Vector3 delta = transform.position - fromPos;
+            float dist = delta.magnitude;
+            if (dist <= 0.0001f)
             {
-                return;
+                return false;
             }
 
-            if (hitScene)
+            int count = Physics.RaycastNonAlloc(fromPos, delta / dist, sceneHits, dist,
+                sceneCollisionMask.value, QueryTriggerInteraction.Collide);
+
+            int best = -1;
+            float bestDist = float.MaxValue;
+            for (int i = 0; i < count; i++)
             {
-                PlayHitEffect(aimPoint, -transform.forward);
+                RaycastHit hit = sceneHits[i];
+
+                //炮台自身与操控者不算命中
+                if (turret != null && turret.IsSelfCollider(hit.collider))
+                {
+                    continue;
+                }
+
+                //飞行物自己在 Default 层, 也在检测掩码内, 跳过自身节点才能避免"出门就撞自己"
+                if (hit.collider.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                //出生点被墙体包住时, 刚出发就命中的要忽略, 否则子弹一发射就炸
+                if ((hit.point - spawnPos).sqrMagnitude < SceneHitIgnoreNear * SceneHitIgnoreNear)
+                {
+                    continue;
+                }
+
+                if (hit.distance < bestDist)
+                {
+                    bestDist = hit.distance;
+                    best = i;
+                }
             }
 
+            if (best < 0)
+            {
+                return false;
+            }
+
+            consumed = true;
+            PlayHitEffect(sceneHits[best].point, sceneHits[best].normal);
             Recycle();
+            return true;
         }
 
         /// <summary>
@@ -141,6 +181,8 @@ namespace XiaoCao
         /// </summary>
         protected void PlayHitEffect(Vector3 pos, Vector3 forward)
         {
+            PlayHitSfx();
+
             string effectName = sceneHitEffect;
 
             if (string.IsNullOrEmpty(effectName) && ackInfo != null)
@@ -168,6 +210,15 @@ namespace XiaoCao
             effect.transform.SetParent(null, true);
             effect.transform.position = pos;
             effect.transform.forward = forward;
+        }
+
+        /// <summary>命中场景(墙/地面)的音效, 与击中特效一起播</summary>
+        private void PlayHitSfx()
+        {
+            if (hitSfx != null)
+            {
+                SoundMgr.Inst.PlayClip(hitSfx, hitSfxVolume);
+            }
         }
 
         protected abstract void OnMove(float dt);
@@ -217,6 +268,7 @@ namespace XiaoCao
         /// <summary>回收进对象池(池子会顺带把物体设为未激活)</summary>
         protected virtual void Recycle()
         {
+            recycled = true;
             pool.Release(gameObject);
         }
     }

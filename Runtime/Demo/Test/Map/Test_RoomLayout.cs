@@ -8,7 +8,8 @@ using XiaoCao.Map;
 /// <summary>
 /// 房间排版工具: 输入房间尺寸(列x 行y), 一键铺地板 / 围栏杆 / 沿边按间距摆柱子, 贴墙的面用墙面代替栏杆.
 /// 还能在房间里挖"凹面/挖洞": 划一块区域把它下面的地板挖掉, 贴着房间边的按凹面处理(那一面的栏杆/墙跟着凹进去, 把区域边缘围起来), 不贴边的就只是地上的洞.
-/// 边缘还能逐格点名: 「边缘格围墙」把某一格的墙/栏杆换成 墙/栏杆/空, 「边缘格柱子」把某一格的柱子换成 柱子/开口柱子/空.
+/// 边缘还能逐格点名: 「边缘格围墙」把某一格的墙/栏杆换成 RoomBlockSo 类型表里的任意一种(墙体/栏杆/空/翻边...),
+/// 「边缘格柱子」把某一格的柱子换成 柱子/开口柱子/空.
 /// 生成结构与 Assets/_Res/Item/Static/room/FloorRect.prefab 类似:
 /// 根节点下是 1个地板节点(Test_MapLayout) + 若干边栏杆节点(Test_WallLayout) + 若干边墙面节点(Test_MapLayout) + 4个边柱子节点(Test_MapLayout),
 /// 各部分都留着对应工具的参数, 可以单独在 Inspector 上调整后再点它自己的生成按钮.
@@ -72,24 +73,24 @@ public class Test_RoomLayout : MonoBehaviour
         [InspectorName("柱子")] Pillar = 2,
     }
 
-    /// <summary>边缘格上放什么: 墙体 / 栏杆 / 空(什么都不放)</summary>
-    public enum EdgeBlockKind
-    {
-        [InspectorName("墙体")] Wall = 0,
-        [InspectorName("栏杆")] Railing = 1,
-        [InspectorName("空")] Empty = 2,
-    }
+    /// <summary>老数据里固定的三个编号(对应 RoomBlockSo.edgeBlockTypes 的列表顺序): 0=墙体 1=栏杆 2=空</summary>
+    public const int EdgeKindWall = 0;
+    public const int EdgeKindRailing = 1;
+    public const int EdgeKindEmpty = 2;
 
-    /// <summary>单独指定某一个边缘格放什么: 面 + 面内格号, 覆盖"贴墙的面=墙, 其它=栏杆"的默认</summary>
+    /// <summary>
+    /// 单独指定某一个边缘格放什么: 面 + 面内格号, 覆盖"贴墙的面=墙, 其它=栏杆"的默认。
+    /// kind 是 RoomBlockSo.edgeBlockTypes 里的编号(= 列表顺序), 老数据 0/1/2 对应 墙体/栏杆/空。
+    /// </summary>
     [System.Serializable]
     public class EdgeCellBlock
     {
         public RoomFace face;
         [Min(0)] public int index;
-        [Label("类型")] public EdgeBlockKind kind = EdgeBlockKind.Wall;
+        [Label("类型")] public int kind = EdgeKindWall;
     }
 
-    [InfoBox("按 面 + 格号 挑出某一个边缘格, 把这一格原本的围墙/栏杆换成类型里的(墙体/栏杆/空); 空 = 这一格既不放墙也不放栏杆")]
+    [InfoBox("按 面 + 格号 挑出某一个边缘格, 把这一格原本的围墙/栏杆换成类型表里的某一种(墙体/栏杆/空/翻边...); 选「空」= 这一格既不放墙也不放栏杆")]
     [Label("边缘格围墙(面 + 格号)")] public List<EdgeCellBlock> edgeBlocks = new List<EdgeCellBlock>();
 
     /// <summary>边缘格上摆什么柱子: 普通柱子 / 开口柱子 / 空(不摆)</summary>
@@ -140,9 +141,7 @@ public class Test_RoomLayout : MonoBehaviour
 
     private GameObject FloorPrefab => prefabs.floorPrefab;
     private GameObject SmallFloorPrefab => prefabs.smallFloorPrefab;
-    private GameObject RailingPrefab => prefabs.railingPrefab;
     private GameObject PillarPrefab => prefabs.pillarPrefab;
-    private GameObject WallPrefab => prefabs.wallPrefab;
     private GameObject OpeningPillarPrefab => prefabs.openingPillarPrefab;
 
 #if UNITY_EDITOR
@@ -172,28 +171,20 @@ public class Test_RoomLayout : MonoBehaviour
             return;
         }
 
-        bool needWall = wallFaces != RoomFace.None || edgeBlocks.Exists(block => block.kind == EdgeBlockKind.Wall);
-        if (needWall && WallPrefab == null)
+        if (prefabs.edgeBlockTypes == null || prefabs.edgeBlockTypes.Count == 0)
         {
-            Debug.LogError("[RoomLayout] 有面要贴墙(或边缘格被指定成墙体), 预制体配置里缺 墙面");
+            Debug.LogError("[RoomLayout] 预制体配置(RoomBlockSo) 里的「边缘格围墙类型」是空的, 至少要配 墙体 / 栏杆 两项");
+            return;
+        }
+
+        if (!CheckEdgeBlockTypes())
+        {
             return;
         }
 
         if (stairUpFace != RoomFace.None && edgeBlocks.Count > 0)
         {
-            Debug.LogWarning("[RoomLayout] 楼梯的面是斜的: 「边缘格围墙」在楼梯上只有 墙体/空 生效(长边那一条斜栏杆不逐格拆)");
-        }
-
-        // 没有贴墙的面才需要围栏杆
-        Test_WallCell railingCell = null;
-        if ((RoomFace.AllFaces & ~wallFaces) != RoomFace.None)
-        {
-            railingCell = RailingPrefab == null ? null : RailingPrefab.GetComponent<Test_WallCell>();
-            if (railingCell == null)
-            {
-                Debug.LogError("[RoomLayout] 有面要围栏杆, 需要指定带 Test_WallCell 的栏杆预制体(参考 HandrailLayoutCell)");
-                return;
-            }
+            Debug.LogWarning("[RoomLayout] 楼梯的面是斜的: 「边缘格围墙」在楼梯上只有 按格平铺的类型(墙/翻边)和 空 生效, 长边那一条斜栏杆不逐格拆");
         }
 
         // 单格地板尺寸用与 Test_MapLayout 相同的算法, 保证地板节点的生成结果一致
@@ -215,11 +206,10 @@ public class Test_RoomLayout : MonoBehaviour
             CarveFloor(floorNode, roomArea, cols, rows);
         }
 
-        int railingIndex = 0;
-        int wallIndex = 0;
-        GenRailings(roomArea, cols, rows, railingCell, ref railingIndex);
-        GenWalls(roomArea, cols, rows, ref wallIndex);
-        GenRecessBounds(roomArea, cols, rows, railingCell, ref railingIndex, ref wallIndex);
+        // 边缘围墙: 按 RoomBlockSo.edgeBlockTypes 里的顺序逐个类型生成, 序号按排布方式各用一套
+        EdgeIndexes edgeIndexes = new EdgeIndexes();
+        GenEdgeBlocks(roomArea, cols, rows, edgeIndexes);
+        GenRecessBounds(roomArea, cols, rows, edgeIndexes);
         if (genPillars)
         {
             GenPillars(roomArea, cols, rows, GetLayoutBox(PillarPrefab), GetLayoutBox(OpeningPillarPrefab));
@@ -416,7 +406,7 @@ public class Test_RoomLayout : MonoBehaviour
     }
 
     /// <summary>这一格默认放什么(贴墙的面=墙, 其它=栏杆), 再按"边缘格围墙"表里的指定覆盖</summary>
-    private EdgeBlockKind GetEdgeKind(RoomFace face, int index)
+    private int GetEdgeKind(RoomFace face, int index)
     {
         foreach (EdgeCellBlock block in edgeBlocks)
         {
@@ -426,11 +416,88 @@ public class Test_RoomLayout : MonoBehaviour
             }
         }
 
-        return HasWallFace(face) ? EdgeBlockKind.Wall : EdgeBlockKind.Railing;
+        return GetFaceDefaultKind(face);
+    }
+
+    /// <summary>这一面默认用哪种类型: 贴墙的面用 墙体, 其它面用 栏杆(编号 = RoomBlockSo.edgeBlockTypes 的列表顺序)</summary>
+    private int GetFaceDefaultKind(RoomFace face)
+    {
+        return HasWallFace(face) ? EdgeKindWall : EdgeKindRailing;
+    }
+
+    /// <summary>按编号取 RoomBlockSo 里的类型; 编号越界(类型表被改过)时退到同生成方式的第一个</summary>
+    private EdgeBlockType GetEdgeBlockType(int kind)
+    {
+        if (prefabs == null)
+        {
+            return null;
+        }
+
+        EdgeBlockType type = prefabs.GetEdgeType(kind);
+        if (type != null)
+        {
+            return type;
+        }
+
+        return prefabs.GetEdgeType(kind == EdgeKindWall ? EdgeBlockMode.Tile : EdgeBlockMode.Railing);
+    }
+
+    /// <summary>
+    /// 校验这一间会用到的围墙类型: 预制体配了没、栏杆类型的预制体带不带 Test_WallCell。
+    /// 类型表在 RoomBlockSo.edgeBlockTypes 里, 以后加新类型不用改这里。
+    /// </summary>
+    private bool CheckEdgeBlockTypes()
+    {
+        foreach (int kind in CollectUsedKinds())
+        {
+            EdgeBlockType type = GetEdgeBlockType(kind);
+            if (type == null || type.mode == EdgeBlockMode.None)
+            {
+                continue;
+            }
+
+            if (type.prefab == null)
+            {
+                Debug.LogError($"[RoomLayout] 围墙类型「{type.label}」还没配预制体, 见 预制体配置(RoomBlockSo) 里的「边缘格围墙类型」");
+                return false;
+            }
+
+            if (type.mode == EdgeBlockMode.Railing && type.prefab.GetComponent<Test_WallCell>() == null)
+            {
+                Debug.LogError($"[RoomLayout] 围墙类型「{type.label}」的生成方式是「栏杆(按距离排布)」, 它的预制体需要带 Test_WallCell(参考 HandrailLayoutCell)");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>这一间会用到的类型编号: 两种面(贴墙/不贴墙)的默认值 + 「边缘格围墙」里点名的</summary>
+    private HashSet<int> CollectUsedKinds()
+    {
+        HashSet<int> kinds = new HashSet<int>
+        {
+            GetFaceDefaultKind(RoomFace.XMin),
+            GetFaceDefaultKind(RoomFace.ZMin),
+        };
+
+        foreach (EdgeCellBlock block in edgeBlocks)
+        {
+            kinds.Add(block.kind);
+        }
+
+        return kinds;
+    }
+
+    /// <summary>边缘围墙节点的命名序号: 按格平铺的、按距离排布的 各一套(节点名里的 (0)(1)...)</summary>
+    private class EdgeIndexes
+    {
+        public int tile;
+        public int rail;
     }
 
     /// <summary>把一段(面上一段连续格)再按每格的类型切小段: 只返回 kind 这一种的小段(起始格号 + 格数)</summary>
-    private List<Vector2Int> CalcEdgeKindSpans(RoomFace face, Vector2Int span, EdgeBlockKind kind)
+    private List<Vector2Int> CalcEdgeKindSpans(RoomFace face, Vector2Int span, int kind)
     {
         List<Vector2Int> result = new List<Vector2Int>();
         int start = -1;
@@ -626,11 +693,43 @@ public class Test_RoomLayout : MonoBehaviour
     }
 
     /// <summary>
-    /// 围栏杆: 每个面先按"开口 + 凹面缺口"切段, 段内再按每格的围墙类型(墙体/栏杆/空)切小段,
-    /// 只给类型是"栏杆"的小段生成 Test_WallLayout 节点(index 与凹面的边接着编).
-    /// 楼梯的长边是一整条斜栏杆, 不逐格拆.
+    /// 生成边缘围墙: 类型表在 RoomBlockSo.edgeBlockTypes 里(名称/生成方式/预制体), 这里只按"生成方式"分派 ——
+    /// 墙 = 按格平铺, 栏杆 = 按距离排布, 空 = 不生成。以后加新类型(翻边/矮台...)只要在列表里加一项, 这里不用改。
     /// </summary>
-    private void GenRailings(Bounds area, float cols, float rows, Test_WallCell cell, ref int index)
+    private void GenEdgeBlocks(Bounds area, float cols, float rows, EdgeIndexes indexes)
+    {
+        // 先铺按距离排布的栏杆, 再铺按格平铺的墙/翻边: 和以前"先栏杆后墙"的顺序一致, 重新生成出来的节点顺序不变
+        GenEdgeBlocksByMode(EdgeBlockMode.Railing, area, cols, rows, indexes);
+        GenEdgeBlocksByMode(EdgeBlockMode.Tile, area, cols, rows, indexes);
+    }
+
+    /// <summary>只生成某一种排布方式的类型(列表里可有好几个, 比如 墙体 + 翻边 都是按格平铺)</summary>
+    private void GenEdgeBlocksByMode(EdgeBlockMode mode, Bounds area, float cols, float rows, EdgeIndexes indexes)
+    {
+        for (int kind = 0; kind < prefabs.edgeBlockTypes.Count; kind++)
+        {
+            EdgeBlockType type = prefabs.edgeBlockTypes[kind];
+            if (type == null || type.mode != mode || type.prefab == null)
+            {
+                continue;
+            }
+
+            if (mode == EdgeBlockMode.Railing)
+            {
+                GenEdgeRailingRuns(type, kind, area, cols, rows, indexes);
+            }
+            else
+            {
+                GenEdgeTileRuns(type, kind, area, cols, rows, indexes);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 按距离排布的类型(栏杆): 每个面先按"开口 + 凹面缺口"切段, 段内再按每格的类型切小段, 只给本类型的小段生成节点。
+    /// 楼梯的长边是一整条斜的, 不逐格拆。
+    /// </summary>
+    private void GenEdgeRailingRuns(EdgeBlockType type, int kind, Bounds area, float cols, float rows, EdgeIndexes indexes)
     {
         foreach (FaceInfo info in GetFaceInfos(area, cols, rows))
         {
@@ -638,10 +737,10 @@ public class Test_RoomLayout : MonoBehaviour
             {
                 if (stairUpFace == RoomFace.None)
                 {
-                    foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, EdgeBlockKind.Railing))
+                    foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, kind))
                     {
                         CalcFaceRun(info, run, out Vector3 start, out float length);
-                        GenRailingRun(start + info.inwardDir * railingInset, info.yaw, length, index++, cell);
+                        GenEdgeRun(type, start, info.inwardDir, info.yaw, length, indexes);
                     }
 
                     continue;
@@ -649,7 +748,12 @@ public class Test_RoomLayout : MonoBehaviour
 
                 if (!IsEndFace(info.face))
                 {
-                    // 楼梯长边: 一整条斜着的栏杆, 沿上坡方向抬起
+                    // 楼梯长边: 一整条斜着的栏杆, 沿上坡方向抬起。这一面被逐格改过类型时不再铺整条, 免得每种类型各叠一条
+                    if (kind != GetFaceDefaultKind(info.face))
+                    {
+                        continue;
+                    }
+
                     float angle = Mathf.Atan2(stairRise, info.cellLength) * Mathf.Rad2Deg;
                     float cos = Mathf.Max(0.0001f, Mathf.Cos(angle * Mathf.Deg2Rad));
                     float sin = Mathf.Sin(angle * Mathf.Deg2Rad);
@@ -663,103 +767,120 @@ public class Test_RoomLayout : MonoBehaviour
                     // —— 表现就是栏杆整体偏出去、另一端和楼梯之间留一大段空.
                     float inset = Mathf.Max(0f, prefabs.stairRailStartInset);
                     Vector3 travelDir = climbAlongFace ? info.runDir : -info.runDir;
-                    Vector3 stairPos = info.startPos + info.runDir * (startCell * info.cellLength) + travelDir * (inset * cos) + info.inwardDir * railingInset;
+                    Vector3 stairPos = info.startPos + info.runDir * (startCell * info.cellLength) + travelDir * (inset * cos);
                     stairPos.y += startY + inset * sin;
 
                     float slopeLength = Mathf.Max(0.1f, span.y * info.cellLength / cos - inset);
-                    GenRailingRun(stairPos, climbAlongFace ? info.yaw : info.yaw + 180f, slopeLength, index++, cell, angle);
+                    GenEdgeRun(type, stairPos, info.inwardDir,
+                        climbAlongFace ? info.yaw : info.yaw + 180f, slopeLength, indexes, angle);
                     continue;
                 }
 
                 // 楼梯端面: 按每一格的踏步高度放(逐格也支持改类型)
-                foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, EdgeBlockKind.Railing))
+                foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, kind))
                 {
                     CalcFaceRun(info, run, out Vector3 start, out float length);
-                    Vector3 endPos = start + info.inwardDir * railingInset;
+                    Vector3 endPos = start;
                     endPos.y += CalcStairFaceCellY(info.face, run.x, info.cellCount);
-                    GenRailingRun(endPos, info.yaw, length, index++, cell);
+                    GenEdgeRun(type, endPos, info.inwardDir, info.yaw, length, indexes);
                 }
             }
         }
     }
 
     /// <summary>
-    /// 贴墙: 每个面先按"开口 + 凹面缺口"切段, 段内再按每格的围墙类型切小段,
-    /// 只给类型是"墙体"的小段生成 Test_MapLayout 节点(index 与凹面的边接着编).
+    /// 按格平铺的类型(墙体/翻边这类一格一格的模型): 每个面先按"开口 + 凹面缺口"切段,
+    /// 段内再按每格的类型切小段, 只给本类型的小段生成节点。
     /// </summary>
-    private void GenWalls(Bounds area, float cols, float rows, ref int index)
+    private void GenEdgeTileRuns(EdgeBlockType type, int kind, Bounds area, float cols, float rows, EdgeIndexes indexes)
     {
-        // 一面墙都没有(默认都是栏杆, 边缘格也没指定成墙体)就不用生成
-        bool needWall = wallFaces != RoomFace.None || edgeBlocks.Exists(block => block.kind == EdgeBlockKind.Wall);
-        if (!needWall)
-        {
-            return;
-        }
-
-        Bounds wallBox = GetLayoutBox(WallPrefab);
         foreach (FaceInfo info in GetFaceInfos(area, cols, rows))
         {
             foreach (Vector2Int span in CalcFilledSpans(info.cellCount, GetEmptyCells(info.face, cols, rows)))
             {
                 if (stairUpFace == RoomFace.None)
                 {
-                    foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, EdgeBlockKind.Wall))
+                    foreach (Vector2Int run in CalcEdgeKindSpans(info.face, span, kind))
                     {
                         CalcFaceRun(info, run, out Vector3 start, out float length);
-                        GenWallRun(start, info.yaw, length, index++, wallBox);
+                        GenEdgeRun(type, start, info.inwardDir, info.yaw, length, indexes);
                     }
 
                     continue;
                 }
 
-                // 楼梯: 每格一段墙, 跟着踏步逐格抬高
+                // 楼梯: 每格一段, 跟着踏步逐格抬高
                 for (int c = 0; c < span.y; c++)
                 {
                     int cellIndex = span.x + c;
-                    if (GetEdgeKind(info.face, cellIndex) != EdgeBlockKind.Wall)
+                    if (GetEdgeKind(info.face, cellIndex) != kind)
                     {
-                        continue;       // 这一格被改成栏杆/空了
+                        continue;       // 这一格被改成别的类型了
                     }
 
                     Vector3 pos = info.startPos + info.runDir * (cellIndex * info.cellLength);
                     pos.y += CalcStairFaceCellY(info.face, cellIndex, info.cellCount);
                     float cellLength = Mathf.Min(info.cellLength, info.faceLength - cellIndex * info.cellLength);
-                    GenWallRun(pos, info.yaw, cellLength, index++, wallBox);
+                    GenEdgeRun(type, pos, info.inwardDir, info.yaw, cellLength, indexes);
                 }
             }
         }
     }
 
-    /// <summary>生成一面墙: 墙段沿节点本地+x排开(yaw控制墙面朝向), 按边的长度均分, 保证两端对齐</summary>
-    private void GenWallRun(Vector3 startPos, float yaw, float runLength, int index, Bounds wallBox)
+    /// <summary>生成一段围墙: 位置/朝向/长度由调用方算好, 统一在这里补内缩, 再按类型分派到具体排布方式</summary>
+    private void GenEdgeRun(EdgeBlockType type, Vector3 pos, Vector3 inwardDir, float yaw, float runLength,
+        EdgeIndexes indexes, float tiltAngle = 0f)
     {
+        Vector3 nodePos = pos + inwardDir * GetEdgeInset(type);
+        if (type.mode == EdgeBlockMode.Railing)
+        {
+            GenRailingRun(type, nodePos, yaw, runLength, indexes.rail++, tiltAngle);
+        }
+        else
+        {
+            GenWallRun(type, nodePos, yaw, runLength, indexes.tile++);
+        }
+    }
+
+    /// <summary>按格平铺: 沿节点本地 +x 排开(yaw 控制朝向), 按边的长度均分, 保证两端对齐</summary>
+    private void GenWallRun(EdgeBlockType type, Vector3 startPos, float yaw, float runLength, int index)
+    {
+        Bounds wallBox = GetLayoutBox(type.prefab);
         int count = Mathf.Max(1, Mathf.RoundToInt(runLength / Mathf.Max(0.001f, Mathf.Abs(wallBox.size.x))));
         float step = runLength / count;
 
-        GameObject node = CreateNode(IndexedName(WallPrefab.name, index), startPos, new Vector3(0f, yaw, 0f), Vector3.one);
-        node.layer = Layers.WALL_BLOCK;
+        GameObject node = CreateNode(IndexedName(type.prefab.name, index), startPos,
+            new Vector3(0f, yaw, 0f), Vector3.one * GetEdgeScale(type));
+        ApplyEdgeNodeSettings(node, type);
 
         Test_MapLayout layout = node.AddComponent<Test_MapLayout>();
-        layout.prefab = WallPrefab;
+        layout.prefab = type.prefab;
         layout.genXYZ = new Vector3Int(count, 1, 1);
         layout.addValue = new Vector3(step - wallBox.size.x, 0f, 0f);
         layout.IsHollow = false;
-        layout.prefabName = WallPrefab.name;
+        layout.prefabName = type.prefab.name;
         layout.boxSize = wallBox.size;
         layout.center = wallBox.center;
         layout.TestGent();
 
-        if (addWallCollider)
+        if (addWallCollider && type.addCollider)
         {
             BuildingTool.AddBoxCollider(node.transform);
         }
     }
 
-    /// <summary>生成一段栏杆, runLength为这段的世界长度; tiltAngle是楼梯段沿上坡方向的倾斜角</summary>
-    private void GenRailingRun(Vector3 nodePos, float yaw, float runLength, int index, Test_WallCell cell, float tiltAngle = 0f)
+    /// <summary>按距离排布: runLength 为这段的世界长度; tiltAngle 是楼梯段沿上坡方向的倾斜角</summary>
+    private void GenRailingRun(EdgeBlockType type, Vector3 nodePos, float yaw, float runLength, int index, float tiltAngle = 0f)
     {
-        GameObject node = CreateNode(IndexedName(RailingPrefab.name.Replace("Cell", ""), index), nodePos,
-            new Vector3(0f, yaw, tiltAngle), Vector3.one * railingScale);
+        Test_WallCell cell = type.prefab.GetComponent<Test_WallCell>();
+        if (cell == null)
+        {
+            return;     // CheckEdgeBlockTypes 里已经报过错了
+        }
+
+        GameObject node = CreateNode(IndexedName(type.prefab.name.Replace("Cell", ""), index), nodePos,
+            new Vector3(0f, yaw, tiltAngle), Vector3.one * GetEdgeScale(type));
+        ApplyEdgeNodeSettings(node, type);
 
         Test_WallLayout layout = node.AddComponent<Test_WallLayout>();
         layout.prefab = cell;
@@ -767,10 +888,37 @@ public class Test_RoomLayout : MonoBehaviour
         layout.distance = Mathf.Abs(runLength);
         layout.GenByDistance();
 
-        if (addWallCollider)
+        if (addWallCollider && type.addCollider)
         {
             BuildingTool.AddBoxCollider(node.transform);
         }
+    }
+
+    /// <summary>类型自己的节点设置: 层 + 高度偏移(见 RoomBlockSo.edgeBlockTypes)</summary>
+    private static void ApplyEdgeNodeSettings(GameObject node, EdgeBlockType type)
+    {
+        if (type.layer >= 0)
+        {
+            node.layer = type.layer;
+        }
+
+        if (Mathf.Abs(type.yOffset) > 0.0001f)
+        {
+            node.transform.localPosition += Vector3.up * type.yOffset;
+        }
+    }
+
+    /// <summary>这个类型往房间里缩多少: 栏杆共用的「栏杆向房间内缩」+ 类型自己的额外内缩</summary>
+    private float GetEdgeInset(EdgeBlockType type)
+    {
+        return type.inset + (type.mode == EdgeBlockMode.Railing ? railingInset : 0f);
+    }
+
+    /// <summary>这个类型的缩放: 栏杆共用「栏杆缩放」, 其它按 1, 再乘类型自己的倍率</summary>
+    private float GetEdgeScale(EdgeBlockType type)
+    {
+        float baseScale = type.mode == EdgeBlockMode.Railing ? railingScale : 1f;
+        return baseScale * (type.scale <= 0f ? 1f : type.scale);
     }
 
     /// <summary>
@@ -778,7 +926,7 @@ public class Test_RoomLayout : MonoBehaviour
     /// 缺口那条边(原来的面线)不放东西, 看起来就是房间边界凹进去一块. 不贴边的区域不在这里补, 它只是地上的洞.
     /// 楼梯的面是斜的, 不做凹面.
     /// </summary>
-    private void GenRecessBounds(Bounds area, float cols, float rows, Test_WallCell cell, ref int railingIndex, ref int wallIndex)
+    private void GenRecessBounds(Bounds area, float cols, float rows, EdgeIndexes indexes)
     {
         if (recesses.Count == 0 || stairUpFace != RoomFace.None)
         {
@@ -789,7 +937,6 @@ public class Test_RoomLayout : MonoBehaviour
         float cellZ = area.size.z / Mathf.Max(0.5f, rows);
         int cellCols = Mathf.CeilToInt(cols);
         int cellRows = Mathf.CeilToInt(rows);
-        Bounds wallBox = wallFaces != RoomFace.None ? GetLayoutBox(WallPrefab) : default;
 
         foreach (RoomRecess recess in recesses)
         {
@@ -821,37 +968,36 @@ public class Test_RoomLayout : MonoBehaviour
             // 四边里贴在房间边上的那条是缺口(朝外), 不放东西; 其余各补一条(栏杆朝有地板的一侧内缩)
             if (!touchZMin)
             {
-                GenRecessEdge(faceAlongX, true, new Vector3(x0, y, z0), spanX, Vector3.back, cell, wallBox, ref railingIndex, ref wallIndex);
+                GenRecessEdge(faceAlongX, true, new Vector3(x0, y, z0), spanX, Vector3.back, indexes);
             }
             if (!touchZMax)
             {
-                GenRecessEdge(faceAlongX, true, new Vector3(x0, y, z1), spanX, Vector3.forward, cell, wallBox, ref railingIndex, ref wallIndex);
+                GenRecessEdge(faceAlongX, true, new Vector3(x0, y, z1), spanX, Vector3.forward, indexes);
             }
             if (!touchXMin)
             {
-                GenRecessEdge(faceAlongZ, false, new Vector3(x0, y, z0), spanZ, Vector3.left, cell, wallBox, ref railingIndex, ref wallIndex);
+                GenRecessEdge(faceAlongZ, false, new Vector3(x0, y, z0), spanZ, Vector3.left, indexes);
             }
             if (!touchXMax)
             {
-                GenRecessEdge(faceAlongZ, false, new Vector3(x1, y, z0), spanZ, Vector3.right, cell, wallBox, ref railingIndex, ref wallIndex);
+                GenRecessEdge(faceAlongZ, false, new Vector3(x1, y, z0), spanZ, Vector3.right, indexes);
             }
         }
     }
 
-    /// <summary>凹面的一条边: 沿 +x(alongX)或 +z 从 start 摆 length; inward 是有地板的那一侧</summary>
-    private void GenRecessEdge(RoomFace face, bool alongX, Vector3 start, float length, Vector3 inward,
-        Test_WallCell cell, Bounds wallBox, ref int railingIndex, ref int wallIndex)
+    /// <summary>
+    /// 凹面的一条边: 沿 +x(alongX)或 +z 从 start 摆 length; inward 是有地板的那一侧。
+    /// 用哪一种类型跟它贴着的那一面一致(那一面默认是墙就补墙, 是栏杆就补栏杆)
+    /// </summary>
+    private void GenRecessEdge(RoomFace face, bool alongX, Vector3 start, float length, Vector3 inward, EdgeIndexes indexes)
     {
-        float yaw = alongX ? 0f : -90f;
-
-        // 跟它贴着的那一面一致: 那一面是墙就补墙, 是栏杆就补栏杆
-        if (HasWallFace(face))
+        EdgeBlockType type = GetEdgeBlockType(GetFaceDefaultKind(face));
+        if (type == null || type.mode == EdgeBlockMode.None || type.prefab == null)
         {
-            GenWallRun(start, yaw, length, wallIndex++, wallBox);
             return;
         }
 
-        GenRailingRun(start + inward * railingInset, yaw, length, railingIndex++, cell);
+        GenEdgeRun(type, start, inward, alongX ? 0f : -90f, length, indexes);
     }
 
     /// <summary>取预制体在排版空间里的单格尺寸(与 Test_MapLayout 的"计算"一致, 会把预制体自身的旋转算进去)</summary>

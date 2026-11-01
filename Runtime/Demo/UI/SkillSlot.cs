@@ -125,6 +125,12 @@ namespace XiaoCao
 
         private void PlayEffect()
         {
+            //effectTween 可能没绑定, 或不挂在激活节点上; Play 内部已做激活判断, 这里只挡空引用
+            if (effectTween == null)
+            {
+                return;
+            }
+
             effectTween.Play();
         }
 
@@ -226,6 +232,9 @@ namespace XiaoCao
             if (string.IsNullOrEmpty(id))
             {
                 RefreshRightTipUI();
+
+                //隐藏期间清掉冷却状态, 否则下次显示时会补播一次"冷却结束"特效
+                isColdLastFrame = false;
                 gameObject.SetActive(false);
                 return;
             }

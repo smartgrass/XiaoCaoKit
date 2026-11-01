@@ -347,7 +347,7 @@ public class Test_DungeonLayoutWindow : EditorWindow
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.LabelField("「选择」点一个房间/通道可改尺寸/位置/墙面/楼梯方向, 按住左键拖就能搬动(按 A 全选后拖=整体平移); 画房间/画通道时点在已有的块上会改为选中; 选中后按 Del 删除; 边贴边会自动开口当门并补柱子; 房间还能加「凹面/挖洞」(把一块地板挖掉, 贴边的围一圈); 网格按半格, 尺寸/位置可以画到 0.5 格(楼梯/门洞仍按整格); 某一格想单独改围墙(墙/栏杆/空)或柱子(柱子/开口柱子/空)就在下面加一条; 房间的「层级」留 -1 就顺着楼梯自动算高度, 填 0/1/2 则强制摆到第 0/1/2 层(一层 = 1 格楼梯的抬升)。",
+        EditorGUILayout.LabelField("「选择」点一个房间/通道可改尺寸/位置/墙面/楼梯方向, 按住左键拖就能搬动(按 A 全选后拖=整体平移); 画房间/画通道时点在已有的块上会改为选中; 选中后按 Del 删除; 边贴边会自动开口当门并补柱子; 房间还能加「凹面/挖洞」(把一块地板挖掉, 贴边的围一圈); 网格按半格, 尺寸/位置可以画到 0.5 格(楼梯/门洞仍按整格); 某一格想单独改围墙(墙/栏杆/空/翻边...)或柱子(柱子/开口柱子/空)就在下面加一条; 房间的「层级」留 -1 就顺着楼梯自动算高度, 填 0/1/2 则强制摆到第 0/1/2 层(一层 = 1 格楼梯的抬升)。",
             EditorStyles.miniLabel);
     }
 
@@ -510,7 +510,31 @@ public class Test_DungeonLayoutWindow : EditorWindow
         }
     }
 
-    /// <summary>边缘格围墙的标记: 在这一格的外边上画一条(墙体 = 粗白条, 栏杆 = 细蓝条, 空 = 红条)</summary>
+    /// <summary>
+    /// 围墙类型下拉: 选项就是 RoomBlockSo.edgeBlockTypes 里的名称, 加新类型不用改这里。
+    /// 没配类型表时退回老的 墙体/栏杆/空 三个名字
+    /// </summary>
+    private int DrawEdgeKindPopup(int kind)
+    {
+        List<EdgeBlockType> types = target != null && target.prefabs != null ? target.prefabs.edgeBlockTypes : null;
+        if (types == null || types.Count == 0)
+        {
+            string[] fallbackLabels = { "墙体", "栏杆", "空" };
+            int fallbackIndex = Mathf.Clamp(kind, 0, fallbackLabels.Length - 1);
+            return Mathf.Clamp(EditorGUILayout.Popup(fallbackIndex, fallbackLabels, GUILayout.Width(58f)), 0, fallbackLabels.Length - 1);
+        }
+
+        string[] labels = new string[types.Count];
+        for (int i = 0; i < types.Count; i++)
+        {
+            labels[i] = types[i] == null || string.IsNullOrEmpty(types[i].label) ? $"类型{i}" : types[i].label;
+        }
+
+        int index = Mathf.Clamp(kind, 0, labels.Length - 1);
+        return Mathf.Clamp(EditorGUILayout.Popup(index, labels, GUILayout.Width(58f)), 0, labels.Length - 1);
+    }
+
+    /// <summary>边缘格围墙的标记: 在这一格的外边上画一条, 颜色/线宽取类型表里配的(见 RoomBlockSo.edgeBlockTypes)</summary>
     private void DrawEdgeBlockMarks(DungeonPiece piece, Rect pieceRect)
     {
         int cellCols = Mathf.CeilToInt(piece.cols);
@@ -521,9 +545,11 @@ public class Test_DungeonLayoutWindow : EditorWindow
         foreach (Test_RoomLayout.EdgeCellBlock block in piece.edgeBlocks)
         {
             bool alongX = block.face == Test_RoomLayout.RoomFace.ZMin || block.face == Test_RoomLayout.RoomFace.ZMax;
-            Color color = block.kind == Test_RoomLayout.EdgeBlockKind.Wall ? WallMarkColor
-                : (block.kind == Test_RoomLayout.EdgeBlockKind.Railing ? RailingMarkColor : EmptyMarkColor);
-            float thickness = block.kind == Test_RoomLayout.EdgeBlockKind.Wall ? 5f : 3f;
+            EdgeBlockType type = target != null && target.prefabs != null ? target.prefabs.GetEdgeType(block.kind) : null;
+            Color color = type != null ? type.markColor
+                : (block.kind == Test_RoomLayout.EdgeKindWall ? WallMarkColor
+                    : (block.kind == Test_RoomLayout.EdgeKindRailing ? RailingMarkColor : EmptyMarkColor));
+            const float thickness = 3f;
 
             if (alongX)
             {
@@ -978,7 +1004,7 @@ public class Test_DungeonLayoutWindow : EditorWindow
                     GUILayout.Label("围墙", GUILayout.Width(34f));
                     block.face = (Test_RoomLayout.RoomFace)EditorGUILayout.EnumPopup(block.face, GUILayout.Width(58f));
                     block.index = CompactIntField("格", block.index);
-                    block.kind = (Test_RoomLayout.EdgeBlockKind)EditorGUILayout.EnumPopup(block.kind, GUILayout.Width(58f));
+                    block.kind = DrawEdgeKindPopup(block.kind);
                     if (GUILayout.Button("×", GUILayout.Width(22f)))
                     {
                         Undo.RecordObject(target, "删除边缘格围墙");

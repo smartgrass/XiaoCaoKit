@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using XiaoCao.UI;
 using XiaoCaoKit.Runtime.Demo.Item;
@@ -197,6 +196,12 @@ namespace XiaoCao
         private Role aiTarget;
         private HomeTriggerNameText tipHelper;
         private bool isTipShowing;
+
+        /// <summary>名字牌是否已被"进入操控"整体隐藏, 只在状态切换时改 SetActive</summary>
+        private bool isTipHiddenByControl;
+
+        /// <summary>名字牌朝向用的相机, 首次使用时取主相机并缓存</summary>
+        private Camera tipFaceCamera;
         private AssetPool bulletPool;
         private AssetPool missilePool;
 
@@ -207,13 +212,9 @@ namespace XiaoCao
 
         /// <summary>RaycastNonAlloc 的固定缓冲, 避免瞄准线每帧检测时产生 GC</summary>
         private readonly RaycastHit[] aimHitBuffer = new RaycastHit[32];
-        private readonly StringBuilder aimLogBuilder = new StringBuilder();
 
         /// <summary>最近一次准星检测是否命中了敌对角色, 给瞄准线的落点标记用</summary>
         private bool aimHitTarget;
-
-        /// <summary>最近一次准星检测是否被场景挡住(墙/地面), 子弹飞到该落点时要播放击中特效</summary>
-        private bool aimBlocked;
 
         /// <summary>瞄准期间被临时关掉的自身碰撞体, 退出时按原状态恢复</summary>
         private readonly List<Collider> aimDisabledColliders = new List<Collider>();
@@ -908,9 +909,6 @@ namespace XiaoCao
                 ? RaycastAimPoint(GetAimCameraPos(), AimDirection, attackConfig.aimDetectDistance, logAimRay)
                 : RaycastAimPoint(muzzle.position, AimDirection, attackConfig.AiDetectDistance, logAimRay);
 
-            //射线被场景挡住时, 子弹飞到这个落点就炸开(击中特效), 不会一路穿墙飞
-            bool hitScene = aimBlocked;
-
             //实际发射方向 = 炮口指向准星命中的点, 近距离射击也能打中准星位置
             Vector3 fireDir = GetFireDirection(aimPoint);
 
@@ -919,13 +917,13 @@ namespace XiaoCao
                 case ETurretProjectileType.Bullet:
                     if (attackConfig is TurretBulletConfig bulletConfig)
                     {
-                        LaunchProjectile(bulletConfig.bulletPrefab, aimPoint, fireDir, ref bulletPool, hitScene);
+                        LaunchProjectile(bulletConfig.bulletPrefab, aimPoint, fireDir, ref bulletPool);
                     }
                     break;
                 case ETurretProjectileType.Missile:
                     if (attackConfig is TurretMissileConfig missileConfig)
                     {
-                        LaunchProjectile(missileConfig.missilePrefab, aimPoint, fireDir, ref missilePool, hitScene);
+                        LaunchProjectile(missileConfig.missilePrefab, aimPoint, fireDir, ref missilePool);
                     }
                     break;
                 case ETurretProjectileType.Laser:
@@ -943,30 +941,26 @@ namespace XiaoCao
             ApplyRecoil();
         }
 
-        private void LaunchProjectile(GameObject prefab, Vector3 aimPoint, Vector3 fireDir, ref AssetPool pool,
-            bool hitScene)
+        private void LaunchProjectile(GameObject prefab, Vector3 aimPoint, Vector3 fireDir, ref AssetPool pool)
         {
             pool ??= PoolMgr.Inst.GetOrCreatPrefabPool(prefab);
 
             GameObject go = pool.Get();
             TurretProjectile projectile = go.GetComponent<TurretProjectile>();
 
-            //飞行物自己配了发射音效就由它播(Launch 里), 没配才用攻击配置的兜底, 免得响两遍
-            if (string.IsNullOrEmpty(projectile.launchSfx))
-            {
-                PlayFireSfx();
-            }
+            //发射音效统一在炮台播(配置在攻击配置里), 飞行物不再另存一份
+            PlayFireSfx();
 
             projectile.Launch(this, OperatorRole, attackConfig.skillId, attackConfig.attackRange,
-                aimPoint, fireDir, pool, aiTarget, hitScene);
+                aimPoint, fireDir, pool, aiTarget);
         }
 
-        /// <summary>播放攻击配置里的发射音效(飞行物没配 launchSfx 时兜底)</summary>
+        /// <summary>播放攻击配置里的发射音效</summary>
         private void PlayFireSfx()
         {
-            if (!string.IsNullOrEmpty(attackConfig.fireSfx))
+            if (attackConfig.fireSfx != null)
             {
-                SoundMgr.Inst.PlayClip(attackConfig.fireSfx);
+                SoundMgr.Inst.PlayClip(attackConfig.fireSfx, attackConfig.fireSfxVolume);
             }
         }
 
@@ -1076,10 +1070,9 @@ namespace XiaoCao
 
             aimHits.Sort(CompareByDistance);
             aimHitTarget = false;
-            aimBlocked = false;
 
             Vector3 result = origin + dir * distance;
-            bool blocked = false;
+            string target = "无";
 
             for (int i = 0; i < aimHits.Count; i++)
             {
@@ -1089,10 +1082,6 @@ namespace XiaoCao
                 //不排掉的话落点直接落在自己身上, 发射方向会反成朝后打
                 if (IsSelfCollider(hit.collider))
                 {
-                    if (log)
-                    {
-                        AppendAimLog(i, hit, "跳过(炮台/操控者自身)");
-                    }
                     continue;
                 }
 
@@ -1100,10 +1089,6 @@ namespace XiaoCao
                 //会挡在射线上, 这种命中既不能当准星落点, 也不该挡住子弹, 继续往后找
                 if (Vector3.Dot(hit.point - muzzle.position, AimDirection) <= 0f)
                 {
-                    if (log)
-                    {
-                        AppendAimLog(i, hit, "跳过(落在炮口后方)");
-                    }
                     continue;
                 }
 
@@ -1117,45 +1102,25 @@ namespace XiaoCao
                     if (isSameTeam || role.IsDie)
                     {
                         //同阵营与尸体不挡准心, 继续往后找
-                        if (log)
-                        {
-                            AppendAimLog(i, hit, isSameTeam ? "跳过(同阵营)" : "跳过(已死亡)");
-                        }
                         continue;
                     }
 
                     aimHitTarget = true;
                     if (log)
                     {
-                        AppendAimLog(i, hit, "命中敌人");
-                        FlushAimLog(origin, dir, distance, hit.point);
+                        FlushAimLog(origin, dir, hit.point, DescribeHit(hit));
                     }
                     return hit.point;
                 }
 
                 result = hit.point;
-                blocked = true;
-                aimBlocked = true;
-                if (log)
-                {
-                    AppendAimLog(i, hit, "被场景挡住");
-
-                    //后面的命中没参与判断, 也打出来, 方便看出是不是多层挡板
-                    for (int j = i + 1; j < aimHits.Count; j++)
-                    {
-                        AppendAimLog(j, aimHits[j], "未参与(已被前方挡住)");
-                    }
-                }
+                target = DescribeHit(hit);
                 break;
             }
 
             if (log)
             {
-                if (!blocked)
-                {
-                    AppendAimLog(-1, default, $"无命中, 取 {distance:F1} 米处");
-                }
-                FlushAimLog(origin, dir, distance, result);
+                FlushAimLog(origin, dir, result, target);
             }
 
             return result;
@@ -1165,39 +1130,23 @@ namespace XiaoCao
         private static readonly System.Comparison<RaycastHit> CompareByDistance =
             (a, b) => a.distance.CompareTo(b.distance);
 
-        /// <summary>追加一条开火检测日志(先攒起来, 最后一次输出)</summary>
-        private void AppendAimLog(int index, RaycastHit hit, string verdict)
+        /// <summary>输出本次开火的射线结果: 打到谁、朝哪打、打了多远</summary>
+        private void FlushAimLog(Vector3 origin, Vector3 dir, Vector3 result, string target)
+        {
+            Debug.Log($"[Turret] 射线目标:{target};方向{FormatVec(dir)}," +
+                      $"距离{Vector3.Distance(origin, result):F2}", this);
+        }
+
+        /// <summary>命中项的短名: 物体名/层名(层号), 供首行显示"射线目标"</summary>
+        private static string DescribeHit(RaycastHit hit)
         {
             if (hit.collider == null)
             {
-                aimLogBuilder.AppendLine($"    {verdict}");
-                return;
+                return "无";
             }
 
-            string layer = LayerMask.LayerToName(hit.collider.gameObject.layer);
-            string owner = "-";
-
-            Rigidbody body = hit.collider.attachedRigidbody;
-            if (body != null && body.TryGetComponent(out IdRole idRole) &&
-                idRole.GetEntity() is Role role && role.transform != null)
-            {
-                owner = role.transform.name;
-            }
-
-            aimLogBuilder.AppendLine(
-                $"    #{index} {hit.collider.name} | 层={layer}({hit.collider.gameObject.layer}) 距离={hit.distance:F2} " +
-                $"点={FormatVec(hit.point)} 角色={owner} → {verdict}");
-        }
-
-        /// <summary>输出本次开火的射线检测结果</summary>
-        private void FlushAimLog(Vector3 origin, Vector3 dir, float distance, Vector3 result)
-        {
-            Debug.Log($"[Turret] 开火射线检测 {name} | 起点={FormatVec(origin)} 方向={FormatVec(dir)} " +
-                      $"距离={distance:F1} 层Mask={AimRayMask} 命中数={aimHits.Count}\n" +
-                      aimLogBuilder + $"  => 实际落点={FormatVec(result)} (距炮口 {Vector3.Distance(muzzle.position, result):F2} 米)",
-                this);
-
-            aimLogBuilder.Clear();
+            int layer = hit.collider.gameObject.layer;
+            return $"{hit.collider.name}/{LayerMask.LayerToName(layer)}({layer})";
         }
 
         private static string FormatVec(Vector3 v)
@@ -1223,22 +1172,16 @@ namespace XiaoCao
             TurretSystem.ReportNearby(this, distance <= interactRadius, distance);
         }
 
-        /// <summary>玩家进出交互半径时切换炮台上方的名字牌, 提示这里可以操作</summary>
+        /// <summary>
+        /// 炮台上方的名字牌: 未进入操控时始终面向玩家, 玩家自己操控时整块隐藏, 退出操控后恢复。
+        /// 显隐只在状态变化时改, 朝向每帧跟随
+        /// </summary>
         private void UpdateInteractTip()
         {
             if (string.IsNullOrEmpty(interactTipKey))
             {
                 return;
             }
-
-            //玩家自己操控中不再显示名字牌, 视野里只留准心
-            bool isNear = TurretSystem.Nearby == this && OperatorType != ETurretOperatorType.Player;
-            if (isNear == isTipShowing)
-            {
-                return;
-            }
-
-            isTipShowing = isNear;
 
             if (tipHelper == null)
             {
@@ -1252,14 +1195,72 @@ namespace XiaoCao
                 }
             }
 
-            if (isNear)
+            GameObject root = tipHelper.Root;
+            if (root == null)
             {
-                tipHelper.ShowUI();
+                return;
             }
-            else
+
+            //玩家自己操控时整块关掉: 只降 alpha 会残留在第一人称视野里
+            bool isOperating = OperatorType == ETurretOperatorType.Player;
+            if (isOperating != isTipHiddenByControl)
             {
-                tipHelper.HideUI();
+                isTipHiddenByControl = isOperating;
+                root.SetActive(!isOperating);
             }
+
+            if (isOperating)
+            {
+                return;
+            }
+
+            //靠近的炮台名字牌变亮, 其余淡显
+            bool isNear = TurretSystem.Nearby == this;
+            if (isNear != isTipShowing)
+            {
+                isTipShowing = isNear;
+
+                if (isNear)
+                {
+                    tipHelper.ShowUI();
+                }
+                else
+                {
+                    tipHelper.HideUI();
+                }
+            }
+
+            //未操控时始终面向玩家视角(主相机)
+            FaceToCamera(root.transform);
+        }
+
+        /// <summary>
+        /// 名字牌只绕 Y 轴转向相机(玩家视角): 抬头/低头时牌子不会跟着前后翻, 从任何方位看都是正的。
+        /// 用相机而不是角色位置 —— 第三人称相机在角色后上方, 按角色位置摆会偏;
+        /// 炮台瞄准时相机由 vcam 接管, 但仍是同一个主相机, 朝向会自动跟随。
+        /// </summary>
+        private void FaceToCamera(Transform tip)
+        {
+            if (tipFaceCamera == null)
+            {
+                tipFaceCamera = Camera.main;
+            }
+
+            if (tipFaceCamera == null)
+            {
+                return;
+            }
+
+            Vector3 dir = tipFaceCamera.transform.position - tip.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            //世界空间 Canvas 的正面在 -Z(forward 的反方向), 所以要让 forward 背离相机,
+            //-Z 才朝向相机; 直接用 dir 会让玩家看到背面, 文字是镜像的
+            tip.rotation = Quaternion.LookRotation(-dir, Vector3.up);
         }
 
         private void ApplyHeadAim(float dt)

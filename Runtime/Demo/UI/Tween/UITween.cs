@@ -76,6 +76,14 @@ namespace XiaoCao
         /// </summary>
         public void StartAnimation()
         {
+            //节点未激活时 StartCoroutine 会抛 "game object xxx is inactive",
+            //这里直接跳过, 激活后 OnEnable 会自己再播一次
+            if (!isActiveAndEnabled)
+            {
+                animationCoroutine = null;
+                return;
+            }
+
             if (animationCoroutine != null)
             {
                 StopCoroutine(animationCoroutine);
@@ -101,6 +109,13 @@ namespace XiaoCao
         /// </summary>
         private IEnumerator AnimateGraphic()
         {
+            //没绑 Graphic 时直接结束, 不然每帧空引用
+            if (graphic == null)
+            {
+                animationCoroutine = null;
+                yield break;
+            }
+
             //duration 为 0 时直接跳到终点, 这里保底避免除零
             float totalTime = Mathf.Max(duration, 0.01f);
 
