@@ -18,11 +18,15 @@ namespace XiaoCao.UI
     }
 
     /// <summary>
-    /// 炮台交互界面: 由玩家靠近炮台按攻击键打开,
-    /// 可选择自己操控、指派在场支援角色操控, 或终止当前操控。
+    /// 炮台交互界面: 由玩家靠近炮台按攻击键(J)打开。
+    /// 列表第一项固定是玩家自己, 后面是在场支援角色;
+    /// 点击角色头像 / 按 J 都是"选中该角色并立刻让他接管炮台"; 也可以终止当前操控
     /// </summary>
     public class TurretInteractionPanel : PanelBase
     {
+        /// <summary>确定键: 与打开界面用的是同一个普攻键</summary>
+        private const KeyCode ConfirmKey = KeyCode.J;
+
         public override UIPanelType PanelType => UIPanelType.TurretPanel;
 
         public override bool NeedUIData => true;
@@ -31,27 +35,29 @@ namespace XiaoCao.UI
         public TMP_Text titleText;
 
         [Header("操作")]
-        public Button selfControlBtn;
-
-        public TMP_Text selfControlText;
-
         public Button stopControlBtn;
 
         public TMP_Text stopControlText;
 
         public Button closeBtn;
 
-        [Header("支援角色列表")]
-        [Tooltip("支援角色格子容器, 第一个子节点作为模板")]
+        [Header("角色列表")]
+        [Tooltip("角色格子容器, 第一个子节点作为模板")]
         public Transform friendRoot;
 
-        [Tooltip("没有可用支援角色时显示的提示")]
+        [Tooltip("没有可用角色时显示的提示")]
         public GameObject noFriendTip;
 
         private Turret turret;
         private bool isInited;
 
-        private readonly List<Role> friends = new List<Role>();
+        /// <summary>可指派列表: 第 0 项固定是玩家自己, 之后是在场且存活的支援角色</summary>
+        private readonly List<Role> candidates = new List<Role>();
+
+        private int selectedIndex;
+
+        /// <summary>界面通常就是按 J 打开的, 开屏那一下按键还没松开, 要先等它抬起再接收确定</summary>
+        private bool waitConfirmKeyRelease;
 
         public override void Show(IUIData uiData = null)
         {
@@ -61,6 +67,8 @@ namespace XiaoCao.UI
             }
 
             turret = ((TurretPanelData)uiData).turret;
+            selectedIndex = 0;
+            waitConfirmKeyRelease = Input.GetKey(ConfirmKey);
             gameObject.SetActive(true);
             Refresh();
         }
@@ -76,33 +84,54 @@ namespace XiaoCao.UI
             Hide();
         }
 
+        private void Update()
+        {
+            if (!IsShowing)
+            {
+                return;
+            }
+
+            if (waitConfirmKeyRelease)
+            {
+                if (!Input.GetKey(ConfirmKey))
+                {
+                    waitConfirmKeyRelease = false;
+                }
+
+                return;
+            }
+
+            if (Input.GetKeyDown(ConfirmKey))
+            {
+                ConfirmSelected();
+            }
+        }
+
         /// <summary>按钮与文案只在第一次显示时初始化</summary>
         private void Init()
         {
             isInited = true;
             titleText.text = "TurretTitle".ToLocalizeStr();
             stopControlText.text = "TurretStopControl".ToLocalizeStr();
-            selfControlBtn.onClick.AddListener(OnSelfControlClick);
             stopControlBtn.onClick.AddListener(OnStopControlClick);
             closeBtn.onClick.AddListener(OnCloseBtnClick);
         }
 
-        /// <summary>按当前炮台状态刷新按钮与支援角色列表</summary>
+        /// <summary>按当前炮台状态刷新按钮与角色列表</summary>
         private void Refresh()
         {
-            bool isPlayerOperating = turret.OperatorRole == GameDataCommon.LocalPlayer;
-            selfControlText.text = (isPlayerOperating ? "TurretSelfControlling" : "TurretSelfControl").ToLocalizeStr();
-            selfControlBtn.interactable = !isPlayerOperating;
-
             stopControlBtn.gameObject.SetActive(turret.HasOperator);
-
-            RefreshFriends();
+            RefreshCandidates();
         }
 
-        /// <summary>列出在场且存活的支援角色, 正在操控炮台的格子会高亮</summary>
-        private void RefreshFriends()
+        /// <summary>
+        /// 刷新可指派列表: 自己排第一, 后面是在场且存活的支援角色。
+        /// 自己的显示 key 用本地设置里选的角色(Role_x), 不受皮肤 bodyName 影响
+        /// </summary>
+        private void RefreshCandidates()
         {
-            friends.Clear();
+            candidates.Clear();
+            candidates.Add(GameDataCommon.LocalPlayer);
 
             List<int> friendIds = GameDataCommon.LocalPlayer.playerData.friends;
             for (int i = 0; i < friendIds.Count; i++)
@@ -110,37 +139,61 @@ namespace XiaoCao.UI
                 Role role = friendIds[i].GetRoleById();
                 if (role != null && !role.IsDie)
                 {
-                    friends.Add(role);
+                    candidates.Add(role);
                 }
             }
 
-            UITool.SetCellListCount(friendRoot, friends.Count);
+            selectedIndex = Mathf.Clamp(selectedIndex, 0, candidates.Count - 1);
 
-            for (int i = 0; i < friends.Count; i++)
+            UITool.SetCellListCount(friendRoot, candidates.Count);
+
+            for (int i = 0; i < candidates.Count; i++)
             {
                 TurretFriendCell cell = friendRoot.GetChild(i).GetComponent<TurretFriendCell>();
-                cell.Init(friends[i], turret.OperatorRole == friends[i], OnFriendCellClick);
+                //第一项是自己: 名字与头像都按本地设置里选的角色走
+                string displayKey = i == 0 ? GetSelfRoleKey() : null;
+                cell.Init(candidates[i], turret.OperatorRole == candidates[i], i == selectedIndex,
+                    OnCellClick, displayKey);
             }
 
-            noFriendTip.SetActive(friends.Count == 0);
+            noFriendTip.SetActive(candidates.Count == 0);
         }
 
-        /// <summary>自己操控: 关掉界面直接接管炮台</summary>
-        private void OnSelfControlClick()
+        /// <summary>自己这一格显示用的 key: 与 Player0 生成 bodyName 的规则一致</summary>
+        private static string GetSelfRoleKey()
         {
-            if (turret.TakeControlByPlayer(GameDataCommon.LocalPlayer))
-            {
-                Hide();
-            }
+            return $"Role_{ConfigMgr.Inst.LocalRoleSetting.selectRole}";
         }
 
-        /// <summary>指派支援角色操控</summary>
-        private void OnFriendCellClick(Role friend)
+        /// <summary>点击格子: 选中该角色, 并立刻让他接管炮台(与按确定键同一套流程)</summary>
+        private void OnCellClick(Role role)
         {
-            if (turret.TakeControlByAiRole(friend))
+            int index = candidates.IndexOf(role);
+            if (index < 0)
+            {
+                return;
+            }
+
+            selectedIndex = index;
+            ConfirmSelected();
+        }
+
+        /// <summary>确定: 让当前选中的角色接管炮台, 成功后关闭界面</summary>
+        private void ConfirmSelected()
+        {
+            Role role = candidates[selectedIndex];
+            bool ok = role.IsPlayer
+                ? turret.TakeControlByPlayer((Player0)role)
+                : turret.TakeControlByAiRole(role);
+
+            if (ok)
             {
                 Hide();
+                return;
             }
+
+            //接管失败(比如炮台正被别人占着): 界面留着, 顺手同步一下高亮
+            RefreshCandidates();
         }
 
         /// <summary>终止当前操控, 界面保持打开以便重新指派</summary>

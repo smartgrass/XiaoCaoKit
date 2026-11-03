@@ -61,6 +61,7 @@ public class Test_DungeonLayout : MonoBehaviour
     [Min(1f)] [Label("柱子间隔(格)")] public float pillarInterval = 2f;
     [Label("楼梯每格抬升")] public float stairRise = 3f;
     [Label("生成墙体碰撞盒")] public bool addWallCollider = true;
+    [Label("生成通道连线点(PassLine)")] public bool genPassPoints = true;
 
     [Label("房间/通道(格坐标)")] public List<DungeonPiece> pieces = new List<DungeonPiece>();
     [ReadOnly] [Label("上次生成")] public string lastResult;
@@ -214,6 +215,16 @@ public class Test_DungeonLayout : MonoBehaviour
             Debug.LogWarning($"[DungeonLayout] 有 {overlapCount * 0.25f:0.##} 个格子被重复占用, 建议错开");
         }
 
+        // 通道连线点放在房间都生成完再做: 只依赖格坐标和高度, 不依赖房间节点
+        if (genPassPoints)
+        {
+            int passLineCount = GenPassPoints(occupied, cellX, cellZ, elevations);
+            if (passLineCount > 0)
+            {
+                lastResult += $", 通道连线 {passLineCount} 条";
+            }
+        }
+
         Debug.Log($"[DungeonLayout] 生成完成: {lastResult}");
     }
 
@@ -227,7 +238,7 @@ public class Test_DungeonLayout : MonoBehaviour
     /// <summary>生成一个房间/通道: 一个 Test_RoomLayout 节点, 贴墙的面按相邻关系开口</summary>
     private void GenPiece(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float elevation)
     {
-        string baseName = string.IsNullOrEmpty(piece.name) ? (piece.isCorridor ? "Corridor" : "Room") : piece.name;
+        string baseName = PieceBaseName(piece);
         bool isStair = IsStair(piece);
         GameObject node = new GameObject($"{baseName}_{piece.col}_{piece.row}");
         node.transform.SetParent(transform, false);
@@ -268,6 +279,135 @@ public class Test_DungeonLayout : MonoBehaviour
 
         // 支撑柱放在最后: 高度要量"已经生成完"的整个房间底面(含楼梯)
         GenSupportPillars(piece, node.transform, cellX, cellZ);
+    }
+
+    /// <summary>房间/通道节点的名字前缀: 没填名字就按类型兜底</summary>
+    private static string PieceBaseName(DungeonPiece piece)
+    {
+        return string.IsNullOrEmpty(piece.name) ? (piece.isCorridor ? "Corridor" : "Room") : piece.name;
+    }
+
+    /// <summary>通道连线点统一挂在这个子节点下, 由它身上的 PassPointCollector 收集</summary>
+    private const string PassPointNodeName = "PassPoints";
+
+    /// <summary>
+    /// 通道连线: 每条通道在两端面中心各放一个空节点, 两个节点组成一条 PassLine,
+    /// 全部塞进同一个 PassPointCollector(挂在 PassPoints 节点上)。返回生成了几条 PassLine。
+    /// </summary>
+    private int GenPassPoints(Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float[] elevations)
+    {
+        List<int> corridorIndexes = new List<int>();
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            if (pieces[i].isCorridor)
+            {
+                corridorIndexes.Add(i);
+            }
+        }
+
+        if (corridorIndexes.Count == 0)
+        {
+            return 0;
+        }
+
+        GameObject root = new GameObject(PassPointNodeName);
+        root.transform.SetParent(transform, false);
+        PassPointCollector collector = root.AddComponent<PassPointCollector>();
+        collector.lines = new List<PassLine>();
+
+        foreach (int index in corridorIndexes)
+        {
+            DungeonPiece piece = pieces[index];
+            collector.lines.Add(GenPassLine(piece, index, occupied, root.transform, cellX, cellZ, elevations[index]));
+        }
+
+        return collector.lines.Count;
+    }
+
+    /// <summary>
+    /// 给一条通道生成一条 PassLine: 两端面中心各一个空节点。
+    /// 楼梯通道从低端指向上坡那一端, 上坡端的点按楼梯总抬升抬高(两端高度不同)。
+    /// </summary>
+    private PassLine GenPassLine(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied,
+        Transform parent, float cellX, float cellZ, float elevation)
+    {
+        GetPassEndFaces(piece, index, occupied, out Test_RoomLayout.RoomFace startFace, out Test_RoomLayout.RoomFace endFace);
+
+        // 楼梯的上坡端是高的那一头: 只有那个点要抬起来
+        Test_RoomLayout.RoomFace upFace = IsStair(piece) ? StairDirToFace(piece.stair) : Test_RoomLayout.RoomFace.None;
+        float startY = startFace == upFace ? elevation + StairHeight(piece) : elevation;
+        float endY = endFace == upFace ? elevation + StairHeight(piece) : elevation;
+
+        string baseName = PieceBaseName(piece);
+        PassLine line = new PassLine { points = new List<Transform>() };
+        line.points.Add(CreatePassPoint(parent, $"{baseName}_Pass0", FaceCenterLocal(piece, startFace, cellX, cellZ, startY)));
+        line.points.Add(CreatePassPoint(parent, $"{baseName}_Pass1", FaceCenterLocal(piece, endFace, cellX, cellZ, endY)));
+        return line;
+    }
+
+    /// <summary>空节点: 只在层级里占个位置, 被 PassLine 收集后给后续逻辑取坐标用</summary>
+    private static Transform CreatePassPoint(Transform parent, string name, Vector3 localPosition)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = localPosition;
+        return go.transform;
+    }
+
+    /// <summary>
+    /// 通道两端是哪两个面: 楼梯按上坡方向那条轴; 普通通道优先用"对面也有开口"的那条轴,
+    /// 判断不出来(四面都通或四面都不通)就按较长的那条边。
+    /// startFace 是连线起点: 楼梯是低端, 普通通道是坐标较小的一端。
+    /// </summary>
+    private static void GetPassEndFaces(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied,
+        out Test_RoomLayout.RoomFace startFace, out Test_RoomLayout.RoomFace endFace)
+    {
+        if (IsStair(piece))
+        {
+            endFace = StairDirToFace(piece.stair);      // 楼梯: 从低端走到上坡面
+            startFace = OppositeFace(endFace);
+            return;
+        }
+
+        List<Test_RoomLayout.FaceOpening> openings =
+            CalcOpenings(piece, index, occupied, Test_RoomLayout.OpeningPillarKind.OpeningPillar);
+        bool openX = openings.Exists(x => x.face == Test_RoomLayout.RoomFace.XMin) &&
+                     openings.Exists(x => x.face == Test_RoomLayout.RoomFace.XMax);
+        bool openZ = openings.Exists(x => x.face == Test_RoomLayout.RoomFace.ZMin) &&
+                     openings.Exists(x => x.face == Test_RoomLayout.RoomFace.ZMax);
+
+        bool alongX;
+        if (openX != openZ)
+        {
+            alongX = openX;                             // 只有一个方向的对面都通, 那就是通道的走向
+        }
+        else
+        {
+            alongX = piece.cols >= piece.rows;          // 判断不出来就按长边
+        }
+
+        startFace = alongX ? Test_RoomLayout.RoomFace.XMin : Test_RoomLayout.RoomFace.ZMin;
+        endFace = alongX ? Test_RoomLayout.RoomFace.XMax : Test_RoomLayout.RoomFace.ZMax;
+    }
+
+    /// <summary>通道某个面的中心在拼装根节点下的局部坐标: 落在面所在的那条边上, 另一条轴取中点</summary>
+    private static Vector3 FaceCenterLocal(DungeonPiece piece, Test_RoomLayout.RoomFace face, float cellX, float cellZ, float y)
+    {
+        float xMin = piece.col * cellX;
+        float xMax = xMin + piece.cols * cellX;
+        float zMax = -piece.row * cellZ;                 // 画布上方
+        float zMin = zMax - piece.rows * cellZ;          // 画布下方
+        switch (face)
+        {
+            case Test_RoomLayout.RoomFace.XMin:
+                return new Vector3(xMin, y, (zMin + zMax) * 0.5f);
+            case Test_RoomLayout.RoomFace.XMax:
+                return new Vector3(xMax, y, (zMin + zMax) * 0.5f);
+            case Test_RoomLayout.RoomFace.ZMax:
+                return new Vector3((xMin + xMax) * 0.5f, y, zMax);
+            default:
+                return new Vector3((xMin + xMax) * 0.5f, y, zMin);
+        }
     }
 
     /// <summary>支撑柱的最小高度: 低于这个值说明房间已经贴地, 不用撑</summary>

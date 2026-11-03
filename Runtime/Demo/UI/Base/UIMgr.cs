@@ -142,6 +142,8 @@ namespace XiaoCao
             buffSelectPanel.Init();
             rebornPanel?.Init();
             forgePanel.Hide();
+            //炮台界面节点为了方便编辑可能是激活的, 开局统一先关掉, 等玩家靠近炮台再 Show
+            turretPanel?.Hide();
             levelUpTip.gameObject.SetActive(false);
             OnChangeInputType(GameSetting.UserInputType);
             OnStageUISet(GameDataCommon.Current.gameStage);
@@ -266,9 +268,19 @@ namespace XiaoCao
             //Esc
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                //有可关闭的界面时, Esc 优先关闭该界面
                 if (lastpanel != null && lastpanel.IsShowing && lastpanel.HideEsc)
                 {
                     HideView(lastpanel.PanelType);
+                    //同一帧不再走下面"无界面"分支, 避免关掉一个界面的同时又弹出设置界面
+                    return;
+                }
+
+                //没有任何面板/对话框时, 按 Esc 打开设置界面
+                if (!HasPanelShowing() && CanOpenSettingByEsc())
+                {
+                    ShowView(UIPanelType.SettingPanel);
+                    return;
                 }
             }
 
@@ -276,10 +288,6 @@ namespace XiaoCao
             //无ui时
             if (showingPanels.Count <= 0)
             {
-                // if (Input.GetKeyDown(KeyCode.Escape))
-                // {
-                //     ShowView(UIPanelType.SettingPanel);
-                // }
                 if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.F1))
                 {
                     ShowView(UIPanelType.PlayerPanel);
@@ -295,6 +303,44 @@ namespace XiaoCao
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 是否存在真正显示中的面板。
+        /// 不直接用 showingPanels.Count: 个别面板(如 LevelSelectPanel/LevelResultPanel)的 Hide 只关自身节点,
+        /// 不会从集合里移除, 集合会留下无效项; 另外判断用 activeSelf, 避免面板父级 Canvas 被 MidCanvasEnable 关掉时误判为未显示。
+        /// </summary>
+        public bool HasPanelShowing()
+        {
+            foreach (PanelBase panel in showingPanels)
+            {
+                if (panel != null && panel.gameObject.activeSelf)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 无界面时按 Esc 能否打开设置界面。
+        /// 场景加载完成(状态为 Running)才响应, 加载/退出过程中不弹; 新手引导遮罩、炮台操控期间按 Esc 有各自的用途, 也不弹。
+        /// </summary>
+        private bool CanOpenSettingByEsc()
+        {
+            if (GameAllData.CommonData.gameState != GameState.Running)
+            {
+                return false;
+            }
+
+            if (HomeGuideController.IsBlockingInput)
+            {
+                return false;
+            }
+
+            //炮台操控中 Esc 用于离开炮台(见 Turret), 不抢这个键
+            return turretCrosshair == null || !turretCrosshair.gameObject.activeInHierarchy;
         }
 
         //屏蔽输入

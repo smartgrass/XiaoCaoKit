@@ -141,7 +141,7 @@ namespace XiaoCao.UI
         {
             if (key == XCInputSetting.Space && levelView.activeSelf && enterBtn.interactable)
             {
-                OnClickEnter();
+                enterBtn.onClick.Invoke();
             }
         }
 

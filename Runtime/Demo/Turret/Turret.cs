@@ -27,12 +27,14 @@ namespace XiaoCao
 
     /// <summary>
     /// 关卡炮台: 固定功能建筑, 炮头可偏航(-60~60)与俯仰(-30~30), 有攻击冷缩与攻击范围;
-    /// 同一时间只能被一个角色操控。玩家靠近按攻击键弹出交互界面,
+    /// 同一时间只能被一个角色操控。玩家靠近按攻击键弹出交互界面(没有可指派的支援角色时直接自己接管),
     /// 玩家操控时切换为第一人称准心视角(隐藏角色与炮台模型, 准心方向即射击方向, 开火有后坐力抖动),
     /// 非玩家角色(支援角色/敌人)操控时自动索敌, 并按"按住攻击 → 停顿"的节奏循环开火。
+    /// 敌人操控期间玩家不能交互, 要等它被打断(受击/死亡)才能接手; 支援角色操控时仍可交互(界面里能终止它)。
+    /// 防误触: 炮台周围 <see cref="enemyBlockInteractRadius"/> 内有敌人时, 玩家的攻击键按普攻处理, 不弹交互界面。
     /// </summary>
     [DefaultExecutionOrder(-50)]
-    public class Turret : MonoBehaviour
+    public class Turret : MonoBehaviour, IFunctionItem
     {
         /// <summary>炮口与目标方向的夹角小于该值才算瞄准到位(度)</summary>
         private const float AimReadyAngle = 8f;
@@ -52,6 +54,9 @@ namespace XiaoCao
         /// <summary>落点离起点小于该距离(米)就认为起点被碰撞体包住了</summary>
         private const float AimRayTooNear = 0.2f;
 
+        /// <summary>角色离站位点多近(米)算"已靠近", 到这个范围才允许接管(敌人会先走过来)</summary>
+        private const float OperatorApproachRange = 1.5f;
+
         #region Inspector
 
         [Header("节点绑定")]
@@ -67,6 +72,9 @@ namespace XiaoCao
         [Header("交互")]
         [Tooltip("玩家进入该半径内按攻击键即可交互")]
         public float interactRadius = 2.5f;
+
+        [Tooltip("防误触: 炮台周围该半径(米)内有活着的敌人时, 玩家按攻击键不会触发交互, 而是照常普攻")]
+        public float enemyBlockInteractRadius = 4f;
 
         [Header("攻击")]
         [Tooltip("攻击配置, 子弹/导弹/激光各一份 ScriptableObject; 决定射程/冷缩/弹道/检测层")]
@@ -85,16 +93,27 @@ namespace XiaoCao
         [Tooltip("头部转向速度(度/秒)")]
         public float headRotateSpeed = 180f;
 
-        [Tooltip("玩家操控时方向键的转向速度(度/秒)")]
+        [Header("转向灵敏度")]
+        [XCLabel("方向键的转速")] 
         public float playerAimSpeed = 90f;
 
+        [XCLabel("鼠标视角灵敏度")]
+        public float mouseAimSensitivity = 3f;
+
+        [Tooltip("拖动屏幕转视角的灵敏度(度/像素)")]
+        public float dragAimSensitivity = 0.25f;
+
+        [Tooltip("俯仰灵敏度相对横向的比例, 0.5 表示上下只有左右的一半")]
+        public float dragPitchScale = 0.5f;
+
+        [Tooltip("拖动屏幕时上下方向取反(想和主相机手感一致时打开)")]
+        public bool invertDragPitch = false;
+
+
+        [Tooltip("PC 端操控时锁定并隐藏光标(更接近 FPS 手感; 锁定后无法用鼠标点界面按钮, 需用 Esc 退出)")]
+        public bool lockCursorOnAim = false;
+
         [Header("第一人称瞄准视角")]
-        [Tooltip("操控时隐藏炮台自身的模型")]
-        public bool hideTurretModel = true;
-
-        [Tooltip("操控时隐藏操控者的模型")]
-        public bool hideOperatorModel = true;
-
         [Tooltip("瞄准时关闭炮台自身的碰撞体: 视角在炮口后上方, 个别角度准星射线仍可能扫到炮台本体, 关掉后射线彻底穿过去")]
         public bool disableAimSelfCollider = true;
 
@@ -107,23 +126,20 @@ namespace XiaoCao
         [Tooltip("炮台视角焦距(FOV), 越小看得越远")]
         public float aimFieldOfView = 20f;
 
+        [Tooltip("滚轮拉近时的最小焦距(FOV), 越小看得越远")]
+        public float minAimFieldOfView = 10f;
+
+        [Tooltip("滚轮拉远时的最大焦距(FOV)")]
+        public float maxAimFieldOfView = 60f;
+
+        [Tooltip("滚轮每滚一格改变的焦距(FOV)")]
+        public float aimZoomStep = 4f;
+
+        [Tooltip("焦距变化的跟随速度(度/秒), 越大越跟手")]
+        public float aimZoomSmoothSpeed = 60f;
+
         [Tooltip("炮台虚拟相机的优先级, 要高于主相机(10)才能接管画面")]
         public int aimCameraPriority = 20;
-
-        [Tooltip("拖动屏幕转视角的灵敏度(度/像素)")]
-        public float dragAimSensitivity = 0.25f;
-
-        [Tooltip("拖动屏幕时上下方向取反(想和主相机手感一致时打开)")]
-        public bool invertDragPitch = false;
-
-        [Tooltip("俯仰灵敏度相对横向的比例, 0.5 表示上下只有左右的一半")]
-        public float dragPitchScale = 0.5f;
-
-        [Tooltip("PC 端鼠标移动转视角的灵敏度(度/鼠标轴单位, 约等于 0.3 度/像素); PC 下无需拖拽, 移动鼠标即转视角")]
-        public float mouseAimSensitivity = 3f;
-
-        [Tooltip("PC 端操控时锁定并隐藏光标(更接近 FPS 手感; 锁定后无法用鼠标点界面按钮, 需用 Esc 退出)")]
-        public bool lockCursorOnAim = false;
 
         [Header("后坐力")]
         [Tooltip("每次开火炮口上跳的角度(度)")]
@@ -169,6 +185,17 @@ namespace XiaoCao
 
         public bool HasOperator => OperatorRole != null;
 
+        /// <summary>
+        /// 当前是否是敌人占着炮台(敌对阵营的 AI 操控中)。
+        /// 敌人操控期间玩家完全不能交互, 要等它被打断(受击/死亡)才能接手
+        /// </summary>
+        public bool IsEnemyOperator =>
+            OperatorType == ETurretOperatorType.AiRole && OperatorRole != null &&
+            OperatorRole.team != XCSetting.PlayerTeam;
+
+        /// <summary>被打断过操控的角色, 之后不再接受它来操作(敌人受击断开后不会再回来)</summary>
+        private readonly HashSet<Role> rejectedOperators = new HashSet<Role>();
+
         /// <summary>射击方向(含偏航/俯仰/后坐力), 与准心完全一致</summary>
         public Vector3 AimDirection => AimRotation * Vector3.forward;
 
@@ -193,6 +220,9 @@ namespace XiaoCao
 
         /// <summary>当前开火阶段(按住/松开)的剩余时间</summary>
         private float aiTimer;
+
+        /// <summary>敌人刚上手时的启动延时剩余时间(秒), 归零后才允许开火; 支援角色恒为 0</summary>
+        private float aiStartDelay;
         private Role aiTarget;
         private HomeTriggerNameText tipHelper;
         private bool isTipShowing;
@@ -206,8 +236,12 @@ namespace XiaoCao
         private AssetPool missilePool;
 
         private readonly TurretAimCamera aimCamera = new TurretAimCamera();
-        private readonly List<Renderer> turretRenderers = new List<Renderer>();
-        private readonly List<Renderer> operatorRenderers = new List<Renderer>();
+
+        /// <summary>滚轮调节出来的目标焦距(FOV)</summary>
+        private float aimTargetFieldOfView;
+
+        /// <summary>当前实际生效的焦距(FOV), 平滑跟随目标值</summary>
+        private float aimCurrentFieldOfView;
         private readonly List<RaycastHit> aimHits = new List<RaycastHit>();
 
         /// <summary>RaycastNonAlloc 的固定缓冲, 避免瞄准线每帧检测时产生 GC</summary>
@@ -221,6 +255,12 @@ namespace XiaoCao
 
         private CursorLockMode savedCursorLock;
         private bool savedCursorVisible;
+
+        /// <summary>
+        /// 没有支援角色时按普攻键直接接管炮台, 那一下按键还没松开,
+        /// 先压住开火等它抬起, 免得一上手就开一炮
+        /// </summary>
+        private bool waitInteractKeyRelease;
 
         #endregion
 
@@ -237,17 +277,18 @@ namespace XiaoCao
 
             //记录炮头的初始朝向, 偏航与俯仰都在它之上叠加
             headBaseRot = head.localRotation;
-            CacheTurretRenderers();
         }
 
         private void OnEnable()
         {
             TurretSystem.Register(this);
+            FunctionItemMgr.Register(this);
         }
 
         private void OnDisable()
         {
             TurretSystem.Unregister(this);
+            FunctionItemMgr.Unregister(this);
             ExitControl();
 
             //兜底: 非玩家操控分支不会走 ExitAimView, 这里保证碰撞体一定被恢复
@@ -285,7 +326,7 @@ namespace XiaoCao
             //Esc 与顶部 CloseBtn 等价, 都是离开炮台; 有面板在显示时 Esc 先交给 UI 关面板
             if (OperatorType == ETurretOperatorType.Player &&
                 Input.GetKeyDown(KeyCode.Escape) &&
-                UIMgr.HasInst && UIMgr.Inst.showingPanels.Count == 0)
+                UIMgr.HasInst && !UIMgr.Inst.HasPanelShowing())
             {
                 ExitControl();
                 return;
@@ -294,6 +335,7 @@ namespace XiaoCao
             if (OperatorType == ETurretOperatorType.Player)
             {
                 ApplyMouseAim();
+                ApplyAimZoom(dt);
             }
             else if (OperatorType == ETurretOperatorType.AiRole)
             {
@@ -314,6 +356,9 @@ namespace XiaoCao
             {
                 return;
             }
+
+            //焦距与位姿在同一个 LateUpdate 写进虚拟相机, 早于 CinemachineBrain 采样
+            aimCamera.SetFieldOfView(aimCurrentFieldOfView);
 
             aimCamera.Apply(GetAimCameraPos(), AimRotation * GetRecoilShakeRotation());
 
@@ -336,27 +381,180 @@ namespace XiaoCao
 
         #region Operator
 
+        #region FunctionItem
+
+        /// <summary>功能件节点(查找距离用)</summary>
+        public Transform ItemTransform => transform;
+
+        /// <summary>当前占用者, 就是操控者</summary>
+        public Role Operator => OperatorRole;
+
         /// <summary>
-        /// 玩家能否与该炮台交互: 自己已在操控时不再需要交互,
-        /// 被支援角色占用时仍可交互(界面里可以终止它的操控)
+        /// AI 要先走到站位点附近才能开始操控; 没配站位点时退化成炮台自身位置。
+        /// 玩家是走到跟前才交互的, 不依赖这里
+        /// </summary>
+        public Vector3 OperatePosition => standPoint != null ? standPoint.position : transform.position;
+
+        /// <summary>离站位点多近(米)算"已靠近", 敌人 FindFunction 走到这个范围内才开始接管</summary>
+        public float OperateRange => OperatorApproachRange;
+
+        /// <summary>
+        /// 能否被该角色占用: 空闲或本来就是这个角色在操控, 且没有拒绝过它。
+        /// 玩家走交互界面, 这里只服务 AI(敌人/支援角色)
+        /// </summary>
+        public bool CanBeOperatedBy(Role role)
+        {
+            if (role == null || role.IsDie || role.IsPlayer || rejectedOperators.Contains(role))
+            {
+                return false;
+            }
+
+            return OperatorRole == null || OperatorRole == role;
+        }
+
+        /// <summary>AI 角色开始操控炮台</summary>
+        public bool TryOperate(Role role)
+        {
+            return CanBeOperatedBy(role) && TakeControlByAiRole(role);
+        }
+
+        /// <summary>AI 角色主动放弃(死亡/离开); 自己不是占用者时忽略</summary>
+        public void StopOperate(Role role)
+        {
+            if (OperatorRole == role)
+            {
+                ExitControl();
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 操控者挨打时的处理: 敌方 AI 操控炮台期间被打中就立刻断开, 并把它拉进拒绝名单,
+        /// 之后它再来找功能件也不会选中这台炮台。玩家与支援角色不受影响
+        /// </summary>
+        private void OnOperatorDamaged(AtkInfo info, bool isBreak)
+        {
+            if (OperatorType != ETurretOperatorType.AiRole)
+            {
+                return;
+            }
+
+            Role role = OperatorRole;
+            if (role == null || role.team == XCSetting.PlayerTeam)
+            {
+                return;
+            }
+
+            rejectedOperators.Add(role);
+            ExitControl();
+        }
+
+        /// <summary>
+        /// 玩家能否与该炮台交互: 自己已在操控时不再需要交互;
+        /// 被支援角色占用时仍可交互(界面里可以终止它的操控);
+        /// 被敌人占用时不可交互(既不能开界面, 也不能把它顶下来)
         /// </summary>
         public bool CanInteract(Role role)
         {
-            return OperatorRole != role;
+            if (OperatorRole == role)
+            {
+                return false;
+            }
+
+            return !IsEnemyOperator;
         }
 
-        /// <summary>玩家靠近按攻击键时打开炮台交互界面</summary>
+        /// <summary>
+        /// 防误触: 炮台周围 <see cref="enemyBlockInteractRadius"/> 内是否有活着的敌人。
+        /// 有敌人时按普攻键应该先去打怪, 不能弹出炮台交互界面。
+        /// 只在玩家进入交互半径后才调用, 每帧的遍历量很有限
+        /// </summary>
+        public bool HasEnemyAround()
+        {
+            float sqrRadius = enemyBlockInteractRadius * enemyBlockInteractRadius;
+            Vector3 pos = transform.position;
+
+            foreach (Role role in RoleMgr.Inst.roleDic.Values)
+            {
+                if (role.team == XCSetting.PlayerTeam || role.IsDie || role.IsHiding)
+                {
+                    continue;
+                }
+
+                if ((role.transform.position - pos).sqrMagnitude <= sqrRadius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 玩家靠近按攻击键时打开炮台交互界面;
+        /// 没有可指派的支援角色时列表里只剩玩家自己, 直接进入操控, 无需再弹界面选一次
+        /// </summary>
         public void OpenInteractionPanel()
         {
+            //敌人占着炮台时不响应交互(与 CanInteract 保持一致, 这里的入口也可能被直接调用)
+            if (!CanInteract(GameDataCommon.LocalPlayer))
+            {
+                return;
+            }
+
+            //防误触: 周围有敌人时这一下按的是普攻, 不能吞掉去开界面
+            if (HasEnemyAround())
+            {
+                return;
+            }
+
+            if (!HasAvailableFriend)
+            {
+                //直接接管: 与面板里选中自己的确认流程一致
+                Player0 player = GameDataCommon.LocalPlayer;
+                if (player != null && TakeControlByPlayer(player))
+                {
+                    //界面是被普攻键打开的, 这一下按键还没松开, 先压住开火等它抬起
+                    waitInteractKeyRelease = true;
+                }
+
+                return;
+            }
+
             UIMgr.Inst.ShowView(UIPanelType.TurretPanel, new TurretPanelData(this));
         }
 
-        /// <summary>玩家亲自操控炮台</summary>
+        /// <summary>是否存在在场且存活的支援角色(与交互面板里的可指派列表一致, 玩家自己不算)</summary>
+        private bool HasAvailableFriend
+        {
+            get
+            {
+                List<int> friendIds = GameDataCommon.LocalPlayer.playerData.friends;
+                for (int i = 0; i < friendIds.Count; i++)
+                {
+                    Role role = friendIds[i].GetRoleById();
+                    if (role != null && !role.IsDie)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>玩家亲自操控炮台; 被敌人占着时返回 false(不能把它顶下来)</summary>
         public bool TakeControlByPlayer(Player0 player)
         {
             if (OperatorRole == player)
             {
                 return true;
+            }
+
+            if (IsEnemyOperator)
+            {
+                return false;
             }
 
             ExitControl();
@@ -392,6 +590,7 @@ namespace XiaoCao
 
             Role role = OperatorRole;
             ETurretOperatorType type = OperatorType;
+            role.OnDamageAct -= OnOperatorDamaged;
             OperatorRole = null;
             OperatorType = ETurretOperatorType.None;
             aiTarget = null;
@@ -399,6 +598,7 @@ namespace XiaoCao
             targetPitch = 0f;
             recoilOffset = 0f;
             recoilShakeTimer = 0f;
+            waitInteractKeyRelease = false;
 
             if (type == ETurretOperatorType.Player)
             {
@@ -426,11 +626,18 @@ namespace XiaoCao
             recoilOffset = 0f;
             recoilShakeTimer = 0f;
             cdTimer = 0f;
+            waitInteractKeyRelease = false;
             aiFiring = true;
             aiTimer = AiHoldDuration;
             aiTarget = null;
 
-            LockRole(role);
+            //敌人刚接管时先愣一下再开火, 给玩家反应时间; 支援角色无延时
+            aiStartDelay = IsFriendlyOperator ? 0f : attackConfig.AutoFire.enemyStartDelay;
+
+            LockRole(role, type);
+
+            //操控期间挨打就断开(只对敌方 AI 生效, 见 OnOperatorDamaged)
+            role.OnDamageAct += OnOperatorDamaged;
 
             if (type == ETurretOperatorType.Player)
             {
@@ -445,12 +652,24 @@ namespace XiaoCao
             }
         }
 
-        /// <summary>操控开始时把角色固定到炮口后方, 期间不能再移动/施法</summary>
-        private void LockRole(Role role)
+        /// <summary>
+        /// 操控开始时把角色固定到炮台后方的站位点, 期间不能再移动/施法。
+        /// AI 角色(敌人/支援角色)一律吸附过去: 它们只是走到"可操作范围"内就接管,
+        /// 不吸附会站在离站位点一两米的地方, 看起来和炮台没关系;
+        /// 玩家只有远距离指派时才吸附, 走到跟前的情况保持原样, 免得接管瞬间闪一下
+        /// </summary>
+        private void LockRole(Role role, ETurretOperatorType type)
         {
             role.data_R.roleControl.BreakAllBusy();
             role.data_R.roleState.moveLockFlag = true;
-            role.Movement.MoveToImmediate(standPoint.position);
+
+            if (standPoint != null &&
+                (type == ETurretOperatorType.AiRole ||
+                 Vector3.Distance(role.transform.position, standPoint.position) > OperatorApproachRange))
+            {
+                role.Movement.MoveToImmediate(standPoint.position);
+            }
+
             role.Movement.LookToDir(transform.forward);
             role.Anim.CrossFade(AnimNames.Idle, 0.2f);
 
@@ -477,23 +696,17 @@ namespace XiaoCao
         #region AimView
 
         /// <summary>
-        /// 进入第一人称瞄准视角: 提高炮台虚拟相机的优先级接管画面(过渡见 MainCameraBlends),
-        /// 隐藏角色与炮台模型, 显示准星
+        /// 进入第一人称瞄准视角: 提高炮台虚拟相机的优先级接管画面(过渡见 MainCameraBlends), 显示准星
         /// </summary>
         private void EnterAimView()
         {
-            aimCamera.Begin(transform, GetAimCameraPos(), AimRotation, aimFieldOfView, aimCameraPriority);
+            //每次进入操控都从默认焦距开始, 之后由滚轮往上调。
+            //基准焦距钳进区间内, 免得配置越界后第一格滚轮画面就跳一下
+            float defaultFov = Mathf.Clamp(aimFieldOfView, minAimFieldOfView, maxAimFieldOfView);
+            aimTargetFieldOfView = defaultFov;
+            aimCurrentFieldOfView = defaultFov;
 
-            if (hideTurretModel)
-            {
-                SetRenderersEnabled(turretRenderers, false);
-            }
-
-            if (hideOperatorModel)
-            {
-                CacheOperatorRenderers(OperatorRole);
-                SetRenderersEnabled(operatorRenderers, false);
-            }
+            aimCamera.Begin(transform, GetAimCameraPos(), AimRotation, defaultFov, aimCameraPriority);
 
             if (UIMgr.HasInst && UIMgr.Inst.turretCrosshair != null)
             {
@@ -509,13 +722,10 @@ namespace XiaoCao
             ApplyCursorLock(true);
         }
 
-        /// <summary>退出第一人称视角: 交还相机, 恢复模型与准星</summary>
+        /// <summary>退出第一人称视角: 交还相机, 隐藏准星</summary>
         private void ExitAimView()
         {
             aimCamera.End();
-            SetRenderersEnabled(turretRenderers, true);
-            SetRenderersEnabled(operatorRenderers, true);
-            operatorRenderers.Clear();
 
             if (UIMgr.HasInst && UIMgr.Inst.turretCrosshair != null)
             {
@@ -529,47 +739,6 @@ namespace XiaoCao
 
             SetAimSelfCollidersDisabled(false);
             ApplyCursorLock(false);
-        }
-
-        /// <summary>缓存炮台自身可隐藏的模型渲染器(激光、拖尾等特效不参与隐藏)</summary>
-        private void CacheTurretRenderers()
-        {
-            turretRenderers.Clear();
-
-            Renderer[] all = GetComponentsInChildren<Renderer>(true);
-            foreach (Renderer renderer in all)
-            {
-                if (renderer is MeshRenderer || renderer is SkinnedMeshRenderer)
-                {
-                    turretRenderers.Add(renderer);
-                }
-            }
-        }
-
-        /// <summary>缓存操控者身上可隐藏的模型渲染器</summary>
-        private void CacheOperatorRenderers(Role role)
-        {
-            operatorRenderers.Clear();
-
-            Renderer[] all = role.transform.GetComponentsInChildren<Renderer>(true);
-            foreach (Renderer renderer in all)
-            {
-                if (renderer is MeshRenderer || renderer is SkinnedMeshRenderer)
-                {
-                    operatorRenderers.Add(renderer);
-                }
-            }
-        }
-
-        private static void SetRenderersEnabled(List<Renderer> renderers, bool isEnabled)
-        {
-            for (int i = 0; i < renderers.Count; i++)
-            {
-                if (renderers[i] != null)
-                {
-                    renderers[i].enabled = isEnabled;
-                }
-            }
         }
 
         /// <summary>
@@ -688,6 +857,29 @@ namespace XiaoCao
             targetPitch = Mathf.Clamp(targetPitch + pitchDelta, headPitchMin, headPitchMax);
         }
 
+        /// <summary>
+        /// PC 端: 滚轮调节炮台视角远近(焦距)。
+        /// 向上滚拉近(FOV 变小, 看得更远), 向下滚拉远, 方向与主相机滚轮一致。
+        /// </summary>
+        /// <param name="dt">帧间隔(秒)</param>
+        private void ApplyAimZoom(float dt)
+        {
+            if (!IsMouseMode)
+            {
+                return;
+            }
+
+            if (!Input.mouseScrollDelta.IsZore())
+            {
+                aimTargetFieldOfView = Mathf.Clamp(aimTargetFieldOfView - Input.mouseScrollDelta.y * aimZoomStep,
+                    minAimFieldOfView, maxAimFieldOfView);
+            }
+
+            //焦距平滑跟随, 免得滚轮一格画面突然一跳
+            aimCurrentFieldOfView = Mathf.MoveTowards(aimCurrentFieldOfView, aimTargetFieldOfView,
+                aimZoomSmoothSpeed * dt);
+        }
+
         /// <summary>PC 端操控时可选锁定光标, 退出时恢复进入前的状态</summary>
         private void ApplyCursorLock(bool enter)
         {
@@ -720,6 +912,19 @@ namespace XiaoCao
         {
             PlayerInputData input = player.playerData.inputData;
 
+            bool interactKeyHeld = input.inputs[(int)InputKey.NorAck] || input.norAckHold;
+
+            //接管瞬间的普攻键还没抬起时不当作开火输入
+            if (waitInteractKeyRelease)
+            {
+                if (interactKeyHeld)
+                {
+                    return;
+                }
+
+                waitInteractKeyRelease = false;
+            }
+
             //拖动屏幕转炮口: 仅移动端生效; PC 端是"鼠标自动跟随"(见 ApplyMouseAim), 拖拽无效
             Vector2 swipe = IsMouseMode ? Vector2.zero : PlayerInputData.LocalSwipeDirection;
             if (!swipe.IsZore())
@@ -748,7 +953,7 @@ namespace XiaoCao
             }
 
             //点一下开一炮, 长按(鼠标左键/J/普攻按钮)则按攻击冷缩自动连发
-            if (input.inputs[(int)InputKey.NorAck] || input.norAckHold)
+            if (interactKeyHeld)
             {
                 TryFire();
             }
@@ -817,6 +1022,13 @@ namespace XiaoCao
             {
                 aiFiring = true;
                 aiTimer = hold;
+                return;
+            }
+
+            //启动延时: 炮口已经转向目标, 只是先不开火
+            if (aiStartDelay > 0f)
+            {
+                aiStartDelay -= dt;
                 return;
             }
 
@@ -1158,18 +1370,29 @@ namespace XiaoCao
 
         #region Util
 
-        /// <summary>每帧上报与本地玩家的距离, 由 TurretSystem 挑出最近的可交互炮台</summary>
+        /// <summary>
+        /// 每帧上报与本地玩家的距离, 由 TurretSystem 挑出最近的可交互炮台。
+        /// 不可交互(被敌人占着 / 周围有敌人防误触)时不上报: 这时玩家按攻击键应该照常普攻, 名字牌也不高亮
+        /// </summary>
         private void ReportLocalPlayerNear()
         {
             Player0 player = GameDataCommon.LocalPlayer;
-            if (player == null || player.IsDie)
+            if (player == null || player.IsDie || !CanInteract(player))
             {
                 TurretSystem.ReportNearby(this, false);
                 return;
             }
 
             float distance = Vector3.Distance(player.transform.position, transform.position);
-            TurretSystem.ReportNearby(this, distance <= interactRadius, distance);
+
+            //先判距离再扫敌人, 只有玩家真正靠近的炮台才做敌人遍历
+            if (distance > interactRadius || HasEnemyAround())
+            {
+                TurretSystem.ReportNearby(this, false);
+                return;
+            }
+
+            TurretSystem.ReportNearby(this, true, distance);
         }
 
         /// <summary>

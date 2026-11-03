@@ -32,9 +32,11 @@ public class Atker : BaseAtker
             InitHitInfo(other);
             OnHitRole(role);
         }
-        else if (rb.CompareTag(Tags.ITEM) && GetEntity().HasTag(RoleTagCommon.MainPlayer) &&
-                 rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item))
+        else if (rb.CompareTag(Tags.ITEM) &&
+                 rb.TryGetComponent<ItemIdComponent>(out ItemIdComponent item) &&
+                 item.CanBeAttackedBy(ackInfo.team))
         {
+            //默认只有玩家能打物品; 勾了 allowEnemyAttack 的物品, 敌人也能打坏(但不会被敌人索敌)
             InitHitInfo(other);
             item.OnDamage(ackInfo);
         }

@@ -80,6 +80,25 @@ namespace XiaoCao.UI{
 		public static string ToLocalizeStr(this string key){
 			return LocalizeMgr.Localize(key);
 		}
+
+		/// <summary>
+		/// 取本地化文本并按 {0} {1} 顺序替换参数。
+		/// key 不存在时返回空串; 文案里的花括号一律当普通文本替换, 不会像 string.Format 那样抛 FormatException
+		/// </summary>
+		public static string ToLocalizeStrFormat(this string key, params object[] args){
+			if (!LocalizeMgr.Inst.HasKey(key)){
+				return "";
+			}
+			string text = LocalizeMgr.Localize(key);
+			if (args == null){
+				return text;
+			}
+			for (int i = 0; i < args.Length; i++){
+				string arg = args[i] == null ? "" : args[i].ToString();
+				text = text.Replace("{" + i + "}", arg);
+			}
+			return text;
+		}
 	}
 
     public struct LocalizeStr{

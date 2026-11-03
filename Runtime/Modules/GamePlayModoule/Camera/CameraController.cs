@@ -160,7 +160,8 @@ namespace XiaoCao
             {
                 if (BattleData.Current.CanPlayerControl)
                 {
-                    if (!Input.mouseScrollDelta.IsZore())
+                    //炮台第一人称期间滚轮归炮台调焦距, 主相机不再跟着改距离
+                    if (!TurretAimCamera.IsActive && !Input.mouseScrollDelta.IsZore())
                     {
                         var distance = Mathf.Clamp(CFT.m_CameraDistance - Input.mouseScrollDelta.y,
                             setting_topDown.minCamDistance, setting_topDown.maxCamDistance);

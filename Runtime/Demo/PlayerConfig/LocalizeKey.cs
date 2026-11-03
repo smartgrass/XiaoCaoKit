@@ -47,6 +47,7 @@ namespace XiaoCao
         public static string LevelDamageFactor = "LevelDamageFactor";
         public static string OnceDamage = "OnceDamage";
         public static string SkillDesc = "SkillDesc";
+        public static string SkillUpgradeDesc = "SkillUpgradeDesc"; // 技能增强
         public static string NeedLv = "NeedLv";
         public static string NeedRoleLv = "NeedRoleLv"; // 角色等级不足(技能升级)
         public static string SkillMaxLevel = "SkillMaxLevel"; // 技能已满级
@@ -131,6 +132,12 @@ namespace XiaoCao
         public static string GetSkillDescKey(string skillId)
         {
             return $"skill_{skillId}_desc";
+        }
+
+        //技能增强描述模板 skill_[id]_upgrade_desc, 文案里用 {0} 占位自定义数值
+        public static string GetSkillUpgradeDescKey(string skillId)
+        {
+            return $"skill_{skillId}_upgrade_desc";
         }
 
         public static string GetBlessingNameKey(EBlessing blessing)

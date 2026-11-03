@@ -188,6 +188,23 @@ namespace cfg
             return ret;
         }
 
+        public static float GetSkillCostomValue(string skillId, int level = -1)
+        {
+            SkillUpgradeSetting setting = LubanTables.GetSkillUpgradeSetting(skillId);
+            if (setting.CostomValues == null || setting.CostomValues.Count == 0)
+            {
+                return 0;
+            }
+            if (level < 0)
+            {
+                level = PlayerSaveData.LocalSavaData.GetSkillLevel(skillId);
+            }
+            int index = Mathf.Clamp(level - 1, 0, setting.CostomValues.Count - 1);
+            //连冲次数是整数,表里已改成 float 列表,这里取整
+            return setting.CostomValues[index];
+        }
+
+
         public static List<XiaoCao.Item> GetSkillUpgradeItems(string skillId, int lv)
         {
             var setting = GetSkillUpgradeSetting(skillId);

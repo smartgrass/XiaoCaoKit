@@ -48,6 +48,8 @@ namespace XiaoCao
             if (HasTriggerTarget(targetType, TriggerTargetType.Enemy))
             {
                 layerMask |= GetTeamInverseLayerMask(team);
+                //可被攻击的场景物件(书架等)不分阵营, 任何一方的攻击都要能打中
+                layerMask |= Layers.HIT_ABLE_MASK;
             }
 
             layerMask |= GetEnvironmentTriggerLayerMask(targetType);

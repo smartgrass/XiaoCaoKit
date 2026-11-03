@@ -238,6 +238,8 @@ namespace XiaoCao
 
             if (!body.TryGetComponent(out IdRole idRole) || !(idRole.GetEntity() is Role role))
             {
+                //角色以外的刚体可能是可被攻击的场景物件(书架等)
+                TryHitItem(other, body);
                 return;
             }
 
@@ -257,6 +259,38 @@ namespace XiaoCao
             ackInfo.hitDir = transform.forward.SetY(0f);
 
             OnHitRole(role);
+        }
+
+        /// <summary>
+        /// 命中可被攻击的场景物件: 命中一次即消耗(与打中角色一致), 掉血/特效交给物品自己处理。
+        /// 基类 <see cref="Atker"/> 里也有一段同样的物品判定, 但本类重写了 ReceiveTriggerEnter,
+        /// 基类那段不会再执行, 所以这里必须自己补一遍
+        /// </summary>
+        private void TryHitItem(Collider other, Rigidbody body)
+        {
+            if (consumed || ackInfo == null)
+            {
+                return;
+            }
+
+            if (!body.CompareTag(Tags.ITEM) || !body.TryGetComponent(out ItemIdComponent item))
+            {
+                return;
+            }
+
+            //能不能打由物品自己的开关决定(玩家默认可打, 敌人要看 allowEnemyAttack)
+            if (!item.CanBeAttackedBy(ackInfo.team))
+            {
+                return;
+            }
+
+            consumed = true;
+            ackInfo.ackObjectPos = transform.position;
+            ackInfo.hitPos = other.ClosestPointOnBounds(transform.position);
+            ackInfo.hitDir = transform.forward.SetY(0f);
+
+            item.OnDamage(ackInfo);
+            Recycle();
         }
 
         public override void OnTriggerTimeOut()

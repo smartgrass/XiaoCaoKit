@@ -16,6 +16,7 @@ namespace XiaoCao.UI
     {
         //标题
         public TMP_Text titleText;
+        public TMP_Text lvText;
 
         //技能图标
         public Image skillIcon;
@@ -55,6 +56,7 @@ namespace XiaoCao.UI
             titleText.text = $"{LocalizeKey.GetSkillNameKey(skillId).ToLocalizeStr()}";
             UpdateIcon();
             desText.text = GetDesStr();
+
             UpdateCost();
         }
 
@@ -161,17 +163,33 @@ namespace XiaoCao.UI
             int lv = PlayerSaveData.GetSkillLevel(skillId);
             var skillUpgradeSetting = LubanTables.GetSkillUpgradeSetting(skillId);
             int maxLv = skillUpgradeSetting.MaxLevel;
+            lvText.text =$"Lv: {lv}/{maxLv}";
+
             float levelDamageFactor = skillUpgradeSetting.LevelDamageFactor * Mathf.Max(0, lv - 1);
 
-            string lvLine = $"{LocalizeKey.Lv.ToLocalizeStr()}: {lv}/{maxLv}";
             string damageLine = $"{LocalizeKey.LevelDamageFactor.ToLocalizeStr()}: {levelDamageFactor:P0}";
             // string onceDamageLine = $"{LocalizeKey.OnceDamage.ToLocalizeStr()}: {skillUpgradeSetting.Cd}";
-            string needLvLine = $"{LocalizeKey.NeedLv.ToLocalizeStr()}: {skillUpgradeSetting.NeedLv}";
+            string needLvLine = $"{LocalizeKey.NeedLv.ToLocalizeStr()}: Lv{skillUpgradeSetting.NeedLv}";
             string des = LocalizeKey.GetSkillDesc(skillId, lv);
-            string desLine = $"{LocalizeKey.SkillDesc.ToLocalizeStr()}:{des}";
+            string desLine = $"{LocalizeKey.SkillDesc.ToLocalizeStr()}:\n{des}";
 
-            return $"{lvLine}\n{needLvLine}\n{damageLine}\n{desLine}";
+            string upgradeEffectKey = LocalizeKey.GetSkillUpgradeDescKey(skillId);
+            //自定义增强值: 按当前等级取值(未学习时取 1 级), 整数直接显示, 小数保留两位
+            float costomValue = LubanTables.GetSkillCostomValue(skillId, Mathf.Max(1, lv));
+            string costomStr = Mathf.Approximately(costomValue, Mathf.Round(costomValue))
+                ? Mathf.RoundToInt(costomValue).ToString()
+                : costomValue.ToString("0.##");
+            string upgradeEffect = upgradeEffectKey.ToLocalizeStrFormat(costomStr);
+
+            string upgradeEffectAll = $"{LocalizeKey.SkillUpgradeDesc.ToLocalizeStr()}:\n{damageLine}";
+            if (!string.IsNullOrEmpty(upgradeEffect))
+            {
+                upgradeEffectAll += $"\n{upgradeEffect}";
+            }
+            return $"{desLine}\n\n{upgradeEffectAll}\n\n{needLvLine}";
         }
+
+
 
 
         public void OnHide()

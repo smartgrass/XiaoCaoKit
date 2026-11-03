@@ -33,6 +33,9 @@ namespace XiaoCao
         [Tooltip("敌人操控炮台时\"停顿\"的间隔(秒), 期间不开火")]
         public float enemyReleaseDuration = 3f;
 
+        [Tooltip("敌人开始操控炮台后的启动延时(秒); 炮口照常转向, 但这段时间内不开火, 支援角色不受影响")]
+        public float enemyStartDelay = 1f;
+
         /// <summary>实际射程: 攻击范围与索敌距离取较大值, 否则会看得到打不到</summary>
         public float GetDetectDistance(float attackRange)
         {

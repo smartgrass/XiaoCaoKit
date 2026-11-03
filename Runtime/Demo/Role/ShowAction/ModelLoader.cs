@@ -1,12 +1,14 @@
 using System;
 using System.Globalization;
-using UnityEditor;
 using UnityEngine;
 using XiaoCao;
 using Object = UnityEngine.Object;
 
 public class ModelLoader
 {
+    /// <summary>角色默认动画机的 id, 对应 Assets/_Res/Role/AnimController/0.controller</summary>
+    private const string DefaultAnimController = "0";
+
     public string roleKey;
 
     public static int OffsetIndex;
@@ -58,9 +60,10 @@ public class ModelLoader
         loadedModel = Role.LoadModelByKey(roleKey);
         if (roleKey.StartsWith("Role"))
         {
+            //默认动画机: 运行时程序集里没有 AssetDatabase, 统一走 ResMgr 加载
+            string defaultPath = XCPathConfig.GetAnimatorControllerPath(DefaultAnimController);
             loadedModel.GetComponent<Animator>().runtimeAnimatorController =
-                AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
-                    "Assets/_Res/Role/AnimController/0.controller");
+                ResMgr.LoadAseet(defaultPath) as RuntimeAnimatorController;
         }
         loadedModel.transform.SetParent(cameraCapture.transform, false);
 

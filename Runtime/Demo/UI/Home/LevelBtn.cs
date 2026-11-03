@@ -21,6 +21,8 @@ namespace XiaoCao.UI
         public GameObject selectShowObject;
         public GameObject selectHideObject;
 
+        public UIStateChange bgUIStateChange;
+
         public int curChapter;
 
         public int LevelIndex
@@ -41,8 +43,15 @@ namespace XiaoCao.UI
 
         public void SetSelected(bool selected)
         {
-            selectShowObject?.SetActive(selected);
-            selectHideObject?.SetActive(!selected);
+            if (selectShowObject)
+            {
+                selectShowObject.SetActive(selected);
+            }
+            if (selectHideObject)
+            {
+                selectHideObject.SetActive(!selected);
+            }
+
         }
 
         public void Show(int chapter, int index)
@@ -58,6 +67,8 @@ namespace XiaoCao.UI
             UpdateOutlineState(passState);
             UpdatePassTimeText(passState);
             UpdateStarState(passState);
+
+            bgUIStateChange?.SetState(index % 5 == 0 ? 1 : 0);
         }
 
         private LevelPassState GetPassState(int chapter, int index)

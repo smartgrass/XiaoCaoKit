@@ -84,6 +84,17 @@ namespace XiaoCao
             vcam.transform.SetPositionAndRotation(position, rotation);
         }
 
+        /// <summary>设置焦距(FOV), 数值越小看得越远; 炮台用滚轮调节远近时调用</summary>
+        public void SetFieldOfView(float fieldOfView)
+        {
+            if (vcam == null)
+            {
+                return;
+            }
+
+            vcam.m_Lens.FieldOfView = fieldOfView;
+        }
+
         /// <summary>
         /// 首次接管时创建虚拟相机: 故意不加 Body/Aim 组件,
         /// Cinemachine 会直接用虚拟相机自身的 transform 作为画面位姿

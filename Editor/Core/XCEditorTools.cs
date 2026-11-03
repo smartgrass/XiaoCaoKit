@@ -28,7 +28,7 @@ namespace XiaoCaoEditor
 
         public const string XiaoCaoPath = "XiaoCao/打开路径/";
 
-        public const string XiaoCaoGenCode = "XiaoCao/GenCode/";
+        public const string XiaoCaoGenCode = "XiaoCao/";
 
         //ToolBar
         public const string OpenPath_Sava = XiaoCaoPath + "存档位置";

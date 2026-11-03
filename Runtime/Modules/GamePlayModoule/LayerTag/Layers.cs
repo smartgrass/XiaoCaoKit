@@ -34,6 +34,10 @@ public sealed class Layers
     
     public const int GROUND_MASK = 8;
     
+    public const int HIT_ABLE = 14;
+    
+    public const int HIT_ABLE_MASK = 16384;
+    
     public const int IGNORE_RAYCAST = 2;
     
     public const int IGNORE_RAYCAST_MASK = 4;

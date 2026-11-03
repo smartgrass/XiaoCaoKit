@@ -616,6 +616,9 @@ namespace XiaoCao
         
         public const string KillEnemy = "KillEnemy";
 
+        //查找功能件
+        public const string FindFunction = "FindFunction";
+
         public static List<string> GetShortKeys()
         {
             //使用反射获取所有const字段
