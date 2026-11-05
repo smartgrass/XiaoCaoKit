@@ -219,7 +219,7 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 领取任务奖励: 标记已领取并发放奖励, 广播任务变化事件
+        /// 领取任务奖励: 标记已领取并发放奖励, 播放领取成功的音效, 广播任务变化事件
         /// </summary>
         public static void Claim(cfg.TaskSetting setting)
         {
@@ -234,6 +234,8 @@ namespace XiaoCao
                 item.RewardItem();
             }
             PlayerSaveData.SavaData();
+            //领取成功的正反馈音效, 与技能升级/锻造成功共用 Success 音效
+            SoundMgr.Inst.PlayUISure();
             UICanvasMgr.Inst.EventSystem.SendEvent(XiaoCao.UI.UIEventNames.TaskChange);
         }
 

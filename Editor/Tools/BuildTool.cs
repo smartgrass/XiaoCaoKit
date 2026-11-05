@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
@@ -16,32 +17,48 @@ namespace XiaoCaoEditor
     {
         static string PathKey = "EditorBuildDir";
 
+        /// <summary>Unity 未公开的"清场景 dirty"接口, 首次使用时反射获取</summary>
+        private static MethodInfo _clearSceneDirtiness;
+
         [MenuItem(XCEditorTools.BuildAll)]
         public static void BuildAll()
         {
             StartBuld(true, true, EditorUserBuildSettings.activeBuildTarget);
         }
 
+        /// <summary>
+        /// 打包前处理未保存的场景:直接丢弃未保存改动,不弹对话框也不写磁盘。
+        /// 打包读取的是磁盘上的场景文件,内存里的改动本来就不会进包,所以这里只需清掉 dirty 标记。
+        /// </summary>
         public static void CheckSaveScene()
         {
-            if (EditorSceneUtility.HasDirtyScenes())
+            int sceneCount = SceneManager.sceneCount;
+            for (int i = 0; i < sceneCount; i++)
             {
-                Scene currentScene = SceneManager.GetActiveScene();
-                if (EditorUtility.DisplayDialog("Scene 未保存",
-                        "是否继续?", "保存并继续",
-                        "取消"))
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (!scene.isDirty)
                 {
-                    bool save = EditorSceneManager.SaveScene(currentScene);
-                    if (!save)
-                    {
-                        throw new Exception("--- 保存失败");
-                    }
+                    continue;
                 }
-                else
-                {
-                    throw new Exception("--- 取消");
-                }
+
+                ClearDirty(scene);
+                Debug.LogWarning($"--- 场景 {scene.name} 有未保存改动,打包前已丢弃(未写入磁盘)");
             }
+        }
+
+        /// <summary>
+        /// 清掉场景的 dirty 标记, 效果等于放弃该场景的未保存改动(内存改动不写盘)。
+        /// Unity 只公开了 MarkSceneDirty, 清标记的 ClearSceneDirtiness 是 internal, 这里反射调用。
+        /// </summary>
+        private static void ClearDirty(Scene scene)
+        {
+            if (_clearSceneDirtiness == null)
+            {
+                _clearSceneDirtiness = typeof(EditorSceneManager).GetMethod("ClearSceneDirtiness",
+                    BindingFlags.Static | BindingFlags.NonPublic, null, new[] { typeof(Scene) }, null);
+            }
+
+            _clearSceneDirtiness?.Invoke(null, new object[] { scene });
         }
 
         [MenuItem(XCEditorTools.BuildYooAsset)]
@@ -83,9 +100,46 @@ namespace XiaoCaoEditor
             CIBuildHelper.ProjectBuildExecute(EditorUserBuildSettings.activeBuildTarget);
         }
 
+        /// <summary>
+        /// 清理上一次 PC 打包残留在输出目录里的 StreamingAssets。
+        /// YooAsset 的 bundle 文件名取自内容哈希, 资源一改文件名就变; 而 Unity 复制 StreamingAssets 时
+        /// 只覆盖不删除, 于是 Build/ActGame_Data/StreamingAssets 会按构建次数累加(实测叠了 3 次共 671MB)。
+        /// 这里在 BuildPlayer 之前整个删掉, 让 Unity 重新完整复制一份。
+        /// 安卓每次生成新 apk, 不存在这个问题, 不调用。
+        /// </summary>
+        [MenuItem(XCEditorTools.ClearWindowBuildResidual)]
         public static void ClearStreamingAssets()
         {
-            Debug.Log($"--- ClearStreamingAssets");
+            string streamingAssetsDir = GetWindowBuildStreamingAssetsDir();
+            if (!Directory.Exists(streamingAssetsDir))
+            {
+                Debug.Log($"--- 清理打包残留: {streamingAssetsDir} 不存在, 跳过");
+                return;
+            }
+
+            long size = GetDirSize(streamingAssetsDir);
+            Directory.Delete(streamingAssetsDir, true);
+            Debug.Log($"--- 清理打包残留: 已删除 {streamingAssetsDir} ({size / 1024f / 1024f:F1} MB)");
+        }
+
+        /// <summary>PC 输出目录里的 StreamingAssets 路径, 由打包 exe 路径推导(同名 _Data 目录)</summary>
+        private static string GetWindowBuildStreamingAssetsDir()
+        {
+            string exePath = Path.Combine(PathTool.GetProjectPath(), CIBuildHelper.WindowBuildExePath);
+            string dataDir = Path.GetFileNameWithoutExtension(exePath) + "_Data";
+            return Path.Combine(Path.GetDirectoryName(exePath), dataDir, "StreamingAssets");
+        }
+
+        /// <summary>统计目录占用字节数, 仅用于清理日志</summary>
+        private static long GetDirSize(string dir)
+        {
+            long size = 0;
+            foreach (var file in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+            {
+                size += new FileInfo(file).Length;
+            }
+
+            return size;
         }
 
         [MenuItem(XCEditorTools.CopyExtraResToWin)]
@@ -195,12 +249,6 @@ namespace XiaoCaoEditor
 
             CIBuildHelper.SwitchPlatform(buildTarget);
 
-            if (!isAndriod)
-            {
-                BuildTool.ClearStreamingAssets();
-            }
-
-
             if (IsBuildYooAseet)
             {
                 var results = YooAssetBuildHelper.BuildYooAseets();
@@ -226,6 +274,12 @@ namespace XiaoCaoEditor
 
             if (IsBuildPackage)
             {
+                // 放在 BuildPlayer 之前: 上面 YooAsset 构建失败会提前 return, 不会误清上一次可用的包
+                if (!isAndriod)
+                {
+                    BuildTool.ClearStreamingAssets();
+                }
+
                 BuildTool.ProjectBuild();
             }
         }

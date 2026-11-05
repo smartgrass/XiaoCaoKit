@@ -410,6 +410,8 @@ namespace XiaoCao.UI
             //道具获得提示由 ItemPopHud 监听该事件后弹出
             GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), forgedItem);
             Toast.Show(LocalizeKey.ForgeSuccess.ToLocalizeStr(), 1);
+            //锻造成功提示音(材料已扣、圣器已入包)
+            SoundMgr.Inst.PlayUISure();
 
             //TODO 获取UI物品特效
 

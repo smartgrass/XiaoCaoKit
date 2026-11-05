@@ -59,6 +59,23 @@ namespace XiaoCao
         public float defMult = 1;
         public float hpMult = 1;
 
+        [Header("移动平台附加倍率(仅移动平台生效, 计算时叠加到 atkMult/hpMult 上)")]
+        [Tooltip("移动平台额外增加的攻击倍率, 填 0.1 表示移动端按 atkMult + 0.1 计算")]
+        public float mobileAddAtkMult = 0f;
+
+        [Tooltip("移动平台额外增加的血量倍率, 填 0.1 表示移动端按 hpMult + 0.1 计算")]
+        public float mobileAddHpMult = 0f;
+
+        /// <summary>
+        /// 参与计算的攻击倍率: 移动平台上叠加 mobileAddAtkMult, 其它平台等于 atkMult
+        /// </summary>
+        public float RealAtkMult => atkMult + (DebugSetting.IsMobileOffice ? mobileAddAtkMult : 0f);
+
+        /// <summary>
+        /// 参与计算的血量倍率: 移动平台上叠加 mobileAddHpMult, 其它平台等于 hpMult
+        /// </summary>
+        public float RealHpMult => hpMult + (DebugSetting.IsMobileOffice ? mobileAddHpMult : 0f);
+
         public float maxArmor = 4;
 
         public float armorDef = 0.8f; //霸体减免,boss持有,克制多段伤害

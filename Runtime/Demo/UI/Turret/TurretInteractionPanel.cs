@@ -125,7 +125,7 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 刷新可指派列表: 自己排第一, 后面是在场且存活的支援角色。
+        /// 刷新可指派列表: 自己排第一, 后面是能选的支援角色(在场、存活、离玩家不超过炮台配置的距离)。
         /// 自己的显示 key 用本地设置里选的角色(Role_x), 不受皮肤 bodyName 影响
         /// </summary>
         private void RefreshCandidates()
@@ -137,7 +137,7 @@ namespace XiaoCao.UI
             for (int i = 0; i < friendIds.Count; i++)
             {
                 Role role = friendIds[i].GetRoleById();
-                if (role != null && !role.IsDie)
+                if (turret.IsFriendSelectable(role))
                 {
                     candidates.Add(role);
                 }
@@ -199,6 +199,14 @@ namespace XiaoCao.UI
         /// <summary>终止当前操控, 界面保持打开以便重新指派</summary>
         private void OnStopControlClick()
         {
+            //玩家主动终止 = 不想让这个角色继续守着炮台, 顺手摘掉"一直守着"的 Tag,
+            //否则支援角色被揪下来 1 秒后又会自己跑回去
+            Role role = turret.Operator;
+            if (role != null)
+            {
+                role.RemoveTag(RoleTagCommon.KeepOperateFunction);
+            }
+
             turret.ExitControl();
             Refresh();
         }

@@ -21,6 +21,7 @@ public sealed partial class ItemInfo : Luban.BeanBase
         LocalizeKey = _buf.ReadString();
         Quality = _buf.ReadInt();
         ObtainWay = _buf.ReadString();
+        IconScale = _buf.ReadFloat();
     }
 
     public static ItemInfo DeserializeItemInfo(ByteBuf _buf)
@@ -48,12 +49,17 @@ public sealed partial class ItemInfo : Luban.BeanBase
     /// 获取途径
     /// </summary>
     public readonly string ObtainWay;
+    /// <summary>
+    /// 图标缩放,1为原始大小
+    /// </summary>
+    public readonly float IconScale;
    
     public const int __ID__ = 1241839233;
     public override int GetTypeId() => __ID__;
 
     public  void ResolveRef(Tables tables)
     {
+        
         
         
         
@@ -69,6 +75,7 @@ public sealed partial class ItemInfo : Luban.BeanBase
         + "localizeKey:" + LocalizeKey + ","
         + "quality:" + Quality + ","
         + "obtainWay:" + ObtainWay + ","
+        + "iconScale:" + IconScale + ","
         + "}";
     }
 }

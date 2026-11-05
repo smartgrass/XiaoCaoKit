@@ -116,6 +116,55 @@ namespace XiaoCao
             source.Play();
         }
 
+        /// <summary>界面"操作成功"提示音的 sound.ini 段名(技能升级、武器锻造等)</summary>
+        public const string UISureSoundKey = "Success";
+
+        /// <summary>
+        /// 播放界面"操作成功"提示音: 技能升级成功、武器锻造成功等需要给玩家明确正反馈的操作。
+        /// 音频取自 sound.ini 的 Success 段, 走 sfx 通道, 受音效音量设置控制
+        /// </summary>
+        public void PlayUISure()
+        {
+            PlayCfgSound(UISureSoundKey);
+        }
+
+        /// <summary>关卡通关结算音的 sound.ini 段名</summary>
+        public const string LevelWinSoundKey = "LevelWin";
+
+        /// <summary>
+        /// 播放关卡通关结算音: 打开关卡结算面板且结果为通关时播放。
+        /// 音频取自 sound.ini 的 LevelWin 段, 走 sfx 通道, 受音效音量设置控制
+        /// </summary>
+        public void PlayLevelWin()
+        {
+            PlayCfgSound(LevelWinSoundKey);
+        }
+
+        /// <summary>
+        /// 播放 sound.ini 中指定段的音效, 段内配置多条时随机取一条; 未配置或找不到资源则不播放
+        /// </summary>
+        public void PlayCfgSound(string soundKey, float volume = 1)
+        {
+            if (string.IsNullOrEmpty(soundKey))
+            {
+                return;
+            }
+
+            InitArrayFile soundCfg = ConfigMgr.Inst.SoundCfg;
+            if (soundCfg == null || soundCfg.Dic == null || !soundCfg.IsHas(soundKey))
+            {
+                return;
+            }
+
+            List<string> pathList = soundCfg.Dic[soundKey];
+            if (pathList == null || pathList.Count == 0)
+            {
+                return;
+            }
+
+            PlayClip(pathList[Random.Range(0, pathList.Count)], volume);
+        }
+
 
 
         public void PlayHitAudio(string tag)
@@ -154,6 +203,11 @@ namespace XiaoCao
         public const string BgmDefaultValue = "Default";
         /// <summary>无选项标识: 不播放</summary>
         public const string BgmNoneValue = "None";
+        /// <summary>随机选项标识: 在 Bgm/Custom 目录里随机播放</summary>
+        public const string BgmCustomValue = "Custom";
+
+        /// <summary>随机播放所用的bgm子目录名</summary>
+        public const string BgmCustomDirName = "Custom";
 
         /// <summary>
         /// bgm下拉选项: Display为显示文本(预设项按当前语言本地化), Value为保存配置用的稳定标识
@@ -179,8 +233,9 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 获取bgm下拉选项: 预设的默认/无 + GameConfig/Bgm各子目录下的mp3
-        /// bgm选项显示格式: 文件名(子目录名), 如 Home_1(Main)
+        /// 获取bgm下拉选项: 预设的默认/无/随机 + GameConfig/Bgm各子目录下的mp3
+        /// bgm选项显示格式: 文件名(子目录名), 如 Home_1(Main);
+        /// Custom 目录是玩家自定义曲库, 只输出一个"随机"项, 不逐首展开
         /// </summary>
         public static List<BgmOption> GetBgmOptions()
         {
@@ -196,8 +251,19 @@ namespace XiaoCao
                 return options;
             }
 
+            //Custom 曲库有歌时才提供随机项, 空目录不显示无效选项
+            if (GetCustomBgmPaths().Count > 0)
+            {
+                options.Add(new BgmOption(LocalizeKey.BgmCustom.ToLocalizeStr(), BgmCustomValue));
+            }
+
             foreach (DirectoryInfo subDir in root.GetDirectories().OrderBy(d => d.Name))
             {
+                if (subDir.Name == BgmCustomDirName)
+                {
+                    continue;
+                }
+
                 foreach (FileInfo file in subDir.GetFiles("*.mp3", SearchOption.TopDirectoryOnly).OrderBy(f => f.Name))
                 {
                     //文件名不带扩展名, 括号内为子目录名
@@ -207,6 +273,50 @@ namespace XiaoCao
             }
 
             return options;
+        }
+
+        /// <summary>
+        /// 扫描 Bgm/Custom 目录下的所有mp3, 返回绝对路径(按文件名排序)
+        /// </summary>
+        public static List<string> GetCustomBgmPaths()
+        {
+            List<string> paths = new List<string>();
+            DirectoryInfo dir = new DirectoryInfo($"{XCPathConfig.GetGameConfigDir()}/Bgm/{BgmCustomDirName}");
+            if (!dir.Exists)
+            {
+                return paths;
+            }
+
+            foreach (FileInfo file in dir.GetFiles("*.mp3", SearchOption.TopDirectoryOnly).OrderBy(f => f.Name))
+            {
+                paths.Add(file.FullName);
+            }
+
+            return paths;
+        }
+
+        /// <summary>上一次随机到的Custom曲目, 用于避免连续两次播同一首</summary>
+        private string _lastCustomBgmPath;
+
+        /// <summary>
+        /// 从 Bgm/Custom 随机取一首; 有多首时排除上一次播过的那首。
+        /// 目录为空返回 null
+        /// </summary>
+        public string GetRandomCustomBgmPath()
+        {
+            List<string> paths = GetCustomBgmPaths();
+            if (paths.Count > 1)
+            {
+                paths.Remove(_lastCustomBgmPath);
+            }
+
+            if (paths.Count == 0)
+            {
+                return null;
+            }
+
+            _lastCustomBgmPath = paths[Random.Range(0, paths.Count)];
+            return _lastCustomBgmPath;
         }
 
         /// <summary>
@@ -236,6 +346,7 @@ namespace XiaoCao
         /// <summary>
         /// 播放当前场景的bgm: 读取该场景已保存的选择;
         /// 默认 -> 读取sound.ini的Scene_{场景名}; 无 -> 停止播放;
+        /// 随机 -> 在 Bgm/Custom 中随机播放一首;
         /// 其他 -> 播放所选文件, 文件不存在时回退到默认逻辑
         /// </summary>
         public void PlaySettingBgm()
@@ -251,6 +362,19 @@ namespace XiaoCao
             {
                 StopBgm();
                 return;
+            }
+
+            if (option == BgmCustomValue)
+            {
+                string customPath = GetRandomCustomBgmPath();
+                if (!string.IsNullOrEmpty(customPath))
+                {
+                    PlayBgmByPath(customPath);
+                    return;
+                }
+
+                //曲库被清空时回退到默认逻辑
+                Debug.LogWarning($"--- bgm {BgmCustomDirName} dir is empty");
             }
 
             if (option != BgmDefaultValue && TryGetBgmPath(option, out string fullPath))

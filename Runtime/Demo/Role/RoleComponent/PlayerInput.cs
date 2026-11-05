@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using Input = UnityEngine.Input;
 
 namespace XiaoCao
@@ -124,10 +125,31 @@ namespace XiaoCao
                     continue;
                 }
 
+                //伤害数字、敌人血条这类纯显示 UI 也会被射线命中, 它们正好压在第一人称准星(屏幕正中)上,
+                //一旦被判定为"点在界面上", 按住开火就再也不响应。只有真能接收点击的控件才算遮挡
+                if (IsInvisibleUI(hitObject) && !IsClickableUI(hitObject))
+                {
+                    continue;
+                }
+
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>命中项是否是完全透明的纯显示 UI(伤害数字淡出后仍是激活状态, 会继续参与 UI 射线)</summary>
+        private static bool IsInvisibleUI(GameObject target)
+        {
+            Graphic graphic = target.GetComponent<Graphic>();
+            return graphic != null && graphic.color.a <= 0.001f;
+        }
+
+        /// <summary>命中项是否是可点击控件(按钮/滑条/开关/带事件触发器的控件); 透明但可点击的 UI 仍然算遮挡</summary>
+        private static bool IsClickableUI(GameObject target)
+        {
+            return target.GetComponentInParent<Selectable>() != null ||
+                   target.GetComponentInParent<EventTrigger>() != null;
         }
 
         private static bool IsTouchFieldObject(GameObject target)

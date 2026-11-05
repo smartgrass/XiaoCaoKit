@@ -10,6 +10,8 @@ namespace Flux
     [FEvent("Game Object/TriggerRangeEvent", typeof(FTriggerRangeTrack))]
     public class FTriggerRangeEvent : FEvent
     {
+        [XCLabel("最大命中次数(0=不限)")]
+        [Tooltip("命中累计到该次数后结束本触发事件, 并回调 ITriggerEnd(爆炸等); 0 = 不限次数, 命中后不会回调")]
         public int maxTriggetTime = 0; 
 
         public MeshInfo meshInfo;

@@ -73,6 +73,8 @@ namespace XiaoCao
 
             AddFinishCost(10);
             ConfigMgr.Inst.Load();
+            // 按玩家保存的档位应用帧率, 没保存过则用平台默认值(移动端 90 帧)
+            GameSetting.ApplySavedFrameRate();
             LocalizeMgr localizeMgr = LocalizeMgr.Inst;
             AddFinishCost(10);
             IsFinish = true;

@@ -7,7 +7,7 @@ using XiaoCao;
 
 namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 {
-    public class ItemPickExtraItem : MapMsgTriggerExec
+    public class ItemPickExtraItem : MapMsgTriggerExecBase
     {
         public ItemType itemType;
 

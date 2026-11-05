@@ -88,6 +88,14 @@ namespace XiaoCao
             Debuger.LogError("[Guide] 引导预制体创建失败");
         }
 
+        /// <summary>
+        /// 获取主城起始点, 位置和初始朝向都以它为准; 未配置时返回 null
+        /// </summary>
+        public Transform GetStartPoint()
+        {
+            return startPoint;
+        }
+
         public Vector3 GetStartPos()
         {
             if (startPoint)

@@ -102,19 +102,12 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 结算 OtherValue 类道具: 这类道具不是实际物品, 不进入背包, 直接作用到角色身上
+        /// 结算 OtherValue 类道具: 这类道具不是实际物品, 不进入背包, 直接作用到角色身上。
+        /// 具体结算规则见 <see cref="PlayerSaveData.AddOtherValue"/>
         /// </summary>
         public static void RewardOtherValue(this Item item)
         {
-            switch (item.typeId)
-            {
-                case OtherValueItemId.Exp:
-                    PlayerSaveData.LocalSavaData.AddExp(item.num);
-                    break;
-                default:
-                    Debug.LogWarning($"--- no reward handle, OtherValue typeId: {item.typeId}");
-                    break;
-            }
+            PlayerSaveData.LocalSavaData.AddOtherValue(item.typeId, item.num);
         }
 
         /// <summary>
@@ -129,7 +122,7 @@ namespace XiaoCao
 
             foreach (Item item in list)
             {
-                if (!IsCombineAbleType(item.type))
+                if (!item.type.IsStackable())
                 {
                     //圣器, Buff 不合并
                     result.Add(new Item(item.type, item.typeId, item.num, item.quality));
@@ -152,9 +145,10 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 是否可合并: 圣器不可堆叠, Buff 由各自系统处理
+        /// 物品类型是否可堆叠: 圣器的 num 是等级、Buff 由各自系统处理, 两者都不堆叠, 其余按数量累加。
+        /// UI 上不可堆叠的物品不显示数量文本
         /// </summary>
-        private static bool IsCombineAbleType(ItemType type)
+        public static bool IsStackable(this ItemType type)
         {
             return type != ItemType.HolyRelic && type != ItemType.Buff;
         }

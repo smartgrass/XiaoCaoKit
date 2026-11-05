@@ -29,6 +29,9 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>图标在预制体上的原始缩放, 物品配置的 iconScale 在其基础上做倍数缩放</summary>
+        private Vector3 _iconBaseScale;
+
         public Item Item { get; private set; }
 
         public Image icon;
@@ -71,6 +74,7 @@ namespace XiaoCao
 
         /// <summary>
         /// 写入格子显示的物品与数量文本,并同步刷新图标和品质底色。
+        /// 不可堆叠的物品(圣器/Buff)不显示数量, 圣器等级由 <see cref="levelText"/> 单独显示。
         /// </summary>
         public ItemCell SetItem(Item item, UIItemTextType textType = UIItemTextType.Default)
         {
@@ -78,6 +82,7 @@ namespace XiaoCao
             //图标只由物品决定,统一在格子内部刷新,调用方无需再单独设置
             icon.sprite = item.GetItemSprite();
             RefreshIconStyle(item);
+            RefreshIconScale(item);
             icon.enabled = icon.sprite != null;
             SetQualityBg(item.quality);
             RefreshLevelText(item);
@@ -93,8 +98,9 @@ namespace XiaoCao
                     text.text = $"<color=#50FF99>{hasCount}</color>/{item.num}";
                 }
             }
-            else if (textType == UIItemTextType.NoNum)
+            else if (textType == UIItemTextType.NoNum || !item.type.IsStackable())
             {
+                //圣器/Buff 这类不可堆叠的物品没有数量含义, 不显示数量(圣器等级另由 levelText 显示)
                 text.text = "";
             }
             else
@@ -133,6 +139,23 @@ namespace XiaoCao
         {
             bool isExp = item.type == ItemType.OtherValue && item.typeId == OtherValueItemId.Exp;
             icon.material = isExp ? ExpIconMaterial : null;
+        }
+
+        /// <summary>
+        /// 按物品配置的 iconScale 缩放图标; 未配置缩放值的物品保持原始大小
+        /// </summary>
+        private void RefreshIconScale(Item item)
+        {
+            //首次使用时记录预制体上的原始缩放, 配置值在其基础上做倍数缩放
+            if (_iconBaseScale == Vector3.zero)
+            {
+                _iconBaseScale = icon.rectTransform.localScale;
+            }
+
+            cfg.ItemInfo info = cfg.LubanTables.GetItemInfo(item.ItemKey);
+            //配置缺失(或配置为空取到 0)时按 1 处理
+            float iconScale = info != null && info.IconScale > 0 ? info.IconScale : 1f;
+            icon.rectTransform.localScale = _iconBaseScale * iconScale;
         }
 
         public void SetQualityBg(EQuality quality)

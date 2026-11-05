@@ -320,8 +320,8 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
                 playerSaveData.Coin += item.num;
                 break;
             case XiaoCao.ItemType.OtherValue:
-                //经验值等直接作用在角色身上, 不进入背包; 存盘由窗口统一处理
-                playerSaveData.AddExp(item.num, false);
+                //经验值、心之结晶等直接作用在角色身上, 不进入背包; 存盘由窗口统一处理
+                playerSaveData.AddOtherValue(item.typeId, item.num, false);
                 break;
             case XiaoCao.ItemType.Consumable:
             case XiaoCao.ItemType.HolyRelic:

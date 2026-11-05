@@ -117,6 +117,9 @@ namespace XiaoCao.UI
             }
 
             PlayerSaveData.AddSkillLevel(skillId);
+            //走到这里材料已经扣掉、等级已经加上, 就是升级成功了
+            SoundMgr.Inst.PlayUISure();
+
             if (nextLv == 1)
             {
                 //自动装备   

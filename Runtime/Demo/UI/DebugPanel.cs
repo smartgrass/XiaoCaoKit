@@ -1,27 +1,62 @@
-﻿#if UNITY_EDITOR
-#endif
+﻿using IngameDebugConsole;
 using UnityEngine;
 using XiaoCao;
 
 public class DebugPanel : SubPanel
 {
+    private const string LogConsolePrefabName = "IngameDebugConsole";
+    private const string InspectorPrefabName = "RuntimeInspector";
+    private const string InspectorNodeName = "RuntimeInspector";
+
     public override void Init()
     {
-        AddButton("Open RuntimeInspector", OpenRuntimeInspector, "Btns");
+        AddButton(LocalizeKey.DebugToggleLog, ToggleLogConsole, LocalizeKey.DebugOpenInspector, ToggleRuntimeInspector);
     }
 
-    void OpenRuntimeInspector()
+    /// <summary>
+    /// 开关 IngameDebugConsole: 已开启则关闭(销毁), 未开启则打开
+    /// </summary>
+    void ToggleLogConsole()
     {
-        GameObject runtimeInspectorPrefab = Resources.Load<GameObject>("RuntimeInspector");
-
-        Transform parent = UIMgr.Inst.midCanvas.transform;
-
-        if (parent.Find("RuntimeInspector"))
+        if (DebugLogManager.Instance != null)
         {
+            // 销毁后 Instance 在下一次访问时即为 null, 可重新创建
+            GameObject.Destroy(DebugLogManager.Instance.gameObject);
             return;
         }
 
-        GameObject instance = GameObject.Instantiate(runtimeInspectorPrefab, UIMgr.Inst.midCanvas.transform);
-        instance.name = "RuntimeInspector";
+        GameObject prefab = Resources.Load<GameObject>(LogConsolePrefabName);
+        if (prefab == null)
+        {
+            Debuger.LogError($"未找到 Resources/{LogConsolePrefabName}.prefab");
+            return;
+        }
+
+        GameObject.Instantiate(prefab);
+    }
+
+    /// <summary>
+    /// 开关 RuntimeInspector: 已开启则关闭(销毁), 未开启则挂到 midCanvas 下打开
+    /// </summary>
+    void ToggleRuntimeInspector()
+    {
+        Transform parent = UIMgr.Inst.midCanvas.transform;
+
+        Transform exist = parent.Find(InspectorNodeName);
+        if (exist != null)
+        {
+            GameObject.Destroy(exist.gameObject);
+            return;
+        }
+
+        GameObject prefab = Resources.Load<GameObject>(InspectorPrefabName);
+        if (prefab == null)
+        {
+            Debuger.LogError($"未找到 Resources/{InspectorPrefabName}.prefab");
+            return;
+        }
+
+        GameObject instance = GameObject.Instantiate(prefab, parent);
+        instance.name = InspectorNodeName;
     }
 }

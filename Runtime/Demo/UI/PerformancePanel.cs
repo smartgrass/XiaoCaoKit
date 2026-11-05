@@ -24,15 +24,16 @@ public class PerformancePanel : SubPanel
 
 
         frameRateDropDown = AddDropdown(LocalizeKey.FrameRate, OnFrameRateChange, frameRateList, false);
-        float frameRate = ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.FrameRate, 60);
-        int index = (int)((frameRate - 30) / 15);
-        frameRateDropDown.SetValueWithoutNotify(index);
+        //下拉显示当前生效帧率; PC 不限帧(-1)时落到 60 这一档
+        int index = frameRateList.IndexOf(GameSetting.GetFrameRate().ToString());
+        frameRateDropDown.SetValueWithoutNotify(index < 0 ? frameRateList.IndexOf("60") : index);
     }
 
     private void OnFrameRateChange(int index)
     {
         int frameRate = int.Parse(frameRateList[index]);
-        Application.targetFrameRate = frameRate;
+        //走 GameSetting 统一入口, 移动端会同时关掉垂直同步
+        GameSetting.SetFrameRate(frameRate);
         ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.FrameRate, frameRate);
     }
 
@@ -40,5 +41,7 @@ public class PerformancePanel : SubPanel
     {
         QualitySettings.SetQualityLevel(index);
         ConfigMgr.Inst.LocalSetting.SetValue(LocalizeKey.RenderQuality, index);
+        //切画质会把 vSyncCount 还原成质量等级里的配置, 这里按当前帧率档位重新应用一次
+        GameSetting.SetFrameRate(GameSetting.GetFrameRate());
     }
 }

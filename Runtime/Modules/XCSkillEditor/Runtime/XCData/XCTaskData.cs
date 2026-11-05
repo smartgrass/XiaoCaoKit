@@ -91,6 +91,12 @@ namespace XiaoCao
         public Transform PlayerTf { get; set; }
         public ParticleSystem Ps { get; set; }
 
+        /// <summary>
+        /// 子技能生成帧缓存的玩家世界矩阵: 移动事件以此为方向基准,
+        /// 生成之后玩家翻滚/转向不会改变已发射物体的运动方向
+        /// </summary>
+        public Matrix4x4 SpawnMatrix { get; set; } = Matrix4x4.identity;
+
         public IXCCommand Command { get; set; }
 
         public bool HasStart { get; set; }
@@ -101,6 +107,8 @@ namespace XiaoCao
             var instance = PoolMgr.Inst.Get(ObjectPath);
             Tran = instance.transform;
             PlayerTf = info.playerTF;
+            //在摆放位置之前锁定生成帧的玩家矩阵, 之后子技能的移动事件用它换算方向
+            SpawnMatrix = PlayerTf.localToWorldMatrix;
 
             if (isPs)
             {

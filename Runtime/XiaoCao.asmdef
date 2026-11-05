@@ -12,7 +12,8 @@
         "PhysicsExtension",
         "Unity.SharpZipLib.Utils",
         "VRM",
-        "VRM10"
+        "VRM10",
+        "IngameDebugConsole.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

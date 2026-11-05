@@ -12,6 +12,7 @@ namespace XiaoCao
         public static string Bgm = "Bgm";
         public static string BgmDefault = "Bgm/Default"; // 默认bgm(读取场景配置)
         public static string BgmNone = "Bgm/None"; // 无bgm
+        public static string BgmCustom = "Bgm/Custom"; // Custom目录随机播放
         public static string RenderQuality = "RenderQuality";
         public static string FrameRate = "FrameRate";
         public static string NoEnough = "NoEnough";
@@ -21,6 +22,8 @@ namespace XiaoCao
         public static string TestEnmeyList = "TestEnmeyList"; //测试敌人
         public static string MouseView = "MouseView"; //视角跟随鼠标
         public static string MobileInput = "MobileInput"; //移动端输入
+        public static string DebugToggleLog = "Debug/ToggleLog"; //开关日志窗口
+        public static string DebugOpenInspector = "Debug/OpenInspector"; //开关运行时对象检查器
 
 
         public static string Buff = "Buff";

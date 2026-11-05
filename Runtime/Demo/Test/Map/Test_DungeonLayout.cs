@@ -63,6 +63,11 @@ public class Test_DungeonLayout : MonoBehaviour
     [Label("生成墙体碰撞盒")] public bool addWallCollider = true;
     [Label("生成通道连线点(PassLine)")] public bool genPassPoints = true;
 
+    [Label("通道点外扩距离")]
+    [Tooltip("通道端点从端面中心往通道外侧推出去的距离(局部单位)。端点正好压在墙角/楼梯侧板上时敌人容易卡住, " +
+             "往相邻块内部挪一点, 让路径点离开墙边")]
+    public float passPointOutset = 1f;
+
     [Label("房间/通道(格坐标)")] public List<DungeonPiece> pieces = new List<DungeonPiece>();
     [ReadOnly] [Label("上次生成")] public string lastResult;
 
@@ -196,9 +201,11 @@ public class Test_DungeonLayout : MonoBehaviour
 
         int roomCount = 0;
         int corridorCount = 0;
+        // 房间节点留下来给通道点分组用(端面贴着哪个房间就归到哪一组)
+        Dictionary<int, Transform> pieceNodes = new Dictionary<int, Transform>();
         for (int i = 0; i < pieces.Count; i++)
         {
-            GenPiece(pieces[i], i, occupied, cellX, cellZ, elevations[i]);
+            pieceNodes[i] = GenPiece(pieces[i], i, occupied, cellX, cellZ, elevations[i]).transform;
             if (pieces[i].isCorridor)
             {
                 corridorCount++;
@@ -218,7 +225,7 @@ public class Test_DungeonLayout : MonoBehaviour
         // 通道连线点放在房间都生成完再做: 只依赖格坐标和高度, 不依赖房间节点
         if (genPassPoints)
         {
-            int passLineCount = GenPassPoints(occupied, cellX, cellZ, elevations);
+            int passLineCount = GenPassPoints(occupied, cellX, cellZ, elevations, pieceNodes);
             if (passLineCount > 0)
             {
                 lastResult += $", 通道连线 {passLineCount} 条";
@@ -236,7 +243,7 @@ public class Test_DungeonLayout : MonoBehaviour
     }
 
     /// <summary>生成一个房间/通道: 一个 Test_RoomLayout 节点, 贴墙的面按相邻关系开口</summary>
-    private void GenPiece(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float elevation)
+    private GameObject GenPiece(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float elevation)
     {
         string baseName = PieceBaseName(piece);
         bool isStair = IsStair(piece);
@@ -279,6 +286,8 @@ public class Test_DungeonLayout : MonoBehaviour
 
         // 支撑柱放在最后: 高度要量"已经生成完"的整个房间底面(含楼梯)
         GenSupportPillars(piece, node.transform, cellX, cellZ);
+
+        return node;
     }
 
     /// <summary>房间/通道节点的名字前缀: 没填名字就按类型兜底</summary>
@@ -293,8 +302,11 @@ public class Test_DungeonLayout : MonoBehaviour
     /// <summary>
     /// 通道连线: 每条通道在两端面中心各放一个空节点, 两个节点组成一条 PassLine,
     /// 全部塞进同一个 PassPointCollector(挂在 PassPoints 节点上)。返回生成了几条 PassLine。
+    /// <para>同时按"端面贴着哪个房间"登记房间分组: 同一房间里的门洞之间没有墙, 运行时直接当作互通,
+    /// 不需要再做射线检测(见 <see cref="PassPathFinder"/>)。</para>
     /// </summary>
-    private int GenPassPoints(Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float[] elevations)
+    private int GenPassPoints(Dictionary<Vector2Int, int> occupied, float cellX, float cellZ, float[] elevations,
+        Dictionary<int, Transform> pieceNodes)
     {
         List<int> corridorIndexes = new List<int>();
         for (int i = 0; i < pieces.Count; i++)
@@ -314,12 +326,36 @@ public class Test_DungeonLayout : MonoBehaviour
         root.transform.SetParent(transform, false);
         PassPointCollector collector = root.AddComponent<PassPointCollector>();
         collector.lines = new List<PassLine>();
+        collector.rooms = new List<PassRoom>();
+
+        // 每个房间先开一个空分组, 通道端点生成时按端面贴着的房间往里塞
+        Dictionary<int, PassRoom> roomOf = new Dictionary<int, PassRoom>();
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            if (pieces[i].isCorridor)
+            {
+                continue;
+            }
+
+            Transform roomNode;
+            pieceNodes.TryGetValue(i, out roomNode);
+            PassRoom room = new PassRoom
+            {
+                roomNode = roomNode,
+                points = new List<Transform>(),
+            };
+            collector.rooms.Add(room);
+            roomOf[i] = room;
+        }
 
         foreach (int index in corridorIndexes)
         {
             DungeonPiece piece = pieces[index];
-            collector.lines.Add(GenPassLine(piece, index, occupied, root.transform, cellX, cellZ, elevations[index]));
+            collector.lines.Add(GenPassLine(piece, index, occupied, root.transform, cellX, cellZ, elevations[index], roomOf));
         }
+
+        // 一个端点都没接到的房间(没有通道贴着它)不用留在列表里
+        collector.rooms.RemoveAll(room => room == null || room.points.Count == 0);
 
         return collector.lines.Count;
     }
@@ -329,7 +365,7 @@ public class Test_DungeonLayout : MonoBehaviour
     /// 楼梯通道从低端指向上坡那一端, 上坡端的点按楼梯总抬升抬高(两端高度不同)。
     /// </summary>
     private PassLine GenPassLine(DungeonPiece piece, int index, Dictionary<Vector2Int, int> occupied,
-        Transform parent, float cellX, float cellZ, float elevation)
+        Transform parent, float cellX, float cellZ, float elevation, Dictionary<int, PassRoom> roomOf)
     {
         GetPassEndFaces(piece, index, occupied, out Test_RoomLayout.RoomFace startFace, out Test_RoomLayout.RoomFace endFace);
 
@@ -340,9 +376,71 @@ public class Test_DungeonLayout : MonoBehaviour
 
         string baseName = PieceBaseName(piece);
         PassLine line = new PassLine { points = new List<Transform>() };
-        line.points.Add(CreatePassPoint(parent, $"{baseName}_Pass0", FaceCenterLocal(piece, startFace, cellX, cellZ, startY)));
-        line.points.Add(CreatePassPoint(parent, $"{baseName}_Pass1", FaceCenterLocal(piece, endFace, cellX, cellZ, endY)));
+        Transform startPoint = CreatePassPoint(parent, $"{baseName}_Pass0",
+            FaceCenterLocal(piece, startFace, cellX, cellZ, startY, passPointOutset));
+        Transform endPoint = CreatePassPoint(parent, $"{baseName}_Pass1",
+            FaceCenterLocal(piece, endFace, cellX, cellZ, endY, passPointOutset));
+        line.points.Add(startPoint);
+        line.points.Add(endPoint);
+
+        // 端面外面贴着的如果是房间, 这个端点就归到那个房间的分组(房间内必定互通)
+        RegisterRoomPoint(occupied, piece, startFace, startPoint, roomOf);
+        RegisterRoomPoint(occupied, piece, endFace, endPoint, roomOf);
+
         return line;
+    }
+
+    /// <summary>通道端面外面贴着的如果是房间, 把这个端点登记进那个房间的分组</summary>
+    private static void RegisterRoomPoint(Dictionary<Vector2Int, int> occupied, DungeonPiece piece,
+        Test_RoomLayout.RoomFace face, Transform point, Dictionary<int, PassRoom> roomOf)
+    {
+        if (face == Test_RoomLayout.RoomFace.None)
+        {
+            return;
+        }
+
+        int neighbor = GetNeighborPiece(occupied, piece, face);
+        PassRoom room;
+        if (neighbor >= 0 && roomOf.TryGetValue(neighbor, out room))
+        {
+            room.points.Add(point);
+        }
+    }
+
+    /// <summary>某个面正外侧那一格属于哪个块(没有返回 -1). 占用表是半格精度, 这里对应挪一格半格单位</summary>
+    private static int GetNeighborPiece(Dictionary<Vector2Int, int> occupied, DungeonPiece piece, Test_RoomLayout.RoomFace face)
+    {
+        int hx0 = ToHalf(piece.col);
+        int hz0 = ToHalf(piece.row);
+        int halfCols = ToHalf(piece.cols);
+        int halfRows = ToHalf(piece.rows);
+        int hx;
+        int hz;
+        switch (face)
+        {
+            case Test_RoomLayout.RoomFace.XMin:
+                hx = hx0 - 1;
+                hz = hz0 + halfRows / 2;
+                break;
+            case Test_RoomLayout.RoomFace.XMax:
+                hx = hx0 + halfCols;
+                hz = hz0 + halfRows / 2;
+                break;
+            // row 增大 = z 减小: ZMax 在 row 小的那一侧, ZMin 在 row 大的那一侧
+            case Test_RoomLayout.RoomFace.ZMax:
+                hx = hx0 + halfCols / 2;
+                hz = hz0 - 1;
+                break;
+            case Test_RoomLayout.RoomFace.ZMin:
+                hx = hx0 + halfCols / 2;
+                hz = hz0 + halfRows;
+                break;
+            default:
+                return -1;
+        }
+
+        int owner;
+        return occupied.TryGetValue(new Vector2Int(hx, hz), out owner) ? owner : -1;
     }
 
     /// <summary>空节点: 只在层级里占个位置, 被 PassLine 收集后给后续逻辑取坐标用</summary>
@@ -390,8 +488,12 @@ public class Test_DungeonLayout : MonoBehaviour
         endFace = alongX ? Test_RoomLayout.RoomFace.XMax : Test_RoomLayout.RoomFace.ZMax;
     }
 
-    /// <summary>通道某个面的中心在拼装根节点下的局部坐标: 落在面所在的那条边上, 另一条轴取中点</summary>
-    private static Vector3 FaceCenterLocal(DungeonPiece piece, Test_RoomLayout.RoomFace face, float cellX, float cellZ, float y)
+    /// <summary>
+    /// 通道某个面的端点在拼装根节点下的局部坐标: 另一条轴取中点, 再沿该面的外法线往相邻块里推 <paramref name="outset"/>。
+    /// <para>不推的话端点正好压在块边界上, 也就是墙角/楼梯侧板的位置, 敌人走到那里会顶住碰撞体卡着不动。</para>
+    /// </summary>
+    private static Vector3 FaceCenterLocal(DungeonPiece piece, Test_RoomLayout.RoomFace face, float cellX, float cellZ,
+        float y, float outset)
     {
         float xMin = piece.col * cellX;
         float xMax = xMin + piece.cols * cellX;
@@ -400,13 +502,13 @@ public class Test_DungeonLayout : MonoBehaviour
         switch (face)
         {
             case Test_RoomLayout.RoomFace.XMin:
-                return new Vector3(xMin, y, (zMin + zMax) * 0.5f);
+                return new Vector3(xMin - outset, y, (zMin + zMax) * 0.5f);
             case Test_RoomLayout.RoomFace.XMax:
-                return new Vector3(xMax, y, (zMin + zMax) * 0.5f);
+                return new Vector3(xMax + outset, y, (zMin + zMax) * 0.5f);
             case Test_RoomLayout.RoomFace.ZMax:
-                return new Vector3((xMin + xMax) * 0.5f, y, zMax);
+                return new Vector3((xMin + xMax) * 0.5f, y, zMax + outset);
             default:
-                return new Vector3((xMin + xMax) * 0.5f, y, zMin);
+                return new Vector3((xMin + xMax) * 0.5f, y, zMin - outset);
         }
     }
 

@@ -18,6 +18,7 @@ namespace cfg
         Coin = 2,
         Buff = 3,
         ExtraItem = 4,
+        OtherValue = 5,
     }
 
 } 

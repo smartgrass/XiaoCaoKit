@@ -126,6 +126,9 @@ namespace XiaoCao
             {
                 target = role.idRole.GetFollow;
                 controller.SetTarget(role.idRole.GetFollow, role.idRole.GetLookAt);
+
+                //相机接管角色时对齐到角色身后: 出生朝向跟随起点后, 视角也要跟着转过去
+                controller.AlignBehindTarget();
             }
         }
 
@@ -169,6 +172,9 @@ namespace XiaoCao
 
         /// <summary>按本地设置里的相机距离刷新相机距离</summary>
         void ApplySettingCamDistance();
+
+        /// <summary>立即把镜头摆到角色身后(水平角对齐角色朝向, 俯仰角回默认), 进屋/出生时用</summary>
+        void AlignBehindTarget();
 
     }
 

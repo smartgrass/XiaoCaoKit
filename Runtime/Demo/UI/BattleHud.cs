@@ -39,7 +39,7 @@ namespace XiaoCao
 
         public Button exitLevelBtn;
 
-        [Tooltip("炮台操控时显示的退出按钮(TopBar 下的 CloseBtn), 点击与 Esc 等价")]
+        [Tooltip("炮台操控时显示的退出按钮(TopBar/layout 下的 CloseBtn), 点击与 Esc 等价")]
         public Button turretExitBtn;
 
         public GameObject gameWinTip;
@@ -161,6 +161,18 @@ namespace XiaoCao
 
         #region HpBar
 
+        /// <summary>
+        /// 关掉这棵 UI 上所有图形的射线检测。世界血条与伤害数字只是显示用,
+        /// 它们经常正好压在第一人称准星(屏幕正中)上, 被 UI 射线命中后攻击输入会被当成"点在界面上"丢弃
+        /// </summary>
+        private static void IgnoreRaycast(GameObject root)
+        {
+            foreach (Graphic graphic in root.GetComponentsInChildren<Graphic>(true))
+            {
+                graphic.raycastTarget = false;
+            }
+        }
+
         //每帧都执行, 检查增加
         private void NorHpBarUpdate()
         {
@@ -231,6 +243,7 @@ namespace XiaoCao
         {
             GameObject newBarGo = pool.Get();
             var bar = newBarGo.GetComponent<HpBar>();
+            IgnoreRaycast(newBarGo);
             itemHpBarDic[target] = bar;
             bar.transform.SetParent(WorldHpBarParent, false);
             bar.SetFollow(target, offset);
@@ -327,6 +340,7 @@ namespace XiaoCao
 
             GameObject newBarGo = pool.Get();
             var bar = newBarGo.GetComponent<HpBar>();
+            IgnoreRaycast(newBarGo);
             bar.InitColor(role);
             bar.transform.SetParent(WorldHpBarParent, false);
             bar.SetFollowRole(role);
@@ -361,6 +375,7 @@ namespace XiaoCao
             }
 
             bar.gameObject.SetActive(true);
+            IgnoreRaycast(bar.gameObject);
             bar.InitColor(role);
             bar.UpdateLvText(role.Level);
             RefreshBossBarParentState();
@@ -480,14 +495,25 @@ namespace XiaoCao
         private Vector2 changeVec2;
         private int nextText;
 
+        /// <summary>
+        /// 初始化伤害数字文本池。
+        /// 模板节点 DamageText 在预制体里是关闭状态(避免编辑期在界面上显示),
+        /// Instantiate 出来的副本会继承关闭状态, 所以这里必须逐个激活, 否则伤害数字永远不显示。
+        /// </summary>
         public void InitDamageText()
         {
             textParent = firstText.transform.parent;
             firstText.color = Color.white.SetAlpha(0);
+            firstText.gameObject.SetActive(true);
+            //伤害数字纯显示用: 不关射线检测的话, 它淡出后(alpha 0)仍停在原屏幕位置继续参与 UI 射线,
+            //第一人称准星(屏幕正中)正好压在它上面, 攻击输入会被当成"点在界面上"丢掉
+            firstText.raycastTarget = false;
             _damageTexts.Add(firstText);
             for (int i = 1; i < maxTextCount; i++)
             {
                 TMP_Text newText = Instantiate(firstText, textParent);
+                newText.raycastTarget = false;
+                newText.gameObject.SetActive(true);
                 _damageTexts.Add(newText);
             }
 

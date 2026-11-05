@@ -21,6 +21,8 @@ MonoBehaviour:
     atkMult: 1
     defMult: 1
     hpMult: 1
+    mobileAddAtkMult: 0.1
+    mobileAddHpMult: 0.2
     maxArmor: 4
     armorDef: 0.5
     recoverCdOnBreak: 4
@@ -33,10 +35,12 @@ MonoBehaviour:
     id: 1
     settingTag: 0
     maxLevel: 50
-    addHp: 100
+    addHp: 50
     atkMult: 0.7
     defMult: 1
-    hpMult: 1.5
+    hpMult: 1.3
+    mobileAddAtkMult: 0
+    mobileAddHpMult: 0
     maxArmor: 8
     armorDef: 0.3
     recoverCdOnBreak: 4
@@ -52,7 +56,9 @@ MonoBehaviour:
     addHp: 100
     atkMult: 0.8
     defMult: 1
-    hpMult: 5
+    hpMult: 6.5
+    mobileAddAtkMult: 0
+    mobileAddHpMult: 0
     maxArmor: 20
     armorDef: 0.9
     recoverCdOnBreak: 3

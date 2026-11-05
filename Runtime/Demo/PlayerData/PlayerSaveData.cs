@@ -393,6 +393,29 @@ namespace XiaoCao
             return bondLevel > levelFrom;
         }
 
+        /// <summary>
+        /// 结算 <see cref="ItemType.OtherValue"/> 类道具: 这类道具不进入背包, 按 typeId 直接加到存档数值上。
+        /// 经验值加角色经验; 心之结晶 1 个 = 1 点羁绊经验。
+        /// </summary>
+        /// <param name="typeId">道具的 <see cref="OtherValueItemId"/></param>
+        /// <param name="value">数量(即要加的数值)</param>
+        /// <param name="saveData">是否在本方法内立即存盘</param>
+        public void AddOtherValue(string typeId, int value, bool saveData = true)
+        {
+            switch (typeId)
+            {
+                case OtherValueItemId.Exp:
+                    AddExp(value, saveData);
+                    break;
+                case OtherValueItemId.HeartCrystal:
+                    AddBondExp(value, saveData);
+                    break;
+                default:
+                    Debug.LogWarning($"--- no OtherValue handle, typeId: {typeId}");
+                    break;
+            }
+        }
+
         public void AddSkillLevel(string skillId)
         {
             skillUnlockDic.TryGetValue(skillId, out int level);

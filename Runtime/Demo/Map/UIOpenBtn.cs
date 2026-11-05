@@ -78,7 +78,7 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 按钮发光特效(新手引导用): 与按钮等比平铺, 排在按钮之前(绘制在按钮底色之下)
+        /// 按钮发光特效(新手引导用): 与按钮等比平铺; 父节点无布局组时排在按钮之前(绘制在按钮底色之下), 有布局组时挂在按钮自身
         /// </summary>
         public void SetGlow(bool isOn)
         {
@@ -114,19 +114,28 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 创建发光节点: 挂在按钮父节点下, 尺寸与按钮完全重合
+        /// 创建发光节点: 与按钮完全重合。
+        /// 父节点带布局组(BattleHud/TopBar/layout)时改挂到按钮自身, 否则发光会被布局当成一个元素把其它按钮挤开。
         /// </summary>
         private void CreateGlow(GameObject prefab)
         {
-            //放到父节点才能排在按钮之前, 否则会盖住按钮自身的底图
-            Transform parent = transform.parent != null ? transform.parent : transform;
+            bool onSelf;
+            Transform parent = GuideGlowHelper.ResolveGlowParent(transform as RectTransform, out onSelf);
             _glowEffect = Instantiate(prefab, parent);
             _glowEffect.name = "BtnGlowEffect";
 
             ApplyButtonRect();
 
-            //插到按钮前面: sibling 越小绘制越靠后
-            _glowEffect.transform.SetSiblingIndex(transform.GetSiblingIndex());
+            if (onSelf)
+            {
+                //挂在自己身上时排最前: 绘制在自身底图之上、图标之下
+                _glowEffect.transform.SetAsFirstSibling();
+            }
+            else
+            {
+                //插到按钮前面: sibling 越小绘制越靠后
+                _glowEffect.transform.SetSiblingIndex(transform.GetSiblingIndex());
+            }
 
             _glowTween = _glowEffect.GetComponent<SimpleImageTween>();
             if (_glowTween != null)
@@ -151,25 +160,7 @@ namespace XiaoCao
         /// </summary>
         private void ApplyButtonRect()
         {
-            RectTransform rt = _glowEffect != null ? _glowEffect.transform as RectTransform : null;
-            RectTransform selfRt = transform as RectTransform;
-            RectTransform parentRt = _glowEffect != null ? _glowEffect.transform.parent as RectTransform : null;
-            if (rt == null || selfRt == null || parentRt == null)
-            {
-                return;
-            }
-
-            //用世界角点换算到父节点局部坐标, 兼容按钮自身的缩放
-            Vector3[] corners = new Vector3[4];
-            selfRt.GetWorldCorners(corners);
-            Vector2 min = parentRt.InverseTransformPoint(corners[0]);
-            Vector2 max = parentRt.InverseTransformPoint(corners[2]);
-
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.zero;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = max - min;
-            rt.anchoredPosition = (min + max) * 0.5f - parentRt.rect.min;
+            GuideGlowHelper.ApplyRect(transform as RectTransform, _glowEffect);
         }
 
 
@@ -177,7 +168,7 @@ namespace XiaoCao
         {
             GameEvent.RemoveEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), OnOpenEffect);
 
-            //发光挂在父节点下, 按钮销毁时手动清理
+            //发光可能挂在按钮自身或父节点下, 按钮销毁时手动清理
             if (_glowEffect != null)
             {
                 Destroy(_glowEffect);

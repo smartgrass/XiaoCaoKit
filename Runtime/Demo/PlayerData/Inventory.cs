@@ -290,6 +290,7 @@ namespace XiaoCao
     public static class OtherValueItemId
     {
         public const string Exp = "Exp"; //经验值, 直接加在角色身上
+        public const string HeartCrystal = "HeartCrystal"; //心之结晶, 直接转成羁绊经验
     }
 
     public enum EConsumableSubType

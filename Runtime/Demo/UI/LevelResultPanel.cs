@@ -99,6 +99,12 @@ namespace XiaoCaoKit
             Show(isSuccess, levelShowName, killCount, timeCount);
             ReadRoleImg();
 
+            //通关时播放结算音效(失败结算不播)
+            if (isSuccess)
+            {
+                SoundMgr.Inst.PlayLevelWin();
+            }
+
             //记录结算前的等级与经验, 发完奖励后用于播放经验条增长动画
             PlayerSaveData saveData = PlayerSaveData.LocalSavaData;
             int playerLvFrom = saveData.lv;

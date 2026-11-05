@@ -48,6 +48,50 @@ namespace XiaoCao
 
         public static UserInputType UserInputType;
 
+        /// <summary>
+        /// 移动平台默认帧率: 高刷屏按 90 帧跑
+        /// </summary>
+        public const int MobileDefaultFrameRate = 90;
+
+        /// <summary>
+        /// PC 平台默认帧率, -1 表示不限帧, 由垂直同步决定
+        /// </summary>
+        public const int PcDefaultFrameRate = -1;
+
+        /// <summary>
+        /// 当前平台的默认帧率
+        /// </summary>
+        public static int DefaultFrameRate => Application.isMobilePlatform ? MobileDefaultFrameRate : PcDefaultFrameRate;
+
+        /// <summary>
+        /// 取生效帧率: 优先用本地设置里保存的值, 没保存过则用平台默认值
+        /// </summary>
+        public static int GetFrameRate()
+        {
+            return (int)ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.FrameRate, DefaultFrameRate);
+        }
+
+        /// <summary>
+        /// 设置并立即应用帧率。移动端同时关掉垂直同步, 否则会被画质等级的 vSync 锁在 60 帧
+        /// </summary>
+        public static void SetFrameRate(int frameRate)
+        {
+            if (Application.isMobilePlatform)
+            {
+                QualitySettings.vSyncCount = 0;
+            }
+
+            Application.targetFrameRate = frameRate;
+        }
+
+        /// <summary>
+        /// 按本地设置应用帧率, 启动流程调用一次
+        /// </summary>
+        public static void ApplySavedFrameRate()
+        {
+            SetFrameRate(GetFrameRate());
+        }
+
         //目前技能
         public const int SkillCountOnBar = 4;
 
@@ -612,7 +656,7 @@ namespace XiaoCao
     public static class BattleExtraItemHelper
     {
         public const float TimeStopDuration = 4f;
-        public const float HealHpPercent = 0.2f;
+        public const float HealHpPercent = 0.3f;
         private const string SupportRoleAlreadySummonedKey = "SupportRoleAlreadySummoned";
         private const string SupportRoleEnemyId = "E_0_Friend";
         private const float SupportRoleForwardDistance = 3f;
@@ -627,7 +671,7 @@ namespace XiaoCao
                     UIMgr.Inst.battleHud.AddBuffUI(BattleExtraItemType.TimeStop,TimeStopDuration,EBuffTimeMode.SetMax);
                     return true;
                 case BattleExtraItemType.Heal:
-                    return TryHealLocalPlayer();
+                    return TryHealLocalPlayer(HealHpPercent);
                 case BattleExtraItemType.SupportRole:
                     return TrySummonSupportRole();
                 default:
@@ -636,7 +680,7 @@ namespace XiaoCao
             }
         }
 
-        private static bool TryHealLocalPlayer()
+        private static bool TryHealLocalPlayer(float healHpPercent)
         {
             var player = GameDataCommon.LocalPlayer;
             if (player == null || player.IsDie || player.MaxHp <= 0)
@@ -651,7 +695,7 @@ namespace XiaoCao
                 return false;
             }
 
-            float healAmount = Mathf.Min(player.MaxHp * HealHpPercent, loseHp);
+            float healAmount = Mathf.Min(player.MaxHp * healHpPercent, loseHp);
             player.ChangeNowValue(ENowAttr.Hp, healAmount);
             return true;
         }
@@ -727,8 +771,8 @@ namespace XiaoCao
             AttrSetting playerSetting = ConfigMgr.Inst.AttrSettingSo.GetOrDefault(0, 0);
             RoleAttr attr = supportRole.data_R.RoleAttr;
 
-            float baseAtk = CharacterAttrCalc.GetBaseATK(level) * playerSetting.atkMult;
-            float baseHp = CharacterAttrCalc.GetBaseHP(level) * playerSetting.hpMult + playerSetting.addHp;
+            float baseAtk = CharacterAttrCalc.GetBaseATK(level) * playerSetting.RealAtkMult;
+            float baseHp = CharacterAttrCalc.GetBaseHP(level) * playerSetting.RealHpMult + playerSetting.addHp;
 
             attr.GetAttribute(EAttr.Atk).BaseValue = (int)(baseAtk * SupportRoleSetting.GetAtkRate());
             attr.GetAttribute(EAttr.MaxHp).BaseValue = (int)(baseHp * SupportRoleSetting.GetHpRate());

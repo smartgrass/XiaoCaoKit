@@ -5,6 +5,9 @@ using UnityEngine;
 
 public static class CIBuildHelper
 {
+    /// <summary>PC 包输出路径（相对项目根），Data 目录名由它推导，打包前的残留清理也依赖它</summary>
+    public const string WindowBuildExePath = "Build/ActGame.exe";
+
     public static void ProjectBuildExecute(BuildTarget target)
     {
         //Switch Platform
@@ -28,7 +31,7 @@ public static class CIBuildHelper
         }
         else
         {
-            report = BuildPipeline.BuildPlayer(scenes, "Build/ActGame.exe", BuildTarget.StandaloneWindows,
+            report = BuildPipeline.BuildPlayer(scenes, WindowBuildExePath, BuildTarget.StandaloneWindows,
                 buildOptions);
         }
 

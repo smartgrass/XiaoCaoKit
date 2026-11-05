@@ -25,6 +25,10 @@ namespace Flux
         //水平方向上旋转
         public float horAngle = 0;
 
+        [XCLabel("前方朝运动方向")]
+        [Tooltip("勾选后物体前方始终朝向速度方向, 用于抛物线子弹/投掷物; 角色位移不要勾")]
+        public bool faceVelocity;
+
         //List<Ease>
         [SerializeField]
         private bool _isBezier;
@@ -409,6 +413,7 @@ namespace Flux
                 end = MathTool.RotateY(end, fe.horAngle);
 
                 xcMove.isBezier = fe.IsBezier;
+                xcMove.faceVelocity = fe.faceVelocity;
                 if (fe.IsBezier)
                 {
                     xcMove.handlePoint = fe.handlePionts[i];

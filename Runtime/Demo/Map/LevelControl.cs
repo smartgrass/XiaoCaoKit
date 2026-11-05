@@ -157,24 +157,30 @@ namespace XiaoCao
             }
         }
 
-        public Vector3 GetStartPos()
+        /// <summary>
+        /// 获取关卡起始点: 优先使用LevelAction配置上的起始点覆盖, 其次自身startPoint, 最后找子节点startPoint。
+        /// 位置和初始朝向都以它为准, 找不到时返回 null。
+        /// </summary>
+        public Transform GetStartPoint()
         {
-            //优先使用LevelAction配置上的起始点覆盖
             Transform overridTf = GetStartPointOverrid();
             if (overridTf)
             {
-                return overridTf.position;
+                return overridTf;
             }
 
             if (!startPoint)
             {
                 startPoint = transform.Find("startPoint");
-                return startPoint ? startPoint.position : Vector3.zero;
             }
-            else
-            {
-                return startPoint.position;
-            }
+
+            return startPoint;
+        }
+
+        public Vector3 GetStartPos()
+        {
+            Transform startTf = GetStartPoint();
+            return startTf ? startTf.position : Vector3.zero;
         }
 
         public Vector3 GetEndPos()

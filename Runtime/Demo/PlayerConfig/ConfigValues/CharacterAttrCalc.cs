@@ -57,8 +57,8 @@ public static class CharacterAttrCalc
 
     public static float ATK_HpMult(int level)
     {
-        //默认5倍
-        return 5;
+        //默认6倍
+        return 6;
     }
 
     /// <summary>

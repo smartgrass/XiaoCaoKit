@@ -1,5 +1,6 @@
 using GG.Extensions;
 using System;
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
 
@@ -50,12 +51,69 @@ namespace XiaoCao
         private bool IsFriendRole => _friendState != FriendState.NoFriend;
         private Role _friend;
 
+        /// <summary>
+        /// 友军"离玩家太远就自己回到玩家身边"的总开关(含 20 米外的瞬移, 见 <see cref="CheckFriendMove"/>)。
+        /// 支援角色被派去操作功能件时要关掉, 否则会被这套逻辑从功能件旁边拽回玩家身边。
+        /// </summary>
+        public bool FriendKeepWithPlayer { get; set; } = true;
+
         public Role targetRole;
         private bool HasAddEnemyDeadEvent;
         public float tempActDis = 1.5f;
         public float tempTargetDis;
         public Vector3 idlePos;
         private bool HasAddAction;
+
+        #region 寻路
+
+        private EnemyMoveMode _moveMode;
+
+        /// <summary>移动模式: Init 时取 AI 配置(MainDataFSM.moveMode), 运行时也可以直接改, 改了会立刻重算路径</summary>
+        public EnemyMoveMode MoveMode
+        {
+            get => _moveMode;
+            set
+            {
+                if (_moveMode == value)
+                {
+                    return;
+                }
+
+                _moveMode = value;
+                ResetPath();
+            }
+        }
+
+        /// <summary>
+        /// 演出里执行过 FollowPlayer: 之后由 <see cref="UpdateShowFollowPlayer"/> 接管移动, 按当前移动模式追玩家。
+        /// <para>这是持续状态: <see cref="EnemyShowAction"/> 会一直挂着演出协程, 期间不进 AI 状态机(不攻击),
+        /// 直到追进 <see cref="TargetStopDistance"/> (留空时) / 到点(填了秒数) / 受击打断(见 <see cref="OnDamageAct"/>)
+        /// / 玩家或敌人死亡; 每次演出开始会被重置。</para>
+        /// </summary>
+        public bool IsShowFollowPlayer { get; set; }
+
+        /// <summary>当前路径点(世界坐标), 最后一个点就是目标</summary>
+        private readonly List<Vector3> _pathPoints = new List<Vector3>();
+
+        private int _pathIndex;
+        private float _pathRefreshTimer;
+        private Vector3 _pathQueryTargetPos;
+        private PassPathResult _pathResult;
+        private bool _pathQueried;
+
+        /// <summary>路径重算间隔(秒); 走完当前路径点或目标挪远了也会立刻重算</summary>
+        private const float PathRefreshInterval = 1f;
+
+        /// <summary>目标移动超过这个距离就立刻重算路径</summary>
+        private const float PathTargetMoveDistance = 1.5f;
+
+        /// <summary>离路径点多近算到达, 换下一个点</summary>
+        private const float PathReachDistance = 0.8f;
+
+        /// <summary>重算路径后, 在新路径里找回"原来那个目标点"的容差; 超过它就当作路径变了, 从头走</summary>
+        private const float PathProgressMatchDistance = 1f;
+
+        #endregion
 
         private enum FriendState
         {
@@ -80,6 +138,7 @@ namespace XiaoCao
             mainDataFSM.name = so.name;
             mainDataFSM.InitReset(this);
             Movement.curBaseMoveSpeed = mainDataFSM.setting.moveSpeed;
+            MoveMode = mainDataFSM.moveMode;
             idlePos = transform.position;
             //只添加一次
             if (!HasAddAction)
@@ -107,6 +166,20 @@ namespace XiaoCao
 
         private void OnDamageAct(AtkInfo info, bool arg2)
         {
+            //正在操作炮台/功能件: 受击不打断操控, 别把 AI 重新打开。
+            //操控只有在被打出 break 时才断开, 由功能件自己处理(见 Turret.OnOperatorDamaged);
+            //这里提前开 AI 会让角色站在炮台上自己打拳, 却还占着炮台
+            if (FunctionItemMgr.IsOperating(owner))
+            {
+                return;
+            }
+
+            //演出里的"跟随玩家"被打断: 结束跟随, 交回 AI 状态机开始正常战斗
+            if (IsShowFollowPlayer)
+            {
+                IsShowFollowPlayer = false;
+            }
+
             if (!owner.IsAiOn && owner.HasTag(RoleTagCommon.EnableAiIfHurt))
             {
                 owner.RemoveTag(RoleTagCommon.EnableAiIfHurt);
@@ -153,9 +226,20 @@ namespace XiaoCao
             }
         }
 
+        /// <summary>
+        /// 演出里切换到"跟随玩家": 目标切回玩家, 并把移动模式切成寻路模式。
+        /// <para>演出里这一行会一直挂着(见 <see cref="EnemyShowAction"/>), 期间由
+        /// <see cref="ForceFollowTargetUpdate"/> 逐帧追, AI 状态机不更新, 所以不会开始攻击;
+        /// 追进 <see cref="TargetStopDistance"/> 后跟随结束(留空时), 交回 AI 由
+        /// <see cref="PreAtkState"/> → <see cref="AtkState"/> 开始攻击循环。</para>
+        /// </summary>
         public void FollowPlayer()
         {
             targetRole = GameAllData.CommonData.Player0;
+            //触发即进入寻路模式
+            MoveMode = EnemyMoveMode.Path;
+            IsShowFollowPlayer = true;
+            ResetPath();
         }
 
         public enum TargetPosType
@@ -177,7 +261,10 @@ namespace XiaoCao
 
         public Vector3 GetTargetPos()
         {
-            if (_friendState == FriendState.Follow)
+            //演出里用 SetTargetMove / FindFunction 指了明确目标点时, 优先级高于"跟着玩家走",
+            //否则支援角色接到"去操作炮台"的指令后还是会朝玩家走
+            if (_friendState == FriendState.Follow &&
+                (TargetPosTypeValue == TargetPosType.Default || TargetPosTypeValue == TargetPosType.Stop))
             {
                 return _friend.transform.position + _friend.transform.forward;
             }
@@ -308,11 +395,26 @@ namespace XiaoCao
 
         #region Move
 
+        /// <summary>
+        /// 朝目标移动。默认模式直接朝目标走; 寻路模式沿通道连线点绕开墙体, 路径不可达时停下。
+        /// </summary>
         public void Move(float speedRate = 1)
         {
-            Vector3 dir = targetRole == null
-                ? transform.forward
-                : (targetRole.transform.position - transform.position).normalized;
+            Vector3 dir;
+            if (MoveMode == EnemyMoveMode.Path && targetRole != null)
+            {
+                if (!TryGetPathDir(out dir))
+                {
+                    MoveStop();
+                    return;
+                }
+            }
+            else
+            {
+                dir = targetRole == null
+                    ? transform.forward
+                    : (targetRole.transform.position - transform.position).normalized;
+            }
 
             if (speedRate < 0)
             {
@@ -320,6 +422,99 @@ namespace XiaoCao
             }
 
             owner.AIMoveVector(dir, speedRate, false);
+        }
+
+        /// <summary>
+        /// 取寻路模式下一步的移动方向(平面上指向当前路径点)。
+        /// 返回 false 表示当前不可达, 调用方应该停下而不是朝墙里走。
+        /// </summary>
+        private bool TryGetPathDir(out Vector3 dir)
+        {
+            Vector3 targetPos = targetRole.transform.position;
+
+            _pathRefreshTimer -= Time.deltaTime;
+            bool needRefresh = !_pathQueried
+                || _pathRefreshTimer <= 0f
+                || (targetPos - _pathQueryTargetPos).sqrMagnitude > PathTargetMoveDistance * PathTargetMoveDistance;
+            if (needRefresh)
+            {
+                RefreshPath(targetPos);
+            }
+
+            if (_pathResult == PassPathResult.Unreachable || _pathPoints.Count == 0)
+            {
+                dir = Vector3.zero;
+                return false;
+            }
+
+            // 走到当前路径点就换下一个
+            while (_pathIndex < _pathPoints.Count - 1 &&
+                   (_pathPoints[_pathIndex] - transform.position).ToY0().sqrMagnitude <= PathReachDistance * PathReachDistance)
+            {
+                _pathIndex++;
+            }
+
+            Vector3 moveDir = (_pathPoints[_pathIndex] - transform.position).ToY0();
+            if (moveDir.sqrMagnitude < 0.0001f)
+            {
+                dir = Vector3.zero;
+                return false;
+            }
+
+            dir = moveDir.normalized;
+            return true;
+        }
+
+        /// <summary>
+        /// 按当前目标位置重算一次路径(不可达时路径为空)。
+        /// <para>重算后要接着原来的进度走: 路径是"从现在的位置重新接入通道图"算出来的,
+        /// A* 会给离自己最近的那个通道点最低代价 —— 那个点很可能就是刚从它旁边走过、还在身后的点。
+        /// 每次都把下标清 0 的话, 敌人会掉头走回刚才那个点, 到下一个点又重算, 表现成围着通道点来回转圈。</para>
+        /// </summary>
+        private void RefreshPath(Vector3 targetPos)
+        {
+            // 记住正在追的那个点(必须在 Query 之前取: Query 会先把 _pathPoints 清空重填)
+            bool hasProgress = _pathPoints.Count > 0 && _pathIndex < _pathPoints.Count;
+            Vector3 curTarget = hasProgress ? _pathPoints[_pathIndex] : targetPos;
+
+            _pathQueried = true;
+            _pathRefreshTimer = PathRefreshInterval;
+            _pathQueryTargetPos = targetPos;
+            _pathResult = PassPathFinder.Query(transform.position, targetPos, mainDataFSM.pathFarDistance, _pathPoints);
+
+            _pathIndex = 0;
+            if (!hasProgress || _pathPoints.Count == 0)
+            {
+                return;
+            }
+
+            // 在新路径里找回同一个点: 找到就接着走, 找不到说明路线变了, 从头开始
+            int best = -1;
+            float bestSqr = float.MaxValue;
+            for (int i = 0; i < _pathPoints.Count; i++)
+            {
+                float sqr = (_pathPoints[i] - curTarget).ToY0().sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = i;
+                }
+            }
+
+            if (best >= 0 && bestSqr <= PathProgressMatchDistance * PathProgressMatchDistance)
+            {
+                _pathIndex = best;
+            }
+        }
+
+        /// <summary>丢掉缓存的路径, 下一次移动立刻重新查询(换目标 / 换移动模式时调用)</summary>
+        public void ResetPath()
+        {
+            _pathQueried = false;
+            _pathRefreshTimer = 0f;
+            _pathPoints.Clear();
+            _pathIndex = 0;
+            _pathResult = PassPathResult.Direct;
         }
 
         public void MoveStop()
@@ -382,6 +577,15 @@ namespace XiaoCao
 
         private void ForceFollowTargetUpdate()
         {
+            //演出里执行过 FollowPlayer: 目标就是玩家, 按当前移动模式追过去。
+            //(演出里另有 SetTargetMove 指定了 Point/Transform 时让它优先, 不跟它抢)
+            if (IsShowFollowPlayer &&
+                (TargetPosTypeValue == TargetPosType.Stop || TargetPosTypeValue == TargetPosType.Default))
+            {
+                UpdateShowFollowPlayer();
+                return;
+            }
+
             bool isMove = TargetPosTypeValue != TargetPosType.Stop || _friendState == FriendState.Follow;
             if (TargetPosTypeValue == TargetPosType.Default)
             {
@@ -419,6 +623,45 @@ namespace XiaoCao
         }
 
 
+        /// <summary>
+        /// 演出里的"跟随玩家"(FollowPlayer 之后接管): 寻路模式下沿通道连线点绕开墙体, 默认模式下直接朝玩家走。
+        /// 玩家为空或已死亡就停下, 别让演出里的敌人顶着墙空走。
+        /// </summary>
+        private void UpdateShowFollowPlayer()
+        {
+            if (targetRole == null || targetRole.IsDie)
+            {
+                MoveStop();
+                return;
+            }
+
+            Vector3 targetPos = targetRole.transform.position;
+            CheckDistancePoint(targetPos);
+
+            if (tempTargetDis <= TargetStopDistance)
+            {
+                MoveStop();
+                return;
+            }
+
+            if (MoveMode == EnemyMoveMode.Path)
+            {
+                if (!TryGetPathDir(out Vector3 dir))
+                {
+                    //不可达: 停下等下一次重算, 而不是朝墙里走
+                    MoveStop();
+                    return;
+                }
+
+                //和 AIMoveTo 同一套写法: 方向长度带移速, 第二个参数是动画移速倍率
+                owner.AIMoveVector(dir * MoveSpeedShowAction, MoveSpeedShowAction, false);
+                return;
+            }
+
+            owner.AIMoveTo(targetPos, MoveSpeedShowAction, MoveSpeedShowAction);
+        }
+
+
         private float nearFriendDistance = 6;
 
         /// <summary>
@@ -429,6 +672,13 @@ namespace XiaoCao
         /// </summary>
         private void CheckFriendMove()
         {
+            //演出(如 FindFunction 去操作功能件)期间移动由 ShowAct 接管, 不让跟随逻辑抢目标点;
+            //关掉开关后支援角色也不会再自动回到/传送回玩家身边
+            if (IsOnShowAction || !FriendKeepWithPlayer)
+            {
+                return;
+            }
+
             checkDistanceTimer += Time.deltaTime;
             if (checkDistanceTimer >= checkDistanceInterval)
             {

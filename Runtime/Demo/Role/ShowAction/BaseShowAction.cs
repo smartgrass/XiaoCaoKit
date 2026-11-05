@@ -15,16 +15,18 @@ namespace XiaoCao
     {
         [Multiline(12)] public string taskLines;
 
-        [Dropdown(nameof(GetShowActKeyList))] [OnValueChanged(nameof(OnTestShowActKeyChange))] [Label("ActKey")]
+        [Dropdown(nameof(GetShowActKeyList))]
+        [OnValueChanged(nameof(OnTestShowActKeyChange))]
+        [Label("ActKey")]
         public string testShowActKey;
 
         public virtual CharacterController Cc => GameDataCommon.LocalPlayer.idRole.cc;
-        
+
         public virtual Role GetRole()
         {
-           return  GameDataCommon.LocalPlayer;
+            return GameDataCommon.LocalPlayer;
         }
-        
+
         public Animator Animator
         {
             get
@@ -207,7 +209,7 @@ namespace XiaoCao
                             string[] cmdList = skillId.Split("|");
 
                             var role = GetRole();
-                            
+
                             yield return role.data_R.roleControl.IEWaitActCombo(cmdList, null);
                         }
                         //Event:DoExtraItem,id
@@ -551,6 +553,9 @@ namespace XiaoCao
         }
     }
 
+    /// <summary>
+    /// EnemyCmd文档.md
+    /// </summary>
     public static class ShowActKeys
     {
         /// <summary>
@@ -610,10 +615,12 @@ namespace XiaoCao
 
         public const string EndLoop = "EndLoop";
 
+        // FollowPlayer:          // 跟随到目标距离(默认3米)为止, 之后进入攻击循环
+        // FollowPlayer:10        // 跟随 10 秒后结束
         public const string FollowPlayer = "FollowPlayer";
 
         public const string LevelFinish = "LevelFinish";
-        
+
         public const string KillEnemy = "KillEnemy";
 
         //查找功能件

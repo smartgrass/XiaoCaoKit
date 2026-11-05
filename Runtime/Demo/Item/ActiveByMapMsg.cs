@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TEngine;
 using UnityEngine;
 using XiaoCao;
@@ -6,35 +7,41 @@ namespace XiaoCaoKit.Runtime.Demo.Item
 {
     public class ActiveByMapMsg : MonoExecute, IMapMsgReceiver
     {
+        public GameObject target;
+
         public string mapMsg;
-        
+
         public bool isActive = true;
 
-        public bool autoStartState = true;
-        
+        public bool activechild = true;
+
+
         private void Start()
         {
             GameEvent.AddEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
-            if (autoStartState)
-            {
-                gameObject.SetActive(!isActive);
-            }
         }
 
         private void OnDestroy()
         {
             GameEvent.RemoveEventListener<string>(EGameEvent.MapMsg.ToInt(), OnReceiveMsg);
         }
-        
+
         public override void Execute()
         {
-            gameObject.SetActive(isActive);
-            //激活子物体
-            int childCount = transform.childCount;
-            for (int i = 0; i < childCount; i++)
+            if (target)
             {
-                var child = transform.GetChild(i);
-                child.gameObject.SetActive(isActive);
+                target.SetActive(isActive);
+            }
+
+            if (activechild)
+            {
+                //激活子物体
+                int childCount = transform.childCount;
+                for (int i = 0; i < childCount; i++)
+                {
+                    var child = transform.GetChild(i);
+                    child.gameObject.SetActive(isActive);
+                }
             }
         }
 

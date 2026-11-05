@@ -26,12 +26,11 @@ namespace XiaoCao
 
         public static MapMgr Inst => _instance;
 
+        //地图已预置在场景里, 不从配置加载关卡地图(主城Home场景)
         public bool dontLoadMap;
 
+        //仅编辑器直启时有效: 用这个关卡替换当前关卡
         public string testLevelName = "";
-
-
-        private bool testLoad;
 
         public static string CurLevelName
         {
@@ -62,12 +61,16 @@ namespace XiaoCao
         public IEnumerator LoadLevelObject()
         {
             GetSetting();
-#if UNITY_EDITOR
-            if (testLoad && dontLoadMap)
+
+            //换地图: 通道寻路图要按新地图的 PassPointCollector 重建
+            PassPathFinder.Invalidate();
+
+            //主城等场景的地图直接预置在场景里(dontLoadMap), 不需要从配置加载关卡地图
+            if (dontLoadMap || GameDataCommon.Current.gameStage == EGameStage.Home)
             {
+                Debug.Log($"--- skip load level map, stage {GameDataCommon.Current.gameStage} level {CurLevelName}");
                 yield break;
             }
-#endif
 
             if (string.IsNullOrEmpty(CurLevelName))
             {
@@ -191,10 +194,16 @@ namespace XiaoCao
 
         private void GetSetting()
         {
+            //主城不加载关卡地图, 也不参与关卡调试覆盖(否则调试关卡名会把关卡地图塞进主城场景)
+            if (GameDataCommon.Current.gameStage == EGameStage.Home)
+            {
+                return;
+            }
+
 #if UNITY_EDITOR
             //当处于启动界面时,设置测试场景
-            testLoad = GameAllData.CommonData.firstSceneName == SceneManager.GetActiveScene().name;
-            if (testLoad && !string.IsNullOrEmpty(testLevelName) && !dontLoadMap)
+            bool isTestLoad = GameAllData.CommonData.firstSceneName == SceneManager.GetActiveScene().name;
+            if (isTestLoad && !string.IsNullOrEmpty(testLevelName) && !dontLoadMap)
             {
                 CurLevelName = testLevelName;
                 testLevelName = "";
@@ -222,12 +231,34 @@ namespace XiaoCao
         {
             if (GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.isBodyCreated)
             {
-                GameDataCommon.LocalPlayer.Movement.MoveToImmediate(GetStartPos());
+                RoleMovement movement = GameDataCommon.LocalPlayer.Movement;
+                movement.MoveToImmediate(GetStartPos());
+
+                //初始朝向跟随起点: 有起始点就面朝它的 forward, 没有则保持当前朝向
+                Transform startTf = GetStartPoint();
+                if (startTf)
+                {
+                    movement.LookToDir(startTf.forward);
+                }
             }
             else
             {
                 Debug.LogError("---  no player creat");
             }
+        }
+
+        /// <summary>
+        /// 获取当前地图的起始点(主城走HomeMapControl, 关卡走LevelControl), 找不到返回 null
+        /// </summary>
+        private Transform GetStartPoint()
+        {
+            if (GameDataCommon.Current.gameStage == EGameStage.Home)
+            {
+                var home = transform.GetComponentInChildren<HomeMapControl>();
+                return home ? home.GetStartPoint() : null;
+            }
+
+            return LevelControl ? LevelControl.GetStartPoint() : null;
         }
 
         private Vector3 GetStartPos()

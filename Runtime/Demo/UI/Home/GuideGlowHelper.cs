@@ -24,20 +24,14 @@ namespace XiaoCao
                 return null;
             }
 
-            //放到父节点才能排在目标之前, 否则会盖住目标自身的底图
-            Transform parent = target.parent;
-            //父节点带布局组时改挂到目标自身, 否则会多出一个布局元素把其它节点挤开
-            bool parentHasLayout = parent != null && parent.GetComponent<LayoutGroup>() != null;
-            if (parent == null || parentHasLayout)
-            {
-                parent = target;
-            }
+            bool onSelf;
+            Transform parent = ResolveGlowParent(target, out onSelf);
 
             GameObject glow = Object.Instantiate(so.btnGlowEffect, parent);
             glow.name = "GuideGlowEffect";
 
             ApplyRect(target, glow);
-            if (parent == target)
+            if (onSelf)
             {
                 //挂在自己身上时排最前: 绘制在自身底图之上、图标之下
                 glow.transform.SetAsFirstSibling();
@@ -62,6 +56,18 @@ namespace XiaoCao
             }
 
             return glow;
+        }
+
+        /// <summary>
+        /// 计算发光节点的挂载父节点: 优先挂到目标的父节点(才能排在目标之前, 不盖住目标底图);
+        /// 父节点带布局组时改挂到目标自身, 否则发光会变成一个布局元素把其它节点挤开。
+        /// onSelf 表示挂在了目标自身。
+        /// </summary>
+        public static Transform ResolveGlowParent(RectTransform target, out bool onSelf)
+        {
+            Transform parent = target.parent;
+            onSelf = parent == null || parent.GetComponent<LayoutGroup>() != null;
+            return onSelf ? target : parent;
         }
 
         /// <summary>

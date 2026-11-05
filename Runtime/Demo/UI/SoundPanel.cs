@@ -65,8 +65,12 @@ public class SoundPanel : SubPanel
         int index = bgmValues.IndexOf(savedValue);
         if (index < 0)
         {
-            //未保存过时使用"默认"选项
+            //未保存过时使用"默认"选项; 保存的选项已不存在(如 Custom 曲库被清空)时同样回落到默认并写回
             index = 0;
+            if (!string.IsNullOrEmpty(savedValue))
+            {
+                SoundMgr.GetBgmSceneKey(sceneName).SetKeyString(SoundMgr.BgmDefaultValue);
+            }
         }
         bgmDropDown.SetValueWithoutNotify(index);
         bgmDropDown.RefreshShownValue();

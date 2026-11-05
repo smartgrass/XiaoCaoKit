@@ -1,4 +1,4 @@
-using EasyUI.Toast;
+﻿using EasyUI.Toast;
 using NaughtyAttributes;
 using System.Collections.Generic;
 using DG.Tweening;
@@ -106,6 +106,9 @@ namespace XiaoCao
 
         public TalkPanel talkPanel;
 
+        //固定位置的漂浮对话气泡, 常驻在预制体里, 不需要动态加载
+        public FloatTalkPanel floatTalkPanel;
+
         public LevelResultPanel levelResultPanel;
 
         // Buff选择面板
@@ -125,6 +128,9 @@ namespace XiaoCao
 
         [ReadOnly] public PanelBase lastpanel;
 
+        //记录"Esc 已被其它逻辑消费"的帧号, 见 ConsumeEscThisFrame
+        private int _escConsumedFrame = -1;
+
         public Canvas Canvas => topCanvas;
 
         //BlackScreenUI
@@ -139,6 +145,7 @@ namespace XiaoCao
             taskPanel?.Init();
             transform.SetParent(null);
             talkPanel.Init();
+            floatTalkPanel?.Init();
             buffSelectPanel.Init();
             rebornPanel?.Init();
             forgePanel.Hide();
@@ -199,7 +206,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    Debug.LogError($"-- panel {type} NeedUIData false");
+                    Debug.LogError($"-- panel {type} is Showing");
                 }
 
                 return;
@@ -272,7 +279,8 @@ namespace XiaoCao
                 if (lastpanel != null && lastpanel.IsShowing && lastpanel.HideEsc)
                 {
                     HideView(lastpanel.PanelType);
-                    //同一帧不再走下面"无界面"分支, 避免关掉一个界面的同时又弹出设置界面
+                    //本帧 Esc 已用掉: 既不再走下面的"无界面"分支, 也避免炮台在同一帧又退出操控
+                    ConsumeEscThisFrame();
                     return;
                 }
 
@@ -339,8 +347,29 @@ namespace XiaoCao
                 return false;
             }
 
-            //炮台操控中 Esc 用于离开炮台(见 Turret), 不抢这个键
-            return turretCrosshair == null || !turretCrosshair.gameObject.activeInHierarchy;
+            //本帧的 Esc 已被炮台等逻辑消费(退出操控), 不再重复用于打开设置
+            if (IsEscConsumedThisFrame())
+            {
+                return false;
+            }
+
+            //炮台操控中 Esc 用于退出炮台(见 Turret), 不用来打开设置
+            return TurretSystem.PlayerOperating == null;
+        }
+
+        /// <summary>
+        /// 标记本帧的 Esc 已被其它逻辑消费(如关闭界面、炮台退出操控)。
+        /// 多个系统各自在 Update 里读同一个按键, 执行顺序不确定, 借此保证一次按键只生效一处。
+        /// </summary>
+        public void ConsumeEscThisFrame()
+        {
+            _escConsumedFrame = Time.frameCount;
+        }
+
+        /// <summary>本帧的 Esc 是否已被消费, 其它系统据此跳过自己的 Esc 处理</summary>
+        public bool IsEscConsumedThisFrame()
+        {
+            return _escConsumedFrame == Time.frameCount;
         }
 
         //屏蔽输入

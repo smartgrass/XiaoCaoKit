@@ -540,6 +540,38 @@ namespace XiaoCao
             CameraMgr.Inst.aimer.SetAim(lookAt, 0);
         }
 
+        /// <summary>
+        /// 立即把镜头摆到角色身后: 水平角对齐角色朝向, 俯仰角回到当前模式的默认值。
+        /// 出生/进图时角色朝向跟随起点, 相机也要跟着切过去, 否则一进场是背对背的视角
+        /// </summary>
+        public void AlignBehindTarget()
+        {
+            if (player0 == null)
+            {
+                player0 = GameDataCommon.LocalPlayer;
+            }
+
+            if (player0 == null)
+            {
+                return;
+            }
+
+            curAngleY = player0.transform.eulerAngles.y;
+            curAngleX = Mode == CameraMode.ThirdPerson ? dataHome.defaultAngle.x : setting_topDown.defaultAngle.x;
+
+            //清掉拖动/抢占残留, 让自动回正继续按角色朝向工作
+            swipe = false;
+            autoLookForwardWait = 0;
+            _inputLook = Vector2.zero;
+            _aimTarget = null;
+
+            //不等下一次 FixedUpdate, 直接写进虚拟相机, 避免出生那一帧视角闪一下
+            if (vcam_topDown)
+            {
+                vcam_topDown.transform.rotation = Quaternion.Euler(curAngleX, curAngleY, 0f);
+            }
+        }
+
         private void OnEditorModeChanged()
         {
             if (Application.isPlaying)

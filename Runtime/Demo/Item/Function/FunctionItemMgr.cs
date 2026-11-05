@@ -50,6 +50,36 @@ namespace XiaoCao
             return FindNearestInternal(position, radius, null, true);
         }
 
+        /// <summary>
+        /// 该角色当前是否正在操作某个功能件。
+        /// 操控期间受击不该把 AI 状态/操控锁打乱(操控要等 break 才断开), 供受击回调判断
+        /// </summary>
+        public static bool IsOperating(Role role)
+        {
+            if (role == null)
+            {
+                return false;
+            }
+
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                IFunctionItem item = items[i];
+
+                if (item is UnityEngine.Object unityObj && unityObj == null)
+                {
+                    items.RemoveAt(i);
+                    continue;
+                }
+
+                if (item.Operator == role)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static IFunctionItem FindNearestInternal(Vector3 position, float radius, Role role, bool ignoreUsable)
         {
             IFunctionItem nearest = null;

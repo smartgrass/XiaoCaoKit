@@ -1,7 +1,10 @@
 ﻿using TEngine;
 using XiaoCao;
 
-public class MapMsgTriggerExec : MonoExecute, IMapMsgSender
+/// <summary>
+/// 只继承 不使用
+/// </summary>
+public abstract class MapMsgTriggerExecBase : MonoExecute, IExecute, IMapMsgSender
 {
     public string msg;
 

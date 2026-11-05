@@ -30,7 +30,7 @@ namespace XiaoCao
     /// 同一时间只能被一个角色操控。玩家靠近按攻击键弹出交互界面(没有可指派的支援角色时直接自己接管),
     /// 玩家操控时切换为第一人称准心视角(隐藏角色与炮台模型, 准心方向即射击方向, 开火有后坐力抖动),
     /// 非玩家角色(支援角色/敌人)操控时自动索敌, 并按"按住攻击 → 停顿"的节奏循环开火。
-    /// 敌人操控期间玩家不能交互, 要等它被打断(受击/死亡)才能接手; 支援角色操控时仍可交互(界面里能终止它)。
+    /// 敌人操控期间玩家不能交互, 要等它被打出 break(破防) 或死亡才能接手; 支援角色操控时仍可交互(界面里能终止它)。
     /// 防误触: 炮台周围 <see cref="enemyBlockInteractRadius"/> 内有敌人时, 玩家的攻击键按普攻处理, 不弹交互界面。
     /// </summary>
     [DefaultExecutionOrder(-50)]
@@ -75,6 +75,9 @@ namespace XiaoCao
 
         [Tooltip("防误触: 炮台周围该半径(米)内有活着的敌人时, 玩家按攻击键不会触发交互, 而是照常普攻")]
         public float enemyBlockInteractRadius = 4f;
+
+        [Tooltip("支援角色离玩家超过该距离(米)时, 不会出现在炮台的角色选择列表里")]
+        public float friendSelectMaxDistance = 10f;
 
         [Header("攻击")]
         [Tooltip("攻击配置, 子弹/导弹/激光各一份 ScriptableObject; 决定射程/冷缩/弹道/检测层")]
@@ -187,13 +190,13 @@ namespace XiaoCao
 
         /// <summary>
         /// 当前是否是敌人占着炮台(敌对阵营的 AI 操控中)。
-        /// 敌人操控期间玩家完全不能交互, 要等它被打断(受击/死亡)才能接手
+        /// 敌人操控期间玩家完全不能交互, 要等它被打出 break 或死亡才能接手
         /// </summary>
         public bool IsEnemyOperator =>
             OperatorType == ETurretOperatorType.AiRole && OperatorRole != null &&
             OperatorRole.team != XCSetting.PlayerTeam;
 
-        /// <summary>被打断过操控的角色, 之后不再接受它来操作(敌人受击断开后不会再回来)</summary>
+        /// <summary>被打出 break 断开过操控的角色, 之后不再接受它来操作(敌人被 break 断开后不会再回来)</summary>
         private readonly HashSet<Role> rejectedOperators = new HashSet<Role>();
 
         /// <summary>射击方向(含偏航/俯仰/后坐力), 与准心完全一致</summary>
@@ -323,11 +326,15 @@ namespace XiaoCao
                 return;
             }
 
-            //Esc 与顶部 CloseBtn 等价, 都是离开炮台; 有面板在显示时 Esc 先交给 UI 关面板
+            //Esc 与顶部 CloseBtn 等价, 都是离开炮台; 有面板在显示、或本帧 Esc 已被 UI 用掉时不动
             if (OperatorType == ETurretOperatorType.Player &&
                 Input.GetKeyDown(KeyCode.Escape) &&
-                UIMgr.HasInst && !UIMgr.Inst.HasPanelShowing())
+                UIMgr.HasInst &&
+                !UIMgr.Inst.HasPanelShowing() &&
+                !UIMgr.Inst.IsEscConsumedThisFrame())
             {
+                //标记本帧 Esc 已被炮台用掉, 避免同一帧 UI 又拿它去打开设置界面
+                UIMgr.Inst.ConsumeEscThisFrame();
                 ExitControl();
                 return;
             }
@@ -430,23 +437,29 @@ namespace XiaoCao
         #endregion
 
         /// <summary>
-        /// 操控者挨打时的处理: 敌方 AI 操控炮台期间被打中就立刻断开, 并把它拉进拒绝名单,
-        /// 之后它再来找功能件也不会选中这台炮台。玩家与支援角色不受影响
+        /// 操控者挨打时的处理: 只有被打进 break(破防/硬直) 才断开操控, 普通受击只扣血不动操控。
+        /// 敌人被 break 断开后拉进拒绝名单, 之后不会再来占这台炮台; 支援角色只是退出(不进拒绝名单),
+        /// 只要它身上带着 <see cref="RoleTagCommon.KeepOperateFunction"/> 就会隔 1 秒回来重新操作
+        /// (由演出逻辑 EnemyShowAction.FindFunction 驱动)。玩家自己操控不受影响(退出靠 Esc / 死亡)
         /// </summary>
         private void OnOperatorDamaged(AtkInfo info, bool isBreak)
         {
-            if (OperatorType != ETurretOperatorType.AiRole)
+            if (OperatorType != ETurretOperatorType.AiRole || !isBreak)
             {
                 return;
             }
 
             Role role = OperatorRole;
-            if (role == null || role.team == XCSetting.PlayerTeam)
+            if (role == null)
             {
                 return;
             }
 
-            rejectedOperators.Add(role);
+            if (role.team != XCSetting.PlayerTeam)
+            {
+                rejectedOperators.Add(role);
+            }
+
             ExitControl();
         }
 
@@ -525,7 +538,27 @@ namespace XiaoCao
             UIMgr.Inst.ShowView(UIPanelType.TurretPanel, new TurretPanelData(this));
         }
 
-        /// <summary>是否存在在场且存活的支援角色(与交互面板里的可指派列表一致, 玩家自己不算)</summary>
+        /// <summary>
+        /// 支援角色能否出现在炮台的角色选择列表里: 在场、存活, 且离玩家不超过
+        /// <see cref="friendSelectMaxDistance"/> 米。跑太远的支援角色叫过来不现实(路上炮台一直空着), 直接不给选
+        /// </summary>
+        public bool IsFriendSelectable(Role role)
+        {
+            if (role == null || role.IsDie)
+            {
+                return false;
+            }
+
+            Player0 player = GameDataCommon.LocalPlayer;
+            if (player == null)
+            {
+                return true;
+            }
+
+            return Vector3.Distance(role.transform.position, player.transform.position) <= friendSelectMaxDistance;
+        }
+
+        /// <summary>是否存在可以指派的支援角色(与交互面板里的可指派列表一致, 玩家自己不算)</summary>
         private bool HasAvailableFriend
         {
             get
@@ -534,7 +567,7 @@ namespace XiaoCao
                 for (int i = 0; i < friendIds.Count; i++)
                 {
                     Role role = friendIds[i].GetRoleById();
-                    if (role != null && !role.IsDie)
+                    if (IsFriendSelectable(role))
                     {
                         return true;
                     }
@@ -636,7 +669,7 @@ namespace XiaoCao
 
             LockRole(role, type);
 
-            //操控期间挨打就断开(只对敌方 AI 生效, 见 OnOperatorDamaged)
+            //操控期间被打出 break 才断开(普通受击不解除, 见 OnOperatorDamaged)
             role.OnDamageAct += OnOperatorDamaged;
 
             if (type == ETurretOperatorType.Player)

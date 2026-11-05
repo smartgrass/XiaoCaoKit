@@ -440,8 +440,8 @@ namespace XiaoCao
                 Debug.Log($"--- set player level {lv}");
             }
 
-            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.hpMult) + setting.addHp;
-            GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.atkMult);
+            GetAttribute(EAttr.MaxHp).BaseValue = hp = (int)(CharacterAttrCalc.GetBaseHP(lv) * setting.RealHpMult) + setting.addHp;
+            GetAttribute(EAttr.Atk).BaseValue = (int)(CharacterAttrCalc.GetBaseATK(lv) * setting.RealAtkMult);
             GetAttribute(EAttr.Def).BaseValue = (int)(CharacterAttrCalc.GetBaseDEF(lv) * setting.defMult);
             GetAttribute(EAttr.Crit).BaseValue = 0;
             GetAttribute(EAttr.CritDamage).BaseValue = 0;

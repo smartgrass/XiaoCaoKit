@@ -1195,6 +1195,12 @@ namespace XiaoCao
         public const int MainPlayer = 1;
         public const int Boss = 2;
         public const int EnableAiIfHurt = 100;
+
+        /// <summary>
+        /// 守着功能件(炮台)不放: 带这个 Tag 时, 只要被踢下炮台(被打出 break / 被别人接手)
+        /// 就隔一会儿重新去操作, 直到 Tag 被移除或角色死亡。召唤出来的支援角色会带上它
+        /// </summary>
+        public const int KeepOperateFunction = 101;
     }
 
     public enum EBodyState
