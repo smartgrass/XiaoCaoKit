@@ -58,26 +58,35 @@ namespace XiaoCao
             m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition, GUI.skin.horizontalScrollbar,
                 GUI.skin.verticalScrollbar);
 
-            GUIUtility.GetControlID(645789, FocusType.Passive);
-
-            DrawHead();
-
-            if (IsDebugView)
+            //用 try/finally 兜住: 按钮/DrawDebugTarget 里任何一句抛异常都会跳过 EndScrollView,
+            //Unity 就会报 "GUI Error: Invalid GUILayout state in XxxWindow view"
+            try
             {
-                ComponentViewHelper.Draw(DrawDebugTarget);
-                foreach (var kv in _methodDic)
+                GUIUtility.GetControlID(645789, FocusType.Passive);
+
+                DrawHead();
+
+                if (IsDebugView)
                 {
-                    NaughtyEditorGUI.ButtonList(DrawTarget, kv.Value);
+                    ComponentViewHelper.Draw(DrawDebugTarget);
+                    if (_methodDic != null)
+                    {
+                        foreach (var kv in _methodDic)
+                        {
+                            NaughtyEditorGUI.ButtonList(DrawTarget, kv.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    editor.OnInspectorGUI();
                 }
             }
-            else
+            finally
             {
-                editor.OnInspectorGUI();
+                EditorGUILayout.EndScrollView();
+                GUILayout.Space(15);
             }
-
-            EditorGUILayout.EndScrollView();
-
-            GUILayout.Space(15);
         }
 
         public virtual void DrawHead()

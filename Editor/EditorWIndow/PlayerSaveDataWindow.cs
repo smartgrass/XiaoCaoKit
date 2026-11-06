@@ -8,7 +8,10 @@ using XiaoCaoEditor;
 
 public class PlayerSaveDataWindow : XiaoCaoWindow
 {
-    public PlayerSaveData playerSaveData;
+    //PlayerSaveData 虽然标了 [Serializable], 但里面有 Dictionary 字段, Unity 序列化不了它:
+    //域重载(每次重新编译)后这个字段会变成 null, 再点保存就会把 null 写进存档变成 1 字节坏文件。
+    //这里不参与序列化, 需要时由 EnsurePlayerSaveDataLoaded 从磁盘读回来
+    [System.NonSerialized] public PlayerSaveData playerSaveData;
 
     [SerializeField] private int progressChapter;
     [SerializeField] private int progressLevel = 1;
@@ -54,85 +57,107 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
     public override void DrawHead()
     {
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.LabelField("调试修改存档进度", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的通关进度直接设置为输入的关卡序号（可前进或回退），并清空所有未通关关卡的星星记录。进度由低到高时会补发跨越关卡的首通奖励（已领过的不重复发放）。", MessageType.Info);
+        //域重载会清掉编辑器里非序列化的字段, 存档文件损坏时也可能读回 null;
+        //先兜底再画, 避免下面取 bondExp 时空引用
+        EnsurePlayerSaveDataLoaded();
 
-        progressChapter = EditorGUILayout.IntField("章节序号", progressChapter);
-        progressLevel = EditorGUILayout.IntField("关卡序号", progressLevel);
-
-        using (new EditorGUI.DisabledScope(progressChapter < 0 || progressLevel < 1))
-        {
-            if (GUILayout.Button("修改进度"))
+        DrawSection("调试修改存档进度",
+            "章节从 0 开始，首章首关为 0 / 1。点击修改后，会把该章节的通关进度直接设置为输入的关卡序号（可前进或回退），并清空所有未通关关卡的星星记录。进度由低到高时会补发跨越关卡的首通奖励（已领过的不重复发放）。",
+            () =>
             {
-                ModifyProgress();
-            }
-        }
+                progressChapter = EditorGUILayout.IntField("章节序号", progressChapter);
+                progressLevel = EditorGUILayout.IntField("关卡序号", progressLevel);
 
-        EditorGUILayout.EndVertical();
-        EditorGUILayout.Space();
+                using (new EditorGUI.DisabledScope(progressChapter < 0 || progressLevel < 1))
+                {
+                    if (GUILayout.Button("修改进度"))
+                    {
+                        ModifyProgress();
+                    }
+                }
+            });
 
+        DrawSection("任务调试",
+            "完成任务会把任务进度直接置为可领取状态(不自动领奖)。任务id留空时作用于全部任务; 清空记录会移除所有任务的进度与领取状态。",
+            () =>
+            {
+                taskDebugId = EditorGUILayout.TextField("任务id", taskDebugId);
+
+                if (GUILayout.Button("完成任务"))
+                {
+                    CompleteTaskDebug();
+                }
+
+                if (GUILayout.Button("清空任务记录"))
+                {
+                    EnsurePlayerSaveDataLoaded();
+                    TaskMgr.DebugClearAll(playerSaveData);
+                    Save();
+                    Debug.Log("-- task records cleared");
+                }
+            });
+
+        DrawSection("支援角色养成",
+            "玩家可见的只有羁绊等级(1~9)，三项细分等级(攻击/生存/技巧)由羁绊等级反算后写入存档，不再单独调试。羁绊经验每通关一次 +1，满经验自动升级；直接设置等级会把当前经验清零。下次召唤支援角色时生效。",
+            () =>
+            {
+                supportBondLv = EditorGUILayout.IntSlider("羁绊等级", supportBondLv, 1, SupportRoleSetting.MaxBondLevel);
+
+                //细分等级是反算出来的内部数据, 这里只做显示, 方便核对升级换算
+                SupportRoleSetting.GetGrowLevels(supportBondLv, out int atkLv, out int hpLv, out int skillLv);
+                EditorGUILayout.LabelField("细分等级", $"攻击 Lv{atkLv} / 生存 Lv{hpLv} / 技巧 Lv{skillLv}");
+
+                //羁绊经验: 通关一次 +1, 满经验自动升羁绊等级
+                int bondNeed = SupportRoleSetting.GetNextLevelExp(supportBondLv);
+                EditorGUILayout.LabelField("羁绊经验", bondNeed > 0 ? $"{playerSaveData.bondExp}/{bondNeed}" : "已满级");
+
+                if (GUILayout.Button("应用羁绊等级"))
+                {
+                    ApplySupportBondLevel();
+                }
+
+                if (GUILayout.Button("获得 10 点羁绊经验"))
+                {
+                    AddBondExpDebug(10);
+                }
+            });
+
+        DrawSection("矿石调试",
+            $"按选中类型发放矿石，品阶 0~{OreMaxQuality} 各 {OreCountPerQuality} 个（0 普通 / 1 精良 / 2 稀有 / 3 史诗），直接进背包。",
+            () =>
+            {
+                oreType = (ECrystalType)EditorGUILayout.EnumPopup("矿石类型", oreType);
+
+                if (GUILayout.Button("增加矿石"))
+                {
+                    AddOreDebug();
+                }
+            });
+    }
+
+    /// <summary>
+    /// 画一个调试分组。每个分组自带 Begin/End 与 try/finally:
+    /// 某一组里抛异常时只记录日志并正常闭合分组, 不会让整窗的 GUILayout 状态失衡
+    /// (失衡的表现就是 GUI Error: Invalid GUILayout state ... Begin/End calls match)
+    /// </summary>
+    private static void DrawSection(string title, string help, System.Action body)
+    {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.LabelField("任务调试", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("完成任务会把任务进度直接置为可领取状态(不自动领奖)。任务id留空时作用于全部任务; 清空记录会移除所有任务的进度与领取状态。", MessageType.Info);
-
-        taskDebugId = EditorGUILayout.TextField("任务id", taskDebugId);
-
-        if (GUILayout.Button("完成任务"))
+        try
         {
-            CompleteTaskDebug();
+            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(help, MessageType.Info);
+            body();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+        }
+        finally
+        {
+            EditorGUILayout.EndVertical();
         }
 
-        if (GUILayout.Button("清空任务记录"))
-        {
-            EnsurePlayerSaveDataLoaded();
-            TaskMgr.DebugClearAll(playerSaveData);
-            Save();
-            Debug.Log("-- task records cleared");
-        }
-
-        EditorGUILayout.EndVertical();
-        EditorGUILayout.Space();
-
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.LabelField("支援角色养成", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox("玩家可见的只有羁绊等级(1~9)，三项细分等级(攻击/生存/技巧)由羁绊等级反算后写入存档，不再单独调试。羁绊经验每通关一次 +1，满经验自动升级；直接设置等级会把当前经验清零。下次召唤支援角色时生效。", MessageType.Info);
-
-        supportBondLv = EditorGUILayout.IntSlider("羁绊等级", supportBondLv, 1, SupportRoleSetting.MaxBondLevel);
-
-        //细分等级是反算出来的内部数据, 这里只做显示, 方便核对升级换算
-        SupportRoleSetting.GetGrowLevels(supportBondLv, out int atkLv, out int hpLv, out int skillLv);
-        EditorGUILayout.LabelField("细分等级", $"攻击 Lv{atkLv} / 生存 Lv{hpLv} / 技巧 Lv{skillLv}");
-
-        //羁绊经验: 通关一次 +1, 满经验自动升羁绊等级
-        int bondNeed = SupportRoleSetting.GetNextLevelExp(supportBondLv);
-        EditorGUILayout.LabelField("羁绊经验", bondNeed > 0 ? $"{playerSaveData.bondExp}/{bondNeed}" : "已满级");
-
-        if (GUILayout.Button("应用羁绊等级"))
-        {
-            ApplySupportBondLevel();
-        }
-
-        if (GUILayout.Button("获得 10 点羁绊经验"))
-        {
-            AddBondExpDebug(10);
-        }
-
-        EditorGUILayout.EndVertical();
-        EditorGUILayout.Space();
-
-        EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-        EditorGUILayout.LabelField("矿石调试", EditorStyles.boldLabel);
-        EditorGUILayout.HelpBox($"按选中类型发放矿石，品阶 0~{OreMaxQuality} 各 {OreCountPerQuality} 个（0 普通 / 1 精良 / 2 稀有 / 3 史诗），直接进背包。", MessageType.Info);
-
-        oreType = (ECrystalType)EditorGUILayout.EnumPopup("矿石类型", oreType);
-
-        if (GUILayout.Button("增加矿石"))
-        {
-            AddOreDebug();
-        }
-
-        EditorGUILayout.EndVertical();
         EditorGUILayout.Space();
     }
 
@@ -222,6 +247,14 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     private void Save()
     {
         EnsurePlayerSaveDataLoaded();
+
+        //Ensure 之后仍为 null 说明存档结构本身有问题, 绝不能把 null 写进文件
+        if (playerSaveData == null)
+        {
+            Debug.LogError("-- save skipped: player save data is null");
+            return;
+        }
+
         SaveMgr.SaveData(playerSaveData);
         SyncRuntimeSaveData();
         Debug.Log("-- save");
@@ -232,6 +265,10 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
     {
         playerSaveData = PlayerSaveData.CreateAndCheckNull();
         Save();
+        //设置虽然存在独立文件里, 但跟着存档走: 重置存档时一起回到默认值
+        //(Play 模式下运行中的设置缓存也会同步替换, 不用重启游戏)
+        LocalSetting.ResetToDefault();
+        Debug.Log("-- reset save data & local setting");
     }
 
     [Button("解锁全部关卡", Pos: 2)]
@@ -344,7 +381,34 @@ public class PlayerSaveDataWindow : XiaoCaoWindow
 
     private void LoadPlayerSaveData(bool isLog = true)
     {
-        playerSaveData = SaveMgr.ReadData<PlayerSaveData>(out var isSuc);
+        bool isSuc = false;
+        try
+        {
+            playerSaveData = SaveMgr.ReadData<PlayerSaveData>(out isSuc);
+        }
+        catch (System.Exception e)
+        {
+            //文件被截断/格式不对时反序列化也可能直接抛异常, 同样按损坏处理
+            Debug.LogException(e);
+            playerSaveData = null;
+        }
+
+        //存档文件为空/损坏时 Odin 反序列化返回 null(1 字节文件就是被写进去的 null)。
+        //不兜底的话 DrawHead 取 bondExp 会空引用, 直接把 OnGUI 的 GUILayout 状态打坏;
+        //顺便重建一份默认存档写回去, 让坏文件自愈
+        if (playerSaveData == null)
+        {
+            playerSaveData = PlayerSaveData.CreateAndCheckNull();
+            SaveMgr.SaveData(playerSaveData);
+            Debug.LogWarning($"-- player save data on disk was empty/corrupt (isSuc={isSuc}), rebuilt a default one");
+        }
+        else
+        {
+            //文件不存在时 ReadData 返回的是裸 new, 旧存档也可能缺字段: 统一走一遍修复,
+            //和游戏启动流程保持一致(重复调用是幂等的)
+            playerSaveData.CheckNull();
+        }
+
         if (isLog)
         {
             Debug.Log($"-- read {isSuc} ");

@@ -122,6 +122,15 @@ namespace XiaoCao
             //读取存档数据
             var data0 = SaveMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
+            //存档文件为空/损坏时反序列化会返回 null, 这里当作新存档处理并重建,
+            //否则下面 CheckNull 就空引用, 启动流程直接断掉
+            if (data0 == null)
+            {
+                data0 = PlayerSaveData.CreateAndCheckNull();
+                isSuc = false;
+                Debug.LogWarning("--- player save data on disk was empty/corrupt, rebuilt a default one");
+            }
+
             data0.CheckNull();
 
             if (Application.isEditor && "IsKaiLe".GetKeyBool())
@@ -164,11 +173,12 @@ namespace XiaoCao
 
         /// <summary>
         /// 新存档的默认设置。
-        /// 锁定视角/自动索敌的默认值已改为"读取时兜底"(见 GameSetting.LockCam / GameSetting.AutoLockEnemy),
-        /// 这里不再写 PlayerPrefs —— 那两个 key 运行时不读(LocalSetting 走自己的 floatDic), 写了不生效。
+        /// 设置在独立文件里(Data/LocalSetting.data), 不进存档本体, 但生命周期跟着存档走:
+        /// 建新存档时整份重置, 这样"新存档"的开关一定是最新默认值, 不会被上一份存档的设置污染。
         /// </summary>
         void SetDefaultPlayerSetting()
         {
+            LocalSetting.ResetToDefault();
         }
     }
 

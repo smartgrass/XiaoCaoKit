@@ -202,16 +202,23 @@ namespace XiaoCao
             // 初始化默认技能栏设置（如果为空）
             if (!saveSkillBar)
             {
-                var playerSetting = ConfigMgr.Inst.PlayerSettingSo.GetOrDefault(raceId, 0);
+                //注意: PlayerSettingSo 由 ConfigMgr.Load() 在游戏流程里填, 编辑器里(没跑游戏)是 null。
+                //"玩家存档面板-重置"会在编辑模式直接走到这里, 不判空就会空引用把窗口的 GUI 布局打断
+                PlayerSettingSo settingSo = ConfigMgr.Inst.PlayerSettingSo;
                 skillBarSetting.Clear();
-                skillBarSetting.AddRange(playerSetting.defaultSkillList);
 
-                //默认解锁1,2技能
-                foreach (var skillId in playerSetting.defaultSkillList)
+                PlayerSetting playerSetting = settingSo != null ? settingSo.GetOrDefault(raceId, 0) : null;
+                if (playerSetting != null && playerSetting.defaultSkillList != null)
                 {
-                    if (!skillUnlockDic.ContainsKey(skillId))
+                    skillBarSetting.AddRange(playerSetting.defaultSkillList);
+
+                    //默认解锁1,2技能
+                    foreach (var skillId in playerSetting.defaultSkillList)
                     {
-                        skillUnlockDic[skillId] = 1;
+                        if (!skillUnlockDic.ContainsKey(skillId))
+                        {
+                            skillUnlockDic[skillId] = 1;
+                        }
                     }
                 }
 

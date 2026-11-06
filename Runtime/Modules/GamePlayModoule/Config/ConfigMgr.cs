@@ -245,6 +245,9 @@ namespace XiaoCao
         }
 
 
+        /// <summary>是否已经创建过(只读, 不会触发创建/Init)</summary>
+        public static bool IsOn => _instance != null;
+
         public LocalSetting LocalSetting
         {
             get
@@ -256,6 +259,15 @@ namespace XiaoCao
 
                 return _localSetting;
             }
+        }
+
+        /// <summary>
+        /// 替换设置缓存, 供"重置存档"时使用。设置面板关闭时会写回当前缓存,
+        /// 不替换的话重置后的默认值会被旧值覆盖掉
+        /// </summary>
+        public void ApplyLocalSetting(LocalSetting setting)
+        {
+            _localSetting = setting;
         }
 
         private LocalSetting _localSetting;
@@ -316,6 +328,17 @@ namespace XiaoCao
 
     public class LocalSetting
     {
+        /// <summary>设置迁移版本号: 每次调整设置默认值就 +1, 老配置文件只迁移一次</summary>
+        private const string SettingVersionKey = "SettingVersion";
+
+        private const float CurSettingVersion = 1f;
+
+        /// <summary>锁定视角默认值: 开(镜头不自动回正到角色朝向)</summary>
+        public const bool DefaultLockCam = true;
+
+        /// <summary>自动索敌默认值: 关</summary>
+        public const bool DefaultAutoLockEnemy = false;
+
         [OdinSerialize] public Dictionary<string, float> floatDic = new Dictionary<string, float>();
 
         public float GetValue(string key, float defaultValue)
@@ -359,17 +382,85 @@ namespace XiaoCao
 
         public static LocalSetting Load()
         {
-            var ret = SaveMgr.ReadData<LocalSetting>(out bool isSuc);
-            if (!isSuc)
+            var ret = SaveMgr.ReadData<LocalSetting>(out _);
+            if (ret == null)
             {
+                ret = new LocalSetting();
+            }
+
+            //老配置文件迁移一次, 有改动就立刻落盘
+            if (ret.MigrateSetting())
+            {
+                try
+                {
+                    SaveMgr.SaveData<LocalSetting>(ret);
+                }
+                catch (Exception e)
+                {
+                    //写盘失败不影响游戏, 下次启动会再迁移一次
+                    Debug.LogWarning($"[LocalSetting] 迁移后保存失败: {e.Message}");
+                }
             }
 
             return ret;
         }
 
+        /// <summary>
+        /// 设置迁移。LocalSetting 是全局文件(persistentDataPath/Data/LocalSetting.data), 删玩家存档不会重置它,
+        /// 所以只改"读取时兜底"的默认值对已存在的老配置无效 —— 必须在版本升级时把老值覆盖掉。
+        /// </summary>
+        /// <returns>是否发生了改动</returns>
+        private bool MigrateSetting()
+        {
+            if (floatDic == null)
+            {
+                //老格式里没有这个字典时补一个, 后面 GetValue 才不会空引用
+                floatDic = new Dictionary<string, float>();
+            }
+
+            if (GetValue(SettingVersionKey, 0f) >= CurSettingVersion)
+            {
+                return false;
+            }
+
+            //v1: 锁定视角改为默认开启, 自动索敌改为默认关闭。
+            //旧配置文件里这两项都被历史逻辑写成了 1, 玩家看到的就是"自动索敌还是开的"
+            SetBoolValue(LocalizeKey.LockCam, DefaultLockCam);
+            SetBoolValue(LocalizeKey.AutoLockEnemy, DefaultAutoLockEnemy);
+            SetValue(SettingVersionKey, CurSettingVersion);
+            return true;
+        }
+
         public static void SaveSetting()
         {
             SaveMgr.SaveData<LocalSetting>(ConfigMgr.Inst.LocalSetting);
+        }
+
+        /// <summary>
+        /// 生成一份全默认的设置(已经带上当前迁移版本号, 不会再被迁移逻辑改一遍)
+        /// </summary>
+        public static LocalSetting CreateDefault()
+        {
+            LocalSetting ret = new LocalSetting();
+            ret.MigrateSetting();
+            return ret;
+        }
+
+        /// <summary>
+        /// 重置设置, 只在"重置存档/新建存档"时调用。
+        /// 设置存在独立的文件里(persistentDataPath/Data/LocalSetting.data), 不进 PlayerSaveData.data,
+        /// 但生命周期跟着存档走 —— 重开存档就回到默认值。
+        /// </summary>
+        public static void ResetToDefault()
+        {
+            LocalSetting def = CreateDefault();
+            SaveMgr.SaveData<LocalSetting>(def);
+
+            //游戏运行中重置时同步换掉内存缓存, 否则设置面板关闭时(SaveSetting)会把旧值写回来
+            if (ConfigMgr.IsOn)
+            {
+                ConfigMgr.Inst.ApplyLocalSetting(def);
+            }
         }
 
         public void SetDefaultSetting()

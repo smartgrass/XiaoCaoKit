@@ -31,6 +31,14 @@ namespace XiaoCao
 
         public static void SaveData<T>(T data)
         {
+            //序列化 null 只会写出 1 字节的坏文件, 下次读回来还是 null, 之后所有取字段的地方都会空引用。
+            //这里直接拦住, 让问题在写入点就暴露出来(引用类型才可能为 null, 值类型恒 false)
+            if (ReferenceEquals(data, null))
+            {
+                Debug.LogError($"[SaveMgr] 拒绝写入 null: {typeof(T).Name} ({GetSavaPath(typeof(T))})");
+                return;
+            }
+
             Type type = typeof(T);
             string path = GetSavaPath(type);
             FileTool.CheckFilePathDir(path);
