@@ -14,6 +14,9 @@ namespace XiaoCao
 
         public float minDistance;
 
+        /// <summary>重写索敌范围(strMsg: SearchDistance_x), 0 表示沿用默认的 numMsg + 5</summary>
+        public float searchDistanceOverride;
+
         private GameObject createObject;
 
         private bool showAtkWarming;
@@ -29,10 +32,11 @@ namespace XiaoCao
             isDropDown = false;
             offset = 0;
             minDistance = 0;
+            searchDistanceOverride = 0;
             string[] array = string.IsNullOrWhiteSpace(baseMsg.strMsg) ? Array.Empty<string>() : baseMsg.strMsg.Split(",");
             if (array.Length > 0)
             {
-                //如offset_-0.5,min_1
+                //如offset_-0.5,min_1,SearchDistance_8
                 foreach (var str in array)
                 {
                     string token = str.Trim();
@@ -53,6 +57,15 @@ namespace XiaoCao
                     {
                         string numStr = token.Split("_")[1];
                         minDistance = float.Parse(numStr);
+                    }
+                    else if (token.StartsWith("SearchDistance", StringComparison.OrdinalIgnoreCase))
+                    {
+                        //SearchDistance_8: 索敌范围改用 8 米(默认是 numMsg + 5)
+                        string numStr = token.Substring("SearchDistance".Length).Trim().TrimStart('_').Trim();
+                        if (float.TryParse(numStr, out float distance) && distance > 0)
+                        {
+                            searchDistanceOverride = distance;
+                        }
                     }
                 }
             }
@@ -104,7 +117,8 @@ namespace XiaoCao
         void ReSetMoveEventData(XCMoveEvent moveEvent)
         {
             float maxDistance = curEvent.baseMsg.numMsg;
-            float searchDistance = maxDistance + 5;
+            //索敌范围: strMsg 里配了 SearchDistance_x 就直接用它, 否则沿用 Mathf.Max(5, maxDistance + 1)
+            float searchDistance = searchDistanceOverride > 0 ? searchDistanceOverride : Mathf.Max(5, maxDistance + 1);
             var role = task.Info.role;
             if (maxDistance == 0)
             {
@@ -122,7 +136,18 @@ namespace XiaoCao
             //修改终点,并且修改handle
             Vector3 worldStartVec = task.GetBindTranfrom().position; //获取当前世界坐标
             bool hasEnemy = task.Info.role.FindEnemy(out Role findRole, searchDistance, angle: 50);
-            Vector3 worldEndVec = hasEnemy ? findRole.transform.position : GetVirtualFocusPos(worldStartVec, role.transform, maxDistance);
+
+            Vector3 worldEndVec;
+            if (hasEnemy)
+            {
+                worldEndVec = findRole.transform.position;
+            }
+            else
+            {
+                //搜不到目标: 沿角色正前方移动, 距离沿用 MoveEvent 原本配置的长度, 不再套 numMsg
+                float originalDistance = (moveEvent.endVec - moveEvent.startVec).magnitude;
+                worldEndVec = GetVirtualFocusPos(worldStartVec, role.transform, originalDistance);
+            }
 
             if (hasEnemy)
             {
@@ -135,16 +160,22 @@ namespace XiaoCao
             }
 
 
-            if (offset != 0)
+            //offset / minDistance 都是"相对敌人"的修正:
+            //搜不到目标时位移只剩 MoveEvent 原本的长度(普攻第一段只有 0.1 米),
+            //再减 offset 会把终点推到起点背后, 表现为第一下方向反向, 所以这里只在有敌人时应用
+            if (hasEnemy)
             {
-                worldEndVec += (worldEndVec - worldStartVec).normalized * offset;
-            }
-
-            if (minDistance != 0)
-            {
-                if (Vector3.Distance(worldStartVec, worldEndVec) < minDistance)
+                if (offset != 0)
                 {
-                    worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * minDistance;
+                    worldEndVec += (worldEndVec - worldStartVec).normalized * offset;
+                }
+
+                if (minDistance != 0)
+                {
+                    if (Vector3.Distance(worldStartVec, worldEndVec) < minDistance)
+                    {
+                        worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * minDistance;
+                    }
                 }
             }
 
@@ -158,7 +189,8 @@ namespace XiaoCao
             }
             else
             {
-                if (Vector3.Distance(worldStartVec, worldEndVec) > maxDistance)
+                //只有搜到目标时才按 numMsg 钳制; 没搜到目标时保持 MoveEvent 原本的距离
+                if (hasEnemy && Vector3.Distance(worldStartVec, worldEndVec) > maxDistance)
                 {
                     worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * maxDistance;
                 }

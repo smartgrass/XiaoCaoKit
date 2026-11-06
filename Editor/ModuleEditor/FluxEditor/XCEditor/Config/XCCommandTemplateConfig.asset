@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groups:
   - commandName: XCCommand_MoveToTargetPos
+    description: "Command_Move: \u4FEE\u6539\u6700\u8FD1\u4E00\u4E2A Move \u4E8B\u4EF6\u7684\u7EC8\u70B9\u3002Start\u5E27\u8981\u5148\u4E8EMoveEvent"
     templates:
     - templateName: "\u76F4\u7EBF"
       description: 
@@ -26,6 +27,18 @@ MonoBehaviour:
       baseMsg:
         numMsg: 0
         strMsg: DropDown
+        state: 0
+    - templateName: offset
+      description: "\u4F7F\u73A9\u5BB6\u4F4D\u79FB\u5230\u654C\u4EBA\u9762\u524D0.75\u7684\u8DDD\u79BB\n2\u8868\u793A\u6700\u8FDC\u79FB\u52A8\u8303\u56F4"
+      baseMsg:
+        numMsg: 2
+        strMsg: offset_-0.75
+        state: 0
+    - templateName: SearchDistance_5
+      description: "\u7528\u4E8E\u63A7\u5236\u7D22\u654C\u8303\u56F4"
+      baseMsg:
+        numMsg: 2
+        strMsg: SearchDistance_5
         state: 0
     otherMsgPresets:
     - presetName: AtkWarming

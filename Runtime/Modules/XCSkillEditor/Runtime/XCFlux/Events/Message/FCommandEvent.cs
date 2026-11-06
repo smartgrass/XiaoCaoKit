@@ -13,6 +13,9 @@ namespace Flux
         [Dropdown(nameof(GetCommandNames))]
         public string commandName;
 
+        [Tooltip("玩家设置开关的 key(如 AutoChase); 留空表示该指令始终生效, 填了则开关关闭时这条指令不执行")]
+        public string disableTag;
+
         public BaseMsg baseMsg;
 
         public string[] otherMsgs;
@@ -20,6 +23,11 @@ namespace Flux
         protected override void SetDefaultValues()
         {
             base.SetDefaultValues();
+            if (commandName == null)
+            {
+                commandName = string.Empty;
+            }
+
             if (otherMsgs == null)
             {
                 otherMsgs = new string[0];
@@ -42,11 +50,15 @@ namespace Flux
         {
             get
             {
-                if (commandName.StartsWith("XCCommand_"))
+                //旧数据里 commandName 可能没写过(序列化后为 null), 编辑器刷新事件标签时不能抛异常
+                if (string.IsNullOrEmpty(commandName))
                 {
-                    return commandName.Replace("XCCommand_", "");
+                    return string.Empty;
                 }
-                return commandName;
+
+                return commandName.StartsWith("XCCommand_")
+                    ? commandName.Replace("XCCommand_", "")
+                    : commandName;
             }
         }
 
@@ -63,6 +75,7 @@ namespace Flux
             XCCommondEvent xce = new XCCommondEvent();
             xce.eName = commandName;
             xce.range = new XCRange(fe.Start, fe.End);
+            xce.disableTag = disableTag;
             xce.baseMsg = baseMsg;
             xce.otherMsgs = otherMsgs == null ? null : (string[])otherMsgs.Clone();
             return xce;

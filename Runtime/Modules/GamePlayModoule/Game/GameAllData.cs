@@ -64,6 +64,30 @@ namespace XiaoCao
         }
 
         /// <summary>
+        /// 普攻追击: 开启时普攻会追向最近的敌人, 未保存过时默认开启。
+        /// 技能编辑器里 FCommandEvent 的 disableTag 也直接读这个 key(见 LocalizeKey.AutoChase)
+        /// </summary>
+        public static bool AutoChase =>
+            ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoChase, true);
+
+        /// <summary>
+        /// 保存普攻追击开关, 由设置界面调用
+        /// </summary>
+        public static void SetAutoChase(bool isOn)
+        {
+            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.AutoChase, isOn);
+        }
+
+        /// <summary>
+        /// 读取玩家设置里的开关, 未保存过时按开启处理。
+        /// 技能事件用 tag 挂开关时走这里(见 XCCommondEvent.disableTag)
+        /// </summary>
+        public static bool IsSwitchOn(string key)
+        {
+            return ConfigMgr.Inst.LocalSetting.GetBoolValue(key, true);
+        }
+
+        /// <summary>
         /// 移动平台默认帧率: 高刷屏按 90 帧跑
         /// </summary>
         public const int MobileDefaultFrameRate = 90;

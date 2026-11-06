@@ -19,6 +19,7 @@ namespace XiaoCao
         public static string AutoLockEnemy = "AutoLockEnemy";
         public static string LockCam = "LockCam"; //锁定视角
         public static string BtnTriggerOnDown = "BtnTriggerOnDown"; //技能/普攻/翻滚/跳跃按钮按下即触发
+        public static string AutoChase = "AutoChase"; //普攻追击(关闭后普攻不再追向敌人)
         public static string SkinList = "SkinList"; //皮肤
         public static string TestEnmeyList = "TestEnmeyList"; //测试敌人
         public static string MouseView = "MouseView"; //视角跟随鼠标

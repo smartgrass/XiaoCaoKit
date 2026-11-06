@@ -100,6 +100,10 @@ namespace XiaoCao
         [XCLabel("方向键的转速")] 
         public float playerAimSpeed = 90f;
 
+        [XCLabel("方向键上下转速比例")]
+        [Tooltip("按键(方向键/摇杆)上下转向相对左右转速的比例, 0.6 表示上下转速减少 40%")]
+        public float playerPitchScale = 0.6f;
+
         [XCLabel("鼠标视角灵敏度")]
         public float mouseAimSensitivity = 3f;
 
@@ -978,10 +982,11 @@ namespace XiaoCao
                     -headYawLimit, headYawLimit);
             }
 
-            //上下输入控制炮口俯仰, 受 -30~30 限制
+            //上下输入控制炮口俯仰, 受 -30~30 限制; 转速再乘 playerPitchScale(默认减少 40%)
             if (Mathf.Abs(input.Y) > 0.1f)
             {
-                targetPitch = Mathf.Clamp(targetPitch + input.Y * playerAimSpeed * Time.fixedDeltaTime,
+                targetPitch = Mathf.Clamp(
+                    targetPitch + input.Y * playerPitchScale * playerAimSpeed * Time.fixedDeltaTime,
                     headPitchMin, headPitchMax);
             }
 

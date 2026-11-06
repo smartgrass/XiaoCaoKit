@@ -24,6 +24,7 @@ namespace FluxEditor
         private static readonly List<XCCommandTemplate> EmptyTemplates = new List<XCCommandTemplate>();
 
         private SerializedProperty commandNameProperty;
+        private SerializedProperty disableTagProperty;
         private SerializedProperty baseMsgProperty;
         private SerializedProperty otherMsgsProperty;
 
@@ -40,6 +41,7 @@ namespace FluxEditor
             base.OnEnable();
 
             commandNameProperty = serializedObject.FindProperty("commandName");
+            disableTagProperty = serializedObject.FindProperty("disableTag");
             baseMsgProperty = serializedObject.FindProperty("baseMsg");
             otherMsgsProperty = serializedObject.FindProperty("otherMsgs");
 
@@ -56,9 +58,24 @@ namespace FluxEditor
             DrawCommandPopup();
 
             XCCommandTemplateConfig.CommandGroup group = GetCurrentGroup();
+            DrawCommandDescription(group);
+            DrawDisableTag();
             DrawTemplateSelector(group);
             DrawBaseMsg();
             DrawOtherMsgs(group);
+        }
+
+        /// <summary>
+        /// 绘制玩家设置开关 tag: 留空表示指令恒生效, 填了则开关关闭时这条指令不执行
+        /// </summary>
+        private void DrawDisableTag()
+        {
+            if (disableTagProperty == null)
+            {
+                return;
+            }
+
+            EditorGUILayout.PropertyField(disableTagProperty);
         }
 
         /// <summary>
@@ -122,11 +139,24 @@ namespace FluxEditor
         }
 
         /// <summary>
+        /// 绘制当前指令在配置资产里写的说明, 一行灰底提示; 没填说明时不占位
+        /// </summary>
+        private void DrawCommandDescription(XCCommandTemplateConfig.CommandGroup group)
+        {
+            if (group == null || string.IsNullOrWhiteSpace(group.description))
+            {
+                return;
+            }
+
+            EditorGUILayout.HelpBox(group.description, MessageType.None);
+        }
+
+        /// <summary>
         /// 绘制当前指令的模版下拉框:首项显示模版数量,其余为模版名,选中后写入 BaseMsg
         /// </summary>
         private void DrawTemplateSelector(XCCommandTemplateConfig.CommandGroup group)
         {
-            List<XCCommandTemplate> templates = group == null ? EmptyTemplates : group.templates;
+            List<XCCommandTemplate> templates = group == null || group.templates == null ? EmptyTemplates : group.templates;
             string[] options = BuildTemplateOptions(templates);
 
             if (selectedTemplateIndex < 0 || selectedTemplateIndex >= options.Length)
@@ -176,7 +206,7 @@ namespace FluxEditor
 
             EditorGUILayout.PropertyField(otherMsgsProperty, true);
 
-            if (group == null || group.otherMsgPresets.Count == 0)
+            if (group == null || group.otherMsgPresets == null || group.otherMsgPresets.Count == 0)
             {
                 return;
             }

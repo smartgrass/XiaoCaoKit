@@ -11,27 +11,23 @@ using XiaoCao;
 /// </summary>
 public class BasicSettingPanel : SubPanel
 {
-    /// <summary>设置项模板行高: VerticalLayoutGroup 不控制子项高度, 直接用模板自身高度</summary>
+    /// <summary>
+    /// 设置项模板行高: VerticalLayoutGroup 不控制子项高度, 直接用模板自身高度;
+    /// 条目放不下时按可用高度等比压缩, 不再保底(保底会把最后一项挤出面板)
+    /// </summary>
     private const float DefaultItemHeight = 120f;
-
-    /// <summary>压缩下限: 开关内部 100x100 的图形刚好放得下</summary>
-    private const float MinItemHeight = 100f;
 
     Toggle toggle;
     Toggle toggle2;
     Toggle toggle3;
     Toggle btnTriggerToggle;
+    Toggle autoChaseToggle;
 
 
     public override void Init()
     {
         //Language
         AddLanguageDropDown();
-
-        toggle = AddToggle(LocalizeKey.LockCam, OnToggleLockCam);
-        toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
-        //按钮按下即触发: 关闭后恢复为抬手触发
-        btnTriggerToggle = AddToggle(LocalizeKey.BtnTriggerOnDown, OnToggleBtnTriggerOnDown);
 
         var slider = AddSlider(LocalizeKey.SwapCameraSpeed, OnSliderCameraSpeed, new Vector2(1f, 5f));
         slider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.SwapCameraSpeed, 2.5f));
@@ -42,6 +38,13 @@ public class BasicSettingPanel : SubPanel
         //相机距离: -1最近, 0默认, 1.5最远, 由 CameraController.TurnMode 映射到实际距离
         var camDistanceSlider = AddSlider(LocalizeKey.CameraDistance, OnSliderCamDistance, new Vector2(-1f, 1.2f));
         camDistanceSlider.SetValueWithoutNotify(ConfigMgr.Inst.LocalSetting.GetValue(LocalizeKey.CameraDistance, 0f));
+
+        toggle = AddToggle(LocalizeKey.LockCam, OnToggleLockCam);
+        toggle2 = AddToggle(LocalizeKey.AutoLockEnemy, OnToggleLockEnemy);
+        //按钮按下即触发: 关闭后恢复为抬手触发
+        btnTriggerToggle = AddToggle(LocalizeKey.BtnTriggerOnDown, OnToggleBtnTriggerOnDown);
+        //普攻追击: 关闭后普攻不再自动追向敌人
+        autoChaseToggle = AddToggle(LocalizeKey.AutoChase, OnToggleAutoChase);
 
         //toggle3 = AddToggle(LocalizeKey.MouseView, OnToggleMouseView); 
     }
@@ -68,36 +71,40 @@ public class BasicSettingPanel : SubPanel
         toggle.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
         toggle2.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
         btnTriggerToggle.SetIsOnWithoutNotify(GameSetting.BtnTriggerOnDown);
+        autoChaseToggle.SetIsOnWithoutNotify(GameSetting.AutoChase);
         //toggle3.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
         FitItemHeights();
     }
 
     /// <summary>
-    /// 条目数超过容器能容纳的行数时(如新增的"按钮按下即触发"), 按可用高度把每行压紧,
-    /// 否则最后一项会画到面板底部之外。行数够用时恢复默认行高
+    /// 统一条目行高。套了 ScrollView 时固定用模板行高, 条目超出靠滚动查看;
+    /// 没套 ScrollView 时才按可用高度压紧, 避免最后一项画到面板底部之外
     /// </summary>
     private void FitItemHeights()
     {
-        RectTransform container = (RectTransform)transform;
-        VerticalLayoutGroup layout = container.GetComponent<VerticalLayoutGroup>();
-        if (layout == null || container.childCount == 0)
+        int count = content.childCount;
+        if (count == 0)
         {
             return;
         }
 
-        int count = container.childCount;
-        float available = container.rect.height - layout.padding.top - layout.padding.bottom;
-        if (available <= 0f)
+        float target = DefaultItemHeight;
+        VerticalLayoutGroup layout = content.GetComponent<VerticalLayoutGroup>();
+        if (scroll == null && layout != null)
         {
-            //面板尚未完成布局, 等下次 Show 再算
-            return;
+            float available = content.rect.height - layout.padding.top - layout.padding.bottom;
+            if (available <= 0f)
+            {
+                //面板尚未完成布局, 等下次 Show 再算
+                return;
+            }
+
+            target = Mathf.Min((available - layout.spacing * (count - 1)) / count, DefaultItemHeight);
         }
 
-        float target = (available - layout.spacing * (count - 1)) / count;
-        target = Mathf.Clamp(target, MinItemHeight, DefaultItemHeight);
         for (int i = 0; i < count; i++)
         {
-            RectTransform item = (RectTransform)container.GetChild(i);
+            RectTransform item = (RectTransform)content.GetChild(i);
             item.sizeDelta = new Vector2(item.sizeDelta.x, target);
         }
     }
@@ -123,6 +130,14 @@ public class BasicSettingPanel : SubPanel
     private void OnToggleBtnTriggerOnDown(bool isOn)
     {
         GameSetting.SetBtnTriggerOnDown(isOn);
+    }
+
+    /// <summary>
+    /// 切换普攻追击: 关闭后普攻不再自动追向敌人(技能里挂了 disableTag 的指令会跳过)
+    /// </summary>
+    private void OnToggleAutoChase(bool isOn)
+    {
+        GameSetting.SetAutoChase(isOn);
     }
 
     private void AddLanguageDropDown()

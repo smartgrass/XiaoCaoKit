@@ -9,7 +9,7 @@ using XiaoCao;
 /// </summary>
 public class BreakRangeEnemyExce : MonoExecute
 {
-    [Tooltip("特效预制体")]
+    [Tooltip("特效预制体, 留空则不播放特效")]
     public GameObject effectPrefab;
 
     [Tooltip("特效存活时间(秒), 0 表示不自动回收")]
@@ -60,10 +60,16 @@ public class BreakRangeEnemyExce : MonoExecute
     }
 
     /// <summary>
-    /// 在指定位置播放特效, 按 effectLife 自动回收到对象池
+    /// 在指定位置播放特效, 按 effectLife 自动回收到对象池; 未配置特效预制体时跳过
     /// </summary>
     private void PlayEffect(Vector3 pos)
     {
+        //特效只是表现, 缺失时不能影响后面的范围伤害结算(且对象池不接受 null 作为 key)
+        if (effectPrefab == null)
+        {
+            return;
+        }
+
         AssetPool pool = PoolMgr.Inst.GetOrCreatPrefabPool(effectPrefab);
         GameObject effect = pool.Get();
         effect.transform.position = pos;

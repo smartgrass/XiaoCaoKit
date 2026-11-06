@@ -40,6 +40,11 @@ namespace FluxEditor
         public class CommandGroup
         {
             public string commandName;
+
+            /// <summary>这条指令的用途说明, 显示在 FCommandEvent 的 Inspector 上</summary>
+            [TextArea(1, 4)]
+            public string description;
+
             public List<XCCommandTemplate> templates = new List<XCCommandTemplate>();
 
             public List<XCCommandOtherMsgPreset> otherMsgPresets = new List<XCCommandOtherMsgPreset>();
@@ -57,6 +62,12 @@ namespace FluxEditor
                 int count = 0;
                 for (int i = 0; i < groups.Count; i++)
                 {
+                    //资产 YAML 解析异常时列表可能是 null, 这里不能直接 Count
+                    if (groups[i] == null || groups[i].templates == null)
+                    {
+                        continue;
+                    }
+
                     count += groups[i].templates.Count;
                 }
 

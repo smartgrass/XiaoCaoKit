@@ -228,6 +228,10 @@ namespace XiaoCao.UI
             }
         }
 
+        /// <summary>
+        /// 把技能放进技能栏: 优先填第一个空位, 没有空位再追加到末尾;
+        /// 已装备、未解锁或技能栏已满时不处理。
+        /// </summary>
         public static void EquipSkill(string skillId)
         {
             //判断是是否解锁
@@ -236,21 +240,39 @@ namespace XiaoCao.UI
                 return;
             }
 
-            for (int i = 0; i < PlayerSaveData.MaxSkillBarSetting; i++)
+            List<string> skillBar = PlayerSaveData.skillBarSetting;
+            if (skillBar.Contains(skillId))
             {
-                if (i >= PlayerSaveData.skillBarSetting.Count)
+                return;
+            }
+
+            //找第一个空位, 保持已装备技能的位置不变
+            int emptyIndex = -1;
+            for (int i = 0; i < skillBar.Count; i++)
+            {
+                if (string.IsNullOrEmpty(skillBar[i]))
                 {
-                    PlayerSaveData.skillBarSetting.Add(skillId);
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(PlayerSaveData.skillBarSetting[i]))
-                    {
-                        PlayerSaveData.skillBarSetting[i] = skillId;
-                        break;
-                    }
+                    emptyIndex = i;
+                    break;
                 }
             }
+
+            if (emptyIndex >= 0)
+            {
+                skillBar[emptyIndex] = skillId;
+            }
+            else if (skillBar.Count < PlayerSaveData.MaxSkillBarSetting)
+            {
+                skillBar.Add(skillId);
+            }
+            else
+            {
+                //技能栏已满, 不覆盖玩家已排好的键位
+                return;
+            }
+
+            //技能栏被改动过, 读档时不再被默认技能列表覆盖(否则新学会的技能重启就消失)
+            PlayerSaveData.saveSkillBar = true;
         }
 
         void RefreshAllSkillState()

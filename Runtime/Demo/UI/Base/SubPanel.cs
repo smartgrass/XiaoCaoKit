@@ -15,11 +15,19 @@ public abstract class SubPanel
 {
     public string subPanelName;
 
+    /// <summary>面板根节点: 外层套了 ScrollView 时是 ScrollRect 节点, 负责整体显隐</summary>
     public GameObject gameObject;
+
+    /// <summary>条目实际挂载的内容层: 套了 ScrollView 时是 Viewport 里的 Content, 否则与根节点相同</summary>
+    public RectTransform content;
+
+    /// <summary>面板外层的 ScrollRect, 没有套 ScrollView 时为空</summary>
+    public ScrollRect scroll;
 
     public UIPrefabs Prefabs;
 
-    public Transform transform => gameObject.transform;
+    /// <summary>绘制条目用的父节点: 有内容层就用内容层, 老面板(没套 ScrollView)直接用根节点</summary>
+    public Transform transform => content != null ? content : gameObject.transform;
 
     public Button TabBtn { get; set; }
 
@@ -44,7 +52,6 @@ public abstract class SubPanel
         TabBtn.Select();
         if (TabBtn.transform.parent.TryGetComponent<UIStateChange>(out UIStateChange stateChange))
         {
-            Debug.Log($"-- UIStateChange tab");
             stateChange.SetState(1);
         }
 
@@ -69,7 +76,7 @@ public abstract class SubPanel
 
     public TMP_Text AddTextText(string title, string showStr)
     {
-        GameObject instance = Object.Instantiate(Prefabs.textText, gameObject.transform);
+        GameObject instance = Object.Instantiate(Prefabs.textText, transform);
         TextMeshProUGUI showText = instance.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
         showText.text = showStr;
 
@@ -81,7 +88,7 @@ public abstract class SubPanel
 
     public Slider AddSlider(string title, UnityAction<float> onValueChange, Vector2 range, float initValue = 1)
     {
-        GameObject instance = Object.Instantiate(Prefabs.sliderText, gameObject.transform);
+        GameObject instance = Object.Instantiate(Prefabs.sliderText, transform);
         Slider slider = instance.transform.GetChild(1).GetComponent<Slider>();
 
         slider.maxValue = range.y;
@@ -98,7 +105,7 @@ public abstract class SubPanel
         bool needKey = true)
     {
         GameObject dropdownPrefab = Prefabs.dropDown;
-        GameObject instance = Object.Instantiate(dropdownPrefab, gameObject.transform);
+        GameObject instance = Object.Instantiate(dropdownPrefab, transform);
         TMP_Dropdown dropdown = instance.GetComponentInChildren<TMP_Dropdown>();
 
         if (needKey)
@@ -121,7 +128,7 @@ public abstract class SubPanel
     public Toggle AddToggle(string title, UnityAction<bool> onValueChange)
     {
         GameObject togglePrefab = Prefabs.toggle;
-        GameObject instance = Object.Instantiate(togglePrefab, gameObject.transform);
+        GameObject instance = Object.Instantiate(togglePrefab, transform);
         Toggle toggle = instance.GetComponentInChildren<Toggle>();
 
         TextMeshProUGUI textMesh = instance.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
@@ -134,7 +141,7 @@ public abstract class SubPanel
     public void AddButton(string title, UnityAction onClick, string tile2 = null, UnityAction onClick2 = null,
         string title3 = null, UnityAction oncClick3 = null)
     {
-        GameObject line = Object.Instantiate(Prefabs.btnLine, gameObject.transform);
+        GameObject line = Object.Instantiate(Prefabs.btnLine, transform);
         //根据对应顺序赋值, 如果为null则隐藏btnGo
         string[] titles = { title, tile2, title3 };
         UnityAction[] actions = { onClick, onClick2, oncClick3 };

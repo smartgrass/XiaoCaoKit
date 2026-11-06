@@ -193,6 +193,8 @@ namespace XiaoCao
             switch (item.type)
             {
                 case ItemType.Consumable:
+                    //消耗品(矿石、祝福碎片等)可堆叠, 发放时直接进背包再飘字
+                    PlayerSaveData.LocalSavaData.inventory.AddItem(item);
                     GameEvent.Send<Item>(EGameEvent.OnGetItem.ToInt(), item);
                     break;
                 case ItemType.ExtraItem:
