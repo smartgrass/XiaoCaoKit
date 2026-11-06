@@ -17,8 +17,8 @@ namespace XiaoCao.UI
     /// 引导2(技能1 凌空连击): 只用发光提示, 不强制点击, 玩家点开该技能详情即结束;
     /// 引导2需先通关第2关且已完成引导1。
     /// 引导3(任务点): 完成引导2并通关第3关后, 在主城用地面导航线指向任务点, 并弹一次提示,
-    /// 玩家到达任务点即完成(标记为 homeTaskDone);
-    /// 引导3附加项(可跳过): 领取任务奖励后背包出现未装备的圣器时, 再引导打开圣器界面点「一键装备」,
+    /// 玩家点开任务界面、看完再关闭后才算完成(标记为 homeTaskDone); 走到任务点却没打开界面时会隔一会儿再提醒一次;
+    /// 引导3附加项(可跳过): 引导3完成后(任务界面已关闭), 背包存在未装备的圣器时, 才引导打开圣器界面点「一键装备」,
     /// 玩家不跟随也不影响引导3的完成状态。
     /// </summary>
     [DisallowMultipleComponent]
@@ -42,6 +42,9 @@ namespace XiaoCao.UI
 
         //引导3的开始提示停留时长
         private const float TaskPointToastTime = 3f;
+
+        //引导3: 走到任务点却还没打开任务界面时的重复提醒间隔
+        private const float TaskPointRetryInterval = 8f;
 
         //圣器是角色界面的子页签, 名字取自 PlayerTabPanel.groups
         public const string RelicSubPanelName = "RelicView";
@@ -140,6 +143,12 @@ namespace XiaoCao.UI
         private bool routeShownOnce;
         private bool taskPointArrived;
         private bool taskTipShown;
+
+        //引导3: 玩家已点开过任务界面(界面关闭后才算走完引导3, 之后才开始提示装备圣器)
+        private bool taskPanelOpened;
+
+        //引导3: 重复提醒的计时器
+        private float taskTipTimer;
 
         //引导3附加项: 与主体引导链互相独立, 玩家不跟随也不影响引导3的完成状态
         private bool _relicHintActive;
@@ -493,6 +502,8 @@ namespace XiaoCao.UI
             routeShownOnce = false;
             taskPointArrived = false;
             taskTipShown = false;
+            taskPanelOpened = false;
+            taskTipTimer = 0f;
             Debug.Log($"[Guide] prepare {(next.isTaskPoint ? "taskPoint" : "skill=" + _targetSkillId)} step={_step}");
         }
 
@@ -889,7 +900,8 @@ namespace XiaoCao.UI
         #region 引导3: 任务点
 
         /// <summary>
-        /// 引导3: 用地面导航线指向主城任务点, 并弹一次提示; 玩家走到任务点即完成。
+        /// 引导3: 用地面导航线指向主城任务点, 并弹一次提示。
+        /// 玩家点开任务界面、看完再关闭后才算完成(完成前不会提示装备圣器)。
         /// 不显示遮罩, 也不拦截点击。
         /// </summary>
         private void TickTaskPoint()
@@ -899,11 +911,19 @@ namespace XiaoCao.UI
                 return;
             }
 
-            //任务界面打开: 说明已经走到任务点, 直接算到达
-            var taskPanel = UIMgr.Inst.GetPanel(UIPanelType.TaskPanel);
+            PanelBase taskPanel = UIMgr.Inst.GetPanel(UIPanelType.TaskPanel);
             if (taskPanel != null && taskPanel.IsShowing)
             {
+                //玩家已点开任务界面: 说明到了任务点, 先收掉导航线和提示, 等他看完关闭
+                taskPanelOpened = true;
                 GuideNavRoute.Hide();
+                SetGuideVisible(false);
+                return;
+            }
+
+            //任务界面开过又关掉: 引导3完成, 之后才开始提示装备圣器
+            if (taskPanelOpened)
+            {
                 FinishGuide();
                 return;
             }
@@ -915,57 +935,84 @@ namespace XiaoCao.UI
                 return;
             }
 
-            //开始引导时提示一次(导航线是持续的, 不重复弹)
-            if (!taskTipShown)
+            if (!EnsureTaskPointRoute())
             {
-                taskTipShown = true;
-                UIMgr.PopToastKey(LocalizeKey.GuideGoTaskPoint, TaskPointToastTime);
-            }
-
-            EnsureTaskPointRoute();
-
-            //走到任务点就标记引导3完成, 之后装备圣器属于可跳过的附加项
-            if (taskPointArrived)
-            {
-                GuideNavRoute.Hide();
+                //主城没有任务点(或没配导航线): 没法继续引导, 直接按完成收尾
                 FinishGuide();
+                return;
             }
+
+            TickTaskPointTip();
         }
 
         /// <summary>
-        /// 确保玩家脚下到任务点的导航线存在。
-        /// 导航线在玩家走到任务点附近时会自行销毁, 之后不再重铺。
+        /// 确保玩家脚下到任务点的导航线存在。返回 false 表示主城没有任务点(或未配置导航线预制体), 引导3无法继续。
+        /// 导航线在玩家走到任务点附近时会自行销毁, 之后不再重铺(只等玩家打开任务界面)。
         /// </summary>
-        private void EnsureTaskPointRoute()
+        private bool EnsureTaskPointRoute()
         {
             if (taskPointArrived)
             {
-                return;
+                return true;
             }
 
             if (GuideNavRoute.IsShowing)
             {
                 routeShownOnce = true;
-                return;
+                return true;
             }
 
             //线是自己消失的 = 玩家已经走到任务点附近
             if (routeShownOnce)
             {
                 taskPointArrived = true;
-                return;
+                taskTipTimer = TaskPointRetryInterval;
+                return true;
             }
 
             TaskTriggerBase taskPoint = FindTaskPoint();
             if (taskPoint == null || navRoutePrefab == null)
             {
                 Debuger.LogWarning("[Guide] 主城没有找到任务点或未配置导航线预制体, 引导3无法导航", this);
-                taskPointArrived = true;
-                return;
+                return false;
             }
 
             GuideNavRoute.Show(taskPoint.transform, navRoutePrefab);
             routeShownOnce = true;
+            return true;
+        }
+
+        /// <summary>
+        /// 引导3的提示: 开始时弹一次「去任务点查看任务奖励」;
+        /// 走到任务点却还没打开任务界面时, 每隔一点时间再提醒一次, 避免引导看起来没动静
+        /// </summary>
+        private void TickTaskPointTip()
+        {
+            if (!taskTipShown)
+            {
+                taskTipShown = true;
+                taskTipTimer = TaskPointRetryInterval;
+                PopTaskPointToast();
+                return;
+            }
+
+            if (!taskPointArrived)
+            {
+                return;
+            }
+
+            taskTipTimer -= Time.unscaledDeltaTime;
+            if (taskTipTimer > 0f)
+            {
+                return;
+            }
+            taskTipTimer = TaskPointRetryInterval;
+            PopTaskPointToast();
+        }
+
+        private static void PopTaskPointToast()
+        {
+            UIMgr.PopToastKey(LocalizeKey.GuideGoTaskPoint, TaskPointToastTime);
         }
 
         /// <summary>
@@ -1709,6 +1756,8 @@ namespace XiaoCao.UI
             routeShownOnce = false;
             taskPointArrived = false;
             taskTipShown = false;
+            taskPanelOpened = false;
+            taskTipTimer = 0f;
             _relicHintActive = false;
             _relicStep = RelicStepWait;
             GuideNavRoute.Hide();

@@ -639,7 +639,10 @@ public static class MathTool
     public static void RotaToPos(this Transform transform, Vector3 wordlPos, float lerp = 1)
     {
         wordlPos.y = transform.position.y; //保持同一高度
-        Quaternion rotation = Quaternion.LookRotation(wordlPos - transform.position);
+        Vector3 dir = wordlPos - transform.position;
+        //两者重合时 LookRotation 会退化成世界正前方, 直接跳过, 避免朝向被意外重置
+        if (dir.sqrMagnitude < 0.0001f) return;
+        Quaternion rotation = Quaternion.LookRotation(dir);
         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, lerp);
     }
 

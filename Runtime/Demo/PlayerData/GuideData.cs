@@ -20,7 +20,7 @@ namespace XiaoCao
 
         public bool homeSkill2Done;
 
-        //引导3(主城任务点): 0=导航+提示玩家去任务点查看任务奖励, 99=已完成(到达任务点即完成)
+        //引导3(主城任务点): 0=导航+提示玩家去任务点查看任务奖励, 99=已完成(点开并关闭任务界面后完成)
         public int homeTaskStep;
 
         public bool homeTaskDone;

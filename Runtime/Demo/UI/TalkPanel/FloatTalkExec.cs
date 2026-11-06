@@ -9,8 +9,26 @@ using XiaoCao;
 /// </summary>
 public class FloatTalkExec : GameStartMonoExec
 {
+    /// <summary>气泡说话人的来源</summary>
+    public enum SpeakerType
+    {
+        /// <summary>用 roleName 里填的角色标识</summary>
+        None = 0,
+
+        /// <summary>当前主控角色(取玩家身上的模型 key, 含皮肤选择)</summary>
+        Self = 1,
+
+        /// <summary>支援角色(队友), 与召唤队友 / 技能图标用的是同一个角色</summary>
+        Friend = 2,
+    }
+
+    [Label("说话人")]
+    [Tooltip("None=用下面的角色标识; Self=当前主控角色; Friend=支援角色(队友)")]
+    public SpeakerType speakerType = SpeakerType.None;
+
     [Label("角色")]
     [Tooltip("角色标识, 只用来取头像: 场景节点名(npc01) / 角色模型名(Role_1) / ShowAct 里的标记名")]
+    [ShowIf(nameof(IsCustomRole))]
     public string roleName = "Role_1";
 
     [Label("对话Key")]
@@ -73,7 +91,27 @@ public class FloatTalkExec : GameStartMonoExec
 
     private void ShowTalk()
     {
-        FloatTalkPanel.ShowTalk(roleName, talkKey, duration, fadeIn, fadeOut);
+        FloatTalkPanel.ShowTalk(GetSpeakerRoleName(), talkKey, duration, fadeIn, fadeOut);
+    }
+
+    /// <summary>说话人用不用手填的角色标识(只有 None 才需要填)</summary>
+    private bool IsCustomRole => speakerType == SpeakerType.None;
+
+    /// <summary>
+    /// 气泡实际使用的说话人标识, 只用于截头像:
+    /// Self 取玩家当前模型 key(与结算面板展示同源), Friend 取支援角色 key, None 用手填的角色标识
+    /// </summary>
+    private string GetSpeakerRoleName()
+    {
+        switch (speakerType)
+        {
+            case SpeakerType.Self:
+                return BattleData.Current.curBodyName;
+            case SpeakerType.Friend:
+                return BattleExtraItemHelper.GetSupportRoleKey();
+            default:
+                return roleName;
+        }
     }
 
     private void CancelDelay()

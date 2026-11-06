@@ -17,6 +17,9 @@ namespace XiaoCao
         /// <summary>重写索敌范围(strMsg: SearchDistance_x), 0 表示沿用默认的 numMsg + 5</summary>
         public float searchDistanceOverride;
 
+        /// <summary>终点与起点几乎重合时朝向会失效, 贴脸攻击保留的最小正向位移</summary>
+        private const float MinValidDistance = 0.1f;
+
         private GameObject createObject;
 
         private bool showAtkWarming;
@@ -161,22 +164,30 @@ namespace XiaoCao
 
 
             //offset / minDistance 都是"相对敌人"的修正:
-            //搜不到目标时位移只剩 MoveEvent 原本的长度(普攻第一段只有 0.1 米),
-            //再减 offset 会把终点推到起点背后, 表现为第一下方向反向, 所以这里只在有敌人时应用
+            //沿"起点->敌人"的水平方向算出停靠距离, 而不是直接在敌人坐标上叠加位移。
+            //直接叠加时, 玩家与敌人距离小于 |offset| 会让终点落到起点背后,
+            //RotaToPos 随即把角色转 180 度, 攻击判定体和特效也跟着反向。
             if (hasEnemy)
             {
-                if (offset != 0)
+                Vector3 toEnemy = (worldEndVec - worldStartVec).SetY(0);
+                float enemyDistance = toEnemy.magnitude;
+                //贴脸重合时方向不可用, 退化为角色当前朝向, 避免 RotaToPos 收到零向量
+                Vector3 dirToEnemy = enemyDistance > MinValidDistance
+                    ? toEnemy / enemyDistance
+                    : role.transform.forward.SetY(0).normalized;
+
+                //停在敌人身前 offset 米(offset 为负表示朝敌人方向靠近)
+                float stopDistance = enemyDistance + offset;
+                if (minDistance != 0 && stopDistance < minDistance)
                 {
-                    worldEndVec += (worldEndVec - worldStartVec).normalized * offset;
+                    stopDistance = minDistance;
                 }
 
-                if (minDistance != 0)
-                {
-                    if (Vector3.Distance(worldStartVec, worldEndVec) < minDistance)
-                    {
-                        worldEndVec = worldStartVec + (worldEndVec - worldStartVec).normalized * minDistance;
-                    }
-                }
+                //贴脸时同样要保留正向位移, 终点不能落到起点或背后
+                stopDistance = Mathf.Max(stopDistance, MinValidDistance);
+
+                worldEndVec = worldStartVec + dirToEnemy * stopDistance;
+                worldEndVec.y = findRole.transform.position.y;
             }
 
             if (isFixedDir)
