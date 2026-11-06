@@ -20,10 +20,22 @@ namespace XiaoCao
 
         public bool homeSkill2Done;
 
+        //引导3(主城任务点): 0=导航+提示玩家去任务点查看任务奖励, 99=已完成(到达任务点即完成)
+        public int homeTaskStep;
+
+        public bool homeTaskDone;
+
+        //引导3附加项(圣器一键装备, 可跳过): 0=等背包出现未装备圣器, 1=等打开圣器界面, 2=等点一键装备, 99=已完成
+        public int homeRelicStep;
+
+        public bool homeRelicDone;
+
         public void CheckNull()
         {
             homeSkillStep = Mathf.Clamp(homeSkillStep, 0, 99);
             homeSkill2Step = Mathf.Clamp(homeSkill2Step, 0, 99);
+            homeTaskStep = Mathf.Clamp(homeTaskStep, 0, 99);
+            homeRelicStep = Mathf.Clamp(homeRelicStep, 0, 99);
         }
     }
 }

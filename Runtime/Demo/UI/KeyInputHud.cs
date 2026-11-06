@@ -5,6 +5,7 @@ using System.Linq;
 using TEngine;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 using UnityEngine.UI;
 using XiaoCao.UI;
 using Input = UnityEngine.Input;
@@ -49,6 +50,7 @@ namespace XiaoCao
         #region Cache
         private PlayerAtkTimer _atkTimer;
         public PlayerData0 _playerData;
+        private bool _isHoldListenerBound;
         #endregion
 
         #region ExtraSkill Runtime
@@ -120,9 +122,10 @@ namespace XiaoCao
                 rollBtn.index = (int)InputKey.LeftShift;
             }
 
-            norAtkBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.NorAck] = true; });
+            //普攻/跳跃的触发时机由设置决定(按下或抬起), 两种时机共用同一回调
+            BindBtnTrigger(norAtkBtn, OnNorAtkBtnTrigger);
             AddHoldListener(norAtkBtn);
-            jumpBtn.onClick.AddListener(() => { PlayerInput.inputs[(int)InputKey.Space] = true; });
+            BindBtnTrigger(jumpBtn, OnJumpBtnTrigger);
 
             SetupExtraSkillButton();
             RefreshExtraSkillBtnState(true);
@@ -133,11 +136,11 @@ namespace XiaoCao
         }
 
         /// <summary>
-        /// 给按钮补"按住"事件: Button.onClick 只在抬起时触发, 炮台长按连发需要按下/抬起两个时机
+        /// 给按钮补"按住"事件: Button.onClick 只在抬起时触发, 长按连续普攻/炮台长按连发需要按住状态
         /// </summary>
         private void AddHoldListener(Button btn)
         {
-            if (btn == null)
+            if (btn == null || _isHoldListenerBound)
             {
                 return;
             }
@@ -151,6 +154,7 @@ namespace XiaoCao
             AddHoldEntry(trigger, EventTriggerType.PointerDown, true);
             AddHoldEntry(trigger, EventTriggerType.PointerUp, false);
             AddHoldEntry(trigger, EventTriggerType.PointerExit, false);
+            _isHoldListenerBound = true;
         }
 
         private void AddHoldEntry(EventTrigger trigger, EventTriggerType eventType, bool hold)
@@ -167,10 +171,43 @@ namespace XiaoCao
             trigger.triggers.Add(entry);
         }
 
+        /// <summary>
+        /// 普攻按钮: 按下触发模式下按下即写入一次普攻输入
+        /// </summary>
+        private void OnNorAtkBtnTrigger()
+        {
+            PlayerInput.inputs[(int)InputKey.NorAck] = true;
+        }
+
+        /// <summary>
+        /// 跳跃按钮: 按下触发模式下按下即写入一次跳跃输入
+        /// </summary>
+        private void OnJumpBtnTrigger()
+        {
+            PlayerInput.inputs[(int)InputKey.Space] = true;
+        }
+
+        /// <summary>
+        /// 给按钮挂上触发时机切换组件, 回调在同一实例上只注册一次(OnGameStart 可能被多次触发)
+        /// </summary>
+        private static void BindBtnTrigger(Button btn, UnityAction action)
+        {
+            ButtonDownTrigger trigger = btn.GetComponent<ButtonDownTrigger>();
+            if (trigger == null)
+            {
+                trigger = btn.gameObject.AddComponent<ButtonDownTrigger>();
+            }
+
+            trigger.EnsureEventsInitialized();
+            trigger.onTrigger.RemoveListener(action);
+            trigger.onTrigger.AddListener(action);
+        }
+
         public override void OnDestroy()
         {
             base.OnDestroy();
             UICanvasMgr.Inst.EventSystem.RemoveEventListener(UIEventNames.SkillChange, CheckBarImg);
+            ClearNorAckHold();
             ClearExtraSkillSkipClick();
             RemoveExtraSkillButtonListener();
         }
@@ -180,6 +217,7 @@ namespace XiaoCao
             CleanupExtraSkillSkipClick();
             if (GameAllData.CommonData.gameState != GameState.Running)
             {
+                ClearNorAckHold();
                 ClearExtraSkillSkipClick();
                 ResetExtraSkillKeyState(true);
                 return;
@@ -196,10 +234,28 @@ namespace XiaoCao
 
             if (!BattleData.Current.CanPlayerControl || BattleData.Current.UIEnter)
             {
+                //界面接管输入时不保留按住状态, 否则关界面后会继续自动普攻
+                ClearNorAckHold();
                 return;
             }
 
             CheckUIUpdate();
+        }
+
+        /// <summary>
+        /// 清掉普攻按住状态: 暂停/进入界面/离开战斗时兜底, 避免按住标记残留导致自动连续攻击
+        /// </summary>
+        private void ClearNorAckHold()
+        {
+            if (GameDataCommon.LocalPlayer == null || GameDataCommon.LocalPlayer.playerData == null)
+            {
+                return;
+            }
+
+            PlayerData0 playerData = GameDataCommon.LocalPlayer.playerData;
+            playerData.inputData.norAckHold = false;
+            //连击缓存(平a缓存)也一起清掉, 否则重新回到战斗会立刻多打一段
+            playerData.norAckCache = false;
         }
 
 

@@ -63,7 +63,9 @@ namespace XiaoCao
                 Data_P.norAckCache = false;
             }
 
-            if (InputData.inputs[(int)InputKey.NorAck] || Data_P.norAckCache)
+            //普攻: 按下瞬间(单次输入)或按住(norAckHold)都持续尝试,
+            //按住的每一帧都会走一遍 TryNorAck, 冷却结束就自动接下一段, 实现长按连续普攻
+            if (InputData.inputs[(int)InputKey.NorAck] || Data_P.norAckCache || InputData.norAckHold)
             {
                 TryNorAck();
             }

@@ -334,6 +334,19 @@ namespace XiaoCao
             return value > 0;
         }
 
+        /// <summary>
+        /// 读取 bool 设置, 未保存过时返回 defaultValue(用于"默认开启"的开关)
+        /// </summary>
+        public bool GetBoolValue(string key, bool defaultValue)
+        {
+            if (floatDic.TryGetValue(key, out float value))
+            {
+                return value > 0;
+            }
+
+            return defaultValue;
+        }
+
         public void SetBoolValue(string key, bool isOn)
         {
             SetValue(key, isOn ? 1 : 0);

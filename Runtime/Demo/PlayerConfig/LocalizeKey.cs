@@ -18,6 +18,7 @@ namespace XiaoCao
         public static string NoEnough = "NoEnough";
         public static string AutoLockEnemy = "AutoLockEnemy";
         public static string LockCam = "LockCam"; //锁定视角
+        public static string BtnTriggerOnDown = "BtnTriggerOnDown"; //技能/普攻/翻滚/跳跃按钮按下即触发
         public static string SkinList = "SkinList"; //皮肤
         public static string TestEnmeyList = "TestEnmeyList"; //测试敌人
         public static string MouseView = "MouseView"; //视角跟随鼠标
@@ -79,6 +80,11 @@ namespace XiaoCao
         public static string GuideLearnSkillOpen = "Guide/LearnSkillOpen"; // 打开角色界面学习新技能(引导2)
         public static string GuideLearnSkillClick = "Guide/LearnSkillClick"; // 点击技能学习(引导2)
         public static string GuideSkillLearned = "Guide/SkillLearned"; // 技能已学会
+        public static string GuideGoTaskPoint = "Guide/GoTaskPoint"; // 去任务点查看任务奖励(引导3)
+        public static string GuideEquipRelic = "Guide/EquipRelic"; // 获得圣器后去装备(引导3附加项)
+        public static string GuideEquipRelicOpen = "Guide/EquipRelicOpen"; // 打开角色界面装备圣器
+        public static string GuideClickRelicTab = "Guide/ClickRelicTab"; // 点击「{0}」页签
+        public static string GuideClickQuickEquip = "Guide/ClickQuickEquip"; // 点击「{0}」
 
 
         public static string UnlockAllLevel = "UnlockAllLevel";

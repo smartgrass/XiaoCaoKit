@@ -18,12 +18,55 @@ namespace XiaoCao
         public int num; // 数量/等级
         public EQuality quality;
 
-        public int InstanceId
+        //不可堆叠物品(圣器)的实例 id: 同名同等级的多件是不同物品, 靠它区分; 0 表示旧存档尚未分配
+        public int instanceId;
+
+        //进程内自增的实例 id 分配器
+        private static int _nextInstanceId = 1;
+
+        /// <summary>
+        /// 物品实例的唯一 id, 未分配时自动分配。
+        /// </summary>
+        public int InstanceId => EnsureInstanceId();
+
+        /// <summary>
+        /// 确保当前物品已分配实例 id, 并让分配器跳过存档里已有的 id; 兼容没有该字段的旧存档。
+        /// </summary>
+        public int EnsureInstanceId()
         {
-            get => num;
-            set => num = value;
+            if (instanceId > 0)
+            {
+                _nextInstanceId = Mathf.Max(_nextInstanceId, instanceId + 1);
+                return instanceId;
+            }
+
+            instanceId = _nextInstanceId++;
+            return instanceId;
         }
-        
+
+        /// <summary>
+        /// 是否为同一件物品: 有实例 id 时按 id 比较, 否则退回引用比较。
+        /// </summary>
+        public bool IsSameInstance(Item other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return ReferenceEquals(this, other) || (instanceId > 0 && instanceId == other.instanceId);
+        }
+
+        /// <summary>
+        /// 复制一份物品数据并保留实例 id: 在背包与装备位之间搬运时不产生新身份。
+        /// </summary>
+        public Item Clone()
+        {
+            Item copy = new Item(type, typeId, num, quality);
+            copy.instanceId = InstanceId;
+            return copy;
+        }
+
         //真正的存储的id
         public string ItemKey
         {
@@ -33,7 +76,8 @@ namespace XiaoCao
                 {
                     return type.ToString();
                 }
-                //TODO 装备不可堆叠+身份识别问题
+
+                //圣器等不可堆叠物品的键只到 typeId, 多件同名同等级物品的身份由 InstanceId 区分
                 return $"{typeId}";
             }
         }
@@ -44,6 +88,8 @@ namespace XiaoCao
             type = itemType;
             num = numInfo;
             quality = itemQuality;
+            //每件物品创建时即分配实例 id, 同名圣器不会互相顶替
+            instanceId = _nextInstanceId++;
         }
 
 
@@ -125,7 +171,7 @@ namespace XiaoCao
                 if (!item.type.IsStackable())
                 {
                     //圣器, Buff 不合并
-                    result.Add(new Item(item.type, item.typeId, item.num, item.quality));
+                    result.Add(item.Clone());
                     continue;
                 }
 
@@ -135,7 +181,7 @@ namespace XiaoCao
                 }
                 else
                 {
-                    Item newItem = new Item(item.type, item.typeId, item.num, item.quality);
+                    Item newItem = item.Clone();
                     combineDic.Add(item.ItemKey, newItem);
                     result.Add(newItem);
                 }

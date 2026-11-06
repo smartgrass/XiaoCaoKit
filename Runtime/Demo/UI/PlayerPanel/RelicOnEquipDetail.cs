@@ -157,7 +157,9 @@ namespace XiaoCao
 
             playerSaveData.inventory.items ??= new List<Item>();
             playerSaveData.inventory.equippedHolyRelics ??= new List<Item>();
-            if (!playerSaveData.inventory.equippedHolyRelics.Remove(item))
+            //按实例移除, 同名同等级的其它圣器不会被一起卸载
+            if (playerSaveData.inventory.equippedHolyRelics.RemoveAll(
+                    equippedItem => equippedItem != null && equippedItem.IsSameInstance(item)) == 0)
             {
                 return;
             }

@@ -341,7 +341,8 @@ namespace XiaoCao
 
         /// <summary>
         /// 普攻("按住"而非"按下")状态: PC 为鼠标左键/J, 移动端为普攻按钮持续按压;
-        /// 与 <see cref="inputs"/> 的按下瞬间语义不同, 不参与 ResetKey, 目前供炮台长按连发使用
+        /// 与 <see cref="inputs"/> 的按下瞬间语义不同, 不参与 ResetKey。
+        /// 由 <see cref="PlayerControl"/> 持续尝试普攻(长按自动连续普攻), 同时供炮台长按连发使用
         /// </summary>
         public bool norAckHold;
 

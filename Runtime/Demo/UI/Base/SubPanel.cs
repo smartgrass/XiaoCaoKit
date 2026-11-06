@@ -23,6 +23,9 @@ public abstract class SubPanel
 
     public Button TabBtn { get; set; }
 
+    //页签按钮上的红点节点, 未配置则为空
+    public GameObject TabRedDot { get; set; }
+
     //public void ShowOrHide()
     //{
     //    if (gameObject.activeSelf)

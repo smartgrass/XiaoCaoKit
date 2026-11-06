@@ -11,11 +11,15 @@ using XiaoCaoKit.Runtime.Demo.Item;
 namespace XiaoCao.UI
 {
     /// <summary>
-    /// 主城新手引导: 按顺序引导玩家学会撞击(技能2)、凌空连击(技能1)。
+    /// 主城新手引导: 按顺序引导玩家学会撞击(技能2)、凌空连击(技能1), 最后引导去任务点查看任务奖励。
     /// 引导1(技能2 撞击): 遮罩 + 高亮 + 点击代理逐步教学, 升级后自动收起详情页并引导点返回,
     /// 玩家关闭角色界面后用 PopToast 提示学习完成并立即结束引导(无需再点按钮);
     /// 引导2(技能1 凌空连击): 只用发光提示, 不强制点击, 玩家点开该技能详情即结束;
     /// 引导2需先通关第2关且已完成引导1。
+    /// 引导3(任务点): 完成引导2并通关第3关后, 在主城用地面导航线指向任务点, 并弹一次提示,
+    /// 玩家到达任务点即完成(标记为 homeTaskDone);
+    /// 引导3附加项(可跳过): 领取任务奖励后背包出现未装备的圣器时, 再引导打开圣器界面点「一键装备」,
+    /// 玩家不跟随也不影响引导3的完成状态。
     /// </summary>
     [DisallowMultipleComponent]
     public class HomeGuideController : MonoBehaviour
@@ -31,6 +35,24 @@ namespace XiaoCao.UI
         //引导2触发条件: 通关第2关(章节0, 序号2)
         private const int Guide2Chapter = 0;
         private const int Guide2LevelIndex = 2;
+
+        //引导3触发条件: 通关第3关(章节0, 序号3)
+        private const int Guide3Chapter = 0;
+        private const int Guide3LevelIndex = 3;
+
+        //引导3的开始提示停留时长
+        private const float TaskPointToastTime = 3f;
+
+        //圣器是角色界面的子页签, 名字取自 PlayerTabPanel.groups
+        public const string RelicSubPanelName = "RelicView";
+
+        //引导3附加项步骤
+        private const int RelicStepWait = 0;
+        private const int RelicStepOpen = 1;
+        private const int RelicStepEquip = 2;
+
+        //附加项的开始提示停留时长
+        private const float RelicToastTime = 3f;
 
         //技能子面板在 PlayerTabPanel.groups 里的名字
         public const string SkillSubPanelName = "Skill";
@@ -68,6 +90,9 @@ namespace XiaoCao.UI
 
         //当前跑的是引导2(发光提示流程, 不用遮罩)
         private bool IsGuide2Active => _targetSkillId == Guide2SkillId;
+
+        //当前跑的是引导3(任务点导航流程)
+        private bool IsTaskPointActive => _task != null && _task.isTaskPoint;
 
         [Header("引导节点(留空按名称自动查找)")]
         public RectTransform highlight;
@@ -110,6 +135,19 @@ namespace XiaoCao.UI
         private bool navSaved;
         private bool prevNavigationEvents;
         private string lastTip;
+
+        //引导3: 已铺过导航线(用来判断"线消失=玩家已到达"), 以及开始提示是否已弹过
+        private bool routeShownOnce;
+        private bool taskPointArrived;
+        private bool taskTipShown;
+
+        //引导3附加项: 与主体引导链互相独立, 玩家不跟随也不影响引导3的完成状态
+        private bool _relicHintActive;
+        private int _relicStep;
+
+        //圣器子界面缓存(每帧高亮时不用反复 GetComponentInChildren)
+        private RelicView _relicView;
+        private GameObject _relicViewGo;
 
         #region 生命周期
 
@@ -179,12 +217,27 @@ namespace XiaoCao.UI
 
         private void Update()
         {
-            if (_guide == null || _step == StepDone)
+            if (_guide == null || GameAllData.playerSaveData == null)
             {
                 return;
             }
-            if (GameAllData.playerSaveData == null)
+
+            //引导3附加项: 主体引导全部做完后也能单独跑
+            if (_relicHintActive)
             {
+                TickRelicHint();
+                return;
+            }
+
+            if (_step == StepDone)
+            {
+                return;
+            }
+
+            //引导3: 只做导航和提示, 不走技能教学流程
+            if (IsTaskPointActive)
+            {
+                TickTaskPoint();
                 return;
             }
 
@@ -231,6 +284,8 @@ namespace XiaoCao.UI
         private class GuideTask
         {
             public string skillId;
+            //true 表示这条引导不是学技能, 而是"去主城任务点查看任务奖励"
+            public bool isTaskPoint;
             public Func<int> getStep;
             public Action<int> setStep;
             public Func<bool> getDone;
@@ -238,7 +293,7 @@ namespace XiaoCao.UI
         }
 
         /// <summary>
-        /// 引导顺序: 先技能2(撞击), 再技能1(凌空连击)
+        /// 引导顺序: 先技能2(撞击), 再技能1(凌空连击), 最后去任务点查看任务奖励
         /// </summary>
         private static List<GuideTask> BuildTasks(GuideData guide)
         {
@@ -260,6 +315,14 @@ namespace XiaoCao.UI
                     getDone = () => guide.homeSkill2Done,
                     setDone = v => guide.homeSkill2Done = v,
                 },
+                new GuideTask
+                {
+                    isTaskPoint = true,
+                    getStep = () => guide.homeTaskStep,
+                    setStep = v => guide.homeTaskStep = v,
+                    getDone = () => guide.homeTaskDone,
+                    setDone = v => guide.homeTaskDone = v,
+                },
             };
         }
 
@@ -268,6 +331,10 @@ namespace XiaoCao.UI
         /// </summary>
         private static bool IsTaskUnlocked(GuideTask task)
         {
+            if (task.isTaskPoint)
+            {
+                return IsGuide3Unlocked();
+            }
             if (task.skillId == Guide2SkillId)
             {
                 return IsGuide2Unlocked();
@@ -287,6 +354,20 @@ namespace XiaoCao.UI
             }
 
             return data.levelPassData.GetPassState(Guide2Chapter, Guide2LevelIndex) == LevelPassState.Pass;
+        }
+
+        /// <summary>
+        /// 引导3: 通关第3关后才引导玩家去任务点查看任务奖励(引导2是否完成由引导链顺序保证)
+        /// </summary>
+        private static bool IsGuide3Unlocked()
+        {
+            PlayerSaveData data = GameAllData.playerSaveData;
+            if (data == null || data.levelPassData == null)
+            {
+                return false;
+            }
+
+            return data.levelPassData.GetPassState(Guide3Chapter, Guide3LevelIndex) == LevelPassState.Pass;
         }
 
         #endregion
@@ -373,7 +454,7 @@ namespace XiaoCao.UI
                     continue;
                 }
 
-                if (PlayerHelper.GetSkillLevel(task.skillId) > 0)
+                if (!task.isTaskPoint && PlayerHelper.GetSkillLevel(task.skillId) > 0)
                 {
                     task.setDone(true);
                     task.setStep(StepDone);
@@ -391,20 +472,28 @@ namespace XiaoCao.UI
                 break;
             }
 
-            //全部完成: 不再打扰
+            //全部完成: 只剩可跳过的圣器附加项, 它跑完就彻底不再打扰
             if (next == null)
             {
                 SetGuideVisible(false);
+                if (TryStartRelicHint())
+                {
+                    return;
+                }
                 gameObject.SetActive(false);
                 return;
             }
 
             _task = next;
-            _targetSkillId = next.skillId;
+            //任务点引导没有目标技能
+            _targetSkillId = next.isTaskPoint ? null : next.skillId;
             _step = Mathf.Clamp(next.getStep(), StepOpenPanel, StepFinish);
             missingTimer = 0f;
             refreshTried = false;
-            Debug.Log($"[Guide] prepare skill={_targetSkillId} step={_step}");
+            routeShownOnce = false;
+            taskPointArrived = false;
+            taskTipShown = false;
+            Debug.Log($"[Guide] prepare {(next.isTaskPoint ? "taskPoint" : "skill=" + _targetSkillId)} step={_step}");
         }
 
         #endregion
@@ -793,6 +882,350 @@ namespace XiaoCao.UI
             target.GetWorldCorners(corners);
             PlaceTipBelow(corners, TipGap);
             SetTip(tipStr);
+        }
+
+        #endregion
+
+        #region 引导3: 任务点
+
+        /// <summary>
+        /// 引导3: 用地面导航线指向主城任务点, 并弹一次提示; 玩家走到任务点即完成。
+        /// 不显示遮罩, 也不拦截点击。
+        /// </summary>
+        private void TickTaskPoint()
+        {
+            if (!UIMgr.HasInst)
+            {
+                return;
+            }
+
+            //任务界面打开: 说明已经走到任务点, 直接算到达
+            var taskPanel = UIMgr.Inst.GetPanel(UIPanelType.TaskPanel);
+            if (taskPanel != null && taskPanel.IsShowing)
+            {
+                GuideNavRoute.Hide();
+                FinishGuide();
+                return;
+            }
+
+            //玩家打开其它界面时先收起提示, 避免盖在面板上
+            if (UIMgr.Inst.HasPanelShowing())
+            {
+                SetGuideVisible(false);
+                return;
+            }
+
+            //开始引导时提示一次(导航线是持续的, 不重复弹)
+            if (!taskTipShown)
+            {
+                taskTipShown = true;
+                UIMgr.PopToastKey(LocalizeKey.GuideGoTaskPoint, TaskPointToastTime);
+            }
+
+            EnsureTaskPointRoute();
+
+            //走到任务点就标记引导3完成, 之后装备圣器属于可跳过的附加项
+            if (taskPointArrived)
+            {
+                GuideNavRoute.Hide();
+                FinishGuide();
+            }
+        }
+
+        /// <summary>
+        /// 确保玩家脚下到任务点的导航线存在。
+        /// 导航线在玩家走到任务点附近时会自行销毁, 之后不再重铺。
+        /// </summary>
+        private void EnsureTaskPointRoute()
+        {
+            if (taskPointArrived)
+            {
+                return;
+            }
+
+            if (GuideNavRoute.IsShowing)
+            {
+                routeShownOnce = true;
+                return;
+            }
+
+            //线是自己消失的 = 玩家已经走到任务点附近
+            if (routeShownOnce)
+            {
+                taskPointArrived = true;
+                return;
+            }
+
+            TaskTriggerBase taskPoint = FindTaskPoint();
+            if (taskPoint == null || navRoutePrefab == null)
+            {
+                Debuger.LogWarning("[Guide] 主城没有找到任务点或未配置导航线预制体, 引导3无法导航", this);
+                taskPointArrived = true;
+                return;
+            }
+
+            GuideNavRoute.Show(taskPoint.transform, navRoutePrefab);
+            routeShownOnce = true;
+        }
+
+        /// <summary>
+        /// 主城任务点(带红点的交互点), 场景里只有一个
+        /// </summary>
+        private static TaskTriggerBase FindTaskPoint()
+        {
+            return FindFirstObjectByType<TaskTriggerBase>(FindObjectsInactive.Include);
+        }
+
+        #endregion
+
+        #region 引导3附加项: 圣器一键装备
+
+        /// <summary>
+        /// 启动引导3的附加项(装备刚获得的圣器)。返回是否已启动。
+        /// 附加项完全可选: 玩家不跟随也不影响引导3的完成状态, 只是不再提示。
+        /// </summary>
+        private bool TryStartRelicHint()
+        {
+            PlayerSaveData data = GameAllData.playerSaveData;
+            if (_guide == null || data == null || _guide.homeRelicDone)
+            {
+                return false;
+            }
+
+            int savedStep = Mathf.Clamp(_guide.homeRelicStep, RelicStepWait, RelicStepEquip);
+            //已经提示过打开界面, 但背包里没有未装备的圣器了: 附加项没有意义, 直接算结束
+            if (savedStep > RelicStepWait && !HasUnequippedRelic(data))
+            {
+                FinishRelicHint();
+                return false;
+            }
+
+            _relicHintActive = true;
+            _relicStep = savedStep;
+            _step = StepDone;
+            _task = null;
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
+            Debug.Log($"[Guide] relic hint start step={_relicStep}");
+            return true;
+        }
+
+        /// <summary>
+        /// 附加项主循环: 等圣器 -> 打开圣器界面 -> 点一键装备
+        /// </summary>
+        private void TickRelicHint()
+        {
+            switch (_relicStep)
+            {
+                case RelicStepWait:
+                    TickRelicWait();
+                    break;
+                case RelicStepOpen:
+                    TickRelicOpen();
+                    break;
+                case RelicStepEquip:
+                    TickRelicEquip();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 附加项 step0: 等背包里出现未装备的圣器(即任务奖励已领取)
+        /// </summary>
+        private void TickRelicWait()
+        {
+            //任务奖励是在任务界面里领取的, 面板开着时先不打扰
+            if (!UIMgr.HasInst || UIMgr.Inst.HasPanelShowing())
+            {
+                SetGuideVisible(false);
+                return;
+            }
+
+            PlayerSaveData data = GameAllData.playerSaveData;
+            if (data == null || !HasUnequippedRelic(data))
+            {
+                return;
+            }
+
+            UIMgr.PopToastKey(LocalizeKey.GuideEquipRelic, RelicToastTime);
+            GoToRelicStep(RelicStepOpen);
+        }
+
+        /// <summary>
+        /// 附加项 step1: 引导打开角色界面的「圣器」页签(只发光提示, 不拦截点击)
+        /// </summary>
+        private void TickRelicOpen()
+        {
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
+            if (panel == null)
+            {
+                return;
+            }
+
+            if (!panel.IsShowing)
+            {
+                //圣器是角色界面的子页签, 先引导点主城入口按钮
+                ClearHintGlow();
+                if (UIMgr.Inst.HasPanelShowing())
+                {
+                    SetGuideVisible(false);
+                    return;
+                }
+
+                ShowOpenPanelTip(LocalizeKey.GuideEquipRelicOpen.ToLocalizeStr());
+                return;
+            }
+
+            if (IsRelicTabActive(panel))
+            {
+                HideGlow();
+                ClearHintGlow();
+                GoToRelicStep(RelicStepEquip);
+                return;
+            }
+
+            Button tabBtn = GetRelicTabButton(panel);
+            if (tabBtn == null)
+            {
+                return;
+            }
+
+            HideGlow();
+            ShowHintOnly();
+            RectTransform tabRt = tabBtn.transform as RectTransform;
+            ShowHintGlow(tabRt);
+            ShowHintTip(tabRt, LocalizeKey.FormatWithArgs(LocalizeKey.GuideClickRelicTab, "RelicView".ToLocalizeStr()));
+        }
+
+        /// <summary>
+        /// 附加项 step2: 引导点击「一键装备」, 点击后由 RelicView 通知结束
+        /// </summary>
+        private void TickRelicEquip()
+        {
+            PlayerTabPanel panel = UIMgr.HasInst ? UIMgr.Inst.playerPanel : null;
+            if (panel == null)
+            {
+                return;
+            }
+
+            if (!panel.IsShowing || !IsRelicTabActive(panel))
+            {
+                ClearHintGlow();
+                GoToRelicStep(RelicStepOpen);
+                return;
+            }
+
+            RelicView view = GetRelicView(panel);
+            Button quickBtn = view != null ? view.quickEquipBtn : null;
+            //分解模式下右侧按钮组是隐藏的, 等玩家退出分解模式再提示
+            if (quickBtn == null || !quickBtn.gameObject.activeInHierarchy)
+            {
+                ClearHintGlow();
+                return;
+            }
+
+            ShowHintOnly();
+            RectTransform btnRt = quickBtn.transform as RectTransform;
+            ShowHintGlow(btnRt);
+            ShowHintTip(btnRt, LocalizeKey.FormatWithArgs(LocalizeKey.GuideClickQuickEquip, "BtnQuickEquip".ToLocalizeStr()));
+        }
+
+        /// <summary>
+        /// 附加项完成(点了「一键装备」, 或已经没东西可装备): 写存档并彻底收尾
+        /// </summary>
+        private void FinishRelicHint()
+        {
+            if (_guide != null)
+            {
+                _guide.homeRelicStep = StepDone;
+                _guide.homeRelicDone = true;
+                PlayerSaveData.SavaData();
+            }
+
+            _relicHintActive = false;
+            _relicStep = RelicStepWait;
+            _step = StepDone;
+            ClearHintGlow();
+            HideGlow();
+            HideOverlay();
+            gameObject.SetActive(false);
+            Debug.Log("[Guide] relic hint finished");
+        }
+
+        /// <summary>
+        /// 切换附加项步骤并落存档
+        /// </summary>
+        private void GoToRelicStep(int step)
+        {
+            _relicStep = step;
+            lastTip = null;
+            if (_guide != null)
+            {
+                _guide.homeRelicStep = step;
+                PlayerSaveData.SavaData();
+            }
+            Debug.Log($"[Guide] relic step -> {step}");
+        }
+
+        /// <summary>
+        /// 圣器界面点了「一键装备」: 通知引导3附加项结束
+        /// </summary>
+        public static void NotifyRelicQuickEquip()
+        {
+            if (_inst != null && _inst._relicHintActive)
+            {
+                _inst.FinishRelicHint();
+            }
+        }
+
+        /// <summary>
+        /// 背包里是否有未装备的圣器(已装备的放在 equippedHolyRelics 里, 不在 items 中)
+        /// </summary>
+        private static bool HasUnequippedRelic(PlayerSaveData data)
+        {
+            List<Item> items = data.inventory != null ? data.inventory.items : null;
+            if (items == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] != null && items[i].type == ItemType.HolyRelic)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Button GetRelicTabButton(PlayerTabPanel panel)
+        {
+            TabPanelGroup group = panel.groups.Find(g => g != null && g.panelName == RelicSubPanelName);
+            return group != null ? group.tabBtn : null;
+        }
+
+        private static bool IsRelicTabActive(PlayerTabPanel panel)
+        {
+            return panel != null && panel.curPanel != null && panel.curPanel.subPanelName == RelicSubPanelName;
+        }
+
+        private RelicView GetRelicView(PlayerTabPanel panel)
+        {
+            SubPanel sub = panel.GetPanel(RelicSubPanelName);
+            if (sub == null || sub.gameObject == null)
+            {
+                return null;
+            }
+            if (_relicView == null || _relicViewGo != sub.gameObject)
+            {
+                _relicViewGo = sub.gameObject;
+                _relicView = sub.gameObject.GetComponentInChildren<RelicView>(true);
+            }
+            return _relicView;
         }
 
         #endregion
@@ -1206,6 +1639,7 @@ namespace XiaoCao.UI
         {
             //记录刚完成的是哪条引导, 供完成后的后续表现使用
             string finishedSkillId = _task != null ? _task.skillId : null;
+            bool finishedTaskPoint = _task != null && _task.isTaskPoint;
 
             if (_task != null)
             {
@@ -1221,6 +1655,12 @@ namespace XiaoCao.UI
             _task = null;
             ClearHintGlow();
             Debug.Log("[Guide] finished");
+
+            //引导3(任务点)完成: 收掉导航线
+            if (finishedTaskPoint)
+            {
+                GuideNavRoute.Hide();
+            }
 
             //引导1(撞击)完成: 显示从角色脚下指向关卡入口的地面箭头导航, 玩家到达后自动消失
             if (finishedSkillId == Guide1SkillId)
@@ -1243,6 +1683,12 @@ namespace XiaoCao.UI
                 }
             }
 
+            //主体引导全部完成: 只剩引导3的附加项(装备圣器), 起来后接着跑
+            if (_relicHintActive || TryStartRelicHint())
+            {
+                return;
+            }
+
             gameObject.SetActive(false);
         }
 
@@ -1260,6 +1706,12 @@ namespace XiaoCao.UI
             missingTimer = 0f;
             lastTip = null;
             overlayVisible = false;
+            routeShownOnce = false;
+            taskPointArrived = false;
+            taskTipShown = false;
+            _relicHintActive = false;
+            _relicStep = RelicStepWait;
+            GuideNavRoute.Hide();
             HideGlow();
             ClearHintGlow();
             HideOverlay();
@@ -1275,12 +1727,14 @@ namespace XiaoCao.UI
         {
             debugResetFlag = false;
             CompleteGuideProgressOnly();
+            GuideNavRoute.Hide();
             HideGlow();
             ClearHintGlow();
             HideOverlay();
             proxyAction = null;
             _step = StepDone;
             _task = null;
+            _relicHintActive = false;
             gameObject.SetActive(false);
             Debug.Log("[Guide] debug completed");
         }
@@ -1313,6 +1767,9 @@ namespace XiaoCao.UI
                 tasks[i].setDone(false);
                 tasks[i].setStep(StepOpenPanel);
             }
+            //附加项也一起重置
+            data.guideData.homeRelicStep = RelicStepWait;
+            data.guideData.homeRelicDone = false;
             PlayerSaveData.SavaData();
             return true;
         }
@@ -1337,6 +1794,8 @@ namespace XiaoCao.UI
                 tasks[i].setDone(true);
                 tasks[i].setStep(StepDone);
             }
+            data.guideData.homeRelicStep = StepDone;
+            data.guideData.homeRelicDone = true;
             PlayerSaveData.SavaData();
             debugResetFlag = false;
             return true;

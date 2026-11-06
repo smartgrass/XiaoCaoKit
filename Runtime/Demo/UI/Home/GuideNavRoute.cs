@@ -45,6 +45,21 @@ namespace XiaoCao.UI
         //流动相位
         private float _flowOffset;
 
+        /// <summary>当前是否已有导航线在显示(引导流程用来判断要不要重新铺线)</summary>
+        public static bool IsShowing => _inst != null;
+
+        /// <summary>
+        /// 立刻结束导航线: 引导完成或玩家已到达时调用
+        /// </summary>
+        public static void Hide()
+        {
+            if (_inst != null)
+            {
+                Destroy(_inst.gameObject);
+                _inst = null;
+            }
+        }
+
         /// <summary>
         /// 显示指向 target 的导航路线; prefab 为挂载本组件的预制体(HomeGuideController 持有引用);
         /// 已在显示时仅更换目标点

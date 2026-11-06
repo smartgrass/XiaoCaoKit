@@ -93,7 +93,7 @@ namespace XiaoCao
                 data.inputs[(int)InputKey.NorAck] = true;
             }
 
-            //长按普攻键/鼠标左键: 炮台自动连发(受攻击冷缩限制)
+            //长按普攻键/鼠标左键: 角色自动连续普攻, 炮台模式下为自动连发(都受攻击冷缩限制)
             data.norAckHold = keyHold || mouseHold;
         }
 

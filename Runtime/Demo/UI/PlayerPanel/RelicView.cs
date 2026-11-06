@@ -257,6 +257,7 @@ namespace XiaoCao
 
             EnsureInventoryData();
             _sortedBagRelics = GetSortedBagRelics();
+            bool hasEquipped = false;
             for (int i = 0; i < TypeList.Length; i++)
             {
                 ERelicType relicType = TypeList[i];
@@ -270,11 +271,21 @@ namespace XiaoCao
                     continue;
                 }
 
-                EquipRelic(bestItem, relicType);
+                //一键装备可能连续换多件, 这里先静音, 循环结束后统一播一次
+                EquipRelic(bestItem, relicType, false);
+                hasEquipped = true;
+            }
+
+            if (hasEquipped)
+            {
+                SoundMgr.Inst.PlayUISure();
             }
 
             SaveRelicData();
             UpdateUI();
+
+            //新手引导3附加项: 玩家已按引导点过一键装备
+            HomeGuideController.NotifyRelicQuickEquip();
         }
 
         /// <summary>
@@ -282,14 +293,16 @@ namespace XiaoCao
         /// </summary>
         private List<Item> GetSortedBagRelics()
         {
-            HashSet<string> equippedRelicKeys = new HashSet<string>(
+            //圣器不可堆叠, 同名同等级的多件是不同物品, 必须按实例 id 排除已装备的那件;
+            //按物品键排除会把同名的另一件一起隐藏, 表现为"装备一件, 两件都从背包消失"
+            HashSet<int> equippedRelicIds = new HashSet<int>(
                 PlayerSaveData.inventory.equippedHolyRelics
                     .Where(item => item != null)
-                    .Select(item => item.ItemKey));
+                    .Select(item => item.InstanceId));
 
             return PlayerSaveData.inventory.items
                 .Where(item => TryGetRelicType(item, out _) &&
-                               !equippedRelicKeys.Contains(item.ItemKey))
+                               !equippedRelicIds.Contains(item.InstanceId))
                 .OrderByDescending(GetRelicScore)
                 .ThenByDescending(item => (int)item.quality)
                 .ToList();
@@ -406,7 +419,8 @@ namespace XiaoCao
         /// <summary>
         /// 将指定圣器替换到对应类型的装备槽，并把旧装备放回背包。
         /// </summary>
-        private void EquipRelic(Item item, ERelicType relicType)
+        /// <param name="playSound">是否播放装备成功音效, 批量装备时由调用方统一播放</param>
+        private void EquipRelic(Item item, ERelicType relicType, bool playSound = true)
         {
             List<Item> equippedItems = PlayerSaveData.inventory.equippedHolyRelics;
             for (int i = equippedItems.Count - 1; i >= 0; i--)
@@ -418,7 +432,7 @@ namespace XiaoCao
                     continue;
                 }
 
-                if (equippedItem != item)
+                if (!equippedItem.IsSameInstance(item))
                 {
                     PlayerSaveData.inventory.items.Add(equippedItem);
                 }
@@ -426,9 +440,16 @@ namespace XiaoCao
                 equippedItems.RemoveAt(i);
             }
 
-            PlayerSaveData.inventory.items.Remove(item);
+            //按实例移除背包里的这件, 同名同等级的其它圣器不受影响
+            PlayerSaveData.inventory.items.RemoveAll(bagItem => bagItem != null && bagItem.IsSameInstance(item));
             int insertIndex = GetEquippedInsertIndex(relicType, equippedItems);
             equippedItems.Insert(insertIndex, item);
+
+            //装备成功的正反馈音效, 与技能升级/锻造成功共用 Success 音效
+            if (playSound)
+            {
+                SoundMgr.Inst.PlayUISure();
+            }
         }
 
         /// <summary>
@@ -486,7 +507,12 @@ namespace XiaoCao
             int breakDownCount = 0;
             foreach (Item item in breakDownList)
             {
-                if (!inventory.items.Remove(item) && !inventory.equippedHolyRelics.Remove(item))
+                //按实例移除, 同名同等级的其它圣器不会被连带分解
+                int removedCount = inventory.items.RemoveAll(
+                    bagItem => bagItem != null && bagItem.IsSameInstance(item));
+                removedCount += inventory.equippedHolyRelics.RemoveAll(
+                    equippedItem => equippedItem != null && equippedItem.IsSameInstance(item));
+                if (removedCount == 0)
                 {
                     //既不在背包也不在装备位,说明数据已经变化,跳过
                     continue;

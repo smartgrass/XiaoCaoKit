@@ -36,6 +36,9 @@ namespace XiaoCao
         //技能解锁状态, 等级
         public Dictionary<string, int> skillUnlockDic = new Dictionary<string, int>();
 
+        //技能学习红点已读记录: skillId -> 已查看过的技能等级(等级变化后会重新提示)
+        public Dictionary<string, int> skillRedDotReadLv = new Dictionary<string, int>();
+
         public bool saveSkillBar;
 
         // 技能栏设置
@@ -148,10 +151,17 @@ namespace XiaoCao
             inventory.items ??= new List<Item>();
             inventory.equippedHolyRelics ??= new List<Item>();
 
+            //旧存档没有实例 id, 读档后统一补发, 让同名同等级的圣器能被区分开
+            EnsureItemInstanceIds(inventory.items);
+            EnsureItemInstanceIds(inventory.equippedHolyRelics);
+
             if (skillUnlockDic == null)
             {
                 skillUnlockDic = new Dictionary<string, int>();
             }
+
+            //旧存档没有技能红点已读记录
+            skillRedDotReadLv ??= new Dictionary<string, int>();
 
             //确保任务进度不为空
             if (taskData == null)
@@ -212,6 +222,28 @@ namespace XiaoCao
                 // {
                 //     skillBarSetting = new List<string>(aiCmdSetting.cmdSkillList);
                 // }
+            }
+        }
+
+        /// <summary>
+        /// 校准物品实例 id: 缺 id 的补发, 并让分配器跳过存档里已有的 id。
+        /// </summary>
+        private static void EnsureItemInstanceIds(List<Item> items)
+        {
+            if (items == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                Item item = items[i];
+                if (item == null)
+                {
+                    continue;
+                }
+
+                item.EnsureInstanceId();
             }
         }
 

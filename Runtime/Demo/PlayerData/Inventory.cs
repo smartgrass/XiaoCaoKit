@@ -26,7 +26,8 @@ namespace XiaoCao
                 return;
             }
 
-            Item findItem = FindItemByName(itemName);
+            //只有可堆叠物品才按名字合并: 圣器不可堆叠, 同名圣器必须是各自独立的一条
+            Item findItem = IsNumaAbleType(itemType) ? FindItemByName(itemName) : null;
             if (findItem != null)
             {
                 findItem.num += itemCount;
@@ -70,6 +71,7 @@ namespace XiaoCao
             }
 
 
+            //入包即产生一件新物品(奖励/锻造产物), 不沿用调用方对象的实例 id, 避免同一对象被重复入包时出现重复身份
             items.Add(new Item(item.type, item.typeId, item.num, item.quality));
         }
 

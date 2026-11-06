@@ -129,6 +129,9 @@ namespace XiaoCao.UI
 
             UpdateUI();
             UICanvasMgr.Inst.EventSystem.SendEvent(UIEventNames.SkillChange);
+            //玩家正在看这个技能的面板, 升完的等级不再提示红点; 其它技能可能又能学了, 一并让页签与入口红点重算
+            SkillLearnRedDot.MarkRead(skillId);
+            SkillLearnRedDot.NotifyChanged();
             PlayerSaveData.SavaData();
         }
 

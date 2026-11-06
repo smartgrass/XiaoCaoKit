@@ -16,6 +16,9 @@ namespace XiaoCao
 
         public UIPanelType type;
 
+        //面板入口红点(如角色面板的技能学习红点), 只给需要提示的面板按钮配置
+        public GameObject BtnRedDot;
+
         //新手引导用的按钮发光特效
         private GameObject _glowEffect;
 
@@ -29,6 +32,35 @@ namespace XiaoCao
         {
             transform.GetComponent<Button>().onClick.AddListener(Open);
             GameEvent.AddEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), OnOpenEffect);
+            //红点相关: 技能红点变化 / 角色升级 / 持币变化都可能让"可学技能"状态改变
+            GameEvent.AddEventListener(EGameEvent.SkillRedDotChange.ToInt(), RefreshRedDot);
+            GameEvent.AddEventListener<int, int>(EGameEvent.RoleLevelUp.ToInt(), OnRoleLevelUp);
+            GameEvent.AddEventListener<int>(EGameEvent.OnCoinChange.ToInt(), OnCoinChange);
+            RefreshRedDot();
+        }
+
+        /// <summary>
+        /// 刷新面板入口红点: 判断规则由各面板自己决定, 目前只有角色面板有技能学习红点
+        /// </summary>
+        public void RefreshRedDot()
+        {
+            //只有配了红点节点的按钮才需要刷新
+            if (BtnRedDot == null)
+            {
+                return;
+            }
+
+            BtnRedDot.SetActive(type == UIPanelType.PlayerPanel && SkillLearnRedDot.HasAnyNew());
+        }
+
+        private void OnRoleLevelUp(int levelFrom, int levelTo)
+        {
+            RefreshRedDot();
+        }
+
+        private void OnCoinChange(int delta)
+        {
+            RefreshRedDot();
         }
 
         private void OnOpenEffect(UIPanelType type, bool isOpen)
@@ -167,6 +199,9 @@ namespace XiaoCao
         private void OnDestroy()
         {
             GameEvent.RemoveEventListener<UIPanelType, bool>(EGameEvent.UIPanelBtnGlow.ToInt(), OnOpenEffect);
+            GameEvent.RemoveEventListener(EGameEvent.SkillRedDotChange.ToInt(), RefreshRedDot);
+            GameEvent.RemoveEventListener<int, int>(EGameEvent.RoleLevelUp.ToInt(), OnRoleLevelUp);
+            GameEvent.RemoveEventListener<int>(EGameEvent.OnCoinChange.ToInt(), OnCoinChange);
 
             //发光可能挂在按钮自身或父节点下, 按钮销毁时手动清理
             if (_glowEffect != null)

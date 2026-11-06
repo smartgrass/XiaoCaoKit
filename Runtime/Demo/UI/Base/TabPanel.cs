@@ -123,6 +123,30 @@ public abstract class TabStandardPanel : StandardPanel
                 curPanel.Show();
             }
         }
+
+        RefreshTabRedDots();
+    }
+
+    /// <summary>
+    /// 刷新页签按钮红点, 各子界面是否需要提示由 <see cref="HasRedDot"/> 决定
+    /// </summary>
+    public void RefreshTabRedDots()
+    {
+        foreach (var subPanel in list)
+        {
+            if (subPanel.TabRedDot != null)
+            {
+                subPanel.TabRedDot.SetActive(HasRedDot(subPanel.subPanelName));
+            }
+        }
+    }
+
+    /// <summary>
+    /// 指定子界面是否存在需要提示的红点, 子类按需重写
+    /// </summary>
+    protected virtual bool HasRedDot(string subPanelName)
+    {
+        return false;
     }
 
     public SubPanel GetPanel(string subPanelName)
@@ -202,4 +226,6 @@ public class TabPanelGroup
     public Button tabBtn;
     [Header("iconSprite 可空")]
     public Sprite iconSprite;
+    [Header("页签红点节点, 可空")]
+    public GameObject tabRedDot;
 }

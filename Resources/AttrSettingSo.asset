@@ -22,7 +22,7 @@ MonoBehaviour:
     defMult: 1
     hpMult: 1
     mobileAddAtkMult: 0.1
-    mobileAddHpMult: 0.2
+    mobileAddHpMult: 0
     maxArmor: 4
     armorDef: 0.5
     recoverCdOnBreak: 4
@@ -39,7 +39,7 @@ MonoBehaviour:
     atkMult: 0.7
     defMult: 1
     hpMult: 1.3
-    mobileAddAtkMult: 0
+    mobileAddAtkMult: -0.1
     mobileAddHpMult: 0
     maxArmor: 8
     armorDef: 0.3
@@ -57,7 +57,7 @@ MonoBehaviour:
     atkMult: 0.8
     defMult: 1
     hpMult: 6.5
-    mobileAddAtkMult: 0
+    mobileAddAtkMult: -0.1
     mobileAddHpMult: 0
     maxArmor: 20
     armorDef: 0.9

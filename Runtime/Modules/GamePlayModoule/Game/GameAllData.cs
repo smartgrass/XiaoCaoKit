@@ -49,6 +49,21 @@ namespace XiaoCao
         public static UserInputType UserInputType;
 
         /// <summary>
+        /// 技能/普攻/翻滚/跳跃按钮是否"按下即触发"; 关掉后恢复为原本的抬起触发。
+        /// 未保存过时默认开启, 移动端点击手感更跟手
+        /// </summary>
+        public static bool BtnTriggerOnDown =>
+            ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.BtnTriggerOnDown, true);
+
+        /// <summary>
+        /// 保存按钮触发时机设置, 由设置界面调用
+        /// </summary>
+        public static void SetBtnTriggerOnDown(bool isOn)
+        {
+            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.BtnTriggerOnDown, isOn);
+        }
+
+        /// <summary>
         /// 移动平台默认帧率: 高刷屏按 90 帧跑
         /// </summary>
         public const int MobileDefaultFrameRate = 90;
@@ -617,6 +632,7 @@ namespace XiaoCao
         PlayerDead = 106,
         RoleHurt = 107,
         RoleLevelUp = 108, //角色升级 (原等级, 新等级)
+        SkillRedDotChange = 109, //技能学习红点变化(无参数)
 
 
         //Enemy

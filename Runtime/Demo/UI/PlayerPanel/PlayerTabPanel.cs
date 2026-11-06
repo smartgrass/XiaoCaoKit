@@ -1,5 +1,6 @@
 ﻿using NaughtyAttributes;
 using System.Collections.Generic;
+using TEngine;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,9 @@ namespace XiaoCao.UI
     /// </summary>
     public class PlayerTabPanel : TabStandardPanel
     {
+        //技能子界面的页签名(与预制体 groups 配置一致)
+        public const string SkillPanelName = "Skill";
+
         public override UIPanelType PanelType => UIPanelType.PlayerPanel;
 
         //启用方向键导航: 上下键切主 tab, 左右键切子界面 tab
@@ -43,7 +47,35 @@ namespace XiaoCao.UI
                 subPanel.gameObject.SetActive(index == 0);
             }
             SwitchPanel(groups[0].panelName);
+
+            GameEvent.AddEventListener(EGameEvent.SkillRedDotChange.ToInt(), RefreshTabRedDots);
         }
+
+        private void OnDestroy()
+        {
+            GameEvent.RemoveEventListener(EGameEvent.SkillRedDotChange.ToInt(), RefreshTabRedDots);
+        }
+
+        /// <summary>
+        /// 面板显示时重算页签红点: 隐藏期间(如技能升级)状态可能已经变化
+        /// </summary>
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            if (IsInited)
+            {
+                RefreshTabRedDots();
+            }
+        }
+
+        /// <summary>
+        /// 技能页签存在可学习的技能时显示红点
+        /// </summary>
+        protected override bool HasRedDot(string subPanelName)
+        {
+            return subPanelName == SkillPanelName && SkillLearnRedDot.HasAnyNew();
+        }
+
 
         [Button]
         public override void OnCloseBtnClick()
@@ -57,6 +89,7 @@ namespace XiaoCao.UI
             subPanel.gameObject = group.panel;
             subPanel.subPanelName = group.panelName;
             subPanel.TabBtn = group.tabBtn;
+            subPanel.TabRedDot = group.tabRedDot;
 
             var tabBtn = group.tabBtn;
             tabBtn.onClick.AddListener(() => { SwitchPanel(group.panelName); });

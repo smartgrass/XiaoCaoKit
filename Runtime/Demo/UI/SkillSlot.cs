@@ -1,11 +1,12 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace XiaoCao
 {
-    public class SkillSlot : MonoBehaviour
+    public class SkillSlot : MonoBehaviour, IPointerDownHandler
     {
         public Image image;
 
@@ -40,6 +41,7 @@ namespace XiaoCao
         #endregion
         private PlayerData0 _playerData;
         private GameObject _maskRoot;
+        private Button _btn;
         
         public PlayerData0 PlayerData
         {
@@ -86,10 +88,10 @@ namespace XiaoCao
 
         private void AddBtnClickEvent()
         {
-            Button button = GetComponent<Button>();
-            if (button != null)
+            _btn = GetComponent<Button>();
+            if (_btn != null)
             {
-                button.onClick.AddListener(OnClickSkill);
+                _btn.onClick.AddListener(OnClickSkill);
             }
         }
 
@@ -189,6 +191,9 @@ namespace XiaoCao
             RefreshRightTipUI();
         }
 
+        /// <summary>
+        /// 按钮点击(抬手时触发): 按下触发模式下由 <see cref="OnPointerDown"/> 提前执行, 这里直接忽略
+        /// </summary>
         public void OnClickSkill()
         {
             if (skipNextClick)
@@ -197,31 +202,62 @@ namespace XiaoCao
                 return;
             }
 
-            if (!isColdLastFrame)
+            if (UseDownTrigger)
             {
-                bool isSuccess = false;
-                switch (slotType)
-                {
-                    case SlotType.SkillIndex:
-                        playerInput.skillInput = index;
-                        isSuccess = true;
-                        break;
-                    case SlotType.Inputs:
-                        playerInput.inputs[index] = true;
-                        isSuccess = true;
-                        break;
-                    case SlotType.RoleSkill:
-                        isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.PlayFriendRoleSKill();
-                        break;
-                    case SlotType.ExtraItem:
-                        isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.TryUseExtraSkill(BattleData.Current.GetSelectedExtraItem()?.typeId);
-                        break;
-                }
+                return;
+            }
 
-                if (isSuccess)
-                {
-                    PlayEffect();
-                }
+            TriggerSlot();
+        }
+
+        /// <summary>
+        /// 按下瞬间触发技能/翻滚, 不等抬手; 关闭"按下触发"设置时不处理, 仍走 Button.onClick
+        /// </summary>
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (!UseDownTrigger || (_btn != null && !_btn.interactable))
+            {
+                return;
+            }
+
+            TriggerSlot();
+        }
+
+        /// <summary>当前槽位是否走"按下触发": 额外道具键带长按轮盘, 始终保留抬手触发</summary>
+        private bool UseDownTrigger => GameSetting.BtnTriggerOnDown && slotType != SlotType.ExtraItem;
+
+        /// <summary>
+        /// 执行槽位对应的技能/按键输入
+        /// </summary>
+        private void TriggerSlot()
+        {
+            if (isColdLastFrame)
+            {
+                return;
+            }
+
+            bool isSuccess = false;
+            switch (slotType)
+            {
+                case SlotType.SkillIndex:
+                    playerInput.skillInput = index;
+                    isSuccess = true;
+                    break;
+                case SlotType.Inputs:
+                    playerInput.inputs[index] = true;
+                    isSuccess = true;
+                    break;
+                case SlotType.RoleSkill:
+                    isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.PlayFriendRoleSKill();
+                    break;
+                case SlotType.ExtraItem:
+                    isSuccess = GameDataCommon.LocalPlayer != null && GameDataCommon.LocalPlayer.TryUseExtraSkill(BattleData.Current.GetSelectedExtraItem()?.typeId);
+                    break;
+            }
+
+            if (isSuccess)
+            {
+                PlayEffect();
             }
         }
 
