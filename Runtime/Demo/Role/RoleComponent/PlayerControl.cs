@@ -126,8 +126,8 @@ namespace XiaoCao
 
         private void SwitchFocus()
         {
-            bool isOn = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
-            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.LockCam, !isOn);
+            //走 GameSetting 的读写, 保证和设置界面共用同一套默认值(锁定视角默认开启)
+            GameSetting.SetLockCam(!GameSetting.LockCam);
         }
 
         public void TryJump()

@@ -352,8 +352,8 @@ namespace XiaoCao
                 return;
             }
 
-            //关掉自动索敌就一直回正
-            if (!ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy))
+            //关掉自动索敌就一直回正(默认关闭, 见 GameSetting.AutoLockEnemy)
+            if (!GameSetting.AutoLockEnemy)
             {
                 AutoDirect();
                 return;
@@ -409,7 +409,8 @@ namespace XiaoCao
         //自动回正
         void AutoDirect()
         {
-            bool isLockCam = ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam);
+            //锁定视角(默认开启): 开着就不自动回正, 镜头完全交给玩家手动转
+            bool isLockCam = GameSetting.LockCam;
             if (isLockCam)
             {
                 return;

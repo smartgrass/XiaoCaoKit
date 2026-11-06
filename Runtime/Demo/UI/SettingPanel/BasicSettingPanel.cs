@@ -68,8 +68,9 @@ public class BasicSettingPanel : SubPanel
 
     public override void RefreshUI()
     {
-        toggle.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam));
-        toggle2.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy));
+        //默认值统一在 GameSetting 里: 锁定视角默认开, 自动索敌默认关
+        toggle.SetIsOnWithoutNotify(GameSetting.LockCam);
+        toggle2.SetIsOnWithoutNotify(GameSetting.AutoLockEnemy);
         btnTriggerToggle.SetIsOnWithoutNotify(GameSetting.BtnTriggerOnDown);
         autoChaseToggle.SetIsOnWithoutNotify(GameSetting.AutoChase);
         //toggle3.SetIsOnWithoutNotify(ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.MouseView));
@@ -116,12 +117,12 @@ public class BasicSettingPanel : SubPanel
 
     private void OnToggleLockCam(bool isOn)
     {
-        ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.LockCam, isOn);
+        GameSetting.SetLockCam(isOn);
     }
 
     private void OnToggleLockEnemy(bool isOn)
     {
-        ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.AutoLockEnemy, isOn);
+        GameSetting.SetAutoLockEnemy(isOn);
     }
 
     /// <summary>

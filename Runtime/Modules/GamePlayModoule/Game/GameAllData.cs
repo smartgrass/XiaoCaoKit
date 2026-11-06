@@ -79,6 +79,34 @@ namespace XiaoCao
         }
 
         /// <summary>
+        /// 锁定视角: 开启后镜头不再自动回正到角色朝向。未保存过时默认开启
+        /// </summary>
+        public static bool LockCam =>
+            ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.LockCam, true);
+
+        /// <summary>
+        /// 保存锁定视角开关, 由设置界面调用
+        /// </summary>
+        public static void SetLockCam(bool isOn)
+        {
+            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.LockCam, isOn);
+        }
+
+        /// <summary>
+        /// 自动索敌: 开启后镜头会偏向视野内最近的敌人。未保存过时默认关闭
+        /// </summary>
+        public static bool AutoLockEnemy =>
+            ConfigMgr.Inst.LocalSetting.GetBoolValue(LocalizeKey.AutoLockEnemy, false);
+
+        /// <summary>
+        /// 保存自动索敌开关, 由设置界面调用
+        /// </summary>
+        public static void SetAutoLockEnemy(bool isOn)
+        {
+            ConfigMgr.Inst.LocalSetting.SetBoolValue(LocalizeKey.AutoLockEnemy, isOn);
+        }
+
+        /// <summary>
         /// 读取玩家设置里的开关, 未保存过时按开启处理。
         /// 技能事件用 tag 挂开关时走这里(见 XCCommondEvent.disableTag)
         /// </summary>

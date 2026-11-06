@@ -162,10 +162,13 @@ namespace XiaoCao
             IsFinish = true;
         }
 
+        /// <summary>
+        /// 新存档的默认设置。
+        /// 锁定视角/自动索敌的默认值已改为"读取时兜底"(见 GameSetting.LockCam / GameSetting.AutoLockEnemy),
+        /// 这里不再写 PlayerPrefs —— 那两个 key 运行时不读(LocalSetting 走自己的 floatDic), 写了不生效。
+        /// </summary>
         void SetDefaultPlayerSetting()
         {
-            LocalizeKey.LockCam.SetKeyBool(true);
-            LocalizeKey.AutoLockEnemy.SetKeyBool(true);
         }
     }
 
