@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.U2D;
 using XiaoCao;
 using YooAsset;
 using Debug = UnityEngine.Debug;
@@ -148,6 +149,63 @@ public class ResMgr
             return null;
         }
     }
+
+    #region SpriteAtlas 图集
+
+    /// <summary>
+    /// 精灵图集路径, 打包范围是 Assets/_Res/Sprite 整目录
+    /// </summary>
+    public const string SpriteAtlasPath = "Assets/_Res/Sprite/SpriteAtlas.spriteatlasv2";
+
+    private static SpriteAtlas _spriteAtlas;
+    private static AssetHandle _spriteAtlasHandle;
+    private static bool _spriteAtlasLoadTried;
+
+    /// <summary>
+    /// 懒加载精灵图集, 只加载一次并持有句柄, 防止图集纹理被回收
+    /// </summary>
+    public static SpriteAtlas GetSpriteAtlas()
+    {
+        if (_spriteAtlasLoadTried)
+        {
+            return _spriteAtlas;
+        }
+
+        _spriteAtlasLoadTried = true;
+
+        if (Loader == null || !Loader.IsLocationValid(SpriteAtlasPath))
+        {
+            Debug.LogWarning($"--- no SpriteAtlas {SpriteAtlasPath}");
+            return null;
+        }
+
+        _spriteAtlasHandle = Loader.LoadAssetSync<SpriteAtlas>(SpriteAtlasPath);
+        _spriteAtlas = _spriteAtlasHandle.AssetObject as SpriteAtlas;
+        if (_spriteAtlas == null)
+        {
+            //编辑器模拟模式下图集未打包时取不到, 此时所有图标都会是空的
+            Debug.LogWarning($"--- SpriteAtlas 未取到 {SpriteAtlasPath}");
+        }
+
+        return _spriteAtlas;
+    }
+
+    /// <summary>
+    /// 按图集内精灵名取图, 名字就是图片文件名去掉扩展名: skill_3 / Crystal_B_1 / E_1_Axer;
+    /// 图集里没有(编辑器模拟模式未打包、名字写错)时返回 null
+    /// </summary>
+    public static Sprite AtlasSprite(string spriteName)
+    {
+        if (string.IsNullOrEmpty(spriteName))
+        {
+            return null;
+        }
+
+        SpriteAtlas atlas = GetSpriteAtlas();
+        return atlas == null ? null : atlas.GetSprite(spriteName);
+    }
+
+    #endregion
 
     public static byte[] LoadRawByte(string path)
     {

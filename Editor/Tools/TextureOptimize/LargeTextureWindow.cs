@@ -21,6 +21,7 @@ namespace EditorAssetsTools
         private const string PrefBackupRoot = "XCTools.LargeTexture.BackupRoot";
         private const string PrefImportMaxSize = "XCTools.LargeTexture.ImportMaxSize";
         private const string PrefDisableMipmap = "XCTools.LargeTexture.DisableMipmap";
+        private const string PrefDirectoryLevel = "XCTools.LargeTexture.DirectoryLevel";
 
         /// <summary>可选的导入上限，0 表示不修改；顺序与 ImportMaxSizeLabels 对应</summary>
         private static readonly int[] ImportMaxSizeOptions = { 0, 8192, 4096, 2048, 1024, 512, 256 };
@@ -35,8 +36,19 @@ namespace EditorAssetsTools
 
         private string scanRoot = DefaultScanRoot;
         private int sizeThreshold = 512;
+
+        /// <summary>目录分级：0 不按目录分组；1 以扫描目录下第 1 层目录为分组，2 取前两层，依此类推</summary>
+        private int directoryLevel;
         private Vector2 scrollPosition;
-        private List<TextureTier> tiers = new List<TextureTier>();
+
+        /// <summary>扫描结果全集，改「目录分级」时据此重排，无需重新扫描</summary>
+        private List<TextureEntry> allEntries = new List<TextureEntry>();
+
+        /// <summary>列表结构：目录组（一级）→ 尺寸档（二级）→ 条目</summary>
+        private List<DirectoryGroup> groups = new List<DirectoryGroup>();
+
+        /// <summary>当前阈值算出的档位下限，重排分组时据此给每个目录重建档位</summary>
+        private List<int> tierBounds = new List<int>();
         private bool scanned;
         private int percent = 50;
         private bool backupBeforeResize = true;
@@ -46,9 +58,14 @@ namespace EditorAssetsTools
         private bool disableMipmap;
         private bool overwriteBackup;
         private string backupRoot;
-        private string statusMessage = "选择目录后点击「扫描」，列表按尺寸分档显示，组内按文件体积从大到小排列。";
+        private string statusMessage = "选择目录后点击「扫描」，列表按尺寸分档显示，组内按文件体积从大到小排列；目录分级设为 1 可再按一级目录分组。";
         private MessageType statusType = MessageType.Info;
         private GUIStyle nameStyle;
+        private GUIStyle boldFoldoutStyle;
+
+        /// <summary>GUIStyle 是否已按当前 skin 建好；坏掉时会一直重试</summary>
+        private bool stylesReady;
+        private bool stylesFailedLogged;
 
         /// <summary>一条纹理记录（路径 + 源尺寸 + 被引用情况）</summary>
         private sealed class TextureEntry
@@ -108,6 +125,60 @@ namespace EditorAssetsTools
             }
         }
 
+        /// <summary>一级目录分组：目录名 + 组内若干尺寸档</summary>
+        private sealed class DirectoryGroup
+        {
+            public string Label;
+            public bool IsRoot;
+            public bool Foldout = true;
+            public List<TextureTier> Tiers = new List<TextureTier>();
+
+            /// <summary>组内条目总数</summary>
+            public int Count
+            {
+                get
+                {
+                    int count = 0;
+                    for (int i = 0; i < Tiers.Count; i++)
+                    {
+                        count += Tiers[i].Entries.Count;
+                    }
+
+                    return count;
+                }
+            }
+
+            /// <summary>组内已勾选条目数</summary>
+            public int SelectedCount
+            {
+                get
+                {
+                    int count = 0;
+                    for (int i = 0; i < Tiers.Count; i++)
+                    {
+                        count += Tiers[i].SelectedCount;
+                    }
+
+                    return count;
+                }
+            }
+
+            /// <summary>组内文件体积合计</summary>
+            public long TotalSize
+            {
+                get
+                {
+                    long total = 0;
+                    for (int i = 0; i < Tiers.Count; i++)
+                    {
+                        total += Tiers[i].TotalSize;
+                    }
+
+                    return total;
+                }
+            }
+        }
+
         [MenuItem(MenuPath, priority = 133)]
         public static void Open()
         {
@@ -129,6 +200,7 @@ namespace EditorAssetsTools
             }
 
             disableMipmap = EditorPrefs.GetBool(PrefDisableMipmap, false);
+            directoryLevel = Mathf.Clamp(EditorPrefs.GetInt(PrefDirectoryLevel, 0), 0, 8);
 
             backupRoot = EditorPrefs.GetString(PrefBackupRoot, string.Empty);
             if (string.IsNullOrEmpty(backupRoot))
@@ -136,18 +208,68 @@ namespace EditorAssetsTools
                 backupRoot = Path.GetFullPath(DefaultBackupFolder);
             }
 
-            nameStyle = new GUIStyle(EditorStyles.label)
+            // EditorStyles 不能在 OnEnable 里取：编辑器启动时恢复上次布局会在这里跑 OnEnable，
+            // 此时 GUI skin 还没加载完，EditorStyles.label 内部会抛 NullReferenceException。
+            // 样式统一延后到 OnGUI 里按需创建（见 EnsureStyles）。
+            nameStyle = null;
+            boldFoldoutStyle = null;
+            stylesReady = false;
+        }
+
+        /// <summary>
+        /// 在 OnGUI 里按需创建 GUIStyle。skin 未就绪时 EditorStyles.* 会抛 NRE，
+        /// 这里吞掉异常并在下一帧重试，不让一次异常把整个窗口画崩。
+        /// </summary>
+        private bool EnsureStyles()
+        {
+            if (stylesReady)
             {
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(0, 2, 0, 0),
-                clipping = TextClipping.Clip
-            };
+                return true;
+            }
+
+            try
+            {
+                GUIStyle label = EditorStyles.label;
+                GUIStyle foldout = EditorStyles.foldout;
+                if (label == null || foldout == null)
+                {
+                    return false;
+                }
+
+                nameStyle = new GUIStyle(label)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    padding = new RectOffset(0, 2, 0, 0),
+                    clipping = TextClipping.Clip
+                };
+                boldFoldoutStyle = new GUIStyle(foldout) { fontStyle = FontStyle.Bold };
+                stylesReady = true;
+                return true;
+            }
+            catch (Exception e)
+            {
+                nameStyle = null;
+                boldFoldoutStyle = null;
+                if (!stylesFailedLogged)
+                {
+                    stylesFailedLogged = true;
+                    Debug.LogWarning("[LargeTextureWindow] 编辑器 GUI skin 尚未就绪，样式初始化已延后重试：" + e);
+                }
+
+                return false;
+            }
         }
 
         private void OnGUI()
         {
             if (EditorApplication.isCompiling)
             {
+                return;
+            }
+
+            if (!EnsureStyles())
+            {
+                // 样式还没建起来（skin 未就绪），跳过这一帧即可，重绘时会自动重试
                 return;
             }
 
@@ -178,7 +300,22 @@ namespace EditorAssetsTools
                 scanRoot = EditorGUILayout.TextField(scanRoot, EditorStyles.toolbarTextField, GUILayout.MinWidth(180f));
 
                 GUILayout.Label("最小边长", EditorStyles.miniLabel, GUILayout.Width(52f));
-                sizeThreshold = EditorGUILayout.IntField(sizeThreshold, EditorStyles.toolbarTextField, GUILayout.Width(48f));
+                sizeThreshold = EditorGUILayout.IntField(sizeThreshold, EditorStyles.toolbarTextField, GUILayout.Width(46f));
+
+                GUILayout.Label(new GUIContent("目录分级", "0 = 不分组；1 = 按扫描目录下第 1 层目录分组；2 = 取前两层"),
+                    EditorStyles.miniLabel, GUILayout.Width(52f));
+                int nextLevel = EditorGUILayout.IntField(directoryLevel, EditorStyles.toolbarTextField,
+                    GUILayout.Width(32f));
+                if (nextLevel != directoryLevel)
+                {
+                    directoryLevel = Mathf.Clamp(nextLevel, 0, 8);
+                    EditorPrefs.SetInt(PrefDirectoryLevel, directoryLevel);
+                    // 分组只影响展示，已有扫描结果直接重排即可
+                    if (scanned)
+                    {
+                        RebuildGroups();
+                    }
+                }
 
                 if (GUILayout.Button("扫描", EditorStyles.toolbarButton, GUILayout.Width(60f)))
                 {
@@ -207,17 +344,21 @@ namespace EditorAssetsTools
             int selectedCount = 0;
             long selectedSize = 0;
 
-            for (int i = 0; i < tiers.Count; i++)
+            for (int g = 0; g < groups.Count; g++)
             {
-                TextureTier tier = tiers[i];
-                totalCount += tier.Entries.Count;
-                totalSize += tier.TotalSize;
-                for (int j = 0; j < tier.Entries.Count; j++)
+                DirectoryGroup group = groups[g];
+                totalCount += group.Count;
+                totalSize += group.TotalSize;
+                for (int t = 0; t < group.Tiers.Count; t++)
                 {
-                    if (tier.Entries[j].Selected)
+                    List<TextureEntry> entries = group.Tiers[t].Entries;
+                    for (int e = 0; e < entries.Count; e++)
                     {
-                        selectedCount++;
-                        selectedSize += tier.Entries[j].FileSize;
+                        if (entries[e].Selected)
+                        {
+                            selectedCount++;
+                            selectedSize += entries[e].FileSize;
+                        }
                     }
                 }
             }
@@ -234,19 +375,20 @@ namespace EditorAssetsTools
             }
         }
 
-        /// <summary>绘制所有档位</summary>
+        /// <summary>绘制列表：目录组（可选）→ 尺寸档 → 条目</summary>
         private void DrawTiers()
         {
             if (!scanned)
             {
                 EditorGUILayout.HelpBox(
                     string.Format("扫描 {0} 下所有资源引用到的纹理（含模型、材质、ScriptableObject 引用到的外部贴图），\n" +
-                                  "只列出边长 ≥ {1} 的文件，按尺寸分档、组内按体积降序。", scanRoot, sizeThreshold),
+                                  "只列出边长 ≥ {1} 的文件；「目录分级」设为 1 会再按一级目录分组。", scanRoot,
+                        sizeThreshold),
                     MessageType.Info);
                 return;
             }
 
-            if (tiers.Count == 0)
+            if (allEntries.Count == 0)
             {
                 EditorGUILayout.HelpBox(
                     string.Format("{0} 下没有引用到边长 ≥ {1} 的纹理。", scanRoot, sizeThreshold),
@@ -254,14 +396,54 @@ namespace EditorAssetsTools
                 return;
             }
 
-            for (int i = 0; i < tiers.Count; i++)
+            for (int g = 0; g < groups.Count; g++)
             {
-                DrawTier(tiers[i]);
+                DirectoryGroup group = groups[g];
+                if (!group.IsRoot)
+                {
+                    DrawGroupHeader(group);
+                    if (!group.Foldout)
+                    {
+                        continue;
+                    }
+                }
+
+                for (int t = 0; t < group.Tiers.Count; t++)
+                {
+                    DrawTier(group.Tiers[t], group.IsRoot ? 0f : 12f);
+                }
+            }
+        }
+
+        /// <summary>绘制目录组头（加粗折叠条 + 组内全选）</summary>
+        private void DrawGroupHeader(DirectoryGroup group)
+        {
+            GUILayout.Space(8f);
+
+            string title = string.Format("{0}/   （{1} 张，{2}）", group.Label, group.Count,
+                FormatBytes(group.TotalSize));
+            Rect rowRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight + 2f);
+            Rect foldoutRect = new Rect(rowRect.x, rowRect.y, rowRect.width - 60f, rowRect.height);
+            Rect buttonRect = new Rect(rowRect.xMax - 54f, rowRect.y, 54f, rowRect.height);
+
+            group.Foldout = EditorGUI.Foldout(foldoutRect, group.Foldout, title, true, boldFoldoutStyle);
+
+            bool allSelected = group.SelectedCount == group.Count;
+            if (GUI.Button(buttonRect, allSelected ? "全不选" : "全选", EditorStyles.miniButton))
+            {
+                for (int t = 0; t < group.Tiers.Count; t++)
+                {
+                    List<TextureEntry> entries = group.Tiers[t].Entries;
+                    for (int e = 0; e < entries.Count; e++)
+                    {
+                        entries[e].Selected = !allSelected;
+                    }
+                }
             }
         }
 
         /// <summary>绘制一个尺寸档位（折叠头 + 组内全选 + 条目列表）</summary>
-        private void DrawTier(TextureTier tier)
+        private void DrawTier(TextureTier tier, float indent)
         {
             GUILayout.Space(4f);
 
@@ -269,7 +451,8 @@ namespace EditorAssetsTools
             string title = string.Format("{0}  （{1} 张，{2}）", tier.Label, tier.Entries.Count,
                 FormatBytes(tier.TotalSize));
             Rect rowRect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
-            Rect foldoutRect = new Rect(rowRect.x, rowRect.y, rowRect.width - 60f, rowRect.height);
+            Rect foldoutRect = new Rect(rowRect.x + indent, rowRect.y, rowRect.width - 60f - indent,
+                rowRect.height);
             Rect buttonRect = new Rect(rowRect.xMax - 54f, rowRect.y, 54f, rowRect.height);
 
             tier.Foldout = EditorGUI.Foldout(foldoutRect, tier.Foldout, title, true, EditorStyles.foldout);
@@ -290,16 +473,16 @@ namespace EditorAssetsTools
 
             for (int i = 0; i < tier.Entries.Count; i++)
             {
-                DrawEntry(tier.Entries[i]);
+                DrawEntry(tier.Entries[i], indent);
             }
         }
 
         /// <summary>绘制单条纹理：勾选框、名称（点击定位）、源尺寸、体积、导入上限、引用数</summary>
-        private void DrawEntry(TextureEntry entry)
+        private void DrawEntry(TextureEntry entry, float indent)
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                GUILayout.Space(16f);
+                GUILayout.Space(16f + indent);
                 entry.Selected = EditorGUILayout.Toggle(entry.Selected, GUILayout.Width(16f));
 
                 if (GUILayout.Button(new GUIContent(entry.FileName, "点击在 Project 窗口定位"), nameStyle,
@@ -460,29 +643,33 @@ namespace EditorAssetsTools
             int count = 0;
             long limitedCount = 0;
             string sample = "勾选纹理后可预览目标尺寸";
-            for (int i = 0; i < tiers.Count; i++)
+            for (int g = 0; g < groups.Count; g++)
             {
-                for (int j = 0; j < tiers[i].Entries.Count; j++)
+                for (int t = 0; t < groups[g].Tiers.Count; t++)
                 {
-                    TextureEntry entry = tiers[i].Entries[j];
-                    if (!entry.Selected)
+                    List<TextureEntry> entries = groups[g].Tiers[t].Entries;
+                    for (int e = 0; e < entries.Count; e++)
                     {
-                        continue;
-                    }
+                        TextureEntry entry = entries[e];
+                        if (!entry.Selected)
+                        {
+                            continue;
+                        }
 
-                    count++;
-                    int width;
-                    int height;
-                    GetTargetSize(entry, out width, out height);
-                    if (IsImportLimited(entry, width, height))
-                    {
-                        limitedCount++;
-                    }
+                        count++;
+                        int width;
+                        int height;
+                        GetTargetSize(entry, out width, out height);
+                        if (IsImportLimited(entry, width, height))
+                        {
+                            limitedCount++;
+                        }
 
-                    if (count == 1)
-                    {
-                        sample = string.Format("示例：{0}  {1}x{2} → {3}x{4}", entry.FileName, entry.SourceWidth,
-                            entry.SourceHeight, width, height);
+                        if (count == 1)
+                        {
+                            sample = string.Format("示例：{0}  {1}x{2} → {3}x{4}", entry.FileName,
+                                entry.SourceWidth, entry.SourceHeight, width, height);
+                        }
                     }
                 }
             }
@@ -558,48 +745,21 @@ namespace EditorAssetsTools
                 }
             }
 
-            List<int> bounds = BuildTierBounds(sizeThreshold);
-            for (int i = 0; i < bounds.Count; i++)
-            {
-                tiers.Add(new TextureTier
-                {
-                    Min = bounds[i],
-                    Max = i == 0 ? int.MaxValue : bounds[i - 1] - 1,
-                    Label = i == 0
-                        ? string.Format("≥ {0}", bounds[i])
-                        : string.Format("{0} ~ {1}", bounds[i], bounds[i - 1] - 1)
-                });
-            }
-
+            tierBounds = BuildTierBounds(sizeThreshold);
+            allEntries.Clear();
             foreach (KeyValuePair<string, List<string>> pair in referenceMap)
             {
                 TextureEntry entry = BuildEntry(pair.Key, pair.Value);
-                if (entry == null)
+                if (entry != null)
                 {
-                    continue;
-                }
-
-                int maxSide = Mathf.Max(entry.SourceWidth, entry.SourceHeight);
-                int tierIndex = FindTierIndex(maxSide);
-                if (tierIndex >= 0)
-                {
-                    tiers[tierIndex].Entries.Add(entry);
+                    allEntries.Add(entry);
                 }
             }
 
-            for (int i = 0; i < tiers.Count; i++)
-            {
-                tiers[i].Entries.Sort(CompareBySize);
-            }
-
-            tiers.RemoveAll(tier => tier.Entries.Count == 0);
+            RebuildGroups();
             scanned = true;
 
-            int total = 0;
-            for (int i = 0; i < tiers.Count; i++)
-            {
-                total += tiers[i].Entries.Count;
-            }
+            int total = allEntries.Count;
 
             SetStatus(canceled
                     ? string.Format("扫描被中断，已找到 {0} 张大纹理。", total)
@@ -694,15 +854,144 @@ namespace EditorAssetsTools
 
         private int FindTierIndex(int maxSide)
         {
-            for (int i = 0; i < tiers.Count; i++)
+            for (int i = 0; i < tierBounds.Count; i++)
             {
-                if (maxSide >= tiers[i].Min && maxSide <= tiers[i].Max)
+                int min = tierBounds[i];
+                int max = i == 0 ? int.MaxValue : tierBounds[i - 1] - 1;
+                if (maxSide >= min && maxSide <= max)
                 {
                     return i;
                 }
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// 按当前「目录分级」把扫描结果重排成 目录组 → 尺寸档 两级结构；
+        /// 只重排展示，不重新扫描，切换分级时立即生效。
+        /// </summary>
+        private void RebuildGroups()
+        {
+            groups.Clear();
+            if (allEntries.Count == 0)
+            {
+                return;
+            }
+
+            int level = Mathf.Clamp(directoryLevel, 0, 8);
+            if (level == 0)
+            {
+                DirectoryGroup root = new DirectoryGroup { IsRoot = true, Label = "全部" };
+                root.Tiers = CreateTiers(allEntries);
+                groups.Add(root);
+                return;
+            }
+
+            Dictionary<string, List<TextureEntry>> map = new Dictionary<string, List<TextureEntry>>();
+            for (int i = 0; i < allEntries.Count; i++)
+            {
+                TextureEntry entry = allEntries[i];
+                string key = GetDirectoryKey(entry.AssetPath);
+                List<TextureEntry> list;
+                if (!map.TryGetValue(key, out list))
+                {
+                    list = new List<TextureEntry>();
+                    map[key] = list;
+                }
+
+                list.Add(entry);
+            }
+
+            foreach (KeyValuePair<string, List<TextureEntry>> pair in map)
+            {
+                groups.Add(new DirectoryGroup
+                {
+                    Label = pair.Key,
+                    IsRoot = false,
+                    Tiers = CreateTiers(pair.Value)
+                });
+            }
+
+            // 体积大的目录排前面，体积相同按名称，保证顺序稳定
+            groups.Sort((a, b) =>
+            {
+                int result = b.TotalSize.CompareTo(a.TotalSize);
+                return result != 0 ? result : string.CompareOrdinal(a.Label, b.Label);
+            });
+        }
+
+        /// <summary>给一批条目按当前档位下限建出尺寸档，空档直接丢弃，档内按体积降序</summary>
+        private List<TextureTier> CreateTiers(List<TextureEntry> entries)
+        {
+            List<TextureTier> list = new List<TextureTier>();
+            for (int i = 0; i < tierBounds.Count; i++)
+            {
+                list.Add(new TextureTier
+                {
+                    Min = tierBounds[i],
+                    Max = i == 0 ? int.MaxValue : tierBounds[i - 1] - 1,
+                    Label = i == 0
+                        ? string.Format("≥ {0}", tierBounds[i])
+                        : string.Format("{0} ~ {1}", tierBounds[i], tierBounds[i - 1] - 1)
+                });
+            }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                int index = FindTierIndex(Mathf.Max(entries[i].SourceWidth, entries[i].SourceHeight));
+                if (index >= 0)
+                {
+                    list[index].Entries.Add(entries[i]);
+                }
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].Entries.Sort(CompareBySize);
+            }
+
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list[i].Entries.Count == 0)
+                {
+                    list.RemoveAt(i);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// 取纹理路径的前 N 层目录作为分组键：扫描目录内的纹理以扫描目录为基准，
+        /// 目录外被引用的贴图以 Assets 为基准，这样外部资源能看出真实来源。
+        /// </summary>
+        private string GetDirectoryKey(string assetPath)
+        {
+            string prefix = scanRoot.TrimEnd('/') + "/";
+            string relative;
+            if (assetPath.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                relative = assetPath.Substring(prefix.Length);
+            }
+            else if (assetPath.StartsWith("Assets/", StringComparison.Ordinal))
+            {
+                relative = assetPath.Substring("Assets/".Length);
+            }
+            else
+            {
+                relative = assetPath;
+            }
+
+            string[] parts = relative.Split('/');
+            int directoryCount = parts.Length - 1;
+            if (directoryCount <= 0)
+            {
+                return "（根目录）";
+            }
+
+            int take = Mathf.Clamp(directoryLevel, 1, directoryCount);
+            return string.Join("/", parts, 0, take);
         }
 
         /// <summary>按文件体积降序，体积相同按路径排序保证结果稳定</summary>
@@ -1076,13 +1365,17 @@ namespace EditorAssetsTools
         private List<TextureEntry> CollectSelected()
         {
             List<TextureEntry> selected = new List<TextureEntry>();
-            for (int i = 0; i < tiers.Count; i++)
+            for (int g = 0; g < groups.Count; g++)
             {
-                for (int j = 0; j < tiers[i].Entries.Count; j++)
+                for (int t = 0; t < groups[g].Tiers.Count; t++)
                 {
-                    if (tiers[i].Entries[j].Selected)
+                    List<TextureEntry> entries = groups[g].Tiers[t].Entries;
+                    for (int e = 0; e < entries.Count; e++)
                     {
-                        selected.Add(tiers[i].Entries[j]);
+                        if (entries[e].Selected)
+                        {
+                            selected.Add(entries[e]);
+                        }
                     }
                 }
             }
@@ -1119,15 +1412,20 @@ namespace EditorAssetsTools
 
         private void SetAllFoldout(bool foldout)
         {
-            for (int i = 0; i < tiers.Count; i++)
+            for (int g = 0; g < groups.Count; g++)
             {
-                tiers[i].Foldout = foldout;
+                groups[g].Foldout = foldout;
+                for (int t = 0; t < groups[g].Tiers.Count; t++)
+                {
+                    groups[g].Tiers[t].Foldout = foldout;
+                }
             }
         }
 
         private void ClearResults()
         {
-            tiers.Clear();
+            groups.Clear();
+            allEntries.Clear();
             scanned = false;
             Repaint();
         }

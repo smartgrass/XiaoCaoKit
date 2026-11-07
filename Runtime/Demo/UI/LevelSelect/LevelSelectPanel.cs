@@ -365,7 +365,7 @@ namespace XiaoCao.UI
                 return null;
             }
 
-            return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/Map/{setting.ImgName}.png");
+            return ResMgr.AtlasSprite(setting.ImgName);
         }
 
         /// <summary>

@@ -95,9 +95,12 @@ namespace XiaoCao
         public const DataFormat RawFileFormat = DataFormat.Binary;
 
 
-        public static string GetSkillIconPath(string skillId)
+        /// <summary>
+        /// 技能图标在图集/目录里的精灵名: 3 -> skill_3
+        /// </summary>
+        public static string GetSkillIconName(string skillId)
         {
-            return $"{SpriteDir}/SkillIcon/{skillId}.png";
+            return $"skill_{skillId}";
         }
 
         public static string GetRoleTexturePath(string roleId)

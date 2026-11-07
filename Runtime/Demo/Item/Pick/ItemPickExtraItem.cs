@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DG.Tweening;
 using NaughtyAttributes;
 using UnityEngine;
@@ -197,8 +197,7 @@ namespace XiaoCaoKit.Runtime.Demo.Item.Pick
 #endif
             if (itemId == BattleExtraItemType.SupportRole)
             {
-                Sprite supportRoleIcon = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/SupportRole.png");
-                return supportRoleIcon;
+                return ResMgr.AtlasSprite("SupportRole");
             }
             
             return CreateItem().GetItemSprite();

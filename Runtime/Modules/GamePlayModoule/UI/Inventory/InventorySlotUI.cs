@@ -61,17 +61,10 @@ namespace XiaoCao
             }
         }
 
-        // 获取物品图标
+        // 获取物品图标, 统一走图集加载
         private Sprite GetItemIcon(Item item)
         {
-            string iconPath = $"{item.type}/{item.ItemKey}";
-            Sprite icon = Resources.Load<Sprite>(iconPath);
-
-            if (icon == null)
-            {
-                Debug.LogError("Icon not found at path: " + iconPath);
-            }
-            return icon;
+            return item.GetItemSprite();
         }
     }
 

@@ -1,51 +1,60 @@
-﻿using System.Drawing;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using XiaoCao;
 
+/// <summary>
+/// 精灵图标统一入口: 一律按图集内精灵名取图(ResMgr.AtlasSprite), 名字就是图片文件名去掉扩展名
+/// </summary>
 public static class SpriteResHelper
 {
-    public static string DefaultItemSpritePath = "Assets/_Res/Sprite/UIIcon/help.png";
+    /// <summary>兜底图标的图集名</summary>
+    public const string DefaultItemSpriteName = "help";
 
-    public static Sprite LoadSkillIcon(string skillName)
+    /// <summary>兜底图标路径, 仅编辑器未打包(AssetDatabase)时使用</summary>
+    public const string DefaultItemSpritePath = "Assets/_Res/Sprite/UIIcon/help.png";
+
+    /// <summary>
+    /// 按技能 Id 取技能图标, 图集内名字为 skill_{id}, 缺失时用 skill_0 兜底
+    /// </summary>
+    public static Sprite LoadSkillIcon(string skillId)
     {
-        if (string.IsNullOrEmpty(skillName))
+        if (string.IsNullOrEmpty(skillId))
         {
             return null;
         }
 
-        string path = XCPathConfig.GetSkillIconPath(skillName);
-        string pathDefault = XCPathConfig.GetSkillIconPath("0");
-        return ResMgr.LoadAseetOrDefault<Sprite>(path, pathDefault);
+        Sprite icon = ResMgr.AtlasSprite(XCPathConfig.GetSkillIconName(skillId));
+        return icon != null ? icon : ResMgr.AtlasSprite(XCPathConfig.GetSkillIconName("0"));
     }
 
+    /// <summary>
+    /// 按物品取图标, 遗物/支援角色/结晶有各自的命名规则
+    /// </summary>
     public static Sprite GetItemSprite(this Item item)
     {
         if (item.type == ItemType.Buff)
         {
-            var so = RunTimePoolMgr.Inst.staticResSoUsing.buffSpriteSo;
             return BuffItem.Create(item).GetBuffSprite();
         }
         else if (item.type == ItemType.HolyRelic)
         {
-            //Relic/Weapon_4_30 -> Weapon_4_30
+            //Relic/Weapon_4_30 -> Weapon_4_30 -> Weapon_4
             string relicShortName = item.typeId.RemoveHead("Relic/");
 
             relicShortName = relicShortName.Remove(relicShortName.LastIndexOf("_"));
 
-            Sprite relic = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/Relic/{relicShortName}.png");
-            if (relic)
+            Sprite relic = ResMgr.AtlasSprite(relicShortName);
+            if (relic != null)
             {
                 return relic;
             }
 
             relicShortName = relicShortName.Remove(relicShortName.LastIndexOf("_"));
 
-            return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/Relic/{relicShortName}.png");
+            return ResMgr.AtlasSprite(relicShortName);
         }
         else if (item.type == ItemType.ExtraItem && item.typeId == BattleExtraItemType.SupportRole)
         {
-            Sprite supportRoleIcon = ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png");
+            Sprite supportRoleIcon = ResMgr.AtlasSprite(item.typeId);
             if (supportRoleIcon != null)
             {
                 return supportRoleIcon;
@@ -57,58 +66,56 @@ public static class SpriteResHelper
         {
             if (item.typeId.StartsWith(nameof(EConsumableSubType.Crystal)))
             {
-                //Crystal_A     独立图片: Assets/_Res/Sprite/ItemIcon/Crystal_A.png
-                //Crystal_B_1   图集 Crystal_B.png 中的子图
+                //Crystal_A    独立图片, 图集名 Crystal_A
+                //Crystal_B_1  Crystal_B 的子图, 图集名 Crystal_B_1
 
                 var strArray = item.typeId.Split("_");
 
-                string shortName = $"Crystal_{strArray[1]}";
-                string longName = item.typeId;
-
-                return GetCrystalSprite(shortName, longName);
+                string oreName = $"Crystal_{strArray[1]}";
+                return GetCrystalSprite(item.typeId, oreName);
             }
         }
 
-        string endPath = $"Assets/_Res/Sprite/ItemIcon/{item.typeId}.png";
-        return ResMgr.LoadAseetOrDefault<Sprite>(endPath, DefaultItemSpritePath);
+        Sprite sprite = ResMgr.AtlasSprite(item.typeId);
+        return sprite != null ? sprite : ResMgr.AtlasSprite(DefaultItemSpriteName);
     }
 
     /// <summary>
-    /// 读取结晶图标: 先取独立图片(Crystal_A_1.png), 再取图集(Crystal_B.png)里的同名子图, 最后退回图集整图
+    /// 读取结晶图标: 先按完整 id(Crystal_B_1) 取, 再按矿石类型(Crystal_A) 取, 最后兜底
     /// </summary>
-    private static Sprite GetCrystalSprite(string shortName, string longName)
+    private static Sprite GetCrystalSprite(string typeId, string oreName)
     {
-        string dirPath = "Assets/_Res/Sprite/ItemIcon/";
-        string longPath = $"{dirPath}{longName}.png";
-        string shortPath = $"{dirPath}{shortName}.png";
-
-        if (ResMgr.Loader.IsLocationValid(longPath))
+        Sprite sprite = ResMgr.AtlasSprite(typeId);
+        if (sprite != null)
         {
-            return ResMgr.LoadAseet<Sprite>(longPath);
+            return sprite;
         }
 
-        Sprite subSprite = ResMgr.LoadSubAseet<Sprite>(shortPath, longName);
-        if (subSprite)
-        {
-            return subSprite;
-        }
-
-        return ResMgr.LoadAseetOrDefault<Sprite>(shortPath, DefaultItemSpritePath);
+        sprite = ResMgr.AtlasSprite(oreName);
+        return sprite != null ? sprite : ResMgr.AtlasSprite(DefaultItemSpriteName);
     }
 
-
+    /// <summary>
+    /// 按角色 Id 取立绘/头像, 图集名就是 roleKey
+    /// </summary>
     public static Sprite LoadRoleIcon(string roleKey)
     {
-        return ResMgr.LoadAseet<Sprite>(XCPathConfig.GetRoleTexturePath(roleKey));
-    }
-    
-    public static Sprite LoadEmblemBuffIcon(string buffName)
-    {
-        return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/EmblemBuffIcon/{buffName}.png");
+        return ResMgr.AtlasSprite(roleKey);
     }
 
+    /// <summary>
+    /// 取纹章 Buff 图标
+    /// </summary>
+    public static Sprite LoadEmblemBuffIcon(string buffName)
+    {
+        return ResMgr.AtlasSprite(buffName);
+    }
+
+    /// <summary>
+    /// 取 Buff 状态栏图标
+    /// </summary>
     public static Sprite LoadBuffStateUIIcon(string buffName)
     {
-        return ResMgr.LoadAseet<Sprite>($"Assets/_Res/Sprite/ItemIcon/{buffName}.png");
+        return ResMgr.AtlasSprite(buffName);
     }
 }
