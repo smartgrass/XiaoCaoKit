@@ -26,6 +26,9 @@ namespace ShaderVariantsCollector
         private string newShaderToExclude = "";
         private string newKeywordToExclude = "";
 
+        // 目录筛选相关
+        private const string DefaultCollectFolder = ExclusionSettings.DefaultCollectFolder;
+
         [MenuItem("Tools/Shader Variants Collector/Open Editor Window")]
         public static void ShowWindow()
         {
@@ -169,6 +172,119 @@ namespace ShaderVariantsCollector
             EditorGUILayout.EndVertical();
         }
 
+        /// <summary>
+        /// 绘制收集范围配置：目录筛选开关，勾选后显示目录配置列表。
+        /// </summary>
+        private void DrawCollectScopeSettings()
+        {
+            var settings = GetExclusionSettings();
+
+            EditorGUILayout.BeginVertical("box");
+
+            bool enabled = EditorGUILayout.ToggleLeft("目录筛选（仅收集指定目录内引用的 Shader 变体）",
+                settings.EnableDirectoryFilter, EditorStyles.boldLabel);
+            if (enabled != settings.EnableDirectoryFilter)
+            {
+                settings.EnableDirectoryFilter = enabled;
+                SaveExclusionSettings();
+            }
+
+            if (settings.EnableDirectoryFilter)
+            {
+                var folders = settings.CollectFolders;
+                int removeIndex = -1;
+
+                for (int i = 0; i < folders.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"目录 {i + 1}", GUILayout.Width(60));
+
+                    EditorGUI.BeginChangeCheck();
+                    string newFolder = EditorGUILayout.TextField(folders[i] ?? string.Empty);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        folders[i] = newFolder;
+                        EditorUtility.SetDirty(settings);
+                    }
+
+                    if (GUILayout.Button("选择", GUILayout.Width(50)))
+                    {
+                        string picked = PickProjectFolder(folders[i]);
+                        if (!string.IsNullOrEmpty(picked))
+                        {
+                            folders[i] = picked;
+                            SaveExclusionSettings();
+                        }
+                    }
+
+                    if (GUILayout.Button("移除", GUILayout.Width(50)))
+                    {
+                        removeIndex = i;
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                if (removeIndex >= 0)
+                {
+                    folders.RemoveAt(removeIndex);
+                    SaveExclusionSettings();
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("添加目录", GUILayout.Width(80)))
+                {
+                    folders.Add(DefaultCollectFolder);
+                    SaveExclusionSettings();
+                }
+                if (GUILayout.Button("恢复默认", GUILayout.Width(80)))
+                {
+                    folders.Clear();
+                    folders.Add(DefaultCollectFolder);
+                    SaveExclusionSettings();
+                }
+                EditorGUILayout.EndHorizontal();
+
+                // 提示无效目录，避免收集时静默跳过
+                var invalidFolders = settings.GetActiveCollectFolders()
+                    .Where(f => !AssetDatabase.IsValidFolder(f)).ToList();
+                if (invalidFolders.Count > 0)
+                {
+                    EditorGUILayout.HelpBox($"以下目录不存在，收集时会被跳过：\n{string.Join("\n", invalidFolders)}",
+                        MessageType.Warning);
+                }
+            }
+
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 弹出文件夹选择面板，返回工程相对路径（Assets/...）；非法选择返回 null。
+        /// </summary>
+        private static string PickProjectFolder(string currentFolder)
+        {
+            string dataPath = Application.dataPath.Replace('\\', '/').TrimEnd('/');
+            var parent = System.IO.Directory.GetParent(dataPath);
+            string projectRoot = parent != null ? parent.FullName.Replace('\\', '/') : dataPath;
+
+            string startDir = projectRoot;
+            if (!string.IsNullOrEmpty(currentFolder) && AssetDatabase.IsValidFolder(currentFolder))
+                startDir = $"{projectRoot}/{currentFolder}";
+
+            string absolute = EditorUtility.OpenFolderPanel("选择收集目录", startDir, string.Empty);
+            if (string.IsNullOrEmpty(absolute))
+                return null;
+
+            absolute = absolute.Replace('\\', '/').TrimEnd('/');
+            if (absolute == dataPath)
+                return "Assets";
+            if (absolute.StartsWith(dataPath + "/"))
+                return "Assets/" + absolute.Substring(dataPath.Length + 1);
+
+            EditorUtility.DisplayDialog("目录无效", "收集目录必须位于当前工程的 Assets 目录下。", "OK");
+            return null;
+        }
+
         private void OnEnable()
         {
             if (treeViewState == null)
@@ -231,6 +347,11 @@ namespace ShaderVariantsCollector
         private void DrawMainContent()
         {
             EditorGUILayout.BeginVertical();
+
+            // 收集范围（目录筛选）
+            DrawCollectScopeSettings();
+            EditorGUILayout.Space();
+
             
             // 绘制配置界面
             if (showExclusionSettings)
@@ -323,6 +444,19 @@ namespace ShaderVariantsCollector
             {
                 EditorUtility.DisplayDialog("Error", "Please select a ShaderVariantCollection first.", "OK");
                 return;
+            }
+
+            // 目录筛选：先确认配置目录有效，避免收集到空结果
+            var settings = GetExclusionSettings();
+            if (settings != null && settings.EnableDirectoryFilter)
+            {
+                var validFolders = settings.GetActiveCollectFolders().Where(AssetDatabase.IsValidFolder).ToArray();
+                if (validFolders.Length == 0)
+                {
+                    EditorUtility.DisplayDialog("目录无效",
+                        "目录筛选已启用，但配置的收集目录都不存在，请先修正目录配置。", "OK");
+                    return;
+                }
             }
 
             // 收集前重建缓存

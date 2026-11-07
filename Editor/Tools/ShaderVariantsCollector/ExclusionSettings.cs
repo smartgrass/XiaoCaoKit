@@ -15,9 +15,26 @@ namespace ShaderVariantsCollector
         
         [SerializeField]
         public List<string> excludedKeywords = new List<string>();
+
+        /// <summary>是否启用目录筛选（仅收集指定目录内引用的 Shader 变体）</summary>
+        [SerializeField]
+        private bool enableDirectoryFilter = false;
+
+        /// <summary>参与收集的目录（工程相对路径，如 Assets/_Res）</summary>
+        [SerializeField]
+        private List<string> collectFolders = new List<string>();
+
+        /// <summary>目录筛选未配置目录时使用的默认收集目录</summary>
+        public const string DefaultCollectFolder = "Assets/_Res";
         
         private void OnEnable()
         {
+            // 目录筛选：目录列表为空时补上默认目录
+            if (collectFolders == null)
+                collectFolders = new List<string>();
+            if (collectFolders.Count == 0)
+                collectFolders.Add(DefaultCollectFolder);
+
             // 首次创建时设置默认值
             if (excludedShaderNames.Count == 0 && excludedKeywords.Count == 0)
             {
@@ -36,6 +53,61 @@ namespace ShaderVariantsCollector
             excludedKeywords.Add("EDITOR_VISUALIZATION");
         }
         
+        /// <summary>是否启用目录筛选（仅收集指定目录内引用的 Shader 变体）</summary>
+        public bool EnableDirectoryFilter
+        {
+            get => enableDirectoryFilter;
+            set => enableDirectoryFilter = value;
+        }
+
+        /// <summary>参与收集的目录列表（工程相对路径）</summary>
+        public List<string> CollectFolders
+        {
+            get
+            {
+                if (collectFolders == null)
+                    collectFolders = new List<string>();
+                return collectFolders;
+            }
+        }
+
+        /// <summary>
+        /// 获取当前生效的收集目录；未启用目录筛选时返回 null（表示扫描整个工程）。
+        /// </summary>
+        public string[] GetActiveCollectFolders()
+        {
+            if (!enableDirectoryFilter)
+                return null;
+
+            var folders = new List<string>();
+            foreach (var folder in CollectFolders)
+            {
+                var normalized = NormalizeFolder(folder);
+                if (!string.IsNullOrEmpty(normalized) && !folders.Contains(normalized))
+                    folders.Add(normalized);
+            }
+
+            // 没有配置任何目录时回退到默认目录
+            if (folders.Count == 0)
+                folders.Add(DefaultCollectFolder);
+
+            return folders.ToArray();
+        }
+
+        /// <summary>把目录路径规整为 Assets/xxx 形式（去除首尾空白与多余斜杠）。</summary>
+        public static string NormalizeFolder(string folder)
+        {
+            if (string.IsNullOrEmpty(folder))
+                return string.Empty;
+
+            var normalized = folder.Replace('\\', '/').Trim();
+            while (normalized.EndsWith("/"))
+                normalized = normalized.Substring(0, normalized.Length - 1);
+
+            return normalized;
+        }
+
+
         public bool IsShaderExcluded(string shaderName)
         {
             if (string.IsNullOrEmpty(shaderName))

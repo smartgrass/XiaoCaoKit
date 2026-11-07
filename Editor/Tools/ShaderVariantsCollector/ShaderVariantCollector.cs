@@ -100,20 +100,59 @@ namespace ShaderVariantsCollector
             return variants;
         }
 
+        /// <summary>
+        /// 收集工程内的 Shader 变体；启用目录筛选时仅扫描配置目录内的材质与预制体。
+        /// </summary>
         public static List<ShaderVariantData> CollectVariantsFromProject(ExclusionSettings exclusionSettings = null)
         {
             var variants = new List<ShaderVariantData>();
             
+            // 目录筛选：启用后把扫描范围限制在配置目录内
+            string[] searchFolders = GetValidSearchFolders(exclusionSettings);
+            if (exclusionSettings != null && exclusionSettings.EnableDirectoryFilter
+                && (searchFolders == null || searchFolders.Length == 0))
+            {
+                Debug.LogError("[ShaderVariantsCollector] 目录筛选已启用，但没有有效的收集目录，已取消收集。");
+                return variants;
+            }
+
             // 收集所有Material中的变体
-            var materialVariants = CollectVariantsFromMaterials(exclusionSettings);
+            var materialVariants = CollectVariantsFromMaterials(exclusionSettings, searchFolders);
             variants.AddRange(materialVariants);
             
             // 收集所有Prefab中的变体
-            var prefabVariants = CollectVariantsFromPrefabs(exclusionSettings);
+            var prefabVariants = CollectVariantsFromPrefabs(exclusionSettings, searchFolders);
             variants.AddRange(prefabVariants);
             
             // 去重
             return SortVariantsByName(variants.Distinct());
+        }
+
+        /// <summary>
+        /// 校验并返回当前生效的搜索目录。
+        /// 返回 null 表示不限目录（扫描整个工程），返回空数组表示启用了筛选但没有可用目录。
+        /// </summary>
+        private static string[] GetValidSearchFolders(ExclusionSettings exclusionSettings)
+        {
+            var folders = exclusionSettings != null ? exclusionSettings.GetActiveCollectFolders() : null;
+            if (folders == null)
+                return null;
+
+            var validFolders = new List<string>();
+            foreach (var folder in folders)
+            {
+                if (AssetDatabase.IsValidFolder(folder))
+                {
+                    if (!validFolders.Contains(folder))
+                        validFolders.Add(folder);
+                }
+                else
+                {
+                    Debug.LogWarning($"[ShaderVariantsCollector] 收集目录不存在，已跳过: {folder}");
+                }
+            }
+
+            return validFolders.ToArray();
         }
 
         public static List<ShaderVariantData> CollectVariantsForShader(Shader targetShader, ExclusionSettings exclusionSettings = null)
@@ -211,11 +250,14 @@ namespace ShaderVariantsCollector
                 .ToList();
         }
 
-        private static List<ShaderVariantData> CollectVariantsFromMaterials(ExclusionSettings exclusionSettings = null)
+        private static List<ShaderVariantData> CollectVariantsFromMaterials(ExclusionSettings exclusionSettings = null, string[] searchFolders = null)
         {
             var variants = new List<ShaderVariantData>();
             
-            var materialGuids = AssetDatabase.FindAssets("t:Material");
+            // 目录筛选：有指定目录时只在目录内查找材质
+            var materialGuids = searchFolders != null && searchFolders.Length > 0
+                ? AssetDatabase.FindAssets("t:Material", searchFolders)
+                : AssetDatabase.FindAssets("t:Material");
             foreach (var guid in materialGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
@@ -255,11 +297,14 @@ namespace ShaderVariantsCollector
             return variants;
         }
 
-        private static List<ShaderVariantData> CollectVariantsFromPrefabs(ExclusionSettings exclusionSettings = null)
+        private static List<ShaderVariantData> CollectVariantsFromPrefabs(ExclusionSettings exclusionSettings = null, string[] searchFolders = null)
         {
             var variants = new List<ShaderVariantData>();
             
-            var prefabGuids = AssetDatabase.FindAssets("t:Prefab");
+            // 目录筛选：有指定目录时只在目录内查找预制体
+            var prefabGuids = searchFolders != null && searchFolders.Length > 0
+                ? AssetDatabase.FindAssets("t:Prefab", searchFolders)
+                : AssetDatabase.FindAssets("t:Prefab");
             foreach (var guid in prefabGuids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
