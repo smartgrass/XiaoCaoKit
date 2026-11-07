@@ -25,6 +25,10 @@ namespace XiaoCao
         [Tooltip("隐藏时缩到原始缩放的多少倍")]
         public float hideScale = 0.8f;
 
+        [Label("时停中也能播放")]
+        [Tooltip("勾选后动画走非缩放时间, Time.timeScale = 0(时停、暂停界面)时展开/收起动画照常播完")]
+        public bool ignoreTimeScale = true;
+
         /// <summary>当前是否处于显示状态</summary>
         private bool _isShow = true;
 
@@ -45,6 +49,7 @@ namespace XiaoCao
 
         private void OnDestroy()
         {
+            //补间已 SetLink 到 textPanel, 节点销毁时 DOTween 会自动回收, 这里不再手动 Kill
             btn.onClick.RemoveListener(OnClickBtn);
         }
 
@@ -64,18 +69,35 @@ namespace XiaoCao
             {
                 textPanel.gameObject.SetActive(true);
                 textPanel.localScale = _originScale * hideScale;
-                textPanel.DOScale(_originScale, duration)
-                    .SetEase(Ease.OutBack)
-                    .SetLink(textPanel.gameObject);
+                PlayScaleTween(_originScale, Ease.OutBack);
             }
             else
             {
                 // 缩完再隐藏；SetLink 保证节点销毁时补间自动回收
-                textPanel.DOScale(_originScale * hideScale, duration)
-                    .SetEase(Ease.InQuad)
-                    .SetLink(textPanel.gameObject)
+                PlayScaleTween(_originScale * hideScale, Ease.InQuad)
                     .OnComplete(() => textPanel.gameObject.SetActive(false));
             }
+        }
+
+        /// <summary>
+        /// 播放一次展开动画(从隐藏缩放弹到原始大小)并置为显示状态。
+        /// 提示条刚被实例化挂到 Mid 层时调用，避免它"凭空出现"没有弹出效果。
+        /// </summary>
+        public void PlayPop()
+        {
+            SetShow(true);
+        }
+
+        /// <summary>
+        /// 创建作用于 textPanel 的缩放补间；ignoreTimeScale 打开时走非缩放时间，
+        /// 保证时停(Time.timeScale = 0)期间动画依然能播完。
+        /// </summary>
+        private Tween PlayScaleTween(Vector3 endScale, Ease ease)
+        {
+            return textPanel.DOScale(endScale, duration)
+                .SetEase(ease)
+                .SetUpdate(ignoreTimeScale)
+                .SetLink(textPanel.gameObject);
         }
     }
 }

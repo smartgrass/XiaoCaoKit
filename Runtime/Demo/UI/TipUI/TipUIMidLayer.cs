@@ -30,7 +30,7 @@ namespace XiaoCao
             Hide();
         }
 
-        /// <summary>生成(或复用)提示条实例并挂到 Mid 层, 置于该层最上方</summary>
+        /// <summary>生成(或复用)提示条实例, 挂到 Mid 层最上方, 并播放一次展开动画</summary>
         [Button("显示", enabledMode: EButtonEnableMode.Playmode)]
         public void Show()
         {
@@ -55,6 +55,8 @@ namespace XiaoCao
             }
 
             Tip.gameObject.SetActive(true);
+            //挂到 Mid 层后立即播一次展开动画, 避免提示条凭空出现
+            Tip.PlayPop();
         }
 
         /// <summary>隐藏提示条: 默认销毁实例, 关闭 destroyOnHide 时只停用以待复用</summary>
