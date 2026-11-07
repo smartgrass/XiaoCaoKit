@@ -408,10 +408,17 @@ namespace ShaderVariantsCollector
             EditorGUILayout.BeginHorizontal();
             try
             {
-                if (GUILayout.Button("Confirm All", GUILayout.Width(100)))
+                if (GUILayout.Button("Add", GUILayout.Width(100)))
                 {
+                    // 只把尚不存在于集合中的变体追加进去
                     // 延迟执行，避免在GUI绘制过程中修改集合导致layout错误
                     EditorApplication.delayCall += ConfirmAllNewVariants;
+                }
+                if (GUILayout.Button("Overrider All", GUILayout.Width(110)))
+                {
+                    // 用本次收集结果整体覆盖集合（先清空再写入）
+                    // 延迟执行，避免在GUI绘制过程中修改集合导致layout错误
+                    EditorApplication.delayCall += OverrideAllWithCollectedVariants;
                 }
                 if (GUILayout.Button("Ignore All", GUILayout.Width(100)))
                 {
@@ -499,6 +506,9 @@ namespace ShaderVariantsCollector
             // 暂时添加一些示例数据
             var existingVariants = GetExistingVariants();
             var allVariants = GetAllVariantsInProject();
+
+            // 保留本次收集的完整结果，"Overrider All"要用它整体覆盖集合
+            collectedVariants = allVariants;
             
             newVariants = allVariants
                 .Where(v => !existingVariants.Contains(v))
@@ -541,11 +551,11 @@ namespace ShaderVariantsCollector
                 int failCount = 0;
 
                 // 分别处理收集变体和手动变体
-                var collectedVariants = variantsToProcess.Where(v => v.isCollected).ToList();
+                var collectedOnly = variantsToProcess.Where(v => v.isCollected).ToList();
                 var manualVariants = variantsToProcess.Where(v => !v.isCollected).ToList();
 
                 // 批量处理收集到的变体（使用对象初始化语法）
-                foreach (var variant in collectedVariants)
+                foreach (var variant in collectedOnly)
                 {
                     bool added = AddCollectedVariantWithObjectInitializer(variant);
                     if (added)
@@ -619,6 +629,58 @@ namespace ShaderVariantsCollector
             catch (System.Exception e)
             {
                 Debug.LogError($"Error in ConfirmAllNewVariants: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 用本次收集到的全部变体覆盖当前 ShaderVariantCollection：先清空集合，再逐个写入。
+        /// </summary>
+        private void OverrideAllWithCollectedVariants()
+        {
+            if (selectedCollection == null || collectedVariants.Count == 0)
+                return;
+
+            string collectionPath = AssetDatabase.GetAssetPath(selectedCollection);
+            if (!EditorUtility.DisplayDialog("Overrider All",
+                    $"将用本次收集到的 {collectedVariants.Count} 个变体覆盖当前集合：\n{collectionPath}\n\n原有变体会被全部移除，是否继续？",
+                    "覆盖", "取消"))
+            {
+                return;
+            }
+
+            try
+            {
+                selectedCollection.Clear();
+
+                // 覆盖量可能很大，批量写入时不逐条打日志
+                int successCount = 0;
+                int failCount = 0;
+                foreach (var variant in collectedVariants)
+                {
+                    if (AddCollectedVariantWithObjectInitializer(variant, false))
+                        successCount++;
+                    else
+                        failCount++;
+                }
+
+                // 收集结果已全部写入集合，待确认列表清空
+                newVariants.Clear();
+                if (treeView != null)
+                {
+                    treeView.ClearNewVariants();
+                    treeView.Reload();
+                }
+                RefreshTreeView();
+
+                Debug.Log($"[ShaderVariantsCollector] Overrider All 完成：写入 {successCount} 个变体，失败 {failCount} 个。");
+                if (failCount > 0)
+                {
+                    Debug.LogWarning($"Overrider All: {failCount} variants failed to add.");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error in OverrideAllWithCollectedVariants: {e.Message}");
             }
         }
 
@@ -726,7 +788,11 @@ namespace ShaderVariantsCollector
             return false;
         }
 
-        private bool AddCollectedVariantWithObjectInitializer(ShaderVariantData variant)
+        /// <summary>
+        /// 用对象初始化语法把变体写入集合（跳过构造函数校验）。
+        /// verbose 为 false 时不打成功/失败日志，由调用方汇总输出。
+        /// </summary>
+        private bool AddCollectedVariantWithObjectInitializer(ShaderVariantData variant, bool verbose = true)
         {
             try
             {
@@ -740,12 +806,18 @@ namespace ShaderVariantsCollector
 
                 selectedCollection.Add(shaderVariant);
                 EditorUtility.SetDirty(selectedCollection);
-                Debug.Log($"Added collected variant: {variant.shader.name} - PassType: {variant.passType} - Keywords: {variant.GetKeywordsString()}");
+                if (verbose)
+                {
+                    Debug.Log($"Added collected variant: {variant.shader.name} - PassType: {variant.passType} - Keywords: {variant.GetKeywordsString()}");
+                }
                 return true;
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"Failed to add collected variant {variant.shader.name}: {e.Message}");
+                if (verbose)
+                {
+                    Debug.LogWarning($"Failed to add collected variant {variant.shader.name}: {e.Message}");
+                }
                 return false;
             }
         }
