@@ -218,7 +218,7 @@ namespace XiaoCao
             {
                 if (CheckLoopTimeEnd())
                 {
-                    Debug.Log($"-- idle OnExit");
+                    Debuger.Log($"-- idle OnExit");
                     OnExit();
                 }
             }

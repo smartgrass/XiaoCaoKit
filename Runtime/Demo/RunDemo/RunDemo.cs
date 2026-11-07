@@ -12,6 +12,16 @@ namespace XiaoCao
         {
             //这里做点编辑器开关
             Debuger.LogLevel = LogLevel.Info;
+            if (DebugSetting.GetGameVersionType == GameVersionType.Office)
+            {
+                Debuger.LogLevel = LogLevel.Error;
+            }
+            else
+            {
+                Debuger.LogLevel = LogLevel.Info;
+            }
+
+
             GameDataCommon.Current.gameStage = EGameStage.Level;
             ProcedureMgr procedureMgr = ProcedureMgr.Inst.InitOnce();
             //LoadOnce;

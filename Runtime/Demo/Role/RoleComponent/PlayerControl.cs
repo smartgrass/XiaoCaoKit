@@ -159,11 +159,15 @@ namespace XiaoCao
             }
             //Time.frameCount
 
-            if (RollName != skillId)
+            //翻滚会脱离当前连段: 重置普攻序号, 翻滚后重新从第一段开始计算
+            if (!string.IsNullOrEmpty(RollName) && RollName == skillId)
             {
-                var setting = LubanTables.GetSkillSetting(skillId, 0);
-                DefaultAutoDirect(setting.AutoDirect);
+                AtkTimer.ResetNorAckCombo();
+                return;
             }
+
+            var setting = LubanTables.GetSkillSetting(skillId, 0);
+            DefaultAutoDirect(setting.AutoDirect);
         }
 
         public void TryRoll()

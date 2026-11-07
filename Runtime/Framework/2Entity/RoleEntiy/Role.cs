@@ -413,10 +413,6 @@ namespace XiaoCao
                 BattleData.Current.AddFightVale(hurtProcess * 10);
             }
 
-            Debug.Log($"--- atkInfo.atk {effectDamage}");
-            //防御值计算
-
-
             int targetHp = Math.Max(Mathf.RoundToInt(Hp - effectDamage), 0);
             if (targetHp <= 0)
             {

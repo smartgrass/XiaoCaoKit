@@ -61,6 +61,16 @@ namespace XiaoCao
             norAckTimer = Time.time + playerSetting.resetNorAckTime;
         }
 
+        /// <summary>
+        /// 打断普攻连段: 清掉连段窗口并把序号归零, 下次普攻由 <see cref="GetNextNorAckIndex"/> 重新从第一段算起。
+        /// 翻滚这类脱离当前动作的行为调用它, 避免翻滚结束后接着打出第 3、4 段
+        /// </summary>
+        public void ResetNorAckCombo()
+        {
+            norAckTimer = 0f;
+            Data_P.curNorAckIndex = 0;
+        }
+
 
         private void CheckDic(string skillIndex)
         {
