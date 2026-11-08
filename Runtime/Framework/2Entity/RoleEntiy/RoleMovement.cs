@@ -148,7 +148,7 @@ namespace XiaoCao
             //有移动则取消后摇
             if (Data_R.skillState.Data is ESkillState.SkillEnd)
             {
-                if (owner.IsPlayer)
+                if (owner.IsPlayer && DebugGUI.IsShowing)
                 {
                     DebugGUI.Log("moveDir", moveDir.ToString(), isInput, lookMoveDir);
                 }
@@ -183,7 +183,7 @@ namespace XiaoCao
 
 
             CheckEnableGravity();
-            GroundedCheck();
+            GroundedCheck(moveDelta);
 
             if (enableGravity && !isGrounded)
             {
@@ -524,7 +524,7 @@ namespace XiaoCao
             RoleState.animMoveSpeed = targetAnimMoveSpeed < 0 ? -smoothMag : smoothMag;
 
 
-            if (!owner.IsPlayer)
+            if (!owner.IsPlayer && DebugGUI.IsShowing)
             {
                 DebugGUI.Log("animMoveSpeed", Data_R.roleState.animMoveSpeed.ToString("N1"),
                     targetAnimMoveSpeed.ToString("N1"));
@@ -540,7 +540,7 @@ namespace XiaoCao
             RoleState.angleSpeedMult = Mathf.Min(1, RoleState.angleSpeedMult);
 
 
-            owner.Anim.SetFloat(AnimNames.MoveSpeed, RoleState.animMoveSpeed);
+            owner.Anim.SetFloat(AnimHash.MoveSpeed, RoleState.animMoveSpeed);
         }
 
         public void OnDamage(bool isBreak)
@@ -574,8 +574,53 @@ namespace XiaoCao
         }
 
 
-        private void GroundedCheck()
+        #region 地面检测
+
+        /// <summary>
+        /// 静止时(已贴地、没有位移、竖直速度已收住)的地面检测间隔(秒), 0 表示逐帧检测。
+        /// <para>走动、下坠、被击退、站在移动平台上时一律逐帧检测, 所以这里只省"站着不动"那部分开销。</para>
+        /// </summary>
+        public float groundCheckIdleInterval = 0.1f;
+
+        /// <summary>腾空时角色互斥(推开重叠)的检测间隔(秒)</summary>
+        public float overlapPushInterval = 0.1f;
+
+        private float _groundCheckTimer;
+
+        //腾空首帧立刻检测一次
+        private float _overlapPushTimer = float.MaxValue;
+
+        //上一次真正做地面检测时的坐标, 用来判断角色是否被外部移动(击退/移动平台)
+        private Vector3 _lastGroundCheckPos = new Vector3(99999f, 99999f, 99999f);
+
+        /// <summary>腾空互斥检测的复用缓冲: 调用是同步的, 所有角色共用一份, 避免 OverlapSphere 每次返回新数组</summary>
+        private static readonly Collider[] OverlapBuffer = new Collider[8];
+
+        /// <summary>
+        /// 地面检测 + 腾空互斥。移动时逐帧检测; 站着不动时按 <see cref="groundCheckIdleInterval"/> 降频。
+        /// </summary>
+        private void GroundedCheck(Vector3 moveDelta)
         {
+            //降频条件: 上一帧判定贴地 + 本帧没有水平位移 + 竖直速度收住 + 位置没被外部改变。
+            //四条同时成立时唯一可能变的是"脚下地面自己消失", 每 0.1s 补一次足够;
+            //只要角色在动就必须逐帧查, 否则走出平台后会先悬空一小段才掉下去。
+            bool isStill = isGrounded
+                           && Mathf.Abs(moveDelta.x) + Mathf.Abs(moveDelta.z) < 0.0001f
+                           && Mathf.Abs(velocityY) < 0.5f
+                           && (transform.position - _lastGroundCheckPos).sqrMagnitude < 0.0001f;
+
+            if (isStill && groundCheckIdleInterval > 0f)
+            {
+                _groundCheckTimer += XCTime.fixedDeltaTime;
+                if (_groundCheckTimer < groundCheckIdleInterval)
+                {
+                    return;
+                }
+            }
+
+            _groundCheckTimer = 0f;
+            _lastGroundCheckPos = transform.position;
+
             float GroundedOffset = -0.14f;
             float GroundedRadius = 0.28f;
             // set sphere position, with offset
@@ -590,6 +635,8 @@ namespace XiaoCao
             {
                 _lastSafePos = transform.position;
                 _hasSafePos = true;
+                //落地后重置, 下次腾空的第 1 帧就做一次互斥检测
+                _overlapPushTimer = float.MaxValue;
             }
 
             // update animator if using character
@@ -600,31 +647,46 @@ namespace XiaoCao
 
             if (!isGrounded)
             {
-                int layerMask = XCSetting.GetTeamInverseLayerMask(owner.team);
-                Collider[] cols = Physics.OverlapSphere(spherePosition, GroundedRadius * 2f, layerMask);
-                if (cols.Length > 0)
+                _overlapPushTimer += XCTime.fixedDeltaTime;
+                if (_overlapPushTimer >= overlapPushInterval)
                 {
-                    for (int i = 0; i < cols.Length; i++)
-                    {
-                        Vector3 offset = (cc.transform.position - cols[i].transform.position);
-                        offset.y = 0;
-                        offset = offset.normalized * XCTime.fixedDeltaTime;
-                        //排斥角色之间, 防重叠
-                        cc.Move(offset);
-                        if (Application.isEditor)
-                        {
-                            if (!offset.IsZore())
-                            {
-                                Debug.Log($"-- {owner.gameObject} offsetMove {offset} {cols[i].gameObject}");
-                            }
-                        }
-
-
-                        break;
-                    }
+                    _overlapPushTimer = 0f;
+                    PushOutOverlap(spherePosition, GroundedRadius);
                 }
             }
         }
+
+        /// <summary>
+        /// 腾空时把贴在一起的角色推开, 防重叠。
+        /// <para>用 NonAlloc 缓冲, 不再每次产生 Collider[]; 只取第一个命中参与计算(与原先 break 的行为一致)。</para>
+        /// </summary>
+        private void PushOutOverlap(Vector3 spherePosition, float radius)
+        {
+            int layerMask = XCSetting.GetTeamInverseLayerMask(owner.team);
+            int count = Physics.OverlapSphereNonAlloc(spherePosition, radius * 2f, OverlapBuffer, layerMask);
+            if (count <= 0)
+            {
+                return;
+            }
+
+            Collider other = OverlapBuffer[0];
+            Vector3 offset = cc.transform.position - other.transform.position;
+            offset.y = 0;
+            if (offset.IsZore())
+            {
+                return;
+            }
+
+            offset = offset.normalized * XCTime.fixedDeltaTime;
+            //排斥角色之间, 防重叠
+            cc.Move(offset);
+
+#if UNITY_EDITOR
+            Debug.Log($"-- {owner.gameObject} offsetMove {offset} {other.gameObject}");
+#endif
+        }
+
+        #endregion
 
         private void CheckEnableGravity()
         {

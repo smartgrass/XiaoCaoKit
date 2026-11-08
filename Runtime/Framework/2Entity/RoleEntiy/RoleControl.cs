@@ -107,7 +107,7 @@ namespace XiaoCao
             if (hasStop)
             {
                 int len = runnerList.Count;
-                for (int i = len - 1; i > 0; i--)
+                for (int i = len - 1; i >= 0; i--)
                 {
                     var runner = runnerList[i];
                     if (runner.IsAllStop)

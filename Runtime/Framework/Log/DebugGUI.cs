@@ -20,7 +20,7 @@ public class DebugGUI : MonoBehaviour
     public static void Log(string key, params object[] value)
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (DebugSetting.DebugGUI_IsShow.GetKeyBool())
+        if (IsShowing)
         {
             GetInstance().AddDebugInfo(key, value);
         }
@@ -40,7 +40,32 @@ public class DebugGUI : MonoBehaviour
     private float lineHeight;
     private float startY;
 
-    public static bool IsShowing => DebugSetting.DebugGUI_IsShow.GetKeyBool();
+    private static int _showFrame = -1;
+    private static bool _showCached;
+
+    /// <summary>
+    /// 调试 GUI 是否开着。
+    /// <para>按帧缓存: 底层是 PlayerPrefs 原生读取, 每个角色每帧查一次太浪费。</para>
+    /// <para>发布包里恒为 false, 所以调用处写成 <c>if (DebugGUI.IsShowing)</c> 时,
+    /// 里面的 ToString / params 数组会整段被编译器裁掉。</para>
+    /// </summary>
+    public static bool IsShowing
+    {
+        get
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (_showFrame != Time.frameCount)
+            {
+                _showFrame = Time.frameCount;
+                _showCached = DebugSetting.DebugGUI_IsShow.GetKeyBool();
+            }
+
+            return _showCached;
+#else
+            return false;
+#endif
+        }
+    }
 
     // 单例实例
     private static DebugGUI instance;
@@ -60,7 +85,7 @@ public class DebugGUI : MonoBehaviour
     void OnGUI()
     {
 
-        if (!DebugSetting.DebugGUI_IsShow.GetKeyBool())
+        if (!IsShowing)
         {
             return;
         }

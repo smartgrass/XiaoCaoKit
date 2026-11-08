@@ -100,20 +100,6 @@ namespace XiaoCao
             component.buffControl.Update();
 
             //考虑增加add模式
-            ForDebug();
-        }
-
-        void ForDebug()
-        {
-            if (Time.timeScale > 1)
-            {
-                DebugGUI.Log("TimeScale", Time.timeScale.ToString("#.##"));
-            }
-
-            if (Anim.speed > 1)
-            {
-                DebugGUI.Log("AnimSpeed", Anim.speed);
-            }
         }
 
 

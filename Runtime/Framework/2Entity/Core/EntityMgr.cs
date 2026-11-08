@@ -89,7 +89,7 @@ namespace XiaoCao
                     {
                         entity.UpdateEvent?.Invoke();
                     }
-                    else
+                    else if (DebugGUI.IsShowing)
                     {
                         DebugGUI.Log("no Runing", entity.id);
                     }
