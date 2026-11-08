@@ -62,7 +62,7 @@ namespace XiaoCao
 
         private bool FristLoad()
         {
-            Debuger.Log($"--- ActPoolFSM FristLoad {IsLoaded}");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- ActPoolFSM FristLoad {IsLoaded}");
             if (IsLoaded)
             {
                 return false;
@@ -166,7 +166,7 @@ namespace XiaoCao
         public override void OnExit()
         {
             State = FSMState.Finish;
-            Debuger.Log($"--- AIFSM All Finish");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- AIFSM All Finish");
         }
 
         public override string GetStatePath()

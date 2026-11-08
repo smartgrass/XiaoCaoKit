@@ -40,7 +40,7 @@ namespace XiaoCao
 
                 if (ConfigMgr.StaticSettingSo.buildTime != time)
                 {
-                    Debuger.Log($"--- buildTime: {ConfigMgr.StaticSettingSo.buildTime} != {time}");
+                    if (Debuger.InfoEnabled) Debuger.Log($"--- buildTime: {ConfigMgr.StaticSettingSo.buildTime} != {time}");
                     return true;
                 }
 

@@ -138,7 +138,7 @@ public class EnemyGroupComponent : GameStartMono, IMapMsgSender
         Transform endTf = parentTf.Find(ActiveOnEnd);
         if (!endTf)
         {
-            Debuger.Log($"--- no end object {ActiveOnEnd} in {parentTf.name}");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- no end object {ActiveOnEnd} in {parentTf.name}");
             return;
         }
 

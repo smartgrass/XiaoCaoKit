@@ -56,7 +56,7 @@ namespace XiaoCao
         public void BreakAllBusy()
         {
             int len = runnerList.Count;
-            for (int i = len - 1; i > 0; i--)
+            for (int i = len - 1; i >= 0; i--)
             {
                 runnerList[i].SetBreak();
             }
@@ -148,7 +148,7 @@ namespace XiaoCao
         {
             if (owner.IsPlayer)
             {
-                Debuger.Log($"SetAnimSpeed {owner.Anim.speed}->{speed}");
+                if (Debuger.InfoEnabled) Debuger.Log($"SetAnimSpeed {owner.Anim.speed}->{speed}");
             }
             if (owner.Anim.speed != 0)
             {
@@ -171,7 +171,7 @@ namespace XiaoCao
             {
                 cts.Cancel();
                 cts.Dispose();
-                Debuger.Log("--- cancellationTokenSource");
+                if (Debuger.InfoEnabled) Debuger.Log("--- cancellationTokenSource");
             }
 
             cts = new CancellationTokenSource();
@@ -424,7 +424,7 @@ namespace XiaoCao
                     owner.Anim.speed = isOn
                         ? owner.Anim.speed * timeScale
                         : owner.Anim.speed / timeScale;
-                    Debuger.Log($"XCTimeScale isOn {isOn} {timeScale}");
+                    if (Debuger.InfoEnabled) Debuger.Log($"XCTimeScale isOn {isOn} {timeScale}");
                 }
                 //非敌人不停止技能任务: timeStop 期间技能帧以 timeScale 倍速继续推进
                 return;

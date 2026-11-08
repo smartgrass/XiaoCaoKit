@@ -114,7 +114,7 @@ namespace XiaoCao
         {
             OnEnd();
             IsAllStop = true;
-            Debuger.Log($"--- AllEnd skill {Task.Info.skillId} ");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- AllEnd skill {Task.Info.skillId} ");
             Task = null;
             gameObject.SetActive(false);
 

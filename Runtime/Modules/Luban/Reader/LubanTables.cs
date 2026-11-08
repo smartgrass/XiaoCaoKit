@@ -119,7 +119,7 @@ namespace cfg
             var ret = LevelSettingReader.GetOrDefault(key);
             if (ret == null)
             {
-                Debuger.Log($"---! no find LevelSetting {key}");
+                if (Debuger.InfoEnabled) Debuger.Log($"---! no find LevelSetting {key}");
                 ret = LevelSettingReader.DataList[0];
             }
 

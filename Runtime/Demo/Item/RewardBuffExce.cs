@@ -101,7 +101,7 @@ public class RewardBuffExce : MonoExecute
         Player0 player = GameDataCommon.LocalPlayer;
         if (player == null || !player.TryUseExtraSkill(extraItemId))
         {
-            Debuger.Log($"--- RewardBuffExce {extraItemId} 自动使用失败, 已放入特殊道具槽");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- RewardBuffExce {extraItemId} 自动使用失败, 已放入特殊道具槽");
         }
     }
 

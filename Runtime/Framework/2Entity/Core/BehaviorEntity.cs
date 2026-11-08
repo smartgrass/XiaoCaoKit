@@ -40,7 +40,7 @@ namespace XiaoCao
 
         public void OnCreat()
         {
-            Debuger.Log($"--- OnCreat {id}");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- OnCreat {id}");
             UpdateEvent += OnUpdate;
             FixedUpdateEvent += OnFixedUpdate;
             LaterUpdateEvent += OnLaterUpdate;

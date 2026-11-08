@@ -105,7 +105,7 @@ namespace XiaoCao
 
         public override void AIMsg(ActMsgType actType, string actMsg)
         {
-            Debuger.Log($"--- AIMsg {actType} {actMsg}");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- AIMsg {actType} {actMsg}");
             if (string.IsNullOrEmpty(actMsg))
             {
                 return;

@@ -33,7 +33,7 @@ namespace XiaoCao
 
         public void OnUpdateAllBuff()
         {
-            Debuger.Log($"--- Re Apply All Buff");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- Re Apply All Buff");
             //先移除
             RemoveAllEffect();
 

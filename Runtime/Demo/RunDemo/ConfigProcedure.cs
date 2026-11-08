@@ -23,7 +23,7 @@ namespace XiaoCao
         {
             await ResMgr.InitYooAssetAll();
             IsFinish = true;
-            Debuger.Log("==== InitYooAsset Finish ====");
+            if (Debuger.InfoEnabled) Debuger.Log("==== InitYooAsset Finish ====");
         }
     }
 
@@ -84,7 +84,7 @@ namespace XiaoCao
         public async UniTask UnCompressedZip()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
-            Debuger.Log($"--- 开始解压");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- 开始解压");
             string fileName = "ExtraRes.zip";
             //string zipPath = XCPathConfig.GetExtraResZipPath();
             //WWW读取并复制
@@ -118,7 +118,7 @@ namespace XiaoCao
 
         public override void Start()
         {
-            Debuger.Log($" LoadPlayerData");
+            if (Debuger.InfoEnabled) Debuger.Log($" LoadPlayerData");
             //读取存档数据
             var data0 = SaveMgr.ReadData<PlayerSaveData>(out bool isSuc);
 
@@ -137,7 +137,7 @@ namespace XiaoCao
             {
                 data0.lv = PlayerPrefs.GetInt("playerLv");
                 
-                Debuger.Log($" IsKaiLe Player playerLv {data0.lv}");
+                if (Debuger.InfoEnabled) Debuger.Log($" IsKaiLe Player playerLv {data0.lv}");
             }
 
             if (DebugSetting.IsDebug &&
@@ -160,7 +160,7 @@ namespace XiaoCao
 
             if (!isSuc)
             {
-                Debuger.Log($"--- creat newData");
+                if (Debuger.InfoEnabled) Debuger.Log($"--- creat newData");
                 SaveMgr.SaveData(data0);
                 SetDefaultPlayerSetting();
                 //创建默认配置
@@ -278,7 +278,7 @@ namespace XiaoCao
             await UniTask.WaitUntil(() => (MapMgr.Inst != null));
             await MapMgr.Inst.LoadLevelObject();
             IsFinish = true;
-            Debuger.Log("==== MapProcedure Finish ====");
+            if (Debuger.InfoEnabled) Debuger.Log("==== MapProcedure Finish ====");
         }
     }
 }

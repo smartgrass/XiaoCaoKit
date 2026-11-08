@@ -34,6 +34,19 @@ namespace XiaoCao
         /// 日志级别(默认Info)
         /// </summary>
         public static LogLevel LogLevel { get;set; }
+
+        /// <summary>
+        /// Info 级日志当前是否会输出。
+        /// <para>会拼字符串/装箱的调用点请显式判断, 让 $"..." 与 params 数组在不需要时不产生:</para>
+        /// <para><c>if (Debuger.InfoEnabled) Debuger.Log($"...");</c></para>
+        /// <para>级别的语义是"最低打印级别": 设成 Warn / Error 时 Info 不输出。Error 恒输出, 不需要判断。</para>
+        /// </summary>
+        public static bool InfoEnabled => LogLevel <= LogLevel.Info;
+
+        /// <summary>
+        /// Warn 级日志当前是否会输出(LogLevel 设成 Error 时为 false)。
+        /// </summary>
+        public static bool WarnEnabled => LogLevel <= LogLevel.Warn;
         /// <summary>
         /// 是否使用Unity打印
         /// </summary>

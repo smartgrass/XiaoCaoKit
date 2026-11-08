@@ -556,7 +556,7 @@ namespace XiaoCao
         ///<see cref="BaseMsg"/>
         public override void ReceiveMsg(EntityMsgType type, int fromId, object msg)
         {
-            Debuger.Log($"--- Receive {type} fromId: {fromId}");
+            if (Debuger.InfoEnabled) Debuger.Log($"--- Receive {type} fromId: {fromId}");
             switch (type)
             {
                 case EntityMsgType.PlayNextSkill:
