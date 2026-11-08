@@ -62,6 +62,15 @@ namespace XiaoCao
 
         private static bool _warnedNoRoom;
 
+        // ---- 查询期间的复用缓冲: 寻路是 2~4Hz 的热路径, 每次查询 new 一堆 List / 数组会积 GC ----
+        private static readonly List<int> _startBuf = new List<int>(16);
+        private static readonly List<int> _goalBuf = new List<int>(16);
+        private static readonly List<int> _pathBuf = new List<int>(16);
+        private static readonly List<int> _openBuf = new List<int>(16);
+        private static float[] _gBuf;
+        private static int[] _prevBuf;
+        private static bool[] _closedBuf;
+
         /// <summary>
         /// 地图换了之后清掉缓存, 下一次查询重新建图。
         /// </summary>
@@ -105,14 +114,19 @@ namespace XiaoCao
             // 但"角色 → 通道点"这一段是真要走过去的: 直线被墙挡住的点走不到,
             // 选它当出口会让路径最后一段变成"从那个点直穿墙"(实测敌人会顶在墙前静止好几秒)。
             // 所以两端都优先只留直线走得到的点; 一个都走不到时再退回最近点, 保证不会因此判不可达。
-            List<int> starts = VisibleNodes(from, farDistance);
+            List<int> starts = _startBuf;
+            List<int> goals = _goalBuf;
+            starts.Clear();
+            goals.Clear();
+
+            CollectNearNodes(starts, from, farDistance);
             KeepReachable(starts, from);
             if (starts.Count == 0)
             {
                 AddNearestNode(starts, from);
             }
 
-            List<int> goals = VisibleNodes(to, farDistance);
+            CollectNearNodes(goals, to, farDistance);
             KeepReachable(goals, to);
             if (goals.Count == 0)
             {
@@ -124,13 +138,12 @@ namespace XiaoCao
                 return PassPathResult.Unreachable;
             }
 
-            List<int> nodePath = AStar(starts, goals, from, to);
-            if (nodePath == null)
+            if (!AStar(starts, goals, from, _pathBuf))
             {
                 return PassPathResult.Unreachable;
             }
 
-            foreach (int id in nodePath)
+            foreach (int id in _pathBuf)
             {
                 outPath.Add(_nodes[id]);
             }
@@ -325,20 +338,30 @@ namespace XiaoCao
 
         #region A*
 
-        /// <summary>从任意起点通道点走到任意终点通道点的最短路径(节点下标序列), 走不通返回 null</summary>
-        private static List<int> AStar(List<int> starts, List<int> goals, Vector3 from, Vector3 to)
+        /// <summary>
+        /// 从任意起点通道点走到任意终点通道点的最短路径(按顺序写入 path), 走不通返回 false。
+        /// <para>g / prev / closed 与 open 全是复用缓冲, 只有节点数超出上次容量时才扩容。</para>
+        /// </summary>
+        private static bool AStar(List<int> starts, List<int> goals, Vector3 from, List<int> path)
         {
             int count = _nodes.Count;
-            float[] g = new float[count];
-            int[] prev = new int[count];
-            bool[] closed = new bool[count];
+            EnsureAStarBuffers(count);
+
+            float[] g = _gBuf;
+            int[] prev = _prevBuf;
+            bool[] closed = _closedBuf;
+            List<int> open = _openBuf;
+
             for (int i = 0; i < count; i++)
             {
                 g[i] = float.MaxValue;
                 prev[i] = -1;
+                closed[i] = false;
             }
 
-            List<int> open = new List<int>();
+            open.Clear();
+            path.Clear();
+
             foreach (int id in starts)
             {
                 float cost = Vector3.Distance(from, _nodes[id]);
@@ -369,14 +392,13 @@ namespace XiaoCao
 
                 if (goals.Contains(cur))
                 {
-                    List<int> path = new List<int>();
                     for (int id = cur; id >= 0; id = prev[id])
                     {
                         path.Add(id);
                     }
 
                     path.Reverse();
-                    return path;
+                    return true;
                 }
 
                 if (closed[cur])
@@ -405,7 +427,21 @@ namespace XiaoCao
                 }
             }
 
-            return null;
+            return false;
+        }
+
+        /// <summary>数组缓冲按"节点数 x 2"扩容, 地图节点增加时不必每次查询都重新分配</summary>
+        private static void EnsureAStarBuffers(int count)
+        {
+            if (_gBuf != null && _gBuf.Length >= count)
+            {
+                return;
+            }
+
+            int size = count * 2;
+            _gBuf = new float[size];
+            _prevBuf = new int[size];
+            _closedBuf = new bool[size];
         }
 
         /// <summary>到最近终点通道点的直线距离, 作为 A* 的启发值</summary>
@@ -427,13 +463,12 @@ namespace XiaoCao
         #endregion
 
         /// <summary>
-        /// 从某个位置能接入的通道点(当作出入口)。
+        /// 收集某个位置能接入的通道点(当作出入口), 写入 result。
         /// <para>只按距离判定: 通道点在 farDistance 以内就算可接入, 不做遮挡判定 ——
         /// 人站在房间里、门洞不在正前方时也能接上图, 否则会每帧判定不可达而原地卡死。</para>
         /// </summary>
-        private static List<int> VisibleNodes(Vector3 pos, float farDistance)
+        private static void CollectNearNodes(List<int> result, Vector3 pos, float farDistance)
         {
-            List<int> result = new List<int>();
             float sqrLimit = farDistance * farDistance;
             for (int i = 0; i < _nodes.Count; i++)
             {
@@ -442,27 +477,27 @@ namespace XiaoCao
                     result.Add(i);
                 }
             }
-
-            return result;
         }
 
         /// <summary>
-        /// 只保留从 pos 直线走得到的通道点(中间没有 Wall / WallBlock 挡着)。
+        /// 只保留从 pos 直线走得到的通道点(中间没有 Wall / WallBlock 挡着), 就地压缩原列表, 不额外分配。
         /// <para>一个都走不到时, 保留最近的那一个: 宁可让它先朝门口走, 也不能在这里判成不可达
         /// (出生点离门洞比半径还远的情况很常见, 直接判不可达会让敌人原地站死)。</para>
         /// </summary>
         private static void KeepReachable(List<int> ids, Vector3 pos)
         {
-            if (ids.Count <= 1)
+            int count = ids.Count;
+            if (count <= 1)
             {
                 return;
             }
 
             int nearest = -1;
             float nearestSqr = float.MaxValue;
-            List<int> reachable = new List<int>(ids.Count);
-            foreach (int id in ids)
+            int write = 0;
+            for (int i = 0; i < count; i++)
             {
+                int id = ids[i];
                 float sqr = (_nodes[id] - pos).sqrMagnitude;
                 if (sqr < nearestSqr)
                 {
@@ -472,20 +507,19 @@ namespace XiaoCao
 
                 if (HasLineOfSight(pos, _nodes[id]))
                 {
-                    reachable.Add(id);
+                    ids[write++] = id;
                 }
             }
 
-            if (reachable.Count == 0)
+            if (write == 0 && nearest >= 0)
             {
-                if (nearest >= 0)
-                {
-                    reachable.Add(nearest);
-                }
+                ids[write++] = nearest;
             }
 
-            ids.Clear();
-            ids.AddRange(reachable);
+            if (write < count)
+            {
+                ids.RemoveRange(write, count - write);
+            }
         }
 
         /// <summary>取离 pos 最近的通道点当出入口(已经在列表里就不重复加)</summary>
